@@ -351,6 +351,15 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .opt:hover{border-color:var(--border-strong);}
 .opt .on{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:600;}
 .opt .on svg{width:18px;height:18px;flex:0 0 auto;color:var(--text-2);}
+
+/* Im Vollbild fehlen die Leisten des Browsers – der Rand muss von der App kommen. */
+body.voll .topbar-inner{padding-top:24px;}
+body.voll .ovl-head{padding-top:26px;}
+body.voll .tabbar{padding-bottom:18px;}
+body.voll .sheet{padding-bottom:30px;}
+body.voll .cam-bar{padding-bottom:28px;}
+body.voll .lightbox .lb-bar{padding-bottom:26px;}
+body.voll .cam{padding-top:14px;}
 .opt .od{font-size:12.5px;color:var(--text-2);margin-top:6px;line-height:1.55;}
 .opt .badge{font-size:10px;padding:2px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:600;letter-spacing:.03em;}
 .opt[disabled]{opacity:.5;}
@@ -849,24 +858,24 @@ function setupZeigen(nurWechsel) {
     <div class="setup-inner">
       <div class="mark serif">Leseplan</div>
       ${dateiDa ? `
-        <p class="lead">Diese Seite enthält keine Daten. Wo sollen deine Bücher, Notizen und Fotos liegen? Der Ort lässt sich später jederzeit wechseln.</p>
+        <p class="lead">Wo sollen deine Bücher, Notizen und Fotos liegen?</p>
 
         <button class="opt" data-act="datei-neu">
           <span class="on">${ICON.save} Neue Datei anlegen <span class="badge">empfohlen</span></span>
-          <span class="od">Du wählst einmal einen Ort auf diesem Gerät, danach schreibt die App still in genau diese Datei. Kein Dialog, kein Nachfragen.</span>
+          <span class="od">Einmal den Ort wählen – danach speichert die App still in diese Datei.</span>
         </button>
 
         <button class="opt" data-act="datei-oeffnen">
           <span class="on">${ICON.books} Bestehende Datei öffnen</span>
-          <span class="od">Eine leseplan.json weiterführen, die du früher angelegt oder von einem anderen Gerät kopiert hast.</span>
+          <span class="od">Eine leseplan.json weiterführen.</span>
         </button>
 
         <button class="opt" data-act="geraet">
-          <span class="on">${ICON.img} Nur in diesem Browser speichern</span>
-          <span class="od">Ohne Datei, dafür ohne jede Rückfrage. Verschwindet, wenn du die Website-Daten löschst.</span>
+          <span class="on">${ICON.img} Nur in diesem Browser</span>
+          <span class="od">Ohne Datei. Verschwindet mit den Website-Daten.</span>
         </button>
       ` : `
-        <p class="lead">Diese Seite enthält keine Daten. Deine Bücher, Notizen und Fotos werden in diesem Browser gespeichert – automatisch, im eingestellten Takt und ohne Rückfrage.</p>
+        <p class="lead">Deine Bücher und Notizen bleiben in diesem Browser – gespeichert wird automatisch.</p>
 
         <button class="btn btn-primary btn-block" data-act="geraet" style="padding:14px;font-size:15px">Loslegen</button>
 
@@ -875,9 +884,7 @@ function setupZeigen(nurWechsel) {
         </div>
 
         <p class="hinweis" style="margin-top:16px">
-          Kein anderer Speicherort zur Wahl, weil dieser Browser der Seite nicht erlaubt, direkt in eine Datei zu schreiben –
-          so ist es auf iPhone und iPad und in eingebetteten Ansichten. Über „Jetzt sichern“ holst du dir jederzeit eine
-          Sicherungsdatei heraus; sichere regelmäßig, gelöschte Website-Daten nehmen den Speicher mit.
+          Dieser Browser lässt die Seite nicht direkt in eine Datei schreiben. Hol dir mit „Jetzt sichern“ regelmäßig eine Kopie.
         </p>
       `}
 
@@ -966,6 +973,7 @@ function vollbildUmschalten() {
   }
 }
 function vollbildKnopfMalen() {
+  document.body.classList.toggle('voll', vollbildAn());
   const b = $('#btnVoll');
   if (!b) return;
   b.hidden = !vollbildGeht();
@@ -2925,14 +2933,24 @@ function mehrMalen(root) {
   };
   $('[data-reset]', root).onclick = async () => {
     const ok = await bestaetigen('Wirklich alles löschen?',
-      `${DB.buecher.length} Bücher, ${alleNotizen().length} Notizen und alle Fotos an diesem Speicherort werden gelöscht.`,
+      `${DB.buecher.length} Bücher, ${alleNotizen().length} Notizen und alle Fotos an diesem Speicherort werden gelöscht. Danach beginnst du wieder bei der Wahl des Speicherorts.`,
       'Alles löschen', true);
     if (!ok) return;
     const theme = DB.einstellungen.theme;
     DB = leereDb();
     DB.einstellungen.theme = theme;
-    await Store.sichern();
-    viewMalen();
+    try {
+      /* Erst den bisherigen Speicher wirklich leeren, dann die Verknüpfung lösen. */
+      if (Store.modus === 'datei' && Store.handle) await Store.schreiben();
+      await IDB.del('daten');
+      await IDB.del('meta');
+    } catch (e) { console.error(e); }
+    clearInterval(Store.timer);
+    clearTimeout(Store._kurz);
+    Store.modus = null; Store.handle = null; Store.dirty = false;
+    Store.letzteSicherung = 0; Store.fehler = null;
+    themeAnwenden();
+    setupZeigen(false);
     toast('Zurückgesetzt.');
   };
 }
