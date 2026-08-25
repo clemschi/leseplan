@@ -221,6 +221,10 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 }
 .book::-webkit-scrollbar{display:none;}
 .book:hover{border-color:var(--border);}
+.book.zieht{box-shadow:0 14px 32px rgba(0,0,0,.55);border-color:var(--accent);
+  transform:scale(1.02);position:relative;z-index:5;transition:transform .12s ease;}
+.book.zieht .chev{opacity:0;}
+:root[data-app-theme="light"] .book.zieht{box-shadow:0 14px 32px rgba(23,32,45,.22);}
 .bookpane{
   flex:0 0 100%;width:100%;scroll-snap-align:start;
   display:flex;align-items:center;gap:11px;padding:10px;text-align:left;min-width:0;
@@ -1838,64 +1842,79 @@ function buchZeile(b) {
   const oeffner = $('[data-oeffnen]', node);
   oeffner.onclick = () => { if (!node._langGedrueckt) buchOeffnen(b.id); node._langGedrueckt = false; };
 
-  /* Langes Drücken öffnet die Schnellaktionen. */
-  let halten;
-  const start = () => {
-    clearTimeout(halten);
-    halten = setTimeout(() => { node._langGedrueckt = true; buchAktionen(b); }, 480);
-  };
-  const stopp = () => clearTimeout(halten);
-  oeffner.addEventListener('pointerdown', start);
-  ['pointerup', 'pointerleave', 'pointercancel'].forEach(e => oeffner.addEventListener(e, stopp));
-  oeffner.addEventListener('contextmenu', e => { e.preventDefault(); stopp(); node._langGedrueckt = true; buchAktionen(b); });
+  node._buchId = b.id;
+  ziehenZumSortieren(node, oeffner);
   return node;
 }
 
-/* Schnellaktionen zu einem Buch, aus der Liste heraus. */
-function buchAktionen(b) {
-  const l = buecherIn(b.blockId);
-  const i = l.findIndex(x => x.id === b.id);
-  const t = laufenderTimer();
-  const laeuftHier = t && t.buchId === b.id;
-  const s = blatt(b.titel, `
-    <div class="list-card">
-      <button class="rowline" data-a="hoch" style="width:100%;text-align:left"${i <= 0 ? ' disabled' : ''}>
-        <span style="width:20px">${ICON.up}</span>
-        <span class="grow"><span class="rn">Nach oben</span><span class="rm">${i <= 0 ? 'steht schon ganz oben' : 'im Block „' + esc((blockById(b.blockId) || {}).name || '') + '“'}</span></span>
-      </button>
-      <button class="rowline" data-a="runter" style="width:100%;text-align:left"${i >= l.length - 1 ? ' disabled' : ''}>
-        <span style="width:20px">${ICON.down}</span>
-        <span class="grow"><span class="rn">Nach unten</span><span class="rm">${i >= l.length - 1 ? 'steht schon ganz unten' : 'Platz ' + (i + 1) + ' von ' + l.length}</span></span>
-      </button>
-      <button class="rowline" data-a="lesen" style="width:100%;text-align:left">
-        <span style="width:20px">${laeuftHier ? ICON.pause : ICON.play}</span>
-        <span class="grow"><span class="rn">${laeuftHier ? 'Sitzung beenden' : 'Sitzung starten'}</span><span class="rm">${laeuftHier ? 'läuft seit ' + fmtDauer(timerMinuten(t)) : 'Stoppuhr für dieses Buch'}</span></span>
-      </button>
-      <button class="rowline" data-a="einkauf" style="width:100%;text-align:left">
-        <span style="width:20px">${b.einkauf ? ICON.check : ICON.plus}</span>
-        <span class="grow"><span class="rn">${b.einkauf ? 'Von der Einkaufsliste nehmen' : 'Auf die Einkaufsliste'}</span><span class="rm">${esc((BESITZ[b.besitz] || BESITZ.fehlt).name)}</span></span>
-      </button>
-      <button class="rowline" data-a="bearbeiten" style="width:100%;text-align:left">
-        <span style="width:20px">${ICON.edit}</span>
-        <span class="grow"><span class="rn">Bearbeiten</span><span class="rm">Daten, Kurzfassung, Besitz</span></span>
-      </button>
-    </div>`, { fokus: false });
+/* Langes Drücken hebt die Zeile an; danach folgt sie dem Finger und wird
+   an der Stelle abgelegt, wo man loslässt. */
+function ziehenZumSortieren(node, griff) {
+  let halten = null, zieht = false, startX = 0, startY = 0, wrap = null;
 
-  const verschieben = d => {
-    const j = i + d;
-    if (j < 0 || j >= l.length) return;
-    aendern(() => { const t2 = l[i].ord; l[i].ord = l[j].ord; l[j].ord = t2; buecherIn(b.blockId).forEach((x, k) => x.ord = k); });
-    layerSchliessen(); viewMalen();
+  const scrollen = ev => {
+    const rand = 90;
+    if (ev.clientY < rand) window.scrollBy(0, -14);
+    else if (ev.clientY > window.innerHeight - rand) window.scrollBy(0, 14);
   };
-  $('[data-a="hoch"]', s).onclick = () => verschieben(-1);
-  $('[data-a="runter"]', s).onclick = () => verschieben(1);
-  $('[data-a="lesen"]', s).onclick = () => { layerSchliessen(); laeuftHier ? sitzungBeenden() : sitzungStarten(b.id); };
-  $('[data-a="einkauf"]', s).onclick = () => {
-    aendern(() => { b.einkauf = !b.einkauf; if (b.einkauf && b.besitz === 'habe') b.besitz = 'fehlt'; });
-    layerSchliessen(); viewMalen();
-    toast(b.einkauf ? 'Auf der Einkaufsliste.' : 'Von der Einkaufsliste genommen.');
+
+  const bewegen = ev => {
+    if (!zieht) return;
+    ev.preventDefault();
+    const y = ev.clientY;
+    for (const g of Array.from(wrap.querySelectorAll('.book'))) {
+      if (g === node) continue;
+      const r = g.getBoundingClientRect();
+      const mitte = r.top + r.height / 2;
+      const nodeFolgt = !!(g.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
+      if (y < mitte && nodeFolgt) { wrap.insertBefore(node, g); break; }
+      if (y > mitte && !nodeFolgt) { wrap.insertBefore(node, g.nextSibling); break; }
+    }
+    scrollen(ev);
   };
-  $('[data-a="bearbeiten"]', s).onclick = () => { layerSchliessen(); setTimeout(() => buchBearbeiten(b, b.blockId), 70); };
+
+  const ende = () => {
+    clearTimeout(halten);
+    window.removeEventListener('pointermove', bewegen);
+    window.removeEventListener('pointerup', ende);
+    window.removeEventListener('pointercancel', ende);
+    if (!zieht) return;
+    zieht = false;
+    node.classList.remove('zieht');
+    node.style.touchAction = '';
+    document.body.style.userSelect = '';
+    const reihenfolge = Array.from(wrap.querySelectorAll('.book')).map(x => x._buchId);
+    aendern(() => reihenfolge.forEach((id, i) => { const bb = buchById(id); if (bb) bb.ord = i; }));
+    viewMalen();
+  };
+
+  const beginnen = () => {
+    wrap = node.parentElement;
+    if (!wrap || wrap.querySelectorAll('.book').length < 2) return;
+    zieht = true;
+    node._langGedrueckt = true;
+    node.classList.add('zieht');
+    node.style.touchAction = 'none';
+    document.body.style.userSelect = 'none';
+    if (navigator.vibrate) { try { navigator.vibrate(14); } catch (e) { } }
+  };
+
+  const vorpruefen = ev => {
+    if (zieht) return;
+    if (Math.abs(ev.clientY - startY) > 10 || Math.abs(ev.clientX - startX) > 10) clearTimeout(halten);
+  };
+
+  griff.addEventListener('pointerdown', ev => {
+    if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+    startX = ev.clientX; startY = ev.clientY;
+    clearTimeout(halten);
+    halten = setTimeout(beginnen, 450);
+    window.addEventListener('pointermove', vorpruefen);
+    window.addEventListener('pointermove', bewegen, { passive: false });
+    window.addEventListener('pointerup', ende);
+    window.addEventListener('pointercancel', ende);
+  });
+  griff.addEventListener('contextmenu', ev => { if (zieht) ev.preventDefault(); });
 }
 
 /* Schnellaktionen zu einem Block. */
@@ -2301,9 +2320,14 @@ function importDialog(erstStart) {
         `Dein jetziger Stand mit ${DB.buecher.length} Büchern wird verworfen und durch ${neu.buecher.length} Bücher aus der Datei ersetzt.`,
         'Ersetzen', true);
       if (!ok) return;
-      const theme = DB.einstellungen.theme;
+      /* Eine reine Listendatei bringt keine Einstellungen mit – dann bleiben
+         Darstellung, Ziel und Einführung so, wie du sie hattest. */
+      const eigene = Object.assign({}, DB.einstellungen);
+      const planId = neu.einstellungen.aktiverPlanId;
       DB = neu;
-      DB.einstellungen.theme = theme;
+      if (!roh.einstellungen) {
+        DB.einstellungen = Object.assign(eigene, { aktiverPlanId: planId });
+      }
     } else {
       aendern(() => {
         const artNach = {}, themaNach = {}, blockNach = {};
