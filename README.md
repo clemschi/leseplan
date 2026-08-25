@@ -12,8 +12,8 @@ separaten Datei und wird bewusst geladen.
 | Datei | Wofür |
 |---|---|
 | `leseplan.html` | Die App. Quelle der Wahrheit, ohne Dokumentrahmen – so wird sie als Artifact veröffentlicht. |
-| `index.html` | Daraus erzeugt: eigenständige Seite zum lokalen Öffnen. **Nicht von Hand bearbeiten.** |
-| `build.js` | Erzeugt `index.html` aus `leseplan.html`: `node build.js` |
+| `leseliste.html` | Daraus erzeugt: eigenständige Seite zum lokalen Öffnen. **Nicht von Hand bearbeiten.** |
+| `build.js` | Erzeugt `leseliste.html` aus `leseplan.html`: `node build.js` |
 | `leseplan-katalog.json` | Der Leseplan „Lesestart": 14 Blöcke, 66 Bücher mit Seitenzahl, Erscheinungsjahr, Autor-Lebensdaten und Beschreibung. |
 
 ## Ebenen
@@ -91,7 +91,7 @@ ist immer das Jahr der Erstveröffentlichung im Original, nicht das der deutsche
 ## Entwicklung
 
 ```bash
-node build.js     # index.html neu erzeugen
+node build.js     # leseliste.html neu erzeugen
 ```
 
-Änderungen immer in `leseplan.html` machen, nie in `index.html`.
+Änderungen immer in `leseplan.html` machen, nie in `leseliste.html`.

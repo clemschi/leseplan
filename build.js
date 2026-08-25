@@ -31,5 +31,5 @@ ${rumpf.trim()}
 </html>
 `;
 
-fs.writeFileSync(path.join(wurzel, 'index.html'), seite);
-console.log('index.html geschrieben (' + Math.round(seite.length / 1024) + ' KB)');
+fs.writeFileSync(path.join(wurzel, 'leseliste.html'), seite);
+console.log('leseliste.html geschrieben (' + Math.round(seite.length / 1024) + ' KB)');
