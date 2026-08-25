@@ -233,7 +233,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .book::-webkit-scrollbar{display:none;}
 .book:hover{border-color:var(--border);}
 .book.zieht,.block.zieht{box-shadow:0 14px 32px rgba(0,0,0,.55);border-color:var(--accent);
-  transform:scale(1.02);position:relative;z-index:5;transition:transform .12s ease;}
+  transform:scale(1.02);position:relative;z-index:5;transition:transform .12s ease;touch-action:none;}
 .book.zieht .chev,.block.zieht .chev{opacity:0;}
 .block.zieht .books,.block.zieht .block-bar{display:none;}
 :root[data-app-theme="light"] .book.zieht,
@@ -680,7 +680,7 @@ function leereDb() {
     version: 2,
     erstellt: Date.now(),
     geaendert: Date.now(),
-    einstellungen: { theme: 'dark', akzent: 'messing', vollbildStart: true, zielSeiten: null, einfuehrung: false, autosaveSek: 60, aktiverPlanId: null },
+    einstellungen: { theme: 'dark', akzent: 'messing', vollbildStart: true, zielSeiten: null, einfuehrung: false, weckerMin: 45, autosaveSek: 60, aktiverPlanId: null },
     arten: STD_ARTEN.map((n, i) => ({ id: uid(), name: n, farbe: ART_FARBEN[i % 8] })),
     themen: [],
     lesepleane: [],
@@ -701,7 +701,7 @@ function seiteText(s) { return (s == null || s === '') ? '' : String(s); }
 function normalisiere(raw) {
   const d = Object.assign(leereDb(), raw || {});
   d.einstellungen = Object.assign(
-    { theme: 'dark', akzent: 'messing', vollbildStart: true, zielSeiten: null, einfuehrung: false, autosaveSek: 60, aktiverPlanId: null },
+    { theme: 'dark', akzent: 'messing', vollbildStart: true, zielSeiten: null, einfuehrung: false, weckerMin: 45, autosaveSek: 60, aktiverPlanId: null },
     raw && raw.einstellungen);
   d.arten = (Array.isArray(d.arten) ? d.arten : []).map((a, i) => ({
     id: a.id || uid(), name: String(a.name || 'Art'), farbe: a.farbe || ART_FARBEN[i % 8]
@@ -1452,7 +1452,7 @@ function sitzungStarten(buchId) {
   const b = buchById(buchId);
   if (!b) return;
   aendern(() => {
-    DB.einstellungen.timer = { buchId, startTs: Date.now() };
+    DB.einstellungen.timer = { buchId, startTs: Date.now(), geweckt: false };
     if (b.status === 'offen') b.status = 'lese';
   });
   viewMalen();
@@ -1474,17 +1474,28 @@ function sitzungBeenden() {
 
 /* Kein oder mehrere angefangene Bücher: dann wird gewählt. */
 function buchWaehlenFuerSitzung() {
-  const kandidaten = DB.buecher.filter(b => b.status !== 'gelesen');
-  if (!kandidaten.length) { toast('Kein offenes Buch in der Liste.'); return; }
-  const s = blatt('Welches Buch?', `
+  const angefangen = DB.buecher.filter(b => b.status === 'lese');
+  const offen = DB.buecher.filter(b => b.status !== 'gelesen');
+  if (!offen.length) { toast('Kein offenes Buch in der Liste.'); return; }
+  let nurAngefangene = angefangen.length > 0;
+
+  const s = blatt(nurAngefangene ? 'Woran liest du gerade?' : 'Welches Buch?', `
     <input type="text" data-q placeholder="Titel oder Autor suchen" autocomplete="off">
-    <div class="list-card" style="margin-top:12px;max-height:52vh;overflow-y:auto" data-l></div>`, { fokus: false });
+    <div class="list-card" style="margin-top:12px;max-height:52vh;overflow-y:auto" data-l></div>
+    ${angefangen.length ? '<button class="btn btn-block btn-ghost btn-sm" style="margin-top:10px" data-alle></button>' : ''}`,
+    { fokus: false });
 
   const malen = () => {
     const q = $('[data-q]', s).value.trim().toLowerCase();
+    const kandidaten = nurAngefangene ? angefangen : offen;
     const treffer = kandidaten
       .filter(b => !q || (b.titel + ' ' + b.autor).toLowerCase().includes(q))
       .sort((a, b) => (a.status === 'lese' ? 0 : 1) - (b.status === 'lese' ? 0 : 1));
+    const knopf = $('[data-alle]', s);
+    if (knopf) {
+      knopf.textContent = nurAngefangene ? 'Alle offenen Bücher zeigen (' + offen.length + ')' : 'Nur angefangene zeigen (' + angefangen.length + ')';
+      knopf.onclick = () => { nurAngefangene = !nurAngefangene; malen(); };
+    }
     const l = $('[data-l]', s);
     l.innerHTML = treffer.length ? '' : '<div class="hinweis" style="padding:14px">Kein Treffer.</div>';
     treffer.slice(0, 60).forEach(b => {
@@ -1502,6 +1513,84 @@ function buchWaehlenFuerSitzung() {
   let t;
   $('[data-q]', s).oninput = () => { clearTimeout(t); t = setTimeout(malen, 150); };
   malen();
+}
+
+/* Lese-Wecker: meldet sich, wenn die eingestellte Zeit erreicht ist. */
+function piepsen() {
+  try {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    const ctx = new C();
+    [0, 0.35].forEach(v => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sine';
+      o.frequency.value = 880;
+      g.gain.setValueAtTime(0.0001, ctx.currentTime + v);
+      g.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + v + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + v + 0.28);
+      o.start(ctx.currentTime + v);
+      o.stop(ctx.currentTime + v + 0.3);
+    });
+    setTimeout(() => { try { ctx.close(); } catch (e) { } }, 1200);
+  } catch (e) { }
+}
+
+function wecken(buch, minuten) {
+  if (navigator.vibrate) { try { navigator.vibrate([220, 120, 220, 120, 420]); } catch (e) { } }
+  piepsen();
+  try {
+    if (window.Notification && Notification.permission === 'granted') {
+      new Notification(minuten + ' Minuten gelesen', { body: buch ? buch.titel : '', tag: 'leseliste-wecker' });
+    }
+  } catch (e) { }
+  const s = blatt(minuten + ' Minuten gelesen', `
+    <p class="muted" style="font-size:13.5px;line-height:1.6;margin-bottom:16px">
+      ${buch ? '„' + esc(buch.titel) + '“ – ' : ''}die eingestellte Zeit ist um. Die Stoppuhr läuft weiter, bis du sie beendest.
+    </p>
+    <div class="btn-row">
+      <button class="btn btn-primary" data-weiter style="flex:1">Weiterlesen</button>
+      <button class="btn" data-stop style="flex:1">Sitzung beenden</button>
+    </div>`, { fokus: false });
+  $('[data-weiter]', s).onclick = () => layerSchliessen();
+  $('[data-stop]', s).onclick = () => { layerSchliessen(); setTimeout(sitzungBeenden, 80); };
+}
+
+function weckerBearbeiten(nachher) {
+  const werte = [15, 25, 45, 60, 90];
+  const s = blatt('Lese-Wecker', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:12px">
+      Meldet sich während einer laufenden Sitzung mit Ton und Vibration. Dafür muss die leseliste geöffnet bleiben.
+    </p>
+    <div style="display:flex;gap:7px;flex-wrap:wrap" data-w></div>
+    <div class="field" style="margin-top:14px"><label>Eigener Wert in Minuten</label>
+      <input type="number" data-eigen value="${DB.einstellungen.weckerMin || ''}" placeholder="45"></div>
+    <button class="btn btn-primary btn-block" data-ok>Sichern</button>`, { fokus: false });
+
+  let wahl = DB.einstellungen.weckerMin || null;
+  const malen = () => {
+    $('[data-w]', s).innerHTML = werte.map(v =>
+      `<button class="chip" data-v="${v}" aria-pressed="${wahl === v}">${v} min</button>`).join('') +
+      `<button class="chip" data-v="0" aria-pressed="${!wahl}">aus</button>`;
+    $$('[data-v]', s).forEach(x => x.onclick = () => {
+      wahl = +x.dataset.v || null;
+      $('[data-eigen]', s).value = wahl || '';
+      malen();
+    });
+  };
+  malen();
+  $('[data-ok]', s).onclick = () => {
+    const eigen = num($('[data-eigen]', s).value);
+    const v = eigen && eigen > 0 ? Math.round(eigen) : wahl;
+    aendern(() => { DB.einstellungen.weckerMin = v || null; });
+    if (v && window.Notification && Notification.permission === 'default') {
+      try { Notification.requestPermission(); } catch (e) { }
+    }
+    layerSchliessen();
+    viewMalen();
+    if (nachher) nachher();
+    toast(v ? 'Wecker nach ' + v + ' Minuten.' : 'Wecker aus.');
+  };
 }
 
 let nowTick = null;
@@ -1539,6 +1628,7 @@ function nowbarMalen() {
         <span class="nm">Sitzung läuft</span>
       </span>
       <span class="uhr" data-uhr>00:00</span>
+      <button class="btn btn-sm" data-wecker title="Lese-Wecker">${DB.einstellungen.weckerMin ? DB.einstellungen.weckerMin + '′' : '⏰'}</button>
       <button class="btn btn-sm" data-stop>Beenden</button>`;
     const malen = () => {
       const el = $('[data-uhr]', inner);
@@ -1548,10 +1638,16 @@ function nowbarMalen() {
         ? [Math.floor(sek / 3600), Math.floor(sek / 60) % 60, sek % 60]
         : [Math.floor(sek / 60), sek % 60];
       el.textContent = teile.map(x => String(x).padStart(2, '0')).join(':');
+      const w = +DB.einstellungen.weckerMin || 0;
+      if (w && !t.geweckt && sek >= w * 60) {
+        aendern(() => { t.geweckt = true; });
+        wecken(buchById(t.buchId), w);
+      }
     };
     malen();
     nowTick = setInterval(malen, 1000);
     $('[data-stop]', inner).onclick = sitzungBeenden;
+    $('[data-wecker]', inner).onclick = () => weckerBearbeiten();
     if (b) $('.grow', inner).onclick = () => buchOeffnen(b.id);
   } else {
     const lese = DB.buecher.filter(b => b.status === 'lese');
@@ -1578,9 +1674,25 @@ function layerOeffnen(node, onClose) {
   try { history.pushState({ layer: Layers.length }, ''); } catch (e) { }
   return node;
 }
+/* Wie viele history.back() schon angestoßen, aber noch nicht angekommen sind.
+   Ohne diese Buchführung springt ein Sammelschließen zu weit zurück und
+   verlässt die Seite. */
+let zurueckOffen = 0;
 function layerSchliessen() {
   if (!Layers.length) return;
-  try { history.back(); } catch (e) { layerPop(); }
+  zurueckOffen++;
+  try { history.back(); } catch (e) { zurueckOffen--; layerPop(); }
+}
+/* Alle offenen Ebenen auf einmal zu. history.back() wirkt erst später,
+   deshalb wird hier direkt aufgeräumt und der Verlauf danach zurückgespult. */
+function alleLayerSchliessen() {
+  const n = Layers.length;
+  if (!n) return;
+  Layers.slice().reverse().forEach(l => { l.node.remove(); if (l.onClose) l.onClose(); });
+  Layers.length = 0;
+  const schritte = n - zurueckOffen;
+  zurueckOffen = 0;
+  if (schritte > 0) { try { history.go(-schritte); } catch (e) { } }
 }
 function layerPop() {
   const l = Layers.pop();
@@ -1588,7 +1700,10 @@ function layerPop() {
   l.node.remove();
   if (l.onClose) l.onClose();
 }
-window.addEventListener('popstate', () => { if (Layers.length) layerPop(); });
+window.addEventListener('popstate', () => {
+  if (zurueckOffen > 0) zurueckOffen--;
+  if (Layers.length) layerPop();
+});
 
 function blatt(titel, inhalt, opts) {
   opts = opts || {};
@@ -1609,35 +1724,67 @@ function blatt(titel, inhalt, opts) {
   return scrim;
 }
 
-/* Blatt mit dem Finger nach unten wegschieben. */
+/* Blatt mit dem Finger nach unten wegschieben.
+   Touch-Ereignisse statt Pointer, weil nur dort das Scrollen der Seite
+   rechtzeitig unterbunden werden kann. */
 function ziehenZumSchliessen(sheet) {
-  let startY = null, dy = 0, zieht = false;
-  const bewegen = e => {
-    if (startY == null) return;
-    dy = e.clientY - startY;
-    if (dy > 6) {
+  let y0 = null, dy = 0, zieht = false;
+
+  const inScroller = el => {
+    while (el && el !== sheet) {
+      if (el.scrollHeight - el.clientHeight > 4) {
+        const st = getComputedStyle(el).overflowY;
+        if (st === 'auto' || st === 'scroll') return true;
+      }
+      el = el.parentElement;
+    }
+    return false;
+  };
+
+  const start = ev => {
+    if (sheet.scrollTop > 3) { y0 = null; return; }
+    const ziel = ev.target;
+    if (ziel.closest && ziel.closest('input,textarea,select,button,pre,[data-akzent]')) { y0 = null; return; }
+    if (inScroller(ziel)) { y0 = null; return; }
+    y0 = (ev.touches ? ev.touches[0] : ev).clientY;
+    dy = 0; zieht = false;
+  };
+
+  const bewegen = ev => {
+    if (y0 == null) return;
+    const y = (ev.touches ? ev.touches[0] : ev).clientY;
+    dy = y - y0;
+    if (dy > 8) {
       zieht = true;
+      if (ev.cancelable) ev.preventDefault();
       sheet.style.transition = 'none';
-      sheet.style.transform = 'translateY(' + Math.min(dy, 420) + 'px)';
+      sheet.style.transform = 'translateY(' + Math.min(dy, 460) + 'px)';
+    } else if (dy < -8) {
+      y0 = null;
+      sheet.style.transform = '';
     }
   };
+
   const ende = () => {
-    window.removeEventListener('pointermove', bewegen);
-    window.removeEventListener('pointerup', ende);
-    window.removeEventListener('pointercancel', ende);
-    if (startY == null) return;
-    startY = null;
+    if (y0 == null) return;
+    y0 = null;
     sheet.style.transition = 'transform .2s ease';
-    if (zieht && dy > 90) { sheet.style.transform = 'translateY(110%)'; setTimeout(layerSchliessen, 130); }
+    if (zieht && dy > 80) { sheet.style.transform = 'translateY(110%)'; setTimeout(layerSchliessen, 130); }
     else sheet.style.transform = '';
+    zieht = false;
   };
-  sheet.addEventListener('pointerdown', e => {
-    if (sheet.scrollTop > 3) return;
-    if (e.target.closest('input,textarea,select,button,pre,[data-akzent]')) return;
-    startY = e.clientY; dy = 0; zieht = false;
-    window.addEventListener('pointermove', bewegen);
-    window.addEventListener('pointerup', ende);
-    window.addEventListener('pointercancel', ende);
+
+  sheet.addEventListener('touchstart', start, { passive: true });
+  sheet.addEventListener('touchmove', bewegen, { passive: false });
+  sheet.addEventListener('touchend', ende);
+  sheet.addEventListener('touchcancel', ende);
+  /* Maus: dasselbe über Pointer */
+  sheet.addEventListener('pointerdown', ev => {
+    if (ev.pointerType !== 'mouse') return;
+    start(ev);
+    const m = e => bewegen(e), u = () => { ende(); window.removeEventListener('pointermove', m); window.removeEventListener('pointerup', u); };
+    window.addEventListener('pointermove', m);
+    window.addEventListener('pointerup', u);
   });
 }
 
@@ -1649,9 +1796,9 @@ function tabVerschieben(d) {
 }
 (function wischNavigation() {
   let x0 = null, y0 = null, zeit = 0, gesperrt = false;
-  const tabu = '.book,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,input,textarea,select,.sheet';
+  const tabu = '.book,.block,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,.nowbar,input,textarea,select,.sheet,.akk';
   document.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1) { x0 = null; return; }
+    if (e.touches.length !== 1 || window.__zieht) { x0 = null; return; }
     const t = e.touches[0];
     gesperrt = !!(e.target.closest && e.target.closest(tabu));
     x0 = t.clientX; y0 = t.clientY; zeit = Date.now();
@@ -1661,7 +1808,7 @@ function tabVerschieben(d) {
     const t = e.changedTouches[0];
     const dx = t.clientX - x0, dy = t.clientY - y0, dt = Date.now() - zeit;
     x0 = null;
-    if (gesperrt || dt > 700) return;
+    if (gesperrt || window.__zieht || dt > 700) return;
     if (Math.abs(dx) < 70 || Math.abs(dy) > 60) return;
     if (dx > 0) { if (Layers.length) layerSchliessen(); else tabVerschieben(-1); }
     else if (!Layers.length) tabVerschieben(1);
@@ -1876,72 +2023,83 @@ function buchZeile(b) {
   return node;
 }
 
-/* Langes Drücken hebt die Zeile an; danach folgt sie dem Finger und wird
-   an der Stelle abgelegt, wo man loslässt. */
+/* Langes Drücken hebt den Eintrag an; danach folgt er dem Finger und wird
+   dort abgelegt, wo man loslässt. Auf dem Handy laufen dafür Touch-Ereignisse:
+   nur damit lässt sich das Scrollen der Seite rechtzeitig unterbinden. */
 function ziehenZumSortieren(node, griff, opts) {
   const auswahl = opts.auswahl;
-  let halten = null, zieht = false, startX = 0, startY = 0, wrap = null;
+  let halten = null, zieht = false, sx = 0, sy = 0, wrap = null;
 
-  const scrollen = ev => {
-    const rand = 90;
-    if (ev.clientY < rand) window.scrollBy(0, -14);
-    else if (ev.clientY > window.innerHeight - rand) window.scrollBy(0, 14);
-  };
-
-  const bewegen = ev => {
-    if (!zieht) return;
-    ev.preventDefault();
-    const y = ev.clientY;
-    for (const g of Array.from(wrap.querySelectorAll(auswahl))) {
-      if (g === node) continue;
-      const r = g.getBoundingClientRect();
-      const mitte = r.top + r.height / 2;
-      const nodeFolgt = !!(g.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
-      if (y < mitte && nodeFolgt) { wrap.insertBefore(node, g); break; }
-      if (y > mitte && !nodeFolgt) { wrap.insertBefore(node, g.nextSibling); break; }
-    }
-    scrollen(ev);
-  };
-
-  const ende = () => {
-    clearTimeout(halten);
-    window.removeEventListener('pointermove', bewegen);
-    window.removeEventListener('pointerup', ende);
-    window.removeEventListener('pointercancel', ende);
-    if (!zieht) return;
-    zieht = false;
-    node.classList.remove('zieht');
-    node.style.touchAction = '';
-    document.body.style.userSelect = '';
-    opts.fertig(Array.from(wrap.querySelectorAll(auswahl)).map(x => x._sortId));
-    viewMalen();
-  };
+  const punkt = ev => (ev.touches && ev.touches[0]) || (ev.changedTouches && ev.changedTouches[0]) || ev;
 
   const beginnen = () => {
     wrap = node.parentElement;
     if (!wrap || wrap.querySelectorAll(auswahl).length < 2) return;
     zieht = true;
+    window.__zieht = true;
     node._langGedrueckt = true;
     node.classList.add('zieht');
-    node.style.touchAction = 'none';
     document.body.style.userSelect = 'none';
     if (navigator.vibrate) { try { navigator.vibrate(14); } catch (e) { } }
   };
 
-  const vorpruefen = ev => {
-    if (zieht) return;
-    if (Math.abs(ev.clientY - startY) > 10 || Math.abs(ev.clientX - startX) > 10) clearTimeout(halten);
+  const einsortieren = y => {
+    for (const g of Array.from(wrap.querySelectorAll(auswahl))) {
+      if (g === node) continue;
+      const r = g.getBoundingClientRect();
+      const mitte = r.top + r.height / 2;
+      const nodeFolgt = !!(g.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
+      if (y < mitte && nodeFolgt) { wrap.insertBefore(node, g); return; }
+      if (y > mitte && !nodeFolgt) { wrap.insertBefore(node, g.nextSibling); return; }
+    }
   };
 
-  griff.addEventListener('pointerdown', ev => {
-    if (ev.pointerType === 'mouse' && ev.button !== 0) return;
-    startX = ev.clientX; startY = ev.clientY;
+  const bewegen = ev => {
+    const p = punkt(ev);
+    if (!zieht) {
+      if (Math.abs(p.clientY - sy) > 12 || Math.abs(p.clientX - sx) > 12) clearTimeout(halten);
+      return;
+    }
+    if (ev.cancelable) ev.preventDefault();
+    einsortieren(p.clientY);
+    const rand = 100;
+    if (p.clientY < rand) window.scrollBy(0, -14);
+    else if (p.clientY > window.innerHeight - rand) window.scrollBy(0, 14);
+  };
+
+  const ende = () => {
     clearTimeout(halten);
-    halten = setTimeout(beginnen, 450);
-    window.addEventListener('pointermove', vorpruefen);
-    window.addEventListener('pointermove', bewegen, { passive: false });
-    window.addEventListener('pointerup', ende);
-    window.addEventListener('pointercancel', ende);
+    if (!zieht) return;
+    zieht = false;
+    window.__zieht = false;
+    node.classList.remove('zieht');
+    document.body.style.userSelect = '';
+    opts.fertig(Array.from(wrap.querySelectorAll(auswahl)).map(x => x._sortId));
+    viewMalen();
+  };
+
+  const start = ev => {
+    const p = punkt(ev);
+    sx = p.clientX; sy = p.clientY;
+    clearTimeout(halten);
+    halten = setTimeout(beginnen, 420);
+  };
+
+  /* Touch: der Zuhörer hängt von Anfang an am Griff und ist nicht passiv,
+     damit preventDefault im Ziehen wirklich greift. */
+  griff.addEventListener('touchstart', start, { passive: true });
+  griff.addEventListener('touchmove', bewegen, { passive: false });
+  griff.addEventListener('touchend', ende);
+  griff.addEventListener('touchcancel', ende);
+
+  /* Maus */
+  griff.addEventListener('mousedown', ev => {
+    if (ev.button !== 0) return;
+    start(ev);
+    const m = e => bewegen(e);
+    const u = () => { ende(); window.removeEventListener('mousemove', m); window.removeEventListener('mouseup', u); };
+    window.addEventListener('mousemove', m);
+    window.addEventListener('mouseup', u);
   });
   griff.addEventListener('contextmenu', ev => { if (zieht) ev.preventDefault(); });
 }
@@ -2264,8 +2422,7 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
         'Endgültig löschen', true);
       if (!ok) return;
       aendern(() => { DB.buecher = DB.buecher.filter(x => x.id !== b.id); });
-      layerSchliessen();
-      while (Layers.length) layerSchliessen();
+      alleLayerSchliessen();
       viewMalen();
       toast('Buch gelöscht.');
     };
@@ -4099,6 +4256,12 @@ function mehrMalen(root) {
           <button class="btn btn-sm" data-zielx>${DB.einstellungen.zielSeiten ? 'Ändern' : 'Setzen'}</button>
         </div>
         <div class="rowline">
+          <span class="grow"><span class="rn">Lese-Wecker</span><span class="rm">${DB.einstellungen.weckerMin
+      ? 'Meldet sich nach ' + DB.einstellungen.weckerMin + ' Minuten Sitzung'
+      : 'Aus'}</span></span>
+          <button class="btn btn-sm" data-weckerx>${DB.einstellungen.weckerMin ? 'Ändern' : 'Setzen'}</button>
+        </div>
+        <div class="rowline">
           <span class="grow"><span class="rn">Einführung</span><span class="rm">Die vier Schritte vom Anfang noch einmal</span></span>
           <button class="btn btn-sm" data-einf>Zeigen</button>
         </div>
@@ -4149,6 +4312,7 @@ function mehrMalen(root) {
   $('[data-einkauf]', root).onclick = einkaufslisteOeffnen;
   $('[data-einf]', root).onclick = einfuehrungZeigen;
   $('[data-zielx]', root).onclick = () => zielBearbeiten();
+  $('[data-weckerx]', root).onclick = () => weckerBearbeiten();
   $('[data-save]', root).onclick = () => Store.alsDateiSichern(false);
   $('[data-export]', root).onclick = () => Store.alsDateiSichern(false);
   $('[data-import]', root).onclick = () => importDialog(false);
