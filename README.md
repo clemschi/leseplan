@@ -14,7 +14,13 @@ separaten Datei und wird bewusst geladen.
 | `leseplan.html` | Die App. Quelle der Wahrheit, ohne Dokumentrahmen – so wird sie als Artifact veröffentlicht. |
 | `index.html` | Daraus erzeugt: eigenständige Seite zum lokalen Öffnen. **Nicht von Hand bearbeiten.** |
 | `build.js` | Erzeugt `index.html` aus `leseplan.html`: `node build.js` |
-| `leseplan-katalog.json` | Der recherchierte Leseplan: 14 Blöcke, 66 Bücher mit Seitenzahl, Erscheinungsjahr, Autor-Lebensdaten und Beschreibung. |
+| `leseplan-katalog.json` | Der Leseplan „Lesestart": 14 Blöcke, 66 Bücher mit Seitenzahl, Erscheinungsjahr, Autor-Lebensdaten und Beschreibung. |
+
+## Ebenen
+
+`Leseplan → Block → Buch → Notiz`. Es kann mehrere Lesepläne nebeneinander geben;
+umgeschaltet wird über die Leiste ganz oben in der Planansicht oder unter *Mehr →
+Lesepläne*. Beim Start öffnet sich immer der zuletzt benutzte.
 
 ## Speicherort
 
@@ -47,12 +53,15 @@ eine komplett andere Liste zu laden oder eine Sicherung zurückzuspielen.
 
 - **Plan** – Blöcke und Bücher, anlegen, ändern, verschieben, löschen. Der Kreis
   links schaltet den Status weiter: offen → lese ich → gelesen.
-- **Buch** – vier Seiten, zwischen denen gewischt wird:
+- **Buch** – sechs Seiten, zwischen denen gewischt wird:
   1. *Beschreibung* mit Erscheinungsjahr, Seitenzahl, Preis, Autor-Lebensdaten
   2. *Themenfelder* – Notizen nach Thema gruppiert, ein Tipp führt zu den Notizen
-  3. *Arten* – dieselben Notizen nach Zitat, Gedanke, Frage, Kritik …
-  4. *Lesen* – Stoppuhr und alle Sitzungen, jede einzeln korrigierbar
-- **Notizen** – Seitenzahl, Themenfeld, Art, Text und beliebig viele Fotos. Fotos
+  3. *Arten* – dieselben Notizen nach Zitat, Gedanke, Frage, Widerspruch …
+  4. *Alle Notizen* – ungruppiert, nach Seitenzahl gereiht
+  5. *Galerie* – alle Fotos des Buches; von der Großansicht geht es zur Notiz
+  6. *Lesen* – Stoppuhr und alle Sitzungen, jede einzeln korrigierbar
+- **Notizen** – Seite, Themenfeld, Art, Text und beliebig viele Fotos. Die Seite ist
+  ein Textfeld, `35-36` ist also erlaubt; gereiht wird nach der ersten Zahl. Fotos
   über die Kamera in der Seite (fällt auf die Kamera-App zurück, wo die Umgebung
   das verbietet) oder aus der Galerie; sie werden auf 1600 px Kantenlänge
   verkleinert, rund 300 KB je Bild.
@@ -62,7 +71,13 @@ eine komplett andere Liste zu laden oder eine Sicherung zurückzuspielen.
 - **Themen** – alle Notizen zu einem Themenfeld über alle Bücher hinweg.
 - **Suche** – über Titel, Autoren, Beschreibungen, Notizen und Themen.
 
-Dunkel ist die Grundeinstellung, hell über den Schalter oben rechts.
+Dunkel (reines Schwarz) ist die Grundeinstellung, hell über *Mehr → Darstellung*.
+Das Symbol oben rechts schaltet auf Vollbild, wo der Browser es zulässt; am iPhone
+liefert „Zum Home-Bildschirm hinzufügen" dasselbe Ergebnis.
+
+Ein `preis` steht im Katalog nicht: Buchhandels-Seiten sind aus der Umgebung, in der
+dieser Katalog entstanden ist, nicht erreichbar. Das Feld ist im Buch vorhanden und
+wartet auf deine Eingabe.
 
 ## Zu den Daten im Katalog
 
