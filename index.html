@@ -1,0 +1,2637 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0e11">
+<meta name="color-scheme" content="dark light">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<!-- Erzeugt aus leseplan.html - nicht von Hand bearbeiten, sondern: node build.js -->
+<title>Leseplan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
+<style>
+/* ---------- Tokens: dunkel ist die Grundeinstellung, hell wird bewusst gewählt ---------- */
+:root{
+  --bg:#0c0e11;
+  --surface:#14171b;
+  --surface-2:#1b1f24;
+  --surface-3:#232830;
+  --border:#2a3038;
+  --border-strong:#3d4650;
+  --text:#eceef0;
+  --text-2:#a7b0b8;
+  --text-3:#727c86;
+  --accent:#dba43f;
+  --accent-2:#b8842a;
+  --accent-soft:rgba(219,164,63,.14);
+  --good:#3fbe8c;
+  --good-soft:rgba(63,190,140,.15);
+  --bad:#e66767;
+  --bad-soft:rgba(230,103,103,.14);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --s5:#d55181; --s6:#4fae4f; --s7:#9085e9; --s8:#e66767;
+  --chart-surface:#14171b;
+  --grid:#262c34;
+  --shadow:0 18px 48px rgba(0,0,0,.55);
+  --scrim:rgba(4,6,8,.72);
+  color-scheme:dark;
+}
+:root[data-app-theme="light"]{
+  --bg:#eef0f3;
+  --surface:#ffffff;
+  --surface-2:#f5f6f9;
+  --surface-3:#e9ecf1;
+  --border:#dce0e6;
+  --border-strong:#b9c1cb;
+  --text:#11161b;
+  --text-2:#4d5762;
+  --text-3:#78838e;
+  --accent:#8a6114;
+  --accent-2:#6d4c0d;
+  --accent-soft:rgba(138,97,20,.10);
+  --good:#0e7a53;
+  --good-soft:rgba(14,122,83,.10);
+  --bad:#c2312f;
+  --bad-soft:rgba(194,49,47,.10);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948;
+  --chart-surface:#ffffff;
+  --grid:#e4e8ed;
+  --shadow:0 18px 44px rgba(23,32,45,.16);
+  --scrim:rgba(30,38,48,.42);
+  color-scheme:light;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:15px;line-height:1.5;
+  overscroll-behavior-y:none;
+}
+button,input,select,textarea{font:inherit;color:inherit;}
+button{background:none;border:0;padding:0;cursor:pointer;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px;}
+h1,h2,h3,h4{margin:0;font-weight:600;text-wrap:balance;}
+p{margin:0;}
+[hidden]{display:none !important;}
+.num{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;}
+.serif{font-family:"Literata",Georgia,"Times New Roman",serif;}
+.eyebrow{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);font-weight:600;}
+.muted{color:var(--text-2);}
+.shell{max-width:680px;margin:0 auto;}
+
+/* ---------- Kopfzeile ---------- */
+.topbar{
+  position:sticky;top:0;z-index:40;background:var(--bg);
+  border-bottom:1px solid var(--border);
+}
+.topbar-inner{padding:12px 16px 10px;display:flex;flex-direction:column;gap:9px;}
+.topbar-row{display:flex;align-items:center;gap:10px;}
+.brand{display:flex;align-items:baseline;gap:9px;min-width:0;flex:1;}
+.brand h1{font-family:"Literata",Georgia,serif;font-size:19px;letter-spacing:-.01em;}
+.brand .sub{font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.icon-btn{
+  width:34px;height:34px;border-radius:9px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-2);display:grid;place-items:center;flex:0 0 auto;
+}
+.icon-btn:hover{color:var(--text);border-color:var(--border-strong);}
+.icon-btn svg{width:17px;height:17px;display:block;}
+.savechip{
+  display:flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:9px;
+  border:1px solid var(--border);background:var(--surface);font-size:11.5px;color:var(--text-2);
+  white-space:nowrap;
+}
+.savechip .dot{width:7px;height:7px;border-radius:50%;background:var(--good);flex:0 0 auto;}
+.savechip[data-state="dirty"] .dot{background:var(--accent);}
+.savechip[data-state="dirty"]{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--border));}
+.savechip[data-state="error"] .dot{background:var(--bad);}
+.savechip[data-state="error"]{color:var(--bad);}
+
+.progress-line{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--text-3);}
+.barwrap{height:5px;background:var(--surface-3);border-radius:99px;overflow:hidden;display:flex;gap:2px;}
+.bar-read{height:100%;background:var(--good);border-radius:99px;transition:width .35s ease;}
+.bar-active{height:100%;background:var(--accent);border-radius:99px;transition:width .35s ease;}
+
+/* ---------- Tableiste ---------- */
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tabbar-inner{max-width:680px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);}
+.tabbar button{
+  padding:9px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;color:var(--text-3);font-weight:500;
+}
+.tabbar button svg{width:19px;height:19px;}
+.tabbar button[aria-selected="true"]{color:var(--accent);}
+main{padding:14px 0 96px;}
+
+/* ---------- Bausteine ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;}
+.section{padding:0 14px;margin-bottom:18px;}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 9px;}
+.section-head h2{font-size:13px;font-weight:600;letter-spacing:.01em;}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:9px 14px;border-radius:10px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text);font-size:13px;font-weight:500;
+}
+.btn:hover{border-color:var(--border-strong);}
+.btn svg{width:15px;height:15px;}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#12100a;font-weight:600;}
+:root[data-app-theme="light"] .btn-primary{color:#fff;}
+.btn-primary:hover{background:var(--accent-2);border-color:var(--accent-2);}
+.btn-ghost{background:transparent;}
+.btn-danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,var(--border));background:var(--bad-soft);}
+.btn-sm{padding:6px 10px;font-size:12px;border-radius:8px;}
+.btn-block{width:100%;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+.chip{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;
+  border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);font-size:12px;white-space:nowrap;
+}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 50%,var(--border));color:var(--accent);font-weight:600;}
+.chip .swatch{width:9px;height:9px;border-radius:3px;flex:0 0 auto;}
+.chiprow{display:flex;gap:7px;overflow-x:auto;padding:2px 14px 2px;scrollbar-width:none;}
+.chiprow::-webkit-scrollbar{display:none;}
+
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.field > label{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);font-weight:600;}
+.field .hint{font-size:11.5px;color:var(--text-3);}
+input[type=text],input[type=number],input[type=date],input[type=time],textarea,select{
+  width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);padding:10px 11px;font-size:15px;font-family:inherit;
+}
+textarea{resize:vertical;min-height:88px;line-height:1.55;}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);background:var(--surface-3);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* ---------- Plan ---------- */
+.block{margin:0 12px 10px;border:1px solid var(--border);border-radius:14px;background:var(--surface);overflow:hidden;}
+.block-head{display:flex;align-items:center;gap:11px;padding:13px 13px;width:100%;text-align:left;}
+.block-head .idx{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--text-3);
+  width:22px;flex:0 0 auto;padding-top:2px;
+}
+.block-head .name{font-size:14.5px;font-weight:600;}
+.block-head .meta{font-size:11.5px;color:var(--text-3);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;}
+.block-head .grow{flex:1;min-width:0;}
+.chev{color:var(--text-3);transition:transform .2s ease;flex:0 0 auto;}
+.chev svg{width:16px;height:16px;display:block;}
+.block.open > .block-head .chev{transform:rotate(90deg);}
+.block-bar{height:3px;background:var(--surface-3);}
+.block-bar > i{display:block;height:100%;background:var(--good);}
+.books{display:none;padding:4px 8px 10px;flex-direction:column;gap:6px;}
+.block.open .books{display:flex;}
+
+.book{
+  display:flex;align-items:center;gap:11px;padding:10px 10px;border-radius:11px;
+  background:var(--surface-2);border:1px solid transparent;width:100%;text-align:left;
+}
+.book:hover{border-color:var(--border);}
+.book .grow{flex:1;min-width:0;}
+.book .title{font-family:"Literata",Georgia,serif;font-size:14px;line-height:1.35;}
+.book .title.done{color:var(--text-3);}
+.book .byline{font-size:11.5px;color:var(--text-3);margin-top:3px;display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+.book .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.minitag{font-size:10.5px;padding:2px 7px;border-radius:99px;background:var(--surface-3);color:var(--text-2);}
+.minitag.acc{background:var(--accent-soft);color:var(--accent);}
+
+.status-btn{
+  width:30px;height:30px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  border:1.5px solid var(--border-strong);background:transparent;color:var(--text-3);
+}
+.status-btn svg{width:15px;height:15px;}
+.status-btn[data-status="lese"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+.status-btn[data-status="gelesen"]{border-color:var(--good);background:var(--good);color:#07120d;}
+:root[data-app-theme="light"] .status-btn[data-status="gelesen"]{color:#fff;}
+
+.empty{
+  text-align:center;padding:38px 22px;color:var(--text-3);font-size:13.5px;
+  border:1px dashed var(--border);border-radius:14px;margin:0 14px;
+}
+.empty strong{display:block;color:var(--text-2);font-size:15px;margin-bottom:6px;font-family:"Literata",Georgia,serif;font-weight:600;}
+
+/* ---------- Overlay / Sheets ---------- */
+.overlay{
+  position:fixed;inset:0;z-index:60;background:var(--bg);
+  display:flex;flex-direction:column;
+  animation:slideIn .22s ease;
+}
+@keyframes slideIn{from{transform:translateX(18px);opacity:.4}to{transform:none;opacity:1}}
+.sheet-scrim{position:fixed;inset:0;z-index:70;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center;animation:fade .18s ease;}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet{
+  width:100%;max-width:680px;max-height:92vh;overflow-y:auto;background:var(--surface);
+  border:1px solid var(--border);border-bottom:0;border-radius:18px 18px 0 0;box-shadow:var(--shadow);
+  padding:8px 16px calc(20px + env(safe-area-inset-bottom));animation:up .24s cubic-bezier(.22,.8,.3,1);
+}
+@keyframes up{from{transform:translateY(26px)}to{transform:none}}
+.sheet-grip{width:38px;height:4px;border-radius:99px;background:var(--border-strong);margin:6px auto 12px;}
+.sheet h3{font-size:16px;margin-bottom:12px;font-family:"Literata",Georgia,serif;}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
+
+.ovl-head{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);
+  background:var(--bg);flex:0 0 auto;
+}
+.ovl-head .grow{flex:1;min-width:0;}
+.ovl-title{font-family:"Literata",Georgia,serif;font-size:15px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ovl-sub{font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ovl-body{flex:1;overflow-y:auto;}
+
+/* ---------- Pager ---------- */
+.pagertabs{display:flex;gap:2px;padding:0 10px;border-bottom:1px solid var(--border);background:var(--bg);flex:0 0 auto;overflow-x:auto;scrollbar-width:none;}
+.pagertabs::-webkit-scrollbar{display:none;}
+.pagertabs button{
+  padding:10px 11px 9px;font-size:12.5px;color:var(--text-3);border-bottom:2px solid transparent;white-space:nowrap;font-weight:500;
+}
+.pagertabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent);}
+.pager{
+  flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.pager::-webkit-scrollbar{display:none;}
+.page{flex:0 0 100%;width:100%;scroll-snap-align:start;overflow-y:auto;padding:14px 14px 40px;}
+
+.desc{font-family:"Literata",Georgia,serif;font-size:15px;line-height:1.7;color:var(--text);max-width:62ch;}
+.factgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:14px;}
+.fact{padding:10px 11px;box-shadow:1px 0 0 var(--border),0 1px 0 var(--border);}
+.fact .k{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);font-weight:600;}
+.fact .v{font-family:"IBM Plex Mono",monospace;font-size:14px;margin-top:3px;font-variant-numeric:tabular-nums;}
+.fact .v small{font-size:11px;color:var(--text-3);font-family:"IBM Plex Sans",sans-serif;}
+
+.grouprow{
+  display:flex;align-items:center;gap:11px;padding:12px 12px;border-radius:12px;
+  background:var(--surface);border:1px solid var(--border);width:100%;text-align:left;margin-bottom:8px;
+}
+.grouprow .grow{flex:1;min-width:0;}
+.grouprow .gname{font-size:14px;font-weight:500;}
+.grouprow .gmeta{font-size:11.5px;color:var(--text-3);margin-top:2px;}
+.grouprow .count{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-2);}
+
+.note{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 12px;margin-bottom:8px;width:100%;text-align:left;display:block;}
+.note-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:6px;}
+.note-page{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-3);}
+.note-text{font-family:"Literata",Georgia,serif;font-size:14px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;}
+.note-text.quote{border-left:2px solid var(--accent);padding-left:10px;font-style:italic;}
+.note-thumbs{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;}
+.note-thumbs img{width:52px;height:52px;object-fit:cover;border-radius:7px;border:1px solid var(--border);}
+.arttag{font-size:10.5px;padding:2px 8px;border-radius:99px;font-weight:600;letter-spacing:.01em;}
+.themetag{font-size:10.5px;padding:2px 8px;border-radius:99px;background:var(--surface-3);color:var(--text-2);}
+
+/* ---------- Bilder ---------- */
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;}
+.shot{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--border);aspect-ratio:1;background:var(--surface-2);}
+.shot img{width:100%;height:100%;object-fit:cover;display:block;}
+.shot .x{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(8,10,12,.78);color:#fff;display:grid;place-items:center;font-size:12px;}
+.addshot{display:grid;place-items:center;aspect-ratio:1;border:1px dashed var(--border-strong);border-radius:10px;color:var(--text-3);font-size:11px;gap:4px;}
+.addshot svg{width:18px;height:18px;}
+
+.cam{position:fixed;inset:0;z-index:90;background:#000;display:flex;flex-direction:column;}
+.cam video{flex:1;width:100%;object-fit:cover;background:#000;}
+.cam-bar{padding:14px 16px calc(18px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;gap:14px;background:#000;color:#fff;}
+.cam-shutter{width:64px;height:64px;border-radius:50%;border:4px solid rgba(255,255,255,.85);background:#fff;}
+.cam-side{min-width:76px;color:#fff;font-size:13px;}
+.cam-strip{display:flex;gap:6px;padding:8px 12px;background:#000;overflow-x:auto;}
+.cam-strip img{width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid #333;}
+.lightbox{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.94);display:flex;flex-direction:column;}
+.lightbox img{flex:1;width:100%;object-fit:contain;min-height:0;}
+.lightbox .lb-bar{padding:12px 16px calc(14px + env(safe-area-inset-bottom));display:flex;gap:10px;justify-content:space-between;align-items:center;color:#fff;font-size:13px;}
+
+/* ---------- Übersicht / Diagramme ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.tile{padding:12px 12px 13px;box-shadow:1px 0 0 var(--border),0 1px 0 var(--border);}
+.tile .k{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);font-weight:600;}
+.tile .v{font-family:"IBM Plex Mono",monospace;font-size:20px;line-height:1.2;margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;overflow-wrap:anywhere;}
+.tile .v small{font-size:12px;color:var(--text-3);letter-spacing:0;}
+.tile .s{font-size:11px;color:var(--text-3);margin-top:3px;}
+
+.chart{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 13px 10px;margin-bottom:12px;}
+.chart-head{margin-bottom:11px;}
+.chart-head h3{font-size:13.5px;}
+.chart-head .cap{font-size:11.5px;color:var(--text-3);margin-top:2px;}
+.chart svg{display:block;width:100%;overflow:visible;}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:9px;font-size:11.5px;color:var(--text-2);}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.legend i{width:9px;height:9px;border-radius:3px;display:block;}
+.chart details{margin-top:10px;border-top:1px solid var(--border);padding-top:8px;}
+.chart summary{font-size:11.5px;color:var(--text-3);cursor:pointer;}
+.chart table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;}
+.chart th,.chart td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--border);}
+.chart td.n,.chart th.n{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;}
+.chart-scroll{overflow-x:auto;}
+.tip{
+  position:fixed;z-index:99;pointer-events:none;background:var(--surface-3);border:1px solid var(--border-strong);
+  border-radius:9px;padding:7px 9px;font-size:11.5px;box-shadow:var(--shadow);max-width:220px;
+}
+.tip .tt{font-weight:600;margin-bottom:2px;}
+.tip .tv{font-family:"IBM Plex Mono",monospace;color:var(--text-2);}
+
+/* ---------- Einrichtung ---------- */
+.setup{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:22px 16px 34px;}
+.setup-inner{width:100%;max-width:520px;}
+.setup .mark{font-family:"Literata",Georgia,serif;font-size:27px;letter-spacing:-.02em;margin-bottom:5px;}
+.setup .lead{color:var(--text-2);font-size:14px;line-height:1.6;margin-bottom:20px;max-width:52ch;}
+.opt{
+  display:block;width:100%;text-align:left;padding:14px;border-radius:14px;border:1px solid var(--border);
+  background:var(--surface);margin-bottom:10px;
+}
+.opt:hover{border-color:var(--border-strong);}
+.opt .on{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:600;}
+.opt .od{font-size:12.5px;color:var(--text-2);margin-top:6px;line-height:1.55;}
+.opt .badge{font-size:10px;padding:2px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:600;letter-spacing:.03em;}
+.opt[disabled]{opacity:.5;}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  z-index:120;background:var(--surface-3);border:1px solid var(--border-strong);color:var(--text);
+  padding:10px 15px;border-radius:11px;font-size:13px;box-shadow:var(--shadow);max-width:calc(100% - 32px);
+}
+.rowline{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--border);}
+.rowline:last-child{border-bottom:0;}
+.rowline .grow{flex:1;min-width:0;}
+.rowline .rn{font-size:14px;}
+.rowline .rm{font-size:11.5px;color:var(--text-3);margin-top:2px;}
+.list-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.timer-big{font-family:"IBM Plex Mono",monospace;font-size:40px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:center;padding:6px 0 2px;}
+.searchbar{display:flex;gap:8px;padding:10px 14px 4px;}
+.searchbar input{flex:1;}
+
+/* Balken in HTML: saubere Beschriftung, kein Überlauf */
+.bars{display:flex;flex-direction:column;gap:9px;}
+.barrow{display:grid;grid-template-columns:minmax(88px,34%) 1fr auto;gap:10px;align-items:center;}
+.blab{font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btrack{height:12px;background:var(--surface-3);border-radius:4px;display:flex;gap:2px;overflow:hidden;}
+.bseg{height:100%;border-radius:0 4px 4px 0;min-width:2px;}
+.bseg:first-child{border-radius:4px;}
+.bval{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-2);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.axnote{font-size:11px;color:var(--text-3);margin-top:9px;}
+.hinweis{font-size:12.5px;color:var(--text-3);line-height:1.55;padding:14px 2px;}
+</style>
+</head>
+<body>
+<div id="setup" class="setup" hidden></div>
+
+<div id="app" hidden>
+  <header class="topbar">
+    <div class="topbar-inner shell">
+      <div class="topbar-row">
+        <div class="brand">
+          <h1>Leseplan</h1>
+          <span class="sub" id="storeLabel"></span>
+        </div>
+        <button class="icon-btn" id="btnSuche" title="Suchen" aria-label="Suchen"></button>
+        <button class="savechip" id="saveChip" data-state="clean" title="Jetzt sichern"><span class="dot"></span><span id="saveText">gesichert</span></button>
+        <button class="icon-btn" id="btnTheme" title="Hell/Dunkel" aria-label="Hell oder dunkel umschalten"></button>
+      </div>
+      <div>
+        <div class="progress-line">
+          <span id="progText" class="num">0 / 0</span>
+          <span id="progRight" class="num"></span>
+        </div>
+        <div class="barwrap" style="margin-top:6px">
+          <i class="bar-read" id="barRead" style="width:0%"></i>
+          <i class="bar-active" id="barActive" style="width:0%"></i>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="view" class="shell"></main>
+
+  <nav class="tabbar">
+    <div class="tabbar-inner" id="tabbar"></div>
+  </nav>
+</div>
+
+<div id="layers"></div>
+<script>
+'use strict';
+/* ============================================================
+   Leseplan – eine Datei, keine Daten darin.
+   Alle Inhalte liegen im gewählten Speicher (Datei oder Gerät).
+   ============================================================ */
+
+/* ---------- kleine Helfer ---------- */
+const $ = (sel, root) => (root || document).querySelector(sel);
+const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+const uid = () => 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
+const heute = () => new Date().toISOString().slice(0, 10);
+const MONATE = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+
+function fmtDauer(min) {
+  if (!min) return '0 min';
+  const h = Math.floor(min / 60), m = Math.round(min % 60);
+  return h ? (m ? h + ' h ' + m + ' min' : h + ' h') : m + ' min';
+}
+function fmtDauerKurz(min) {
+  if (!min) return '–';
+  const h = Math.floor(min / 60), m = Math.round(min % 60);
+  return h ? h + ':' + String(m).padStart(2, '0') + ' h' : m + ' min';
+}
+const pl = (n, ein, viele) => n + ' ' + (n === 1 ? ein : viele);
+function fmtGeld(v) {
+  if (v == null || !isFinite(v)) return '–';
+  return v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
+function fmtZahl(v, d) {
+  if (v == null || !isFinite(v)) return '–';
+  return v.toLocaleString('de-DE', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 });
+}
+function fmtDatum(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return +d + '. ' + MONATE[+m - 1] + ' ' + y;
+}
+function relZeit(ts) {
+  if (!ts) return '';
+  const s = Math.round((Date.now() - ts) / 1000);
+  if (s < 45) return 'gerade eben';
+  if (s < 3600) return 'vor ' + Math.round(s / 60) + ' min';
+  if (s < 86400) return 'vor ' + Math.round(s / 3600) + ' h';
+  return 'vor ' + Math.round(s / 86400) + ' Tagen';
+}
+
+const ICON = {
+  chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>',
+  read: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5v13"/><path d="M12 6.5C10.5 5 8 4.5 4 4.8v12.4c4-.3 6.5.2 8 1.8 1.5-1.6 4-2.1 8-1.8V4.8c-4-.3-6.5.2-8 1.7z"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  tags: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5V4h7.5L21 14.5 13.5 22 3 11.5z"/><circle cx="7.5" cy="7.5" r="1.4" fill="currentColor" stroke="none"/></svg>',
+  books: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6a2 2 0 012 2v14a2.5 2.5 0 00-2.5-2H4z"/><path d="M20 4h-6a2 2 0 00-2 2v14a2.5 2.5 0 012.5-2H20z"/></svg>',
+  more: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg>',
+  cam: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2.5 2.5 0 015.5 6h1.8l1.2-2h6l1.2 2h1.8A2.5 2.5 0 0120 8.5v9A2.5 2.5 0 0117.5 20h-11A2.5 2.5 0 014 17.5z"/><circle cx="12" cy="13" r="3.4"/></svg>',
+  img: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="M4 17l4.5-4.5 4 3.5L16 13l4 4"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L20 8l-4-4L4 16z"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/></svg>',
+  up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+  down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
+  save: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h11L20.5 8v12.5H5z"/><path d="M8.5 3.5v6h7v-6M8.5 20.5V14h7v6.5"/></svg>',
+  sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 019.5 4a8.5 8.5 0 1010.5 10.5z"/></svg>'
+};
+
+/* ---------- Toast ---------- */
+let toastT;
+function toast(msg, ms) {
+  let t = $('#toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { t.hidden = true; }, ms || 2600);
+}
+
+/* ============================================================
+   Datenmodell
+   ============================================================ */
+const ART_FARBEN = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'];
+const STD_ARTEN = ['Zitat', 'Gedanke', 'Frage', 'Kritik', 'Begriff', 'Querverweis', 'Aufgabe'];
+const STATUS = { offen: 'Offen', lese: 'Lese ich', gelesen: 'Gelesen' };
+
+function leereDb() {
+  return {
+    format: 'leseplan',
+    version: 1,
+    erstellt: Date.now(),
+    geaendert: Date.now(),
+    einstellungen: { theme: 'dark', autosaveSek: 60 },
+    arten: STD_ARTEN.map((n, i) => ({ id: uid(), name: n, farbe: ART_FARBEN[i % 8] })),
+    themen: [],
+    bloecke: [],
+    buecher: []
+  };
+}
+
+/* Fehlende Felder ergänzen, damit auch fremde oder ältere Dateien laufen. */
+function normalisiere(raw) {
+  const d = Object.assign(leereDb(), raw || {});
+  d.einstellungen = Object.assign({ theme: 'dark', autosaveSek: 60 }, raw && raw.einstellungen);
+  d.arten = (Array.isArray(d.arten) ? d.arten : []).map((a, i) => ({
+    id: a.id || uid(), name: String(a.name || 'Art'), farbe: a.farbe || ART_FARBEN[i % 8]
+  }));
+  if (!d.arten.length) d.arten = leereDb().arten;
+  d.themen = (Array.isArray(d.themen) ? d.themen : []).map(t =>
+    typeof t === 'string' ? { id: uid(), name: t } : { id: t.id || uid(), name: String(t.name || '') }
+  ).filter(t => t.name);
+  d.bloecke = (Array.isArray(d.bloecke) ? d.bloecke : []).map((b, i) => ({
+    id: b.id || uid(), name: String(b.name || 'Block'), ord: b.ord != null ? b.ord : i, notiz: b.notiz || ''
+  }));
+  d.buecher = (Array.isArray(d.buecher) ? d.buecher : []).map((b, i) => ({
+    id: b.id || uid(),
+    blockId: b.blockId || (d.bloecke[0] && d.bloecke[0].id) || null,
+    ord: b.ord != null ? b.ord : i,
+    titel: String(b.titel || 'Ohne Titel'),
+    autor: String(b.autor || ''),
+    autorGeb: b.autorGeb == null ? null : b.autorGeb,
+    autorGest: b.autorGest == null ? null : b.autorGest,
+    jahr: b.jahr == null ? null : b.jahr,
+    seiten: b.seiten == null ? null : b.seiten,
+    seitenUnsicher: !!b.seitenUnsicher,
+    ausgabe: b.ausgabe || '',
+    beschreibung: b.beschreibung || '',
+    preis: b.preis == null ? null : b.preis,
+    status: STATUS[b.status] ? b.status : 'offen',
+    sessions: (b.sessions || []).map(s => ({
+      id: s.id || uid(), datum: s.datum || heute(), minuten: +s.minuten || 0,
+      von: s.von == null ? null : s.von, bis: s.bis == null ? null : s.bis, notiz: s.notiz || ''
+    })),
+    notizen: (b.notizen || []).map(n => ({
+      id: n.id || uid(), seite: n.seite == null ? null : n.seite,
+      themaId: n.themaId || null, artId: n.artId || null,
+      text: n.text || '', bilder: (n.bilder || []).map(x => typeof x === 'string' ? { id: uid(), src: x, ts: Date.now() } : { id: x.id || uid(), src: x.src, ts: x.ts || Date.now() }).filter(x => x.src),
+      erstellt: n.erstellt || Date.now(), geaendert: n.geaendert || Date.now()
+    }))
+  }));
+  return d;
+}
+
+let DB = leereDb();
+
+/* --- Zugriffe --- */
+const bloeckeSortiert = () => DB.bloecke.slice().sort((a, b) => a.ord - b.ord);
+const buecherIn = id => DB.buecher.filter(b => b.blockId === id).sort((a, b) => a.ord - b.ord);
+const buchById = id => DB.buecher.find(b => b.id === id);
+const blockById = id => DB.bloecke.find(b => b.id === id);
+const artById = id => DB.arten.find(a => a.id === id);
+const themaById = id => DB.themen.find(t => t.id === id);
+const artFarbe = id => { const a = artById(id); return a ? 'var(--' + a.farbe + ')' : 'var(--text-3)'; };
+const artName = id => { const a = artById(id); return a ? a.name : 'Ohne Art'; };
+const themaName = id => { const t = themaById(id); return t ? t.name : 'Ohne Themenfeld'; };
+
+function themaFindenOderAnlegen(name) {
+  const n = String(name || '').trim();
+  if (!n) return null;
+  const vorhanden = DB.themen.find(t => t.name.toLowerCase() === n.toLowerCase());
+  if (vorhanden) return vorhanden.id;
+  const t = { id: uid(), name: n };
+  DB.themen.push(t);
+  return t.id;
+}
+function buchMinuten(b) { return b.sessions.reduce((s, x) => s + (+x.minuten || 0), 0); }
+function buchSeitenGelesen(b) {
+  return b.sessions.reduce((s, x) => (x.von != null && x.bis != null && x.bis > x.von) ? s + (x.bis - x.von) : s, 0);
+}
+function buchTempo(b) { const m = buchMinuten(b), s = buchSeitenGelesen(b); return (m > 5 && s > 0) ? s / (m / 60) : null; }
+function alleNotizen() {
+  const out = [];
+  DB.buecher.forEach(b => b.notizen.forEach(n => out.push({ buch: b, notiz: n })));
+  return out;
+}
+
+/* ============================================================
+   Speicher: Datei (wo der Browser es erlaubt) oder Gerät
+   ============================================================ */
+const IDB = (() => {
+  let p;
+  function open() {
+    if (p) return p;
+    p = new Promise((res, rej) => {
+      const r = indexedDB.open('leseplan', 1);
+      r.onupgradeneeded = () => { if (!r.result.objectStoreNames.contains('kv')) r.result.createObjectStore('kv'); };
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    return p;
+  }
+  const tx = (mode, fn) => open().then(db => new Promise((res, rej) => {
+    const t = db.transaction('kv', mode), st = t.objectStore('kv');
+    const q = fn(st);
+    t.oncomplete = () => res(q && q.result);
+    t.onerror = () => rej(t.error);
+  }));
+  return {
+    get: k => tx('readonly', st => st.get(k)),
+    set: (k, v) => tx('readwrite', st => st.put(v, k)),
+    del: k => tx('readwrite', st => st.delete(k))
+  };
+})();
+
+const Store = {
+  modus: null,          // 'datei' | 'geraet'
+  handle: null,         // FileSystemFileHandle bei 'datei'
+  dateiname: 'leseplan.json',
+  dirty: false,
+  letzteSicherung: 0,
+  fehler: null,
+  timer: null,
+
+  dateiApiDa() { return typeof window.showSaveFilePicker === 'function'; },
+
+  async metaLesen() { return (await IDB.get('meta')) || null; },
+  async metaSchreiben() {
+    await IDB.set('meta', { modus: this.modus, handle: this.handle, dateiname: this.dateiname });
+  },
+
+  async rechtePruefen(handle, fragen) {
+    if (!handle || !handle.queryPermission) return true;
+    const opt = { mode: 'readwrite' };
+    if ((await handle.queryPermission(opt)) === 'granted') return true;
+    if (!fragen) return false;
+    return (await handle.requestPermission(opt)) === 'granted';
+  },
+
+  async ladeDaten() {
+    if (this.modus === 'datei' && this.handle) {
+      const f = await this.handle.getFile();
+      const txt = await f.text();
+      return txt.trim() ? JSON.parse(txt) : null;
+    }
+    return (await IDB.get('daten')) || null;
+  },
+
+  async schreiben() {
+    const json = JSON.stringify(DB);
+    if (this.modus === 'datei' && this.handle) {
+      const w = await this.handle.createWritable();
+      await w.write(json);
+      await w.close();
+    } else {
+      await IDB.set('daten', DB);
+    }
+  },
+
+  async sichern(still) {
+    if (!this.modus) return false;
+    if (this._laeuft) { this._nochmal = true; return false; }
+    this._laeuft = true;
+    try {
+      DB.geaendert = Date.now();
+      await this.schreiben();
+      this.dirty = false;
+      this.fehler = null;
+      this.letzteSicherung = Date.now();
+      saveChipMalen();
+      return true;
+    } catch (e) {
+      console.error(e);
+      this.fehler = e && e.message ? e.message : 'Unbekannter Fehler';
+      saveChipMalen();
+      if (!still) toast('Sichern fehlgeschlagen: ' + this.fehler, 4200);
+      return false;
+    } finally {
+      this._laeuft = false;
+      if (this._nochmal) { this._nochmal = false; setTimeout(() => this.sichern(true), 0); }
+    }
+  },
+
+  /* Der feste Takt ist die Zusage; kurz nach der letzten Eingabe wird zusätzlich
+     gesichert, damit ein Schließen zwischen zwei Takten nichts kostet. */
+  aendern() {
+    this.dirty = true;
+    saveChipMalen();
+    clearTimeout(this._kurz);
+    this._kurz = setTimeout(() => { if (this.dirty) this.sichern(true); }, 4000);
+  },
+
+  autosaveStarten() {
+    clearInterval(this.timer);
+    const sek = clamp(+((DB.einstellungen && DB.einstellungen.autosaveSek) || 60), 15, 600);
+    this.timer = setInterval(() => { if (this.dirty) this.sichern(true); }, sek * 1000);
+    document.addEventListener('visibilitychange', () => { if (document.hidden && this.dirty) this.sichern(true); });
+    window.addEventListener('pagehide', () => { if (this.dirty) this.sichern(true); });
+  },
+
+  /* Bewusstes Sichern als Datei – im Gerätemodus über den Datei-Dialog der Umgebung. */
+  async alsDateiSichern(ohneBilder) {
+    if (this.modus === 'datei' && this.handle) {
+      const ok = await this.sichern();
+      if (ok) toast('In ' + this.dateiname + ' gesichert.');
+      return;
+    }
+    let daten = DB;
+    if (ohneBilder) {
+      daten = JSON.parse(JSON.stringify(DB));
+      daten.buecher.forEach(b => b.notizen.forEach(n => { n.bilder = []; }));
+      daten.ohneBilder = true;
+    }
+    const json = JSON.stringify(daten);
+    const name = 'leseplan-' + heute() + (ohneBilder ? '-ohne-fotos' : '') + '.json';
+    const dl = window.claude && window.claude.use ? await window.claude.use('downloads').catch(() => null) : null;
+    if (dl) {
+      try {
+        await dl.save({ filename: name, data: json });
+        toast('Datei gesichert: ' + name);
+        this.letzteSicherung = Date.now(); saveChipMalen();
+        return;
+      } catch (e) {
+        const code = e && e.code;
+        if (code === 'declined') { toast('Sichern abgebrochen.'); return; }
+        if (code === 'too_large' && !ohneBilder) { return this.alsDateiSichern(true); }
+        toast('Datei konnte nicht gesichert werden (' + (code || 'Fehler') + ').', 4200);
+        return;
+      }
+    }
+    /* Läuft die Seite außerhalb der Umgebung, geht der klassische Weg. */
+    try {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+      a.download = name; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      toast('Datei gesichert: ' + name);
+    } catch (e) { toast('Kein Weg zum Dateispeichern verfügbar.', 4000); }
+  }
+};
+
+function saveChipMalen() {
+  const chip = $('#saveChip'), txt = $('#saveText');
+  if (!chip) return;
+  if (Store.fehler) { chip.dataset.state = 'error'; txt.textContent = 'Fehler'; return; }
+  if (Store.dirty) { chip.dataset.state = 'dirty'; txt.textContent = 'ungesichert'; return; }
+  chip.dataset.state = 'clean';
+  txt.textContent = Store.letzteSicherung ? 'gesichert ' + relZeit(Store.letzteSicherung) : 'gesichert';
+}
+setInterval(saveChipMalen, 30000);
+
+/* Jede Änderung läuft hierdurch: Daten anfassen, dann merken lassen. */
+function aendern(fn) {
+  if (fn) fn();
+  Store.aendern();
+}
+
+/* ============================================================
+   Ersteinrichtung: Speicherort festlegen
+   ============================================================ */
+function setupZeigen(nurWechsel) {
+  const s = $('#setup');
+  const dateiDa = Store.dateiApiDa();
+  s.innerHTML = `
+    <div class="setup-inner">
+      <div class="mark serif">Leseplan</div>
+      <p class="lead">Diese Seite enthält keine Daten. Bevor es losgeht: Wo sollen deine Bücher, Notizen und Fotos liegen? Der Ort lässt sich später jederzeit wechseln.</p>
+
+      <button class="opt" data-act="datei-neu" ${dateiDa ? '' : 'disabled'}>
+        <span class="on">${ICON.save} Neue Datei anlegen ${dateiDa ? '<span class="badge">still gespeichert</span>' : ''}</span>
+        <span class="od">${dateiDa
+      ? 'Du wählst einmal einen Ort auf diesem Gerät, danach schreibt die App alle 60 Sekunden still in genau diese Datei. Kein Dialog, kein Nachfragen.'
+      : 'Dieser Browser erlaubt der Seite kein direktes Schreiben in eine Datei. Auf iPhone und iPad gibt es das nicht.'}</span>
+      </button>
+
+      <button class="opt" data-act="datei-oeffnen" ${dateiDa ? '' : 'disabled'}>
+        <span class="on">${ICON.books} Bestehende Datei öffnen</span>
+        <span class="od">${dateiDa
+      ? 'Eine leseplan.json weiterführen, die du früher angelegt oder auf ein anderes Gerät kopiert hast.'
+      : 'Nicht verfügbar – nimm unten die Arbeitskopie und lade die Datei danach über „Datei laden“.'}</span>
+      </button>
+
+      <button class="opt" data-act="geraet">
+        <span class="on">${ICON.img} Arbeitskopie auf diesem Gerät ${dateiDa ? '' : '<span class="badge">empfohlen hier</span>'}</span>
+        <span class="od">Speichert im Browser dieses Geräts, ebenfalls automatisch alle 60 Sekunden und ohne Rückfrage. Viel Platz für Fotos. Sichere dir davon regelmäßig über „Jetzt sichern“ eine Datei – gelöschte Browserdaten nehmen die Arbeitskopie mit.</span>
+      </button>
+
+      <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" data-act="import">Daten aus Datei laden</button>
+        ${nurWechsel ? '<button class="btn btn-sm btn-ghost" data-act="abbrechen">Abbrechen</button>' : ''}
+        <button class="btn btn-sm btn-ghost" data-act="theme">Hell/Dunkel</button>
+      </div>
+    </div>`;
+  s.hidden = false;
+  $('#app').hidden = true;
+
+  s.onclick = async (e) => {
+    const b = e.target.closest('[data-act]');
+    if (!b || b.disabled) return;
+    const act = b.dataset.act;
+    if (act === 'theme') { themeUmschalten(); return; }
+    if (act === 'abbrechen') { s.hidden = true; $('#app').hidden = false; return; }
+    if (act === 'import') { importDialog(!nurWechsel); return; }
+
+    if (act === 'geraet') {
+      Store.modus = 'geraet'; Store.handle = null;
+      await Store.metaSchreiben();
+      if (!nurWechsel) DB = normalisiere(await IDB.get('daten'));
+      await Store.sichern(true);
+      appStarten();
+      return;
+    }
+    if (act === 'datei-neu' || act === 'datei-oeffnen') {
+      try {
+        let handle;
+        if (act === 'datei-neu') {
+          handle = await window.showSaveFilePicker({
+            suggestedName: 'leseplan.json',
+            types: [{ description: 'Leseplan', accept: { 'application/json': ['.json'] } }]
+          });
+        } else {
+          const [h] = await window.showOpenFilePicker({
+            types: [{ description: 'Leseplan', accept: { 'application/json': ['.json'] } }]
+          });
+          handle = h;
+        }
+        if (!(await Store.rechtePruefen(handle, true))) { toast('Ohne Schreibrecht geht es nicht.'); return; }
+        Store.modus = 'datei'; Store.handle = handle; Store.dateiname = handle.name || 'leseplan.json';
+        const geladen = await Store.ladeDaten();
+        DB = normalisiere(geladen);
+        await Store.metaSchreiben();
+        await Store.sichern(true);
+        appStarten();
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+        console.error(err);
+        toast('Dateizugriff nicht möglich – hier hilft nur die Arbeitskopie.', 4600);
+      }
+    }
+  };
+}
+
+/* ============================================================
+   Erscheinungsbild
+   ============================================================ */
+function themeAnwenden() {
+  const hell = DB.einstellungen.theme === 'light';
+  document.documentElement.setAttribute('data-app-theme', hell ? 'light' : 'dark');
+  const b = $('#btnTheme');
+  if (b) b.innerHTML = hell ? ICON.moon : ICON.sun;
+}
+function themeUmschalten() {
+  DB.einstellungen.theme = DB.einstellungen.theme === 'light' ? 'dark' : 'light';
+  themeAnwenden();
+  aendern();
+}
+
+/* ============================================================
+   Rahmen: Tabs, Kopfzeile
+   ============================================================ */
+const TABS = [
+  { id: 'plan', label: 'Plan', icon: ICON.books },
+  { id: 'uebersicht', label: 'Übersicht', icon: ICON.chart },
+  { id: 'themen', label: 'Themen', icon: ICON.tags },
+  { id: 'mehr', label: 'Mehr', icon: ICON.more }
+];
+let aktiverTab = 'plan';
+
+function tabbarMalen() {
+  $('#tabbar').innerHTML = TABS.map(t =>
+    `<button data-tab="${t.id}" aria-selected="${t.id === aktiverTab}">${t.icon}<span>${t.label}</span></button>`).join('');
+  $('#tabbar').onclick = e => {
+    const b = e.target.closest('[data-tab]');
+    if (b) tabWechseln(b.dataset.tab);
+  };
+}
+function tabWechseln(id) {
+  aktiverTab = id;
+  tabbarMalen();
+  viewMalen();
+  window.scrollTo(0, 0);
+}
+function viewMalen() {
+  const v = $('#view');
+  if (aktiverTab === 'plan') planMalen(v);
+  else if (aktiverTab === 'uebersicht') uebersichtMalen(v);
+  else if (aktiverTab === 'themen') themenMalen(v);
+  else mehrMalen(v);
+  kopfMalen();
+}
+function kopfMalen() {
+  const ges = DB.buecher.length;
+  const gelesen = DB.buecher.filter(b => b.status === 'gelesen').length;
+  const lese = DB.buecher.filter(b => b.status === 'lese').length;
+  $('#progText').textContent = gelesen + ' / ' + ges + ' gelesen';
+  const seiten = DB.buecher.filter(b => b.status === 'gelesen').reduce((s, b) => s + (b.seiten || 0), 0);
+  $('#progRight').textContent = seiten ? fmtZahl(seiten) + ' Seiten' : '';
+  $('#barRead').style.width = (ges ? gelesen / ges * 100 : 0) + '%';
+  $('#barActive').style.width = (ges ? lese / ges * 100 : 0) + '%';
+  const lbl = $('#storeLabel');
+  lbl.textContent = Store.modus === 'datei' ? Store.dateiname : 'Arbeitskopie auf diesem Gerät';
+}
+
+/* ============================================================
+   Start
+   ============================================================ */
+function appStarten() {
+  $('#setup').hidden = true;
+  $('#app').hidden = false;
+  themeAnwenden();
+  tabbarMalen();
+  viewMalen();
+  Store.autosaveStarten();
+  saveChipMalen();
+}
+
+async function boot() {
+  $('#btnTheme').innerHTML = ICON.sun;
+  $('#btnTheme').onclick = themeUmschalten;
+  $('#saveChip').onclick = () => Store.alsDateiSichern(false);
+
+  let meta = null;
+  try { meta = await Store.metaLesen(); } catch (e) { console.warn(e); }
+
+  if (meta && meta.modus === 'datei' && meta.handle) {
+    Store.modus = 'datei'; Store.handle = meta.handle; Store.dateiname = meta.dateiname || 'leseplan.json';
+    const ok = await Store.rechtePruefen(meta.handle, false);
+    if (ok) {
+      try { DB = normalisiere(await Store.ladeDaten()); appStarten(); return; }
+      catch (e) { console.error(e); }
+    }
+    /* Der Browser will die Freigabe erneut bestätigt haben. */
+    zugriffFreigebenZeigen();
+    return;
+  }
+  if (meta && meta.modus === 'geraet') {
+    Store.modus = 'geraet';
+    DB = normalisiere(await IDB.get('daten'));
+    appStarten();
+    return;
+  }
+  setupZeigen(false);
+}
+
+function zugriffFreigebenZeigen() {
+  const s = $('#setup');
+  s.innerHTML = `
+    <div class="setup-inner">
+      <div class="mark serif">Zugriff bestätigen</div>
+      <p class="lead">Der Browser hat den Zugriff auf <strong>${esc(Store.dateiname)}</strong> nach dem Schließen zurückgesetzt. Ein Klick, und es geht weiter wie zuvor.</p>
+      <button class="btn btn-primary btn-block" data-act="frei">Datei freigeben</button>
+      <div style="margin-top:10px"><button class="btn btn-block btn-ghost" data-act="anders">Anderen Speicherort wählen</button></div>
+    </div>`;
+  s.hidden = false; $('#app').hidden = true;
+  s.onclick = async e => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    if (b.dataset.act === 'anders') { setupZeigen(false); return; }
+    if (await Store.rechtePruefen(Store.handle, true)) {
+      DB = normalisiere(await Store.ladeDaten());
+      appStarten();
+    } else toast('Freigabe verweigert.');
+  };
+}
+/* ============================================================
+   Ebenen: Vollbild-Ansichten und Blätter von unten
+   ============================================================ */
+const Layers = [];
+function layerOeffnen(node, onClose) {
+  Layers.push({ node, onClose });
+  $('#layers').appendChild(node);
+  try { history.pushState({ layer: Layers.length }, ''); } catch (e) { }
+  return node;
+}
+function layerSchliessen() {
+  if (!Layers.length) return;
+  try { history.back(); } catch (e) { layerPop(); }
+}
+function layerPop() {
+  const l = Layers.pop();
+  if (!l) return;
+  l.node.remove();
+  if (l.onClose) l.onClose();
+}
+window.addEventListener('popstate', () => { if (Layers.length) layerPop(); });
+
+function blatt(titel, inhalt, opts) {
+  opts = opts || {};
+  const scrim = document.createElement('div');
+  scrim.className = 'sheet-scrim';
+  scrim.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-grip"></div>
+      ${titel ? `<h3>${esc(titel)}</h3>` : ''}
+      <div data-body></div>
+    </div>`;
+  const body = $('[data-body]', scrim);
+  if (typeof inhalt === 'string') body.innerHTML = inhalt; else body.appendChild(inhalt);
+  scrim.addEventListener('click', e => { if (e.target === scrim) layerSchliessen(); });
+  layerOeffnen(scrim, opts.onClose);
+  const erstes = $('input,textarea,select', body);
+  if (erstes && opts.fokus !== false) setTimeout(() => erstes.focus(), 80);
+  return scrim;
+}
+
+function bestaetigen(titel, text, okLabel, gefaehrlich) {
+  return new Promise(res => {
+    let done = false;
+    const s = blatt(titel, `
+      <p class="muted" style="font-size:13.5px;line-height:1.6;margin-bottom:16px">${text}</p>
+      <div class="btn-row">
+        <button class="btn ${gefaehrlich ? 'btn-danger' : 'btn-primary'}" data-ok style="flex:1">${esc(okLabel || 'Ja')}</button>
+        <button class="btn btn-ghost" data-no style="flex:1">Abbrechen</button>
+      </div>`, {
+      fokus: false,
+      onClose: () => { if (!done) res(false); }
+    });
+    $('[data-ok]', s).onclick = () => { done = true; res(true); layerSchliessen(); };
+    $('[data-no]', s).onclick = () => { done = true; res(false); layerSchliessen(); };
+  });
+}
+
+/* ============================================================
+   Plan
+   ============================================================ */
+const offeneBloecke = new Set();
+let planFilter = 'alle';
+let planSort = 'plan';
+
+function buecherGefiltert(blockId) {
+  let l = buecherIn(blockId);
+  if (planFilter !== 'alle') l = l.filter(b => b.status === planFilter);
+  if (planSort === 'titel') l = l.slice().sort((a, b) => a.titel.localeCompare(b.titel, 'de'));
+  else if (planSort === 'autor') l = l.slice().sort((a, b) => (a.autor || '').localeCompare(b.autor || '', 'de'));
+  else if (planSort === 'seiten') l = l.slice().sort((a, b) => (b.seiten || 0) - (a.seiten || 0));
+  else if (planSort === 'jahr') l = l.slice().sort((a, b) => (a.jahr || 9999) - (b.jahr || 9999));
+  return l;
+}
+
+function planMalen(root) {
+  if (!DB.bloecke.length && !DB.buecher.length) {
+    root.innerHTML = `
+      <div class="chiprow" style="margin-bottom:12px"></div>
+      <div class="empty">
+        <strong>Noch nichts drin</strong>
+        Lege deinen ersten Block an – oder lade eine fertige Liste als Datei.
+        <div class="btn-row" style="justify-content:center;margin-top:16px">
+          <button class="btn btn-primary" data-neu-block>${ICON.plus} Block anlegen</button>
+          <button class="btn" data-import>Liste laden</button>
+        </div>
+      </div>`;
+    $('[data-neu-block]', root).onclick = () => blockBearbeiten(null);
+    $('[data-import]', root).onclick = () => importDialog(false);
+    return;
+  }
+
+  const filter = [['alle', 'Alle'], ['offen', 'Offen'], ['lese', 'Lese ich'], ['gelesen', 'Gelesen']];
+  root.innerHTML = `
+    <div class="chiprow">
+      ${filter.map(([k, l]) => `<button class="chip" data-filter="${k}" aria-pressed="${planFilter === k}">${l}</button>`).join('')}
+      <span style="flex:0 0 4px"></span>
+      <select data-sort style="width:auto;padding:5px 9px;font-size:12px;border-radius:99px">
+        <option value="plan"${planSort === 'plan' ? ' selected' : ''}>Plan-Reihenfolge</option>
+        <option value="titel"${planSort === 'titel' ? ' selected' : ''}>Titel A–Z</option>
+        <option value="autor"${planSort === 'autor' ? ' selected' : ''}>Autor A–Z</option>
+        <option value="seiten"${planSort === 'seiten' ? ' selected' : ''}>Seiten absteigend</option>
+        <option value="jahr"${planSort === 'jahr' ? ' selected' : ''}>Erscheinungsjahr</option>
+      </select>
+    </div>
+    <div id="blocklist" style="margin-top:12px"></div>
+    <div style="padding:4px 14px 0">
+      <button class="btn btn-block" data-neu-block>${ICON.plus} Block anlegen</button>
+    </div>`;
+
+  $$('[data-filter]', root).forEach(b => b.onclick = () => { planFilter = b.dataset.filter; viewMalen(); });
+  $('[data-sort]', root).onchange = e => { planSort = e.target.value; viewMalen(); };
+  $('[data-neu-block]', root).onclick = () => blockBearbeiten(null);
+
+  const list = $('#blocklist', root);
+  bloeckeSortiert().forEach((blk, i) => {
+    const alle = buecherIn(blk.id);
+    const gelesen = alle.filter(b => b.status === 'gelesen').length;
+    const seiten = alle.reduce((s, b) => s + (b.seiten || 0), 0);
+    const zeigen = buecherGefiltert(blk.id);
+    const offen = offeneBloecke.has(blk.id);
+
+    const node = document.createElement('div');
+    node.className = 'block' + (offen ? ' open' : '');
+    node.innerHTML = `
+      <button class="block-head" data-toggle>
+        <span class="idx num">${String(i + 1).padStart(2, '0')}</span>
+        <span class="grow">
+          <span class="name">${esc(blk.name)}</span>
+          <span class="meta">
+            <span>${alle.length} ${alle.length === 1 ? 'Werk' : 'Werke'}</span>
+            <span>${gelesen} gelesen</span>
+            ${seiten ? `<span class="num">${fmtZahl(seiten)} S.</span>` : ''}
+          </span>
+        </span>
+        <span class="chev">${ICON.chev}</span>
+      </button>
+      <div class="block-bar"><i style="width:${alle.length ? gelesen / alle.length * 100 : 0}%"></i></div>
+      <div class="books"></div>`;
+
+    $('[data-toggle]', node).onclick = () => {
+      if (offeneBloecke.has(blk.id)) offeneBloecke.delete(blk.id); else offeneBloecke.add(blk.id);
+      viewMalen();
+    };
+
+    const wrap = $('.books', node);
+    if (!zeigen.length) {
+      wrap.innerHTML = `<div style="padding:10px 8px;font-size:12.5px;color:var(--text-3)">${alle.length ? 'Kein Buch mit diesem Filter.' : 'Noch kein Buch in diesem Block.'}</div>`;
+    }
+    zeigen.forEach(b => wrap.appendChild(buchZeile(b)));
+
+    const leiste = document.createElement('div');
+    leiste.style.cssText = 'display:flex;gap:8px;padding:6px 2px 0';
+    leiste.innerHTML = `<button class="btn btn-sm" data-neu-buch style="flex:1">${ICON.plus} Buch</button>
+      <button class="btn btn-sm btn-ghost" data-block-edit>${ICON.edit} Block</button>`;
+    $('[data-neu-buch]', leiste).onclick = () => buchBearbeiten(null, blk.id);
+    $('[data-block-edit]', leiste).onclick = () => blockBearbeiten(blk);
+    wrap.appendChild(leiste);
+
+    list.appendChild(node);
+  });
+}
+
+function buchZeile(b) {
+  const node = document.createElement('div');
+  node.className = 'book';
+  const min = buchMinuten(b);
+  node.innerHTML = `
+    <button class="status-btn" data-status="${b.status}" title="${STATUS[b.status]}">
+      ${b.status === 'gelesen' ? ICON.check : b.status === 'lese' ? ICON.read : ''}
+    </button>
+    <button class="grow" data-oeffnen style="text-align:left">
+      <span class="title serif ${b.status === 'gelesen' ? 'done' : ''}">${esc(b.titel)}</span>
+      <span class="byline">
+        <span>${esc(b.autor || 'ohne Autor')}</span>
+        ${b.jahr ? `<span class="num">${b.jahr}</span>` : ''}
+        ${b.seiten ? `<span class="num">${b.seitenUnsicher ? '~' : ''}${b.seiten} S.</span>` : ''}
+      </span>
+      ${(b.notizen.length || min) ? `<span class="tags">
+        ${b.notizen.length ? `<span class="minitag">${b.notizen.length} ${b.notizen.length === 1 ? 'Notiz' : 'Notizen'}</span>` : ''}
+        ${min ? `<span class="minitag">${fmtDauer(min)}</span>` : ''}
+        ${b.status === 'lese' ? '<span class="minitag acc">lese ich</span>' : ''}
+      </span>` : ''}
+    </button>
+    <span class="chev">${ICON.chev}</span>`;
+  $('.status-btn', node).onclick = e => {
+    e.stopPropagation();
+    const folge = { offen: 'lese', lese: 'gelesen', gelesen: 'offen' };
+    aendern(() => { b.status = folge[b.status] || 'offen'; });
+    viewMalen();
+  };
+  $('[data-oeffnen]', node).onclick = () => buchOeffnen(b.id);
+  return node;
+}
+
+/* ---------- Block anlegen / bearbeiten ---------- */
+function blockBearbeiten(blk) {
+  const neu = !blk;
+  const b = blk || { id: null, name: '', notiz: '' };
+  const s = blatt(neu ? 'Neuer Block' : 'Block bearbeiten', `
+    <div class="field">
+      <label>Name</label>
+      <input type="text" data-name value="${esc(b.name)}" placeholder="z.B. Existentialismus">
+    </div>
+    <div class="field">
+      <label>Notiz zum Block</label>
+      <textarea data-notiz placeholder="Warum liest du diesen Block? (freiwillig)" style="min-height:64px">${esc(b.notiz || '')}</textarea>
+    </div>
+    ${neu ? '' : `<div class="field">
+      <label>Reihenfolge</label>
+      <div class="btn-row">
+        <button class="btn btn-sm" data-up>${ICON.up} nach oben</button>
+        <button class="btn btn-sm" data-down>${ICON.down} nach unten</button>
+      </div>
+    </div>`}
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" data-ok style="flex:1">${neu ? 'Anlegen' : 'Sichern'}</button>
+      ${neu ? '' : `<button class="btn btn-danger" data-del>${ICON.trash} Löschen</button>`}
+    </div>`);
+
+  const speichern = () => {
+    const name = $('[data-name]', s).value.trim();
+    if (!name) { toast('Der Block braucht einen Namen.'); return; }
+    aendern(() => {
+      if (neu) {
+        DB.bloecke.push({ id: uid(), name, notiz: $('[data-notiz]', s).value.trim(), ord: DB.bloecke.length });
+      } else {
+        b.name = name; b.notiz = $('[data-notiz]', s).value.trim();
+      }
+    });
+    layerSchliessen(); viewMalen();
+  };
+  $('[data-ok]', s).onclick = speichern;
+
+  if (!neu) {
+    const verschieben = d => {
+      const sorted = bloeckeSortiert();
+      const i = sorted.findIndex(x => x.id === b.id);
+      const j = i + d;
+      if (j < 0 || j >= sorted.length) return;
+      aendern(() => {
+        const t = sorted[i].ord; sorted[i].ord = sorted[j].ord; sorted[j].ord = t;
+        bloeckeSortiert().forEach((x, k) => x.ord = k);
+      });
+      viewMalen();
+      toast('Verschoben.');
+    };
+    $('[data-up]', s).onclick = () => verschieben(-1);
+    $('[data-down]', s).onclick = () => verschieben(1);
+    $('[data-del]', s).onclick = async () => {
+      const anzahl = buecherIn(b.id).length;
+      const ok = await bestaetigen('Block löschen?',
+        `„${esc(b.name)}“ wird gelöscht${anzahl ? ' – zusammen mit ' + anzahl + ' ' + (anzahl === 1 ? 'Buch' : 'Büchern') + ' samt deren Notizen und Fotos' : ''}. Das lässt sich nicht rückgängig machen.`,
+        'Endgültig löschen', true);
+      if (!ok) return;
+      aendern(() => {
+        DB.buecher = DB.buecher.filter(x => x.blockId !== b.id);
+        DB.bloecke = DB.bloecke.filter(x => x.id !== b.id);
+        bloeckeSortiert().forEach((x, k) => x.ord = k);
+      });
+      layerSchliessen(); viewMalen();
+      toast('Block gelöscht.');
+    };
+  }
+}
+
+/* ---------- Buch anlegen / bearbeiten ---------- */
+function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
+  const neu = !buch;
+  const b = buch || {
+    id: null, blockId: blockIdVorgabe, titel: '', autor: '', autorGeb: null, autorGest: null,
+    jahr: null, seiten: null, seitenUnsicher: false, ausgabe: '', beschreibung: '', preis: null, status: 'offen'
+  };
+  const s = blatt(neu ? 'Neues Buch' : 'Buch bearbeiten', `
+    <div class="field"><label>Titel</label><input type="text" data-titel value="${esc(b.titel)}"></div>
+    <div class="field"><label>Autor</label><input type="text" data-autor value="${esc(b.autor)}"></div>
+    <div class="grid2">
+      <div class="field"><label>Autor geboren</label><input type="number" data-geb value="${b.autorGeb == null ? '' : b.autorGeb}" placeholder="1889"></div>
+      <div class="field"><label>Autor gestorben</label><input type="number" data-gest value="${b.autorGest == null ? '' : b.autorGest}" placeholder="1976"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Erstveröffentlichung</label><input type="number" data-jahr value="${b.jahr == null ? '' : b.jahr}" placeholder="1927"></div>
+      <div class="field"><label>Seiten</label><input type="number" data-seiten value="${b.seiten == null ? '' : b.seiten}" placeholder="445"></div>
+    </div>
+    <div class="field" style="flex-direction:row;align-items:center;gap:9px">
+      <input type="checkbox" data-unsicher ${b.seitenUnsicher ? 'checked' : ''} style="width:auto">
+      <label style="text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--text-2);font-weight:400">Seitenzahl ist geschätzt (wird mit ~ angezeigt)</label>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Preis in €</label><input type="text" inputmode="decimal" data-preis value="${b.preis == null ? '' : String(b.preis).replace('.', ',')}" placeholder="12,00"></div>
+      <div class="field"><label>Status</label><select data-status>
+        ${Object.entries(STATUS).map(([k, l]) => `<option value="${k}"${b.status === k ? ' selected' : ''}>${l}</option>`).join('')}
+      </select></div>
+    </div>
+    <div class="field"><label>Ausgabe</label><input type="text" data-ausgabe value="${esc(b.ausgabe || '')}" placeholder="z.B. Suhrkamp Taschenbuch"></div>
+    <div class="field"><label>Block</label><select data-block>
+      ${bloeckeSortiert().map(x => `<option value="${x.id}"${x.id === b.blockId ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}
+    </select></div>
+    <div class="field"><label>Beschreibung</label>
+      <textarea data-besch placeholder="Worum geht es? Diese Beschreibung steht auf der ersten Seite des Buches.">${esc(b.beschreibung || '')}</textarea>
+    </div>
+    ${neu ? '' : `<div class="field"><label>Reihenfolge im Block</label>
+      <div class="btn-row"><button class="btn btn-sm" data-up>${ICON.up} nach oben</button><button class="btn btn-sm" data-down>${ICON.down} nach unten</button></div>
+    </div>`}
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" data-ok style="flex:1">${neu ? 'Anlegen' : 'Sichern'}</button>
+      ${neu ? '' : `<button class="btn btn-danger" data-del>${ICON.trash}</button>`}
+    </div>`);
+
+  $('[data-ok]', s).onclick = () => {
+    const titel = $('[data-titel]', s).value.trim();
+    if (!titel) { toast('Ohne Titel geht es nicht.'); return; }
+    const werte = {
+      titel,
+      autor: $('[data-autor]', s).value.trim(),
+      autorGeb: num($('[data-geb]', s).value),
+      autorGest: num($('[data-gest]', s).value),
+      jahr: num($('[data-jahr]', s).value),
+      seiten: num($('[data-seiten]', s).value),
+      seitenUnsicher: $('[data-unsicher]', s).checked,
+      preis: num($('[data-preis]', s).value),
+      status: $('[data-status]', s).value,
+      ausgabe: $('[data-ausgabe]', s).value.trim(),
+      blockId: $('[data-block]', s).value,
+      beschreibung: $('[data-besch]', s).value.trim()
+    };
+    aendern(() => {
+      if (neu) {
+        DB.buecher.push(Object.assign({
+          id: uid(), ord: buecherIn(werte.blockId).length, sessions: [], notizen: []
+        }, werte));
+      } else Object.assign(b, werte);
+    });
+    layerSchliessen();
+    viewMalen();
+    if (nachSpeichern) nachSpeichern();
+  };
+
+  if (!neu) {
+    const verschieben = d => {
+      const l = buecherIn(b.blockId);
+      const i = l.findIndex(x => x.id === b.id), j = i + d;
+      if (j < 0 || j >= l.length) return;
+      aendern(() => { const t = l[i].ord; l[i].ord = l[j].ord; l[j].ord = t; buecherIn(b.blockId).forEach((x, k) => x.ord = k); });
+      viewMalen(); toast('Verschoben.');
+    };
+    $('[data-up]', s).onclick = () => verschieben(-1);
+    $('[data-down]', s).onclick = () => verschieben(1);
+    $('[data-del]', s).onclick = async () => {
+      const ok = await bestaetigen('Buch löschen?',
+        `„${esc(b.titel)}“ verschwindet mit ${b.notizen.length} Notizen und ${b.sessions.length} Lese-Sitzungen.`,
+        'Endgültig löschen', true);
+      if (!ok) return;
+      aendern(() => { DB.buecher = DB.buecher.filter(x => x.id !== b.id); });
+      layerSchliessen();
+      while (Layers.length) layerSchliessen();
+      viewMalen();
+      toast('Buch gelöscht.');
+    };
+  }
+}
+
+/* ============================================================
+   Daten laden: ganze Liste ersetzen oder ergänzen
+   ============================================================ */
+function importDialog(erstStart) {
+  const s = blatt('Daten aus Datei laden', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
+      Erwartet wird eine <span class="num">.json</span> im Leseplan-Format – eine frühere Sicherung oder eine fertige Liste.
+    </p>
+    <input type="file" accept=".json,application/json" data-file style="padding:9px">
+    <div class="field" style="margin-top:14px">
+      <label>Wie einspielen?</label>
+      <label style="display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;font-size:13px;color:var(--text-2)">
+        <input type="radio" name="impmode" value="ersetzen" checked style="width:auto;margin-top:3px">
+        <span><strong style="color:var(--text)">Alles ersetzen</strong><br>Der bisherige Inhalt wird verworfen.</span>
+      </label>
+      <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--text-2)">
+        <input type="radio" name="impmode" value="ergaenzen" style="width:auto;margin-top:3px">
+        <span><strong style="color:var(--text)">Ergänzen</strong><br>Neue Blöcke und Bücher kommen dazu, vorhandene bleiben unangetastet.</span>
+      </label>
+    </div>
+    <button class="btn btn-primary btn-block" data-ok>Laden</button>`, { fokus: false });
+
+  $('[data-ok]', s).onclick = async () => {
+    const f = $('[data-file]', s).files[0];
+    if (!f) { toast('Bitte erst eine Datei wählen.'); return; }
+    let roh;
+    try { roh = JSON.parse(await f.text()); }
+    catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); return; }
+    if (!roh || (!Array.isArray(roh.buecher) && !Array.isArray(roh.bloecke))) {
+      toast('Darin steckt kein Leseplan.', 4000); return;
+    }
+    const modus = $('input[name=impmode]:checked', s).value;
+    const neu = normalisiere(roh);
+    /* Wer gleich beim Start eine Datei lädt, bekommt die Arbeitskopie als Speicherort. */
+    if (!Store.modus) { Store.modus = 'geraet'; Store.handle = null; await Store.metaSchreiben(); }
+
+    if (modus === 'ersetzen') {
+      const ok = erstStart || await bestaetigen('Alles ersetzen?',
+        `Dein jetziger Stand mit ${DB.buecher.length} Büchern wird verworfen und durch ${neu.buecher.length} Bücher aus der Datei ersetzt.`,
+        'Ersetzen', true);
+      if (!ok) return;
+      const theme = DB.einstellungen.theme;
+      DB = neu;
+      DB.einstellungen.theme = theme;
+    } else {
+      aendern(() => {
+        const artNach = {}, themaNach = {}, blockNach = {};
+        neu.arten.forEach(a => {
+          const da = DB.arten.find(x => x.name.toLowerCase() === a.name.toLowerCase());
+          artNach[a.id] = da ? da.id : (DB.arten.push({ id: uid(), name: a.name, farbe: ART_FARBEN[DB.arten.length % 8] }), DB.arten[DB.arten.length - 1].id);
+        });
+        neu.themen.forEach(t => { themaNach[t.id] = themaFindenOderAnlegen(t.name); });
+        neu.bloecke.sort((a, b) => a.ord - b.ord).forEach(bl => {
+          const da = DB.bloecke.find(x => x.name.toLowerCase() === bl.name.toLowerCase());
+          if (da) { blockNach[bl.id] = da.id; return; }
+          const n = { id: uid(), name: bl.name, notiz: bl.notiz, ord: DB.bloecke.length };
+          DB.bloecke.push(n); blockNach[bl.id] = n.id;
+        });
+        neu.buecher.forEach(bu => {
+          const zielBlock = blockNach[bu.blockId] || (DB.bloecke[0] && DB.bloecke[0].id);
+          const doppelt = DB.buecher.some(x => x.blockId === zielBlock && x.titel.toLowerCase() === bu.titel.toLowerCase());
+          if (doppelt) return;
+          bu.id = uid(); bu.blockId = zielBlock; bu.ord = buecherIn(zielBlock).length;
+          bu.notizen.forEach(n => { n.artId = artNach[n.artId] || null; n.themaId = themaNach[n.themaId] || null; });
+          DB.buecher.push(bu);
+        });
+      });
+    }
+    Store.aendern();
+    await Store.sichern(true);
+    if (erstStart) { appStarten(); }
+    layerSchliessen();
+    themeAnwenden();
+    viewMalen();
+    toast(modus === 'ersetzen' ? 'Liste geladen.' : 'Liste ergänzt.');
+  };
+}
+/* ============================================================
+   Bilder: aufnehmen, wählen, verkleinern
+   ============================================================ */
+const BILD_KANTE = 1600, BILD_QUALITAET = 0.75;
+
+function bildVerkleinern(quelle) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const f = Math.min(1, BILD_KANTE / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * f); c.height = Math.round(img.height * f);
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      res(c.toDataURL('image/jpeg', BILD_QUALITAET));
+    };
+    img.onerror = () => rej(new Error('Bild konnte nicht gelesen werden'));
+    img.src = quelle;
+  });
+}
+function dateiZuBild(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => bildVerkleinern(r.result).then(res, rej);
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(file);
+  });
+}
+function bilderWaehlen(onFertig) {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true; inp.style.display = 'none';
+  document.body.appendChild(inp);
+  inp.onchange = async () => {
+    const out = [];
+    for (const f of Array.from(inp.files || [])) {
+      try { out.push(await dateiZuBild(f)); } catch (e) { console.error(e); }
+    }
+    inp.remove();
+    if (out.length) onFertig(out);
+  };
+  inp.click();
+}
+function kameraUeberDateidialog(onFertig) {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment'; inp.style.display = 'none';
+  document.body.appendChild(inp);
+  inp.onchange = async () => {
+    const f = inp.files && inp.files[0];
+    inp.remove();
+    if (!f) return;
+    try { onFertig([await dateiZuBild(f)]); } catch (e) { toast('Foto konnte nicht verarbeitet werden.'); }
+  };
+  inp.click();
+}
+
+/* Live-Kamera in der Seite; wo die Umgebung sie verbietet, springt die Kamera-App ein. */
+async function kameraOeffnen(onFertig) {
+  let stream = null, hinten = true;
+  const holen = async () => {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: hinten ? { ideal: 'environment' } : 'user', width: { ideal: 2400 } }, audio: false
+    });
+    return stream;
+  };
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('keine Kamera-Schnittstelle');
+    await holen();
+  } catch (e) {
+    console.warn('Live-Kamera nicht möglich:', e);
+    kameraUeberDateidialog(onFertig);
+    return;
+  }
+
+  const aufnahmen = [];
+  const node = document.createElement('div');
+  node.className = 'cam';
+  node.innerHTML = `
+    <video playsinline autoplay muted></video>
+    <div class="cam-strip" data-strip hidden></div>
+    <div class="cam-bar">
+      <button class="cam-side" data-abbruch style="text-align:left">Abbrechen</button>
+      <button class="cam-shutter" data-shot aria-label="Auslösen"></button>
+      <button class="cam-side" data-fertig style="text-align:right;font-weight:600">Fertig</button>
+    </div>`;
+  const video = $('video', node);
+  video.srcObject = stream;
+
+  const schliessen = () => { if (stream) stream.getTracks().forEach(t => t.stop()); };
+  layerOeffnen(node, schliessen);
+
+  $('[data-shot]', node).onclick = async () => {
+    const c = document.createElement('canvas');
+    const f = Math.min(1, BILD_KANTE / Math.max(video.videoWidth, video.videoHeight));
+    c.width = Math.round(video.videoWidth * f); c.height = Math.round(video.videoHeight * f);
+    c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+    const d = c.toDataURL('image/jpeg', BILD_QUALITAET);
+    aufnahmen.push(d);
+    const strip = $('[data-strip]', node);
+    strip.hidden = false;
+    const im = document.createElement('img'); im.src = d; strip.appendChild(im);
+    strip.scrollLeft = strip.scrollWidth;
+  };
+  $('[data-abbruch]', node).onclick = () => layerSchliessen();
+  $('[data-fertig]', node).onclick = () => { layerSchliessen(); if (aufnahmen.length) onFertig(aufnahmen); };
+}
+
+function bildGross(bilder, start, onLoeschen) {
+  let i = start || 0;
+  const node = document.createElement('div');
+  node.className = 'lightbox';
+  node.innerHTML = `<img alt="Foto zur Notiz">
+    <div class="lb-bar">
+      <button class="btn btn-sm btn-ghost" data-prev>Zurück</button>
+      <span class="num" data-zaehler></span>
+      <span style="display:flex;gap:8px">
+        ${onLoeschen ? `<button class="btn btn-sm btn-danger" data-del>${ICON.trash}</button>` : ''}
+        <button class="btn btn-sm" data-next>Weiter</button>
+        <button class="btn btn-sm btn-ghost" data-zu>Schließen</button>
+      </span>
+    </div>`;
+  const malen = () => {
+    $('img', node).src = bilder[i].src || bilder[i];
+    $('[data-zaehler]', node).textContent = (i + 1) + ' / ' + bilder.length;
+  };
+  layerOeffnen(node);
+  malen();
+  $('[data-prev]', node).onclick = () => { i = (i - 1 + bilder.length) % bilder.length; malen(); };
+  $('[data-next]', node).onclick = () => { i = (i + 1) % bilder.length; malen(); };
+  $('[data-zu]', node).onclick = () => layerSchliessen();
+  if (onLoeschen) $('[data-del]', node).onclick = () => { const w = bilder[i]; layerSchliessen(); onLoeschen(w); };
+}
+
+/* ============================================================
+   Buchansicht: wischen zwischen Beschreibung, Themen, Arten, Lesen
+   ============================================================ */
+const SEITEN = [
+  { id: 'beschreibung', label: 'Beschreibung' },
+  { id: 'themen', label: 'Themenfelder' },
+  { id: 'arten', label: 'Arten' },
+  { id: 'lesen', label: 'Lesen' }
+];
+
+function buchOeffnen(buchId, startSeite) {
+  const b = buchById(buchId);
+  if (!b) return;
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back aria-label="Zurück">${ICON.back}</button>
+      <div class="grow">
+        <div class="ovl-title serif" data-t></div>
+        <div class="ovl-sub" data-s></div>
+      </div>
+      <button class="status-btn" data-status aria-label="Status ändern"></button>
+      <button class="icon-btn" data-edit aria-label="Buch bearbeiten">${ICON.edit}</button>
+    </div>
+    <div class="pagertabs">${SEITEN.map((s, i) => `<button data-go="${i}" aria-selected="${i === 0}">${s.label}</button>`).join('')}</div>
+    <div class="pager">${SEITEN.map(s => `<section class="page" data-page="${s.id}"></section>`).join('')}</div>`;
+
+  const pager = $('.pager', node);
+  const tabs = $$('[data-go]', node);
+
+  const kopf = () => {
+    const blk = blockById(b.blockId);
+    $('[data-t]', node).textContent = b.titel;
+    $('[data-s]', node).textContent = [b.autor, blk && blk.name].filter(Boolean).join(' · ');
+    const st = $('[data-status]', node);
+    st.dataset.status = b.status;
+    st.title = STATUS[b.status];
+    st.innerHTML = b.status === 'gelesen' ? ICON.check : b.status === 'lese' ? ICON.read : '';
+  };
+  const allesMalen = () => {
+    kopf();
+    seiteBeschreibung(b, $('[data-page="beschreibung"]', node), allesMalen);
+    seiteGruppen(b, $('[data-page="themen"]', node), 'thema', allesMalen);
+    seiteGruppen(b, $('[data-page="arten"]', node), 'art', allesMalen);
+    seiteLesen(b, $('[data-page="lesen"]', node), allesMalen);
+    viewMalen();
+  };
+
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  $('[data-edit]', node).onclick = () => buchBearbeiten(b, b.blockId, allesMalen);
+  $('[data-status]', node).onclick = () => {
+    const folge = { offen: 'lese', lese: 'gelesen', gelesen: 'offen' };
+    aendern(() => { b.status = folge[b.status] || 'offen'; });
+    allesMalen();
+    toast(STATUS[b.status]);
+  };
+  tabs.forEach((t, i) => t.onclick = () => pager.scrollTo({ left: pager.clientWidth * i, behavior: 'smooth' }));
+  let scrollT;
+  pager.addEventListener('scroll', () => {
+    clearTimeout(scrollT);
+    scrollT = setTimeout(() => {
+      const i = Math.round(pager.scrollLeft / Math.max(1, pager.clientWidth));
+      tabs.forEach((t, k) => t.setAttribute('aria-selected', String(k === i)));
+      const akt = tabs[i];
+      if (akt) akt.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }, 80);
+  });
+
+  layerOeffnen(node);
+  allesMalen();
+  if (startSeite) {
+    const i = SEITEN.findIndex(s => s.id === startSeite);
+    if (i > 0) requestAnimationFrame(() => { pager.scrollLeft = pager.clientWidth * i; tabs.forEach((t, k) => t.setAttribute('aria-selected', String(k === i))); });
+  }
+}
+
+/* ---------- Seite 1: Beschreibung und Daten ---------- */
+function seiteBeschreibung(b, root, neuMalen) {
+  const min = buchMinuten(b), tempo = buchTempo(b);
+  const lebt = [b.autorGeb, b.autorGest].some(x => x != null)
+    ? (b.autorGeb != null ? b.autorGeb : '?') + '–' + (b.autorGest != null ? b.autorGest : '')
+    : null;
+  root.innerHTML = `
+    ${b.beschreibung
+      ? `<p class="desc">${esc(b.beschreibung).replace(/\n/g, '<br>')}</p>`
+      : `<div class="empty" style="margin:0"><strong>Noch keine Beschreibung</strong>Schreib in zwei, drei Sätzen auf, worum es geht – das steht dann immer als Erstes hier.</div>`}
+    <div style="margin-top:12px"><button class="btn btn-sm" data-edit-desc>${ICON.edit} Beschreibung ${b.beschreibung ? 'ändern' : 'schreiben'}</button></div>
+
+    <div class="factgrid">
+      <div class="fact"><div class="k">Erschienen</div><div class="v">${b.jahr != null ? b.jahr : '–'}</div></div>
+      <div class="fact"><div class="k">Seiten</div><div class="v">${b.seiten != null ? (b.seitenUnsicher ? '~' : '') + b.seiten : '–'}</div></div>
+      <div class="fact"><div class="k">Preis</div><div class="v">${b.preis != null ? fmtGeld(b.preis) : '–'}</div></div>
+      <div class="fact"><div class="k">Autor</div><div class="v" style="font-size:12.5px">${lebt ? esc(String(lebt)) : '–'}</div></div>
+      <div class="fact"><div class="k">Lesezeit</div><div class="v">${min ? fmtDauer(min) : '–'}</div></div>
+      <div class="fact"><div class="k">Tempo</div><div class="v">${tempo ? fmtZahl(tempo) + ' <small>S./h</small>' : '–'}</div></div>
+      <div class="fact"><div class="k">Notizen</div><div class="v">${b.notizen.length}</div></div>
+      <div class="fact"><div class="k">Status</div><div class="v" style="font-size:12.5px">${STATUS[b.status]}</div></div>
+    </div>
+    ${b.ausgabe ? `<p class="muted" style="font-size:12px;margin-top:10px">Ausgabe: ${esc(b.ausgabe)}</p>` : ''}
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" data-neu-notiz style="flex:1">${ICON.plus} Notiz anlegen</button>
+      <button class="btn" data-alle-notizen>Alle Notizen (${b.notizen.length})</button>
+    </div>`;
+  $('[data-edit-desc]', root).onclick = () => beschreibungBearbeiten(b, neuMalen);
+  $('[data-neu-notiz]', root).onclick = () => notizBearbeiten(b, null, {}, neuMalen);
+  $('[data-alle-notizen]', root).onclick = () => notizListe(b, { alle: true }, neuMalen);
+}
+
+function beschreibungBearbeiten(b, neuMalen) {
+  const s = blatt('Beschreibung', `
+    <div class="field">
+      <label>Worum geht es?</label>
+      <textarea data-t style="min-height:180px;font-family:'Literata',Georgia,serif;line-height:1.65">${esc(b.beschreibung || '')}</textarea>
+      <span class="hint">Diese Sätze stehen als Erstes, wenn du das Buch öffnest.</span>
+    </div>
+    <button class="btn btn-primary btn-block" data-ok>Sichern</button>`);
+  $('[data-ok]', s).onclick = () => {
+    aendern(() => { b.beschreibung = $('[data-t]', s).value.trim(); });
+    layerSchliessen(); neuMalen();
+  };
+}
+
+/* ---------- Seiten 2 und 3: Themenfelder und Arten ---------- */
+function seiteGruppen(b, root, art, neuMalen) {
+  const nachThema = art === 'thema';
+  const map = new Map();
+  b.notizen.forEach(n => {
+    const key = (nachThema ? n.themaId : n.artId) || '__ohne';
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(n);
+  });
+  const gruppen = Array.from(map.entries()).sort((a, c) => c[1].length - a[1].length);
+
+  root.innerHTML = `
+    <div class="section-head" style="padding:0">
+      <h2>${nachThema ? 'Themenfelder in diesem Buch' : 'Notizen nach Art'}</h2>
+      <button class="btn btn-sm" data-neu>${ICON.plus} Notiz</button>
+    </div>
+    ${gruppen.length ? '' : `<div class="empty" style="margin:8px 0 0"><strong>Noch keine Notizen</strong>${nachThema
+      ? 'Sobald du Notizen anlegst und ihnen ein Themenfeld gibst, sammeln sie sich hier.'
+      : 'Zitat, Gedanke, Frage, Kritik – hier liegen sie später nach Art sortiert.'}</div>`}
+    <div data-liste style="margin-top:10px"></div>`;
+
+  const liste = $('[data-liste]', root);
+  gruppen.forEach(([key, notizen]) => {
+    const ohne = key === '__ohne';
+    const name = ohne ? (nachThema ? 'Ohne Themenfeld' : 'Ohne Art') : (nachThema ? themaName(key) : artName(key));
+    const farbe = !nachThema && !ohne ? artFarbe(key) : null;
+    const seiten = notizen.map(n => n.seite).filter(x => x != null).sort((a, c) => a - c);
+    const row = document.createElement('button');
+    row.className = 'grouprow';
+    row.innerHTML = `
+      ${farbe ? `<span class="chip" style="border-color:${farbe};color:${farbe};background:transparent;padding:3px 9px"><span class="swatch" style="background:${farbe}"></span></span>` : ''}
+      <span class="grow">
+        <span class="gname">${esc(name)}</span>
+        <span class="gmeta">${notizen.length} ${notizen.length === 1 ? 'Notiz' : 'Notizen'}${seiten.length ? ' · S. ' + seiten[0] + (seiten.length > 1 ? '–' + seiten[seiten.length - 1] : '') : ''}</span>
+      </span>
+      <span class="count num">${notizen.length}</span>
+      <span class="chev">${ICON.chev}</span>`;
+    row.onclick = () => notizListe(b, nachThema ? { themaId: ohne ? null : key } : { artId: ohne ? null : key }, neuMalen);
+    liste.appendChild(row);
+  });
+
+  $('[data-neu]', root).onclick = () => notizBearbeiten(b, null, {}, neuMalen);
+}
+
+/* ---------- Notizliste einer Gruppe ---------- */
+function notizListe(b, filter, neuMalen) {
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  const titel = filter.alle ? 'Alle Notizen'
+    : ('themaId' in filter) ? (filter.themaId ? themaName(filter.themaId) : 'Ohne Themenfeld')
+      : (filter.artId ? artName(filter.artId) : 'Ohne Art');
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">${esc(titel)}</div><div class="ovl-sub">${esc(b.titel)}</div></div>
+      <button class="icon-btn" data-neu>${ICON.plus}</button>
+    </div>
+    <div class="ovl-body" style="padding:12px 14px 40px" data-liste></div>`;
+
+  const passt = n => filter.alle ? true
+    : ('themaId' in filter) ? ((n.themaId || null) === filter.themaId)
+      : ((n.artId || null) === filter.artId);
+
+  const malen = () => {
+    const liste = $('[data-liste]', node);
+    const notizen = b.notizen.filter(passt).sort((a, c) => (a.seite == null ? 1e9 : a.seite) - (c.seite == null ? 1e9 : c.seite));
+    liste.innerHTML = notizen.length ? '' : `<div class="empty"><strong>Leer</strong>Hier ist noch keine Notiz.</div>`;
+    notizen.forEach(n => liste.appendChild(notizKarte(b, n, () => { malen(); if (neuMalen) neuMalen(); })));
+    if (neuMalen) neuMalen();
+  };
+
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  $('[data-neu]', node).onclick = () => notizBearbeiten(b, null, {
+    themaId: 'themaId' in filter ? filter.themaId : undefined,
+    artId: 'artId' in filter ? filter.artId : undefined
+  }, malen);
+
+  layerOeffnen(node);
+  malen();
+}
+
+function notizKarte(b, n, neuMalen) {
+  const node = document.createElement('div');
+  node.className = 'note';
+  const istZitat = artName(n.artId).toLowerCase() === 'zitat';
+  node.innerHTML = `
+    <div class="note-top">
+      ${n.seite != null ? `<span class="note-page">S. ${n.seite}</span>` : ''}
+      ${n.artId ? `<span class="arttag" style="background:color-mix(in srgb,${artFarbe(n.artId)} 20%,transparent);color:${artFarbe(n.artId)}">${esc(artName(n.artId))}</span>` : ''}
+      ${n.themaId ? `<span class="themetag">${esc(themaName(n.themaId))}</span>` : ''}
+      <span style="flex:1"></span>
+      <button class="icon-btn" data-edit style="width:28px;height:28px">${ICON.edit}</button>
+    </div>
+    <div class="note-text ${istZitat ? 'quote' : ''}">${esc(n.text) || '<span style="color:var(--text-3)">(kein Text)</span>'}</div>
+    ${n.bilder.length ? `<div class="note-thumbs">${n.bilder.map((x, i) => `<img src="${x.src}" data-bild="${i}" alt="Foto ${i + 1}">`).join('')}</div>` : ''}`;
+  $('[data-edit]', node).onclick = () => notizBearbeiten(b, n, {}, neuMalen);
+  $$('[data-bild]', node).forEach(im => im.onclick = () => bildGross(n.bilder, +im.dataset.bild, null));
+  return node;
+}
+
+/* ---------- Notiz anlegen und bearbeiten ---------- */
+function notizBearbeiten(b, notiz, vorgabe, neuMalen) {
+  const neu = !notiz;
+  const n = notiz || {
+    id: uid(), seite: null,
+    themaId: vorgabe.themaId !== undefined ? vorgabe.themaId : null,
+    artId: vorgabe.artId !== undefined ? vorgabe.artId : (DB.arten[0] ? DB.arten[0].id : null),
+    text: '', bilder: [], erstellt: Date.now(), geaendert: Date.now()
+  };
+  const bilder = n.bilder.slice();
+  let artId = n.artId;
+
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">${neu ? 'Neue Notiz' : 'Notiz'}</div><div class="ovl-sub">${esc(b.titel)}</div></div>
+      ${neu ? '' : `<button class="icon-btn" data-del>${ICON.trash}</button>`}
+      <button class="btn btn-primary btn-sm" data-ok>Sichern</button>
+    </div>
+    <div class="ovl-body" style="padding:14px 14px 40px">
+      <div class="grid2">
+        <div class="field"><label>Seite</label>
+          <input type="number" data-seite value="${n.seite == null ? '' : n.seite}" placeholder="${b.seiten ? 'von ' + b.seiten : '42'}">
+        </div>
+        <div class="field"><label>Themenfeld</label>
+          <input type="text" data-thema list="themenListe" value="${esc(n.themaId ? themaName(n.themaId) : '')}" placeholder="z.B. Entfremdung">
+        </div>
+      </div>
+      <datalist id="themenListe">${DB.themen.map(t => `<option value="${esc(t.name)}">`).join('')}</datalist>
+      <div class="field">
+        <label>Art</label>
+        <div style="display:flex;gap:7px;flex-wrap:wrap" data-arten></div>
+      </div>
+      <div class="field">
+        <label>Text</label>
+        <textarea data-text style="min-height:150px;font-family:'Literata',Georgia,serif;line-height:1.65" placeholder="Zitat, Gedanke, Frage …">${esc(n.text)}</textarea>
+      </div>
+      <div class="field">
+        <label>Fotos</label>
+        <div class="shots" data-shots></div>
+      </div>
+    </div>`;
+
+  const artenMalen = () => {
+    const wrap = $('[data-arten]', node);
+    wrap.innerHTML = DB.arten.map(a =>
+      `<button class="chip" data-art="${a.id}" aria-pressed="${a.id === artId}" style="${a.id === artId ? `border-color:var(--${a.farbe});color:var(--${a.farbe});background:color-mix(in srgb,var(--${a.farbe}) 15%,transparent)` : ''}">
+        <span class="swatch" style="background:var(--${a.farbe})"></span>${esc(a.name)}</button>`).join('')
+      + `<button class="chip" data-neue-art>${ICON.plus} Art</button>`;
+    $$('[data-art]', wrap).forEach(x => x.onclick = () => { artId = (artId === x.dataset.art) ? null : x.dataset.art; artenMalen(); });
+    $('[data-neue-art]', wrap).onclick = () => {
+      const s = blatt('Neue Art', `
+        <div class="field"><label>Name</label><input type="text" data-n placeholder="z.B. Widerspruch"></div>
+        <button class="btn btn-primary btn-block" data-ok>Anlegen</button>`);
+      $('[data-ok]', s).onclick = () => {
+        const name = $('[data-n]', s).value.trim();
+        if (!name) return;
+        const a = { id: uid(), name, farbe: ART_FARBEN[DB.arten.length % 8] };
+        aendern(() => DB.arten.push(a));
+        artId = a.id;
+        layerSchliessen(); artenMalen();
+      };
+    };
+  };
+
+  const shotsMalen = () => {
+    const wrap = $('[data-shots]', node);
+    wrap.innerHTML = bilder.map((x, i) => `
+      <div class="shot"><img src="${x.src}" data-gross="${i}" alt="Foto ${i + 1}"><button class="x" data-weg="${i}" aria-label="Foto entfernen">${ICON.x}</button></div>`).join('')
+      + `<button class="addshot" data-kamera>${ICON.cam}Kamera</button>
+         <button class="addshot" data-galerie>${ICON.img}Galerie</button>`;
+    $$('[data-weg]', wrap).forEach(x => x.onclick = e => { e.stopPropagation(); bilder.splice(+x.dataset.weg, 1); shotsMalen(); });
+    $$('[data-gross]', wrap).forEach(x => x.onclick = () => bildGross(bilder, +x.dataset.gross, w => {
+      const i = bilder.indexOf(w); if (i >= 0) bilder.splice(i, 1); shotsMalen();
+    }));
+    $('[data-kamera]', wrap).onclick = () => kameraOeffnen(neue => { neue.forEach(src => bilder.push({ id: uid(), src, ts: Date.now() })); shotsMalen(); });
+    $('[data-galerie]', wrap).onclick = () => bilderWaehlen(neue => { neue.forEach(src => bilder.push({ id: uid(), src, ts: Date.now() })); shotsMalen(); });
+  };
+
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  $('[data-ok]', node).onclick = () => {
+    const text = $('[data-text]', node).value.trim();
+    if (!text && !bilder.length) { toast('Ohne Text und ohne Foto gibt es nichts zu sichern.'); return; }
+    aendern(() => {
+      n.seite = num($('[data-seite]', node).value);
+      n.themaId = themaFindenOderAnlegen($('[data-thema]', node).value);
+      n.artId = artId;
+      n.text = text;
+      n.bilder = bilder;
+      n.geaendert = Date.now();
+      if (neu) b.notizen.push(n);
+    });
+    layerSchliessen();
+    if (neuMalen) neuMalen();
+    toast(neu ? 'Notiz angelegt.' : 'Notiz gesichert.');
+  };
+  if (!neu) $('[data-del]', node).onclick = async () => {
+    const ok = await bestaetigen('Notiz löschen?', 'Text und ' + n.bilder.length + ' Foto(s) sind dann weg.', 'Löschen', true);
+    if (!ok) return;
+    aendern(() => { b.notizen = b.notizen.filter(x => x.id !== n.id); });
+    layerSchliessen();
+    if (neuMalen) neuMalen();
+  };
+
+  layerOeffnen(node);
+  artenMalen();
+  shotsMalen();
+}
+/* ============================================================
+   Seite 4: Lesen – Stoppuhr und Sitzungen
+   ============================================================ */
+let uhrTick = null;
+
+function laufenderTimer() { return DB.einstellungen.timer || null; }
+function timerMinuten(t) { return (Date.now() - t.startTs) / 60000; }
+
+function seiteLesen(b, root, neuMalen) {
+  const t = laufenderTimer();
+  const laeuftHier = t && t.buchId === b.id;
+  const min = buchMinuten(b);
+  const gelesen = buchSeitenGelesen(b);
+  const tempo = buchTempo(b);
+  const letzte = b.sessions.slice().sort((x, y) => (x.datum < y.datum ? 1 : -1))[0];
+  const stand = b.sessions.reduce((m, s) => Math.max(m, s.bis || 0), 0);
+  const rest = (b.seiten && stand) ? Math.max(0, b.seiten - stand) : null;
+  const restZeit = (rest != null && tempo) ? rest / tempo * 60 : null;
+
+  root.innerHTML = `
+    <div class="card" style="padding:14px;margin-bottom:14px">
+      <div class="eyebrow" style="text-align:center">${laeuftHier ? 'läuft' : (min ? 'bisher gelesen' : 'Stoppuhr')}</div>
+      <div class="timer-big" data-uhr>00:00:00</div>
+      <div class="btn-row" style="justify-content:center;margin-top:10px">
+        <button class="btn ${laeuftHier ? 'btn-danger' : 'btn-primary'}" data-uhr-btn style="min-width:170px">
+          ${laeuftHier ? ICON.pause + ' Sitzung beenden' : ICON.play + ' Sitzung starten'}
+        </button>
+      </div>
+      ${t && !laeuftHier ? `<p class="hinweis" style="text-align:center;padding-bottom:0">Eine Stoppuhr läuft gerade bei „${esc((buchById(t.buchId) || {}).titel || 'einem anderen Buch')}“.</p>` : ''}
+    </div>
+
+    <div class="factgrid" style="margin-top:0">
+      <div class="fact"><div class="k">Lesezeit</div><div class="v">${min ? fmtDauer(min) : '–'}</div></div>
+      <div class="fact"><div class="k">Seiten gelesen</div><div class="v">${gelesen || '–'}</div></div>
+      <div class="fact"><div class="k">Tempo</div><div class="v">${tempo ? fmtZahl(tempo) + ' <small>S./h</small>' : '–'}</div></div>
+      <div class="fact"><div class="k">Stand</div><div class="v">${stand ? 'S. ' + stand : '–'}</div></div>
+      <div class="fact"><div class="k">Rest</div><div class="v">${rest != null ? rest + ' <small>S.</small>' : '–'}</div></div>
+      <div class="fact"><div class="k">Noch etwa</div><div class="v" style="font-size:12.5px">${restZeit ? fmtDauer(restZeit) : '–'}</div></div>
+    </div>
+
+    <div class="section-head" style="padding:0;margin:18px 0 9px">
+      <h2>Sitzungen (${b.sessions.length})</h2>
+      <button class="btn btn-sm" data-neu-session>${ICON.plus} Eintragen</button>
+    </div>
+    <div class="list-card" data-sessions></div>`;
+
+  const uhrMalen = () => {
+    const tt = laufenderTimer();
+    const el = $('[data-uhr]', root);
+    if (!el) return;
+    if (!tt || tt.buchId !== b.id) { el.textContent = min ? fmtDauer(min) : '00:00:00'; return; }
+    const s = Math.floor((Date.now() - tt.startTs) / 1000);
+    el.textContent = [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map(x => String(x).padStart(2, '0')).join(':');
+  };
+  uhrMalen();
+  clearInterval(uhrTick);
+  if (laeuftHier) uhrTick = setInterval(uhrMalen, 1000);
+
+  $('[data-uhr-btn]', root).onclick = () => {
+    if (laeuftHier) {
+      const minuten = Math.max(1, Math.round(timerMinuten(t)));
+      aendern(() => { DB.einstellungen.timer = null; });
+      clearInterval(uhrTick);
+      sessionBearbeiten(b, null, { minuten, von: stand || null }, neuMalen);
+    } else {
+      aendern(() => {
+        DB.einstellungen.timer = { buchId: b.id, startTs: Date.now() };
+        if (b.status === 'offen') b.status = 'lese';
+      });
+      neuMalen();
+    }
+  };
+  $('[data-neu-session]', root).onclick = () => sessionBearbeiten(b, null, { von: stand || null }, neuMalen);
+
+  const wrap = $('[data-sessions]', root);
+  const sess = b.sessions.slice().sort((x, y) => (x.datum < y.datum ? 1 : x.datum > y.datum ? -1 : 0));
+  if (!sess.length) {
+    wrap.innerHTML = `<div class="hinweis" style="padding:16px 14px">Noch keine Sitzung. Starte die Stoppuhr oder trage eine vergangene Sitzung von Hand ein – beides lässt sich später korrigieren.</div>`;
+  }
+  sess.forEach(s => {
+    const row = document.createElement('button');
+    row.className = 'rowline';
+    row.style.width = '100%';
+    row.style.textAlign = 'left';
+    row.innerHTML = `
+      <span class="grow">
+        <span class="rn num">${fmtDatum(s.datum)}</span>
+        <span class="rm">${fmtDauer(s.minuten)}${(s.von != null && s.bis != null) ? ' · S. ' + s.von + '–' + s.bis : ''}${s.notiz ? ' · ' + esc(s.notiz) : ''}</span>
+      </span>
+      <span class="chev">${ICON.chev}</span>`;
+    row.onclick = () => sessionBearbeiten(b, s, {}, neuMalen);
+    wrap.appendChild(row);
+  });
+}
+
+function sessionBearbeiten(b, session, vorgabe, neuMalen) {
+  const neu = !session;
+  const s0 = session || {
+    id: uid(), datum: heute(), minuten: vorgabe.minuten || 0,
+    von: vorgabe.von != null ? vorgabe.von : null, bis: null, notiz: ''
+  };
+  const s = blatt(neu ? 'Sitzung eintragen' : 'Sitzung ändern', `
+    <div class="grid2">
+      <div class="field"><label>Datum</label><input type="date" data-datum value="${s0.datum}"></div>
+      <div class="field"><label>Dauer in Minuten</label><input type="number" data-min value="${s0.minuten || ''}" placeholder="45"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Seite von</label><input type="number" data-von value="${s0.von == null ? '' : s0.von}"></div>
+      <div class="field"><label>Seite bis</label><input type="number" data-bis value="${s0.bis == null ? '' : s0.bis}"></div>
+    </div>
+    <div class="field"><label>Notiz</label><input type="text" data-notiz value="${esc(s0.notiz || '')}" placeholder="z.B. im Zug, laut gelesen"></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-primary" data-ok style="flex:1">${neu ? 'Eintragen' : 'Sichern'}</button>
+      ${neu ? '' : `<button class="btn btn-danger" data-del>${ICON.trash}</button>`}
+    </div>`, { fokus: false });
+
+  $('[data-ok]', s).onclick = () => {
+    const minuten = num($('[data-min]', s).value) || 0;
+    if (minuten <= 0) { toast('Wie lange war die Sitzung?'); return; }
+    aendern(() => {
+      s0.datum = $('[data-datum]', s).value || heute();
+      s0.minuten = minuten;
+      s0.von = num($('[data-von]', s).value);
+      s0.bis = num($('[data-bis]', s).value);
+      s0.notiz = $('[data-notiz]', s).value.trim();
+      if (neu) b.sessions.push(s0);
+      if (b.status === 'offen') b.status = 'lese';
+      if (b.seiten && s0.bis && s0.bis >= b.seiten) b.status = 'gelesen';
+    });
+    layerSchliessen();
+    if (neuMalen) neuMalen();
+  };
+  if (!neu) $('[data-del]', s).onclick = async () => {
+    const ok = await bestaetigen('Sitzung löschen?', fmtDatum(s0.datum) + ', ' + fmtDauer(s0.minuten), 'Löschen', true);
+    if (!ok) return;
+    aendern(() => { b.sessions = b.sessions.filter(x => x.id !== s0.id); });
+    layerSchliessen();
+    if (neuMalen) neuMalen();
+  };
+}
+
+/* ============================================================
+   Diagramme
+   ============================================================ */
+let tipEl = null;
+function tipZeigen(e, titel, wert) {
+  if (!tipEl) { tipEl = document.createElement('div'); tipEl.className = 'tip'; document.body.appendChild(tipEl); }
+  tipEl.innerHTML = `<div class="tt">${esc(titel)}</div><div class="tv">${esc(wert)}</div>`;
+  tipEl.hidden = false;
+  const r = tipEl.getBoundingClientRect();
+  const x = clamp((e.clientX || 0) - r.width / 2, 8, window.innerWidth - r.width - 8);
+  const y = Math.max(8, (e.clientY || 0) - r.height - 14);
+  tipEl.style.left = x + 'px'; tipEl.style.top = y + 'px';
+}
+function tipWeg() { if (tipEl) tipEl.hidden = true; }
+document.addEventListener('scroll', tipWeg, true);
+
+function karte(titel, cap, inhaltHtml, legende, tabelle) {
+  const d = document.createElement('div');
+  d.className = 'chart';
+  d.innerHTML = `
+    <div class="chart-head"><h3>${esc(titel)}</h3>${cap ? `<div class="cap">${cap}</div>` : ''}</div>
+    ${inhaltHtml}
+    ${legende ? `<div class="legend">${legende}</div>` : ''}
+    ${tabelle ? `<details><summary>Als Tabelle</summary><div class="chart-scroll">${tabelle}</div></details>` : ''}`;
+  d.addEventListener('pointerover', e => {
+    const el = e.target.closest('[data-tip]');
+    if (el) tipZeigen(e, el.dataset.tipT || '', el.dataset.tip);
+  });
+  d.addEventListener('pointermove', e => {
+    const el = e.target.closest('[data-tip]');
+    if (el) tipZeigen(e, el.dataset.tipT || '', el.dataset.tip); else tipWeg();
+  });
+  d.addEventListener('pointerleave', tipWeg);
+  return d;
+}
+
+/* Waagerechte Balken, notfalls gestapelt. */
+function balken(items, opts) {
+  opts = opts || {};
+  const max = Math.max(1, ...items.map(i => i.segmente ? i.segmente.reduce((s, x) => s + x.wert, 0) : i.wert));
+  return `<div class="bars">` + items.map(i => {
+    const segs = i.segmente || [{ wert: i.wert, farbe: i.farbe || 'var(--s1)', name: i.label }];
+    return `<div class="barrow">
+      <div class="blab" title="${esc(i.label)}">${esc(i.label)}</div>
+      <div class="btrack">
+        ${segs.filter(s => s.wert > 0).map(s => `<div class="bseg" style="width:${s.wert / max * 100}%;background:${s.farbe}"
+            data-tip="${esc(s.name || i.label)}: ${esc(opts.fmt ? opts.fmt(s.wert) : fmtZahl(s.wert))}" data-tip-t="${esc(i.label)}"></div>`).join('')}
+      </div>
+      <div class="bval">${i.anzeige != null ? esc(i.anzeige) : esc(opts.fmt ? opts.fmt(i.wert) : fmtZahl(i.wert))}</div>
+    </div>`;
+  }).join('') + `</div>`;
+}
+function tabelleHtml(kopf, zeilen) {
+  return `<table><thead><tr>${kopf.map((k, i) => `<th${i ? ' class="n"' : ''}>${esc(k)}</th>`).join('')}</tr></thead><tbody>`
+    + zeilen.map(z => `<tr>${z.map((c, i) => `<td${i ? ' class="n"' : ''}>${esc(c)}</td>`).join('')}</tr>`).join('')
+    + `</tbody></table>`;
+}
+
+/* Senkrechte Balken über die Zeit (SVG). */
+function zeitBalken(punkte, fmt) {
+  const W = 320, H = 120, padL = 4, padB = 20;
+  const max = Math.max(1, ...punkte.map(p => p.wert));
+  const bw = (W - padL) / Math.max(1, punkte.length);
+  const breite = Math.min(bw * 0.68, 26);
+  const bars = punkte.map((p, i) => {
+    const h = p.wert / max * (H - padB - 6);
+    const x = padL + i * bw + (bw - breite) / 2, y = H - padB - h;
+    return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${breite.toFixed(1)}" height="${Math.max(h, p.wert ? 2 : 0).toFixed(1)}" rx="3" fill="var(--s1)"
+      data-tip="${esc(fmt(p.wert))}" data-tip-t="${esc(p.label)}"></rect>`;
+  }).join('');
+  const schritte = Math.ceil(punkte.length / 6);
+  const achse = punkte.map((p, i) => (i % schritte === 0 || i === punkte.length - 1)
+    ? `<text x="${padL + i * bw + bw / 2}" y="${H - 6}" text-anchor="middle" font-size="9" fill="var(--text-3)">${esc(p.kurz)}</text>` : '').join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img">
+    <line x1="0" y1="${H - padB}" x2="${W}" y2="${H - padB}" stroke="var(--grid)" stroke-width="1"/>
+    <line x1="0" y1="${(H - padB) / 2}" x2="${W}" y2="${(H - padB) / 2}" stroke="var(--grid)" stroke-width="1" stroke-dasharray="2 3"/>
+    ${bars}${achse}
+    <text x="2" y="10" font-size="9" fill="var(--text-3)">${esc(fmt(max))}</text>
+  </svg>`;
+}
+
+/* Kumulierte Linie mit Fläche (SVG). */
+function linie(punkte, fmt) {
+  const W = 320, H = 120, padB = 20;
+  const max = Math.max(1, ...punkte.map(p => p.wert));
+  const x = i => punkte.length > 1 ? i / (punkte.length - 1) * (W - 8) + 4 : W / 2;
+  const y = v => H - padB - (v / max) * (H - padB - 8);
+  const d = punkte.map((p, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.wert).toFixed(1)).join(' ');
+  const flaeche = d + ` L ${x(punkte.length - 1).toFixed(1)} ${H - padB} L ${x(0).toFixed(1)} ${H - padB} Z`;
+  const letzter = punkte[punkte.length - 1];
+  const schritte = Math.ceil(punkte.length / 6);
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img">
+    <line x1="0" y1="${H - padB}" x2="${W}" y2="${H - padB}" stroke="var(--grid)" stroke-width="1"/>
+    <path d="${flaeche}" fill="var(--s3)" opacity=".13"/>
+    <path d="${d}" fill="none" stroke="var(--s3)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${punkte.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.wert).toFixed(1)}" r="${i === punkte.length - 1 ? 4 : 3.2}"
+        fill="${i === punkte.length - 1 ? 'var(--s3)' : 'var(--chart-surface)'}" stroke="var(--s3)" stroke-width="2"
+        data-tip="${esc(fmt(p.wert))}" data-tip-t="${esc(p.label)}"/>`).join('')}
+    <text x="${x(punkte.length - 1) - 4}" y="${Math.max(12, y(letzter.wert) - 9)}" text-anchor="end" font-size="10" fill="var(--text-2)" font-family="IBM Plex Mono, monospace">${esc(fmt(letzter.wert))}</text>
+    ${punkte.map((p, i) => (i % schritte === 0 || i === punkte.length - 1)
+      ? `<text x="${x(i)}" y="${H - 6}" text-anchor="middle" font-size="9" fill="var(--text-3)">${esc(p.kurz)}</text>` : '').join('')}
+  </svg>`;
+}
+
+function monatsListe(von, bis) {
+  const out = [];
+  const d = new Date(von.getFullYear(), von.getMonth(), 1);
+  const ende = new Date(bis.getFullYear(), bis.getMonth(), 1);
+  while (d <= ende && out.length < 72) {
+    out.push({ key: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), label: MONATE[d.getMonth()] + ' ' + d.getFullYear(), kurz: MONATE[d.getMonth()] });
+    d.setMonth(d.getMonth() + 1);
+  }
+  return out;
+}
+
+function uebersichtMalen(root) {
+  root.innerHTML = '';
+  if (!DB.buecher.length) {
+    root.innerHTML = `<div class="empty"><strong>Nichts auszuwerten</strong>Sobald Bücher im Plan stehen, entstehen hier die Graphen.</div>`;
+    return;
+  }
+  const wrap = document.createElement('div');
+  wrap.className = 'section';
+  root.appendChild(wrap);
+
+  const alle = DB.buecher;
+  const gelesen = alle.filter(b => b.status === 'gelesen');
+  const seitenGes = alle.reduce((s, b) => s + (b.seiten || 0), 0);
+  const seitenGelesen = gelesen.reduce((s, b) => s + (b.seiten || 0), 0);
+  const minGes = alle.reduce((s, b) => s + buchMinuten(b), 0);
+  const seitenAusSessions = alle.reduce((s, b) => s + buchSeitenGelesen(b), 0);
+  const tempoGes = (minGes > 30 && seitenAusSessions) ? seitenAusSessions / (minGes / 60) : null;
+  const kosten = alle.reduce((s, b) => s + (b.preis || 0), 0);
+  const mitPreis = alle.filter(b => b.preis != null);
+  const notizen = alle.reduce((s, b) => s + b.notizen.length, 0);
+
+  /* Prognose aus dem Tempo der letzten Sitzungen */
+  const sess = [];
+  alle.forEach(b => b.sessions.forEach(s => sess.push(s)));
+  sess.sort((a, b) => a.datum < b.datum ? -1 : 1);
+  let prognose = '–';
+  if (sess.length >= 2 && seitenAusSessions > 0) {
+    const tage = Math.max(1, (new Date(sess[sess.length - 1].datum) - new Date(sess[0].datum)) / 86400000);
+    const proTag = seitenAusSessions / tage;
+    const rest = Math.max(0, seitenGes - seitenGelesen);
+    if (proTag > 0.2 && rest > 0) {
+      const d = new Date(Date.now() + rest / proTag * 86400000);
+      prognose = d.getFullYear() > new Date().getFullYear() + 40 ? 'sehr fern' : MONATE[d.getMonth()] + ' ' + d.getFullYear();
+    } else if (!rest) prognose = 'geschafft';
+  }
+
+  const tiles = document.createElement('div');
+  tiles.className = 'tiles';
+  tiles.innerHTML = [
+    ['Gelesen', gelesen.length + ' <small>/ ' + alle.length + '</small>', Math.round(alle.length ? gelesen.length / alle.length * 100 : 0) + ' % des Plans'],
+    ['Seiten gelesen', fmtZahl(seitenGelesen), 'von ' + fmtZahl(seitenGes)],
+    ['Lesezeit', fmtDauerKurz(minGes), pl(sess.length, 'Sitzung', 'Sitzungen')],
+    ['Tempo', tempoGes ? fmtZahl(tempoGes) + ' <small>S./h</small>' : '–', 'aus den Sitzungen'],
+    ['Kosten', kosten ? fmtGeld(kosten) : '–', mitPreis.length + ' von ' + alle.length + ' mit Preis'],
+    ['Notizen', fmtZahl(notizen), pl(DB.themen.length, 'Themenfeld', 'Themenfelder')],
+    ['Fertig etwa', prognose, 'bei bisherigem Tempo']
+  ].map(([k, v, s]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${esc(s)}</div></div>`).join('');
+  wrap.appendChild(tiles);
+
+  /* --- Fortschritt über die Zeit --- */
+  if (sess.length) {
+    const von = new Date(sess[0].datum), bis = new Date();
+    const monate = monatsListe(von, bis);
+    const proMonat = {};
+    sess.forEach(s => {
+      const k = s.datum.slice(0, 7);
+      const seiten = (s.von != null && s.bis != null && s.bis > s.von) ? s.bis - s.von : 0;
+      proMonat[k] = (proMonat[k] || 0) + seiten;
+    });
+    const punkte = monate.map(m => ({ label: m.label, kurz: m.kurz, wert: proMonat[m.key] || 0 }));
+    wrap.appendChild(karte('Seiten pro Monat', 'Aus den Lese-Sitzungen, also nur dort, wo du Seite von und bis eingetragen hast.',
+      zeitBalken(punkte, v => fmtZahl(v) + ' Seiten'), '',
+      tabelleHtml(['Monat', 'Seiten'], punkte.map(p => [p.label, fmtZahl(p.wert)]))));
+
+    /* Bücher kumuliert – Abschluss aus der letzten Sitzung eines gelesenen Buches */
+    const fertig = gelesen.map(b => {
+      const ss = b.sessions.slice().sort((x, y) => x.datum < y.datum ? -1 : 1);
+      return ss.length ? ss[ss.length - 1].datum : null;
+    }).filter(Boolean).sort();
+    if (fertig.length) {
+      let k = 0;
+      const punkte2 = monate.map(m => {
+        k += fertig.filter(d => d.slice(0, 7) === m.key).length;
+        return { label: m.label, kurz: m.kurz, wert: k };
+      });
+      wrap.appendChild(karte('Gelesene Bücher, aufsummiert',
+        `Abgeleitet aus der letzten Sitzung je Buch. ${gelesen.length - fertig.length > 0 ? (gelesen.length - fertig.length) + ' gelesene Bücher ohne Sitzung fehlen in dieser Kurve.' : ''}`,
+        linie(punkte2, v => fmtZahl(v) + ' Bücher'), '',
+        tabelleHtml(['Monat', 'Bücher'], punkte2.map(p => [p.label, fmtZahl(p.wert)]))));
+    }
+  } else {
+    wrap.appendChild(karte('Fortschritt über die Zeit', '',
+      `<div class="hinweis">Noch keine Lese-Sitzung erfasst. Starte im Buch unter „Lesen“ die Stoppuhr oder trage eine Sitzung von Hand ein – danach entsteht hier die Kurve.</div>`));
+  }
+
+  /* --- Blöcke im Vergleich --- */
+  const bl = bloeckeSortiert().map(blk => {
+    const bs = buecherIn(blk.id);
+    const g = bs.filter(x => x.status === 'gelesen').reduce((s, x) => s + (x.seiten || 0), 0);
+    const o = bs.reduce((s, x) => s + (x.seiten || 0), 0) - g;
+    return { label: blk.name, segmente: [{ wert: g, farbe: 'var(--good)', name: 'gelesen' }, { wert: o, farbe: 'var(--border-strong)', name: 'offen' }], wert: g + o, anzeige: fmtZahl(g + o) + ' S.', gelesen: g, offen: o, werke: bs.length };
+  }).filter(x => x.wert > 0);
+  if (bl.length) {
+    wrap.appendChild(karte('Blöcke nach Seitenumfang', 'Wie viel Papier hinter jedem Block steckt – und wie viel davon schon gelesen ist.',
+      balken(bl, { fmt: v => fmtZahl(v) + ' S.' }),
+      `<span><i style="background:var(--good)"></i>gelesen</span><span><i style="background:var(--border-strong)"></i>offen</span>`,
+      tabelleHtml(['Block', 'Werke', 'Gelesen (S.)', 'Offen (S.)'], bl.map(x => [x.label, x.werke, fmtZahl(x.gelesen), fmtZahl(x.offen)]))));
+  }
+
+  /* --- Kosten --- */
+  if (mitPreis.length) {
+    const proBlock = bloeckeSortiert().map(blk => ({
+      label: blk.name,
+      wert: buecherIn(blk.id).reduce((s, b) => s + (b.preis || 0), 0)
+    })).filter(x => x.wert > 0).sort((a, b) => b.wert - a.wert);
+    const seitenMitPreis = mitPreis.reduce((s, b) => s + (b.seiten || 0), 0);
+    const centProSeite = seitenMitPreis ? kosten / seitenMitPreis * 100 : null;
+    const teuerste = mitPreis.slice().sort((a, b) => (b.preis || 0) - (a.preis || 0)).slice(0, 8)
+      .map(b => ({ label: b.titel, wert: b.preis, farbe: 'var(--s2)' }));
+    wrap.appendChild(karte('Kosten je Block', `Summe ${fmtGeld(kosten)}, im Schnitt ${fmtGeld(kosten / mitPreis.length)} je Buch${centProSeite ? ', ' + fmtZahl(centProSeite, 1) + ' Cent je Seite' : ''}. Ein Kaufdatum wird nicht erfasst, deshalb gibt es keine Kostenkurve über die Zeit.`,
+      balken(proBlock, { fmt: fmtGeld }), '',
+      tabelleHtml(['Block', 'Kosten'], proBlock.map(x => [x.label, fmtGeld(x.wert)]))));
+    if (teuerste.length > 1) {
+      wrap.appendChild(karte('Teuerste Bücher', '', balken(teuerste, { fmt: fmtGeld }), '',
+        tabelleHtml(['Buch', 'Preis'], teuerste.map(x => [x.label, fmtGeld(x.wert)]))));
+    }
+  }
+
+  /* --- Lesetempo --- */
+  const tempi = alle.map(b => ({ b, t: buchTempo(b) })).filter(x => x.t)
+    .sort((a, b) => b.t - a.t).slice(0, 12)
+    .map(x => ({ label: x.b.titel, wert: x.t, farbe: 'var(--s7)' }));
+  if (tempi.length) {
+    wrap.appendChild(karte('Lesetempo je Buch', 'Seiten pro Stunde, aus deinen Sitzungen. Wo du langsam liest, steckt meist die Arbeit.',
+      balken(tempi, { fmt: v => fmtZahl(v) + ' S./h' }), '',
+      tabelleHtml(['Buch', 'Seiten/h'], tempi.map(x => [x.label, fmtZahl(x.wert)]))));
+  }
+
+  /* --- Notizen --- */
+  const nachArt = DB.arten.map(a => ({
+    label: a.name, farbe: 'var(--' + a.farbe + ')',
+    wert: alle.reduce((s, b) => s + b.notizen.filter(n => n.artId === a.id).length, 0)
+  })).filter(x => x.wert > 0).sort((a, b) => b.wert - a.wert);
+  if (nachArt.length) {
+    wrap.appendChild(karte('Notizen nach Art', 'Was für Spuren du hinterlässt.',
+      balken(nachArt), nachArt.map(x => `<span><i style="background:${x.farbe}"></i>${esc(x.label)}</span>`).join(''),
+      tabelleHtml(['Art', 'Notizen'], nachArt.map(x => [x.label, x.wert]))));
+  }
+  const nachThema = DB.themen.map(t => ({
+    label: t.name, farbe: 'var(--s1)',
+    wert: alle.reduce((s, b) => s + b.notizen.filter(n => n.themaId === t.id).length, 0)
+  })).filter(x => x.wert > 0).sort((a, b) => b.wert - a.wert);
+  if (nachThema.length) {
+    const top = nachThema.slice(0, 8);
+    const rest = nachThema.slice(8).reduce((s, x) => s + x.wert, 0);
+    if (rest) top.push({ label: 'Weitere ' + (nachThema.length - 8), wert: rest, farbe: 'var(--text-3)' });
+    wrap.appendChild(karte('Notizen nach Themenfeld', 'Buchübergreifend – das sind die Fäden, an denen du ziehst.',
+      balken(top), '', tabelleHtml(['Themenfeld', 'Notizen'], nachThema.map(x => [x.label, x.wert]))));
+  }
+}
+/* ============================================================
+   Themenfelder über alle Bücher hinweg
+   ============================================================ */
+function themenMalen(root) {
+  const treffer = alleNotizen();
+  const zaehl = new Map();
+  treffer.forEach(({ buch, notiz }) => {
+    const k = notiz.themaId || '__ohne';
+    if (!zaehl.has(k)) zaehl.set(k, { n: 0, buecher: new Set() });
+    const e = zaehl.get(k); e.n++; e.buecher.add(buch.id);
+  });
+  const liste = Array.from(zaehl.entries())
+    .map(([k, v]) => ({ id: k === '__ohne' ? null : k, name: k === '__ohne' ? 'Ohne Themenfeld' : themaName(k), n: v.n, b: v.buecher.size }))
+    .sort((a, b) => b.n - a.n);
+
+  root.innerHTML = `
+    <div class="section">
+      <div class="section-head">
+        <h2>Themenfelder</h2>
+        <button class="btn btn-sm btn-ghost" data-verwalten>Verwalten</button>
+      </div>
+      ${liste.length ? '<div data-liste></div>' : `<div class="empty"><strong>Noch keine Themenfelder</strong>Gib deinen Notizen ein Themenfeld – dann laufen hier die Fäden aus allen Büchern zusammen.</div>`}
+    </div>`;
+  $('[data-verwalten]', root).onclick = themenVerwalten;
+
+  const l = $('[data-liste]', root);
+  if (!l) return;
+  liste.forEach(t => {
+    const row = document.createElement('button');
+    row.className = 'grouprow';
+    row.innerHTML = `<span class="grow">
+        <span class="gname">${esc(t.name)}</span>
+        <span class="gmeta">${t.n} ${t.n === 1 ? 'Notiz' : 'Notizen'} aus ${t.b} ${t.b === 1 ? 'Buch' : 'Büchern'}</span>
+      </span><span class="count num">${t.n}</span><span class="chev">${ICON.chev}</span>`;
+    row.onclick = () => themaOeffnen(t.id, t.name);
+    l.appendChild(row);
+  });
+}
+
+function themaOeffnen(themaId, name) {
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">${esc(name)}</div><div class="ovl-sub">alle Bücher</div></div>
+    </div>
+    <div class="ovl-body" style="padding:12px 14px 40px" data-liste></div>`;
+  const malen = () => {
+    const l = $('[data-liste]', node);
+    l.innerHTML = '';
+    const nachBuch = new Map();
+    alleNotizen().filter(x => (x.notiz.themaId || null) === themaId).forEach(x => {
+      if (!nachBuch.has(x.buch.id)) nachBuch.set(x.buch.id, []);
+      nachBuch.get(x.buch.id).push(x.notiz);
+    });
+    if (!nachBuch.size) { l.innerHTML = `<div class="empty"><strong>Leer</strong>Zu diesem Themenfeld gibt es keine Notiz mehr.</div>`; return; }
+    nachBuch.forEach((notizen, buchId) => {
+      const b = buchById(buchId);
+      const h = document.createElement('div');
+      h.className = 'section-head';
+      h.style.margin = '14px 0 8px';
+      h.innerHTML = `<h2 class="serif" style="font-weight:600">${esc(b.titel)}</h2><span class="eyebrow">${esc(b.autor)}</span>`;
+      l.appendChild(h);
+      notizen.sort((a, c) => (a.seite == null ? 1e9 : a.seite) - (c.seite == null ? 1e9 : c.seite))
+        .forEach(n => l.appendChild(notizKarte(b, n, malen)));
+    });
+  };
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  layerOeffnen(node, () => viewMalen());
+  malen();
+}
+
+function themenVerwalten() {
+  const s = blatt('Themenfelder verwalten', '<div data-l></div>', { fokus: false });
+  const malen = () => {
+    const l = $('[data-l]', s);
+    const benutzt = id => alleNotizen().filter(x => x.notiz.themaId === id).length;
+    l.innerHTML = DB.themen.length
+      ? `<div class="list-card">${DB.themen.map(t => `
+          <div class="rowline">
+            <span class="grow"><span class="rn">${esc(t.name)}</span><span class="rm">${benutzt(t.id)} Notizen</span></span>
+            <button class="icon-btn" data-um="${t.id}" aria-label="Umbenennen">${ICON.edit}</button>
+            <button class="icon-btn" data-del="${t.id}" aria-label="Löschen">${ICON.trash}</button>
+          </div>`).join('')}</div>`
+      : `<p class="hinweis">Noch keine Themenfelder. Sie entstehen beim Schreiben einer Notiz.</p>`;
+    l.insertAdjacentHTML('beforeend', `<button class="btn btn-block" style="margin-top:12px" data-neu>${ICON.plus} Themenfeld anlegen</button>
+      <p class="hinweis">Beim Umbenennen auf einen bereits vorhandenen Namen werden beide Themenfelder zusammengeführt.</p>`);
+
+    $$('[data-um]', l).forEach(btn => btn.onclick = () => {
+      const t = themaById(btn.dataset.um);
+      const s2 = blatt('Umbenennen', `<div class="field"><input type="text" data-n value="${esc(t.name)}"></div>
+        <button class="btn btn-primary btn-block" data-ok>Sichern</button>`);
+      $('[data-ok]', s2).onclick = () => {
+        const neu = $('[data-n]', s2).value.trim();
+        if (!neu) return;
+        aendern(() => {
+          const ziel = DB.themen.find(x => x.id !== t.id && x.name.toLowerCase() === neu.toLowerCase());
+          if (ziel) {
+            DB.buecher.forEach(b => b.notizen.forEach(n => { if (n.themaId === t.id) n.themaId = ziel.id; }));
+            DB.themen = DB.themen.filter(x => x.id !== t.id);
+          } else t.name = neu;
+        });
+        layerSchliessen(); malen(); viewMalen();
+      };
+    });
+    $$('[data-del]', l).forEach(btn => btn.onclick = async () => {
+      const t = themaById(btn.dataset.del);
+      const ok = await bestaetigen('Themenfeld löschen?', `„${esc(t.name)}“ verschwindet. Die ${benutzt(t.id)} Notizen bleiben erhalten und stehen dann unter „Ohne Themenfeld“.`, 'Löschen', true);
+      if (!ok) return;
+      aendern(() => {
+        DB.buecher.forEach(b => b.notizen.forEach(n => { if (n.themaId === t.id) n.themaId = null; }));
+        DB.themen = DB.themen.filter(x => x.id !== t.id);
+      });
+      malen(); viewMalen();
+    });
+    $('[data-neu]', l).onclick = () => {
+      const s2 = blatt('Neues Themenfeld', `<div class="field"><input type="text" data-n placeholder="z.B. Entfremdung"></div>
+        <button class="btn btn-primary btn-block" data-ok>Anlegen</button>`);
+      $('[data-ok]', s2).onclick = () => {
+        const n = $('[data-n]', s2).value.trim();
+        if (!n) return;
+        aendern(() => themaFindenOderAnlegen(n));
+        layerSchliessen(); malen(); viewMalen();
+      };
+    };
+  };
+  malen();
+}
+
+/* ============================================================
+   Suche über alles
+   ============================================================ */
+function sucheOeffnen() {
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><input type="text" data-q placeholder="Bücher, Autoren, Notizen, Themen …" autocomplete="off"></div>
+    </div>
+    <div class="ovl-body" style="padding:12px 14px 40px" data-erg>
+      <p class="hinweis">Tippe los. Gesucht wird in Titeln, Autoren, Beschreibungen, Notizen und Themenfeldern.</p>
+    </div>`;
+  const erg = $('[data-erg]', node);
+  const suchen = () => {
+    const q = $('[data-q]', node).value.trim().toLowerCase();
+    if (q.length < 2) { erg.innerHTML = `<p class="hinweis">Mindestens zwei Zeichen.</p>`; return; }
+    const buecher = DB.buecher.filter(b =>
+      [b.titel, b.autor, b.beschreibung, b.ausgabe].some(x => (x || '').toLowerCase().includes(q)));
+    const notizen = alleNotizen().filter(({ notiz }) =>
+      (notiz.text || '').toLowerCase().includes(q) || themaName(notiz.themaId).toLowerCase().includes(q));
+    erg.innerHTML = '';
+    if (!buecher.length && !notizen.length) { erg.innerHTML = `<div class="empty"><strong>Nichts gefunden</strong>Für „${esc(q)}“ gibt es keinen Treffer.</div>`; return; }
+    if (buecher.length) {
+      erg.insertAdjacentHTML('beforeend', `<div class="eyebrow" style="margin:4px 0 8px">${buecher.length} ${buecher.length === 1 ? 'Buch' : 'Bücher'}</div>`);
+      buecher.slice(0, 30).forEach(b => {
+        const r = document.createElement('button');
+        r.className = 'grouprow';
+        r.innerHTML = `<span class="grow"><span class="gname serif">${esc(b.titel)}</span><span class="gmeta">${esc(b.autor)}${b.jahr ? ' · ' + b.jahr : ''}</span></span><span class="chev">${ICON.chev}</span>`;
+        r.onclick = () => buchOeffnen(b.id);
+        erg.appendChild(r);
+      });
+    }
+    if (notizen.length) {
+      erg.insertAdjacentHTML('beforeend', `<div class="eyebrow" style="margin:16px 0 8px">${notizen.length} ${notizen.length === 1 ? 'Notiz' : 'Notizen'}</div>`);
+      notizen.slice(0, 40).forEach(({ buch, notiz }) => {
+        const k = notizKarte(buch, notiz, suchen);
+        k.insertAdjacentHTML('afterbegin', `<div class="eyebrow" style="margin-bottom:6px">${esc(buch.titel)}</div>`);
+        erg.appendChild(k);
+      });
+    }
+  };
+  let t;
+  $('[data-q]', node).oninput = () => { clearTimeout(t); t = setTimeout(suchen, 180); };
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  layerOeffnen(node);
+  setTimeout(() => $('[data-q]', node).focus(), 80);
+}
+
+/* ============================================================
+   Mehr: Speicher, Arten, Sicherung
+   ============================================================ */
+function mehrMalen(root) {
+  const dateiModus = Store.modus === 'datei';
+  root.innerHTML = `
+    <div class="section">
+      <div class="section-head"><h2>Speicherort</h2></div>
+      <div class="list-card">
+        <div class="rowline">
+          <span class="grow">
+            <span class="rn">${dateiModus ? esc(Store.dateiname) : 'Arbeitskopie auf diesem Gerät'}</span>
+            <span class="rm">${dateiModus
+      ? 'Die App schreibt still in diese Datei, automatisch alle ' + (DB.einstellungen.autosaveSek || 60) + ' Sekunden.'
+      : 'Automatisch alle ' + (DB.einstellungen.autosaveSek || 60) + ' Sekunden im Browser dieses Geräts. Sichere dir regelmäßig eine Datei.'}</span>
+          </span>
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Zuletzt gesichert</span><span class="rm">${Store.letzteSicherung ? relZeit(Store.letzteSicherung) : 'noch nicht'}${Store.dirty ? ' · offene Änderungen' : ''}</span></span>
+          <button class="btn btn-sm" data-save>Jetzt sichern</button>
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Automatisch sichern</span><span class="rm">Abstand in Sekunden</span></span>
+          <input type="number" data-auto value="${DB.einstellungen.autosaveSek || 60}" style="width:82px;text-align:right">
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Speicherort wechseln</span><span class="rm">Datei oder Arbeitskopie</span></span>
+          <button class="btn btn-sm" data-wechseln>Ändern</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Listen und Sicherungen</h2></div>
+      <div class="list-card">
+        <div class="rowline">
+          <span class="grow"><span class="rn">Daten aus Datei laden</span><span class="rm">Ganze Liste ersetzen oder ergänzen</span></span>
+          <button class="btn btn-sm" data-import>Laden</button>
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Sicherung als Datei</span><span class="rm">${fmtZahl(Math.round(JSON.stringify(DB).length / 1024))} KB inklusive Fotos</span></span>
+          <button class="btn btn-sm" data-export>Sichern</button>
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn" style="color:var(--bad)">Alles löschen</span><span class="rm">Setzt diesen Speicherort auf leer zurück</span></span>
+          <button class="btn btn-sm btn-danger" data-reset>Zurücksetzen</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Notiz-Arten</h2><button class="btn btn-sm btn-ghost" data-arten>Verwalten</button></div>
+      <div class="chiprow" style="padding-left:0">
+        ${DB.arten.map(a => `<span class="chip"><span class="swatch" style="background:var(--${a.farbe})"></span>${esc(a.name)}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Darstellung</h2></div>
+      <div class="list-card">
+        <div class="rowline">
+          <span class="grow"><span class="rn">${DB.einstellungen.theme === 'light' ? 'Hell' : 'Dunkel'}</span><span class="rm">Dunkel ist die Grundeinstellung</span></span>
+          <button class="btn btn-sm" data-theme>Umschalten</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="hinweis">
+        Diese Seite enthält selbst keine Daten – alles liegt in deinem Speicherort. Wenn du das Gerät wechselst,
+        sichere eine Datei und lade sie drüben über „Daten aus Datei laden“.
+      </p>
+    </div>`;
+
+  $('[data-save]', root).onclick = () => Store.alsDateiSichern(false);
+  $('[data-export]', root).onclick = () => Store.alsDateiSichern(false);
+  $('[data-import]', root).onclick = () => importDialog(false);
+  $('[data-wechseln]', root).onclick = () => setupZeigen(true);
+  $('[data-theme]', root).onclick = () => { themeUmschalten(); viewMalen(); };
+  $('[data-arten]', root).onclick = artenVerwalten;
+  $('[data-auto]', root).onchange = e => {
+    const v = clamp(Math.round(num(e.target.value) || 60), 15, 600);
+    aendern(() => { DB.einstellungen.autosaveSek = v; });
+    Store.autosaveStarten();
+    viewMalen();
+    toast('Sichert jetzt alle ' + v + ' Sekunden.');
+  };
+  $('[data-reset]', root).onclick = async () => {
+    const ok = await bestaetigen('Wirklich alles löschen?',
+      `${DB.buecher.length} Bücher, ${alleNotizen().length} Notizen und alle Fotos an diesem Speicherort werden gelöscht.`,
+      'Alles löschen', true);
+    if (!ok) return;
+    const theme = DB.einstellungen.theme;
+    DB = leereDb();
+    DB.einstellungen.theme = theme;
+    await Store.sichern();
+    viewMalen();
+    toast('Zurückgesetzt.');
+  };
+}
+
+function artenVerwalten() {
+  const s = blatt('Notiz-Arten', '<div data-l></div>', { fokus: false });
+  const malen = () => {
+    const l = $('[data-l]', s);
+    const benutzt = id => alleNotizen().filter(x => x.notiz.artId === id).length;
+    l.innerHTML = `<div class="list-card">${DB.arten.map(a => `
+      <div class="rowline">
+        <span class="swatch" style="width:12px;height:12px;border-radius:4px;background:var(--${a.farbe})"></span>
+        <span class="grow"><span class="rn">${esc(a.name)}</span><span class="rm">${benutzt(a.id)} Notizen</span></span>
+        <button class="icon-btn" data-farbe="${a.id}" aria-label="Farbe">◐</button>
+        <button class="icon-btn" data-um="${a.id}" aria-label="Umbenennen">${ICON.edit}</button>
+        <button class="icon-btn" data-del="${a.id}" aria-label="Löschen">${ICON.trash}</button>
+      </div>`).join('')}</div>
+      <button class="btn btn-block" style="margin-top:12px" data-neu>${ICON.plus} Art anlegen</button>`;
+
+    $$('[data-farbe]', l).forEach(b => b.onclick = () => {
+      const a = artById(b.dataset.farbe);
+      aendern(() => { a.farbe = ART_FARBEN[(ART_FARBEN.indexOf(a.farbe) + 1) % ART_FARBEN.length]; });
+      malen(); viewMalen();
+    });
+    $$('[data-um]', l).forEach(b => b.onclick = () => {
+      const a = artById(b.dataset.um);
+      const s2 = blatt('Umbenennen', `<div class="field"><input type="text" data-n value="${esc(a.name)}"></div>
+        <button class="btn btn-primary btn-block" data-ok>Sichern</button>`);
+      $('[data-ok]', s2).onclick = () => {
+        const n = $('[data-n]', s2).value.trim();
+        if (!n) return;
+        aendern(() => { a.name = n; });
+        layerSchliessen(); malen(); viewMalen();
+      };
+    });
+    $$('[data-del]', l).forEach(b => b.onclick = async () => {
+      const a = artById(b.dataset.del);
+      const ok = await bestaetigen('Art löschen?', `„${esc(a.name)}“ verschwindet. Die ${benutzt(a.id)} Notizen bleiben und stehen dann unter „Ohne Art“.`, 'Löschen', true);
+      if (!ok) return;
+      aendern(() => {
+        DB.buecher.forEach(x => x.notizen.forEach(n => { if (n.artId === a.id) n.artId = null; }));
+        DB.arten = DB.arten.filter(x => x.id !== a.id);
+      });
+      malen(); viewMalen();
+    });
+    $('[data-neu]', l).onclick = () => {
+      const s2 = blatt('Neue Art', `<div class="field"><input type="text" data-n placeholder="z.B. Widerspruch"></div>
+        <button class="btn btn-primary btn-block" data-ok>Anlegen</button>`);
+      $('[data-ok]', s2).onclick = () => {
+        const n = $('[data-n]', s2).value.trim();
+        if (!n) return;
+        aendern(() => DB.arten.push({ id: uid(), name: n, farbe: ART_FARBEN[DB.arten.length % 8] }));
+        layerSchliessen(); malen(); viewMalen();
+      };
+    };
+  };
+  malen();
+}
+
+/* ============================================================
+   Los geht's
+   ============================================================ */
+$('#btnSuche').innerHTML = ICON.search;
+$('#btnSuche').onclick = sucheOeffnen;
+boot();
+
+
+
+
+</script>
+</body>
+</html>
