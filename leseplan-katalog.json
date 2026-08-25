@@ -107,7 +107,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Leiden zählt, nicht Artzugehörigkeit – die utilitaristische Begründung der Tierbefreiung.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0102",
@@ -125,7 +128,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Warum wir die Klimakrise wissen, aber nicht glauben – und vegan frühstücken sollten.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0103",
@@ -143,7 +149,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Kein grünes Wachstum: weniger produzieren, regional wirtschaften, halbe Erwerbsarbeit.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0201",
@@ -161,7 +170,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "1948 als geplante Vertreibung, belegt aus israelischen Militärakten. Umstritten.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0202",
@@ -179,7 +191,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Verteidigungsrede nach der Moncada als Programm für Land, Bildung, Gesundheit.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0203",
@@ -197,7 +212,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Ukrainische Geschichte gegen die russozentrische Sicht – und gegen eigene Nationalmythen.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0301",
@@ -215,7 +233,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Zehn Mechanismen: mythische Vergangenheit, Propaganda, Antiintellektualismus, Unwirklichkeit, wir gegen sie.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0302",
@@ -233,7 +254,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Faschismus als Symptom des Systemversagens, plus Strategie für ein antifaschistisches Bündnis.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0303",
@@ -251,7 +275,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Vierzehn Merkmale des Urfaschismus; wenige genügen, damit er sich neu kristallisiert.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0401",
@@ -269,7 +296,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Roulettesucht als Freiheit gegen Vernunft – in 26 Tagen gegen Schulden geschrieben.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0402",
@@ -287,7 +317,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Ein Mord soll eine Theorie beweisen; Fieber und Gewissen zermürben sie.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0403",
@@ -305,7 +338,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Eine Verschwörerzelle leitet Terror aus Ideen ab und gehorcht nur sich selbst.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0404",
@@ -323,7 +359,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Verhaftet ohne Vorwurf: Die Bürokratie ist nicht Hindernis vor der Schuld, sondern ihre Form.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0405",
@@ -341,7 +380,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Je näher der Landvermesser der Behörde kommt, desto ferner rückt sie.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0406",
@@ -359,7 +401,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Als Ungeziefer erwacht, sorgt sich Gregor zuerst um den Zug zur Arbeit.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0407",
@@ -377,7 +422,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Die abstrakten Wörter zerfallen im Mund – Gründungsdokument der modernen Sprachkrise.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0408",
@@ -395,7 +443,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Der Tod holt den Reichen mitten im Fest; nur die Werke gehen mit.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0409",
@@ -413,7 +464,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Wiener Adel nach dem Krieg: Wer dem Reden misstraut, redet komisch aneinander vorbei.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0501",
@@ -431,7 +485,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Abraham hebt der Glaube über die Sittlichkeit – der Einzelne über das Allgemeine.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0502",
@@ -449,7 +506,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Die Welt als blinder Wille; Auswege sind Kunst, Mitleid, Verneinung.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0503",
@@ -467,7 +527,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Der Übermensch, gepredigt in Bildern: Tod Gottes, Wille zur Macht, ewige Wiederkunft.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0601",
@@ -485,7 +548,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Die Frage nach der Wirklichkeit einklammern und nur beschreiben, wie sich Dinge zeigen.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0602",
@@ -503,7 +569,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Dasein von der Zeitlichkeit her: In-der-Welt-sein, Man, Angst, Sorge, Sein zum Tode.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0603",
@@ -521,7 +590,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Gegen Kant: Werte werden gefühlt, in einer Rangordnung – Ethik der Person.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0701",
@@ -539,7 +611,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Existenz vor Essenz, zur Freiheit verurteilt, mit jeder Wahl für alle verantwortlich.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0702",
@@ -557,7 +632,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Die Dinge sind da, ohne Grund – Übelkeit vor der bloßen Existenz.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0703",
@@ -575,7 +653,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "An-sich und Für-sich, böse Gläubigkeit, der Blick des Anderen macht mich zum Objekt.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0704",
@@ -593,7 +674,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Das Absurde entsteht zwischen Sinnverlangen und schweigender Welt; man hält es aus.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0705",
@@ -611,7 +695,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Verurteilt weniger für den Mord als dafür, nicht getrauert zu haben.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0706",
@@ -629,7 +716,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Gegen die Seuche kein Held, sondern Solidarität als gemeinsame Anständigkeit.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0707",
@@ -647,7 +737,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Wir haben keinen Körper, wir sind Leib – Wahrnehmung als Zur-Welt-sein.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0708",
@@ -665,7 +758,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Lässt sich revolutionäre Gewalt rechtfertigen? Und ist der liberale Staat gewaltfrei?",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0709",
@@ -683,7 +779,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Der Sehende gehört selbst zum Sichtbaren: Leib und Welt aus einem Fleisch.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0801",
@@ -701,7 +800,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Gerechtigkeit im Staat als Modell der Seele – Höhle, Philosophenkönig, Dichterverbot.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0802",
@@ -719,7 +821,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Kants Kurzfassung: Mathematik und Naturwissenschaft sind Tatsachen – wie sind sie möglich?",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0803",
@@ -737,7 +842,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Vom sinnlichen Bewusstsein zum absoluten Wissen; Herr und Knecht unterwegs.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0901",
@@ -755,7 +863,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Ware, Wert, Arbeitskraft, Mehrwert – das Kapital an einem Nachmittag.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0902",
@@ -773,7 +884,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Aus der Warenanalyse: Mehrwert, Arbeitstag, ursprüngliche Akkumulation, Profitrate, Kredit.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0903",
@@ -791,7 +905,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Vierfach entfremdet: vom Produkt, vom Arbeiten, vom Gattungswesen, vom anderen Menschen.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0904",
@@ -809,7 +926,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Von den Utopisten zu Marx zwei Entdeckungen: Geschichtsauffassung und Mehrwert.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0905",
@@ -827,7 +947,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Manchester 1844: Wohnen, Arbeiten, Sterben – die erste große Sozialreportage.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0906",
@@ -845,7 +968,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Monogamie, Privateigentum und Staat aus einer Wurzel; Ethnologie überholt, Frage nicht.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0907",
@@ -863,7 +989,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Der bürgerliche Staat lässt sich nicht übernehmen, nur zerschlagen – dann abstirbt er.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0908",
@@ -881,7 +1010,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Berufsrevolutionäre statt Spontaneität; das Bewusstsein kommt von außen in die Klasse.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu0909",
@@ -899,7 +1031,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Monopole, Finanzkapital, Kapitalexport – der Weltkrieg als notwendige Folge.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1001",
@@ -917,7 +1052,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Acht Generationen einer Familie erzählen zweihundert Jahre Ungleichheit, mit Kurven im Bild.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1002",
@@ -935,7 +1073,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Wenn die Rendite dauerhaft über dem Wachstum liegt, konzentriert sich Vermögen von selbst.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1003",
@@ -953,7 +1094,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Ungleichheit ist nie notwendig, immer gerechtfertigt – weltweit, von Sklaverei bis Steuerpolitik.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1004",
@@ -971,7 +1115,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Blasen entstehen aus Rückkopplung, Herdentrieb und Erzählungen, nicht aus Fundamentaldaten.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1005",
@@ -989,7 +1136,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Zuversicht, Fairness, Korruption, Geldillusion, Geschichten – die Psyche in der Makroökonomie.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1006",
@@ -1007,7 +1157,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Erzählungen verbreiten sich wie Epidemien und lösen Rezessionen aus.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1007",
@@ -1025,7 +1178,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "System 1 urteilt schnell, System 2 stimmt zu faul zu.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1008",
@@ -1043,7 +1199,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Nicht der Bias, die bloße Streuung der Urteile – und niemand merkt sie.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1009",
@@ -1061,7 +1220,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Die Empirie hinter den Heuristiken: 35 Aufsätze, englisch, trocken, überprüfbar.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1101",
@@ -1079,7 +1241,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Vom Marterfest zur Dressur: Zeitpläne, Prüfungen, ständige Sichtbarkeit, das Panopticon.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1102",
@@ -1097,7 +1262,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Der Westen erfand den Orient, den er zu beschreiben vorgab – und regierte ihn.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1103",
@@ -1115,7 +1283,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Die Kolonie entstand durch Gewalt und endet durch sie; dazu klinische Fallgeschichten.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1201",
@@ -1133,7 +1304,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Volkskongresse statt Parlament, Bedarfseigentum statt Lohn – Herrschaft, die sich eine Theorie gibt.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1202",
@@ -1151,7 +1325,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Politische Theorie als Katechismus, nach 33 Themen sortiert, millionenfach gedruckt.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1203",
@@ -1169,7 +1346,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Reden bis 1945, im Rückblick zurechtgelegt – Quelle vor allem für Personenkult.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1301",
@@ -1187,7 +1367,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Klasse, Rasse und Geschlecht zusammen gedacht – wo die weiße Frauenbewegung wegsah.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1302",
@@ -1205,7 +1388,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Die Hexenverfolgung als ursprüngliche Akkumulation: der Übergang zum Kapitalismus als Geschlechterkrieg.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1303",
@@ -1223,7 +1409,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Man kommt nicht als Frau zur Welt, man wird es.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1401",
@@ -1241,7 +1430,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Arbeitsteilung schafft Reichtum – samt scharfer Kritik an Monopolen und stumpfer Arbeit.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1402",
@@ -1259,7 +1451,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Nachfrage bestimmt Beschäftigung; Erwartungen unter Unsicherheit steuern alles. Also Wirtschaftspolitik.",
+      "besitz": "fehlt",
+      "einkauf": false
     },
     {
       "id": "bu1403",
@@ -1277,7 +1472,10 @@
       "preis": null,
       "status": "offen",
       "sessions": [],
-      "notizen": []
+      "notizen": [],
+      "kurz": "Zentrale Planung scheitert am verstreuten Wissen – und der Versuch führt zum Zwang.",
+      "besitz": "fehlt",
+      "einkauf": false
     }
   ],
   "lesepleane": [

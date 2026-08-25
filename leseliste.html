@@ -118,6 +118,25 @@ p{margin:0;}
 .bar-active{height:100%;background:var(--accent);border-radius:99px;transition:width .35s ease;}
 
 /* ---------- Tableiste ---------- */
+/* Laufende Sitzung bzw. Startknopf, direkt über der Tableiste */
+.nowbar{
+  position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom));z-index:39;
+  display:flex;justify-content:center;padding:0 12px 8px;pointer-events:none;
+}
+.nowbar-inner{
+  pointer-events:auto;width:100%;max-width:656px;display:flex;align-items:center;gap:10px;
+  padding:8px 10px 8px 13px;border-radius:13px;border:1px solid var(--border);
+  background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(12px);
+  box-shadow:var(--shadow);
+}
+.nowbar-inner.laeuft{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));}
+.nowbar .grow{flex:1;min-width:0;}
+.nowbar .nt{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nowbar .nm{font-size:10.5px;color:var(--text-3);margin-top:2px;display:block;}
+.nowbar .uhr{font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--accent);font-variant-numeric:tabular-nums;}
+body.hat-nowbar main{padding-bottom:150px;}
+body.hat-nowbar .toast{bottom:calc(128px + env(safe-area-inset-bottom));}
+
 .tabbar{
   position:fixed;left:0;right:0;bottom:0;z-index:40;
   background:color-mix(in srgb,var(--bg) 92%,transparent);
@@ -195,11 +214,22 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .books{display:none;padding:10px 8px 10px;flex-direction:column;gap:6px;}
 .block.open .books{display:flex;}
 
+/* Jede Buchzeile ist zwei Felder breit: Zeile und Kurzfassung, per Wisch. */
 .book{
-  display:flex;align-items:center;gap:11px;padding:10px 10px;border-radius:11px;
-  background:var(--surface-2);border:1px solid transparent;width:100%;text-align:left;
+  display:flex;border-radius:11px;background:var(--surface-2);
+  border:1px solid transparent;width:100%;overflow-x:auto;
+  scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;
 }
+.book::-webkit-scrollbar{display:none;}
 .book:hover{border-color:var(--border);}
+.bookpane{
+  flex:0 0 100%;width:100%;scroll-snap-align:start;
+  display:flex;align-items:center;gap:11px;padding:10px;text-align:left;min-width:0;
+}
+.kurzpane{flex-direction:column;align-items:stretch;justify-content:center;gap:5px;}
+.kurzpane .kt{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);font-weight:600;}
+.kurzpane .kx{font-family:"Literata",Georgia,serif;font-size:13px;line-height:1.5;color:var(--text-2);}
+.kurzpane .kx em{color:var(--text-3);font-style:normal;}
 .book .grow{flex:1;min-width:0;}
 .book .title{font-family:"Literata",Georgia,serif;font-size:13.5px;line-height:1.35;}
 .book .title.done{color:var(--text-3);}
@@ -445,6 +475,8 @@ body.voll .cam{padding-top:14px;}
 
   <main id="view" class="shell"></main>
 
+  <div class="nowbar" id="nowbar" hidden><div class="nowbar-inner" id="nowbarInner"></div></div>
+
   <nav class="tabbar">
     <div class="tabbar-inner" id="tabbar"></div>
   </nav>
@@ -585,6 +617,13 @@ document.addEventListener('focusin', e => {
 const ART_FARBEN = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'];
 const STD_ARTEN = ['Zitat', 'Gedanke', 'Frage', 'Widerspruch', 'Begriff', 'Querverweis', 'Aufgabe'];
 const STATUS = { offen: 'Offen', lese: 'Lese ich', gelesen: 'Gelesen' };
+/* Besitz: getrennt vom Lesestatus – man kann ein Buch haben, ohne es zu lesen. */
+const BESITZ = {
+  fehlt: { name: 'Fehlt', kurz: 'fehlt', farbe: 'var(--text-3)' },
+  bestellt: { name: 'Bestellt', kurz: 'bestellt', farbe: 'var(--s4)' },
+  habe: { name: 'Habe ich', kurz: '', farbe: 'var(--good)' },
+  bibliothek: { name: 'Bibliothek', kurz: 'Bibliothek', farbe: 'var(--s1)' }
+};
 
 function leereDb() {
   return {
@@ -652,8 +691,11 @@ function normalisiere(raw) {
     seitenUnsicher: !!b.seitenUnsicher,
     ausgabe: b.ausgabe || '',
     beschreibung: b.beschreibung || '',
+    kurz: b.kurz || '',
     preis: b.preis == null ? null : b.preis,
     status: STATUS[b.status] ? b.status : 'offen',
+    besitz: BESITZ[b.besitz] ? b.besitz : 'fehlt',
+    einkauf: !!b.einkauf,
     sessions: (b.sessions || []).map(s => ({
       id: s.id || uid(), datum: s.datum || heute(), minuten: +s.minuten || 0,
       von: s.von == null ? null : s.von, bis: s.bis == null ? null : s.bis, notiz: s.notiz || ''
@@ -682,6 +724,13 @@ const buecherImPlan = id => {
   return DB.buecher.filter(b => ids.has(b.blockId));
 };
 const buecherAktiv = () => { const p = aktiverPlan(); return p ? buecherImPlan(p.id) : DB.buecher; };
+/* Alle Bücher in der Reihenfolge der Listen, Blöcke und Plätze. */
+function buecherNachPlan() {
+  const out = [];
+  plaeneSortiert().forEach(p => bloeckeVonPlan(p.id).forEach(bl => buecherIn(bl.id).forEach(b => out.push(b))));
+  DB.buecher.forEach(b => { if (!out.includes(b)) out.push(b); });
+  return out;
+}
 const buecherIn = id => DB.buecher.filter(b => b.blockId === id).sort((a, b) => a.ord - b.ord);
 const buchById = id => DB.buecher.find(b => b.id === id);
 const blockById = id => DB.bloecke.find(b => b.id === id);
@@ -1057,7 +1106,7 @@ function vollbildAutostart() {
 const TABS = [
   { id: 'plan', label: 'Liste', icon: ICON.books },
   { id: 'uebersicht', label: 'Übersicht', icon: ICON.chart },
-  { id: 'themen', label: 'Themen', icon: ICON.tags },
+  { id: 'themen', label: 'Notizen', icon: ICON.tags },
   { id: 'mehr', label: 'Mehr', icon: ICON.more }
 ];
 let aktiverTab = 'plan';
@@ -1080,9 +1129,10 @@ function viewMalen() {
   const v = $('#view');
   if (aktiverTab === 'plan') planMalen(v);
   else if (aktiverTab === 'uebersicht') uebersichtMalen(v);
-  else if (aktiverTab === 'themen') themenMalen(v);
+  else if (aktiverTab === 'themen') notizenTabMalen(v);
   else mehrMalen(v);
   kopfMalen();
+  nowbarMalen();
 }
 function kopfMalen() {
   const buecher = buecherAktiv();
@@ -1159,6 +1209,117 @@ function zugriffFreigebenZeigen() {
   };
 }
 /* ============================================================
+   Lese-Sitzungen: starten, beenden, laufende anzeigen
+   ============================================================ */
+function sitzungStarten(buchId) {
+  const b = buchById(buchId);
+  if (!b) return;
+  aendern(() => {
+    DB.einstellungen.timer = { buchId, startTs: Date.now() };
+    if (b.status === 'offen') b.status = 'lese';
+  });
+  viewMalen();
+  toast('Sitzung läuft: ' + b.titel);
+}
+
+function sitzungBeenden() {
+  const t = laufenderTimer();
+  if (!t) return;
+  const b = buchById(t.buchId);
+  const minuten = Math.max(1, Math.round(timerMinuten(t)));
+  aendern(() => { DB.einstellungen.timer = null; });
+  clearInterval(uhrTick);
+  viewMalen();
+  if (!b) return;
+  const stand = b.sessions.reduce((m, s) => Math.max(m, s.bis || 0), 0);
+  sessionBearbeiten(b, null, { minuten, von: stand || null }, () => viewMalen());
+}
+
+/* Kein oder mehrere angefangene Bücher: dann wird gewählt. */
+function buchWaehlenFuerSitzung() {
+  const kandidaten = DB.buecher.filter(b => b.status !== 'gelesen');
+  if (!kandidaten.length) { toast('Kein offenes Buch in der Liste.'); return; }
+  const s = blatt('Welches Buch?', `
+    <input type="text" data-q placeholder="Titel oder Autor suchen" autocomplete="off">
+    <div class="list-card" style="margin-top:12px;max-height:52vh;overflow-y:auto" data-l></div>`, { fokus: false });
+
+  const malen = () => {
+    const q = $('[data-q]', s).value.trim().toLowerCase();
+    const treffer = kandidaten
+      .filter(b => !q || (b.titel + ' ' + b.autor).toLowerCase().includes(q))
+      .sort((a, b) => (a.status === 'lese' ? 0 : 1) - (b.status === 'lese' ? 0 : 1));
+    const l = $('[data-l]', s);
+    l.innerHTML = treffer.length ? '' : '<div class="hinweis" style="padding:14px">Kein Treffer.</div>';
+    treffer.slice(0, 60).forEach(b => {
+      const r = document.createElement('button');
+      r.className = 'rowline';
+      r.style.cssText = 'width:100%;text-align:left';
+      r.innerHTML = `<span class="grow">
+          <span class="rn serif">${esc(b.titel)}</span>
+          <span class="rm">${esc(b.autor)}${b.status === 'lese' ? ' · lese ich' : ''}</span>
+        </span>${ICON.play}`;
+      r.onclick = () => { layerSchliessen(); sitzungStarten(b.id); };
+      l.appendChild(r);
+    });
+  };
+  let t;
+  $('[data-q]', s).oninput = () => { clearTimeout(t); t = setTimeout(malen, 150); };
+  malen();
+}
+
+let nowTick = null;
+function nowbarMalen() {
+  const bar = $('#nowbar'), inner = $('#nowbarInner');
+  if (!bar) return;
+  clearInterval(nowTick);
+  if (!DB.buecher.length) {
+    bar.hidden = true;
+    document.body.classList.remove('hat-nowbar');
+    return;
+  }
+  bar.hidden = false;
+  document.body.classList.add('hat-nowbar');
+  const t = laufenderTimer();
+
+  if (t) {
+    const b = buchById(t.buchId);
+    inner.className = 'nowbar-inner laeuft';
+    inner.innerHTML = `
+      <span class="grow">
+        <span class="nt serif">${esc(b ? b.titel : 'Sitzung')}</span>
+        <span class="nm">Sitzung läuft</span>
+      </span>
+      <span class="uhr" data-uhr>00:00</span>
+      <button class="btn btn-sm" data-stop>Beenden</button>`;
+    const malen = () => {
+      const el = $('[data-uhr]', inner);
+      if (!el) return;
+      const sek = Math.floor((Date.now() - t.startTs) / 1000);
+      const teile = sek >= 3600
+        ? [Math.floor(sek / 3600), Math.floor(sek / 60) % 60, sek % 60]
+        : [Math.floor(sek / 60), sek % 60];
+      el.textContent = teile.map(x => String(x).padStart(2, '0')).join(':');
+    };
+    malen();
+    nowTick = setInterval(malen, 1000);
+    $('[data-stop]', inner).onclick = sitzungBeenden;
+    if (b) $('.grow', inner).onclick = () => buchOeffnen(b.id);
+  } else {
+    const lese = DB.buecher.filter(b => b.status === 'lese');
+    const eines = lese.length === 1 ? lese[0] : null;
+    inner.className = 'nowbar-inner';
+    inner.innerHTML = `
+      <span class="grow">
+        <span class="nt serif">${eines ? esc(eines.titel) : 'Lesen'}</span>
+        <span class="nm">${eines ? 'aktuelles Buch' : (lese.length > 1 ? lese.length + ' Bücher angefangen' : 'Buch wählen')}</span>
+      </span>
+      <button class="btn btn-sm btn-primary" data-start>${ICON.play} Starten</button>`;
+    $('[data-start]', inner).onclick = () => eines ? sitzungStarten(eines.id) : buchWaehlenFuerSitzung();
+    if (eines) $('.grow', inner).onclick = () => buchOeffnen(eines.id);
+  }
+}
+
+/* ============================================================
    Ebenen: Vollbild-Ansichten und Blätter von unten
    ============================================================ */
 const Layers = [];
@@ -1224,7 +1385,8 @@ let planSort = 'plan';
 
 function buecherGefiltert(blockId) {
   let l = buecherIn(blockId);
-  if (planFilter !== 'alle') l = l.filter(b => b.status === planFilter);
+  if (planFilter === 'fehlt') l = l.filter(b => b.besitz === 'fehlt' || b.besitz === 'bestellt');
+  else if (planFilter !== 'alle') l = l.filter(b => b.status === planFilter);
   if (planSort === 'titel') l = l.slice().sort((a, b) => a.titel.localeCompare(b.titel, 'de'));
   else if (planSort === 'autor') l = l.slice().sort((a, b) => (a.autor || '').localeCompare(b.autor || '', 'de'));
   else if (planSort === 'seiten') l = l.slice().sort((a, b) => (b.seiten || 0) - (a.seiten || 0));
@@ -1250,7 +1412,7 @@ function planMalen(root) {
   }
 
   const bloecke = bloeckeSortiert();
-  const filter = [['alle', 'Alle'], ['offen', 'Offen'], ['lese', 'Lese ich'], ['gelesen', 'Gelesen']];
+  const filter = [['alle', 'Alle'], ['offen', 'Offen'], ['lese', 'Lese ich'], ['gelesen', 'Gelesen'], ['fehlt', 'Fehlt mir']];
   root.innerHTML = `
     <div class="planbar">
       <button class="planbtn" data-plaene>
@@ -1350,32 +1512,102 @@ function buchZeile(b) {
   const node = document.createElement('div');
   node.className = 'book';
   const min = buchMinuten(b);
+  const bes = BESITZ[b.besitz] || BESITZ.fehlt;
+  const marken = [];
+  if (b.notizen.length) marken.push(`<span class="minitag">${pl(b.notizen.length, 'Notiz', 'Notizen')}</span>`);
+  if (min) marken.push(`<span class="minitag">${fmtDauer(min)}</span>`);
+  if (b.status === 'lese') marken.push('<span class="minitag acc">lese ich</span>');
+  if (bes.kurz) marken.push(`<span class="minitag" style="color:${bes.farbe}">${esc(bes.kurz)}</span>`);
+  if (b.einkauf) marken.push('<span class="minitag acc">Einkauf</span>');
+
   node.innerHTML = `
-    <button class="status-btn" data-status="${b.status}" title="${STATUS[b.status]}">
-      ${b.status === 'gelesen' ? ICON.check : b.status === 'lese' ? ICON.read : ''}
-    </button>
-    <button class="grow" data-oeffnen style="text-align:left">
-      <span class="title serif ${b.status === 'gelesen' ? 'done' : ''}">${esc(b.titel)}</span>
-      <span class="byline">
-        <span>${esc(b.autor || 'ohne Autor')}</span>
-        ${b.jahr != null ? `<span class="num">${esc(jahrText(b.jahr))}</span>` : ''}
-        ${b.seiten ? `<span class="num">${b.seitenUnsicher ? '~' : ''}${b.seiten} S.</span>` : ''}
-      </span>
-      ${(b.notizen.length || min) ? `<span class="tags">
-        ${b.notizen.length ? `<span class="minitag">${b.notizen.length} ${b.notizen.length === 1 ? 'Notiz' : 'Notizen'}</span>` : ''}
-        ${min ? `<span class="minitag">${fmtDauer(min)}</span>` : ''}
-        ${b.status === 'lese' ? '<span class="minitag acc">lese ich</span>' : ''}
-      </span>` : ''}
-    </button>
-    <span class="chev">${ICON.chev}</span>`;
+    <div class="bookpane">
+      <button class="status-btn" data-status="${b.status}" title="${STATUS[b.status]}">
+        ${b.status === 'gelesen' ? ICON.check : b.status === 'lese' ? ICON.read : ''}
+      </button>
+      <button class="grow" data-oeffnen style="text-align:left">
+        <span class="title serif ${b.status === 'gelesen' ? 'done' : ''}">${esc(b.titel)}</span>
+        <span class="byline">
+          <span>${esc(b.autor || 'ohne Autor')}</span>
+          ${b.jahr != null ? `<span class="num">${esc(jahrText(b.jahr))}</span>` : ''}
+          ${b.seiten ? `<span class="num">${b.seitenUnsicher ? '~' : ''}${b.seiten} S.</span>` : ''}
+        </span>
+        ${marken.length ? `<span class="tags">${marken.join('')}</span>` : ''}
+      </button>
+      <span class="chev">${ICON.chev}</span>
+    </div>
+    <div class="bookpane kurzpane">
+      <span class="kt">In Kürze</span>
+      <span class="kx">${b.kurz ? esc(b.kurz) : '<em>Noch keine Kurzfassung – lang tippen, dann „Bearbeiten“.</em>'}</span>
+    </div>`;
+
   $('.status-btn', node).onclick = e => {
     e.stopPropagation();
     const folge = { offen: 'lese', lese: 'gelesen', gelesen: 'offen' };
     aendern(() => { b.status = folge[b.status] || 'offen'; });
     viewMalen();
   };
-  $('[data-oeffnen]', node).onclick = () => buchOeffnen(b.id);
+  const oeffner = $('[data-oeffnen]', node);
+  oeffner.onclick = () => { if (!node._langGedrueckt) buchOeffnen(b.id); node._langGedrueckt = false; };
+
+  /* Langes Drücken öffnet die Schnellaktionen. */
+  let halten;
+  const start = () => {
+    clearTimeout(halten);
+    halten = setTimeout(() => { node._langGedrueckt = true; buchAktionen(b); }, 480);
+  };
+  const stopp = () => clearTimeout(halten);
+  oeffner.addEventListener('pointerdown', start);
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(e => oeffner.addEventListener(e, stopp));
+  oeffner.addEventListener('contextmenu', e => { e.preventDefault(); stopp(); node._langGedrueckt = true; buchAktionen(b); });
   return node;
+}
+
+/* Schnellaktionen zu einem Buch, aus der Liste heraus. */
+function buchAktionen(b) {
+  const l = buecherIn(b.blockId);
+  const i = l.findIndex(x => x.id === b.id);
+  const t = laufenderTimer();
+  const laeuftHier = t && t.buchId === b.id;
+  const s = blatt(b.titel, `
+    <div class="list-card">
+      <button class="rowline" data-a="hoch" style="width:100%;text-align:left"${i <= 0 ? ' disabled' : ''}>
+        <span style="width:20px">${ICON.up}</span>
+        <span class="grow"><span class="rn">Nach oben</span><span class="rm">${i <= 0 ? 'steht schon ganz oben' : 'im Block „' + esc((blockById(b.blockId) || {}).name || '') + '“'}</span></span>
+      </button>
+      <button class="rowline" data-a="runter" style="width:100%;text-align:left"${i >= l.length - 1 ? ' disabled' : ''}>
+        <span style="width:20px">${ICON.down}</span>
+        <span class="grow"><span class="rn">Nach unten</span><span class="rm">${i >= l.length - 1 ? 'steht schon ganz unten' : 'Platz ' + (i + 1) + ' von ' + l.length}</span></span>
+      </button>
+      <button class="rowline" data-a="lesen" style="width:100%;text-align:left">
+        <span style="width:20px">${laeuftHier ? ICON.pause : ICON.play}</span>
+        <span class="grow"><span class="rn">${laeuftHier ? 'Sitzung beenden' : 'Sitzung starten'}</span><span class="rm">${laeuftHier ? 'läuft seit ' + fmtDauer(timerMinuten(t)) : 'Stoppuhr für dieses Buch'}</span></span>
+      </button>
+      <button class="rowline" data-a="einkauf" style="width:100%;text-align:left">
+        <span style="width:20px">${b.einkauf ? ICON.check : ICON.plus}</span>
+        <span class="grow"><span class="rn">${b.einkauf ? 'Von der Einkaufsliste nehmen' : 'Auf die Einkaufsliste'}</span><span class="rm">${esc((BESITZ[b.besitz] || BESITZ.fehlt).name)}</span></span>
+      </button>
+      <button class="rowline" data-a="bearbeiten" style="width:100%;text-align:left">
+        <span style="width:20px">${ICON.edit}</span>
+        <span class="grow"><span class="rn">Bearbeiten</span><span class="rm">Daten, Kurzfassung, Besitz</span></span>
+      </button>
+    </div>`, { fokus: false });
+
+  const verschieben = d => {
+    const j = i + d;
+    if (j < 0 || j >= l.length) return;
+    aendern(() => { const t2 = l[i].ord; l[i].ord = l[j].ord; l[j].ord = t2; buecherIn(b.blockId).forEach((x, k) => x.ord = k); });
+    layerSchliessen(); viewMalen();
+  };
+  $('[data-a="hoch"]', s).onclick = () => verschieben(-1);
+  $('[data-a="runter"]', s).onclick = () => verschieben(1);
+  $('[data-a="lesen"]', s).onclick = () => { layerSchliessen(); laeuftHier ? sitzungBeenden() : sitzungStarten(b.id); };
+  $('[data-a="einkauf"]', s).onclick = () => {
+    aendern(() => { b.einkauf = !b.einkauf; if (b.einkauf && b.besitz === 'habe') b.besitz = 'fehlt'; });
+    layerSchliessen(); viewMalen();
+    toast(b.einkauf ? 'Auf der Einkaufsliste.' : 'Von der Einkaufsliste genommen.');
+  };
+  $('[data-a="bearbeiten"]', s).onclick = () => { layerSchliessen(); setTimeout(() => buchBearbeiten(b, b.blockId), 70); };
 }
 
 /* ---------- Lesepläne ---------- */
@@ -1587,6 +1819,19 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
       </select></div>
     </div>
     <div class="field"><label>Ausgabe</label><input type="text" data-ausgabe value="${esc(b.ausgabe || '')}" placeholder="z.B. Suhrkamp Taschenbuch"></div>
+    <div class="field">
+      <label>Besitz</label>
+      <div style="display:flex;gap:7px;flex-wrap:wrap" data-besitz></div>
+    </div>
+    <div class="field" style="flex-direction:row;align-items:center;gap:9px">
+      <input type="checkbox" data-einkauf ${b.einkauf ? 'checked' : ''} style="width:auto">
+      <label style="text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--text-2);font-weight:400">Als Nächstes kaufen (Einkaufsliste)</label>
+    </div>
+    <div class="field">
+      <label>Kurzfassung</label>
+      <textarea data-kurz style="min-height:56px" placeholder="Das Buch in höchstens 15 Wörtern – erscheint beim Wischen in der Liste.">${esc(b.kurz || '')}</textarea>
+      <span class="hint" data-kurzzahl></span>
+    </div>
     <div class="field"><label>Block</label><select data-block>
       ${plaeneSortiert().map(p => `<optgroup label="${esc(p.name)}">${bloeckeVonPlan(p.id)
       .map(x => `<option value="${x.id}"${x.id === b.blockId ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</optgroup>`).join('')}
@@ -1601,6 +1846,25 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
       <button class="btn btn-primary" data-ok style="flex:1">${neu ? 'Anlegen' : 'Sichern'}</button>
       ${neu ? '' : `<button class="btn btn-danger" data-del>${ICON.trash}</button>`}
     </div>`);
+
+  let besitzWahl = BESITZ[b.besitz] ? b.besitz : 'fehlt';
+  const besitzMalen = () => {
+    const w = $('[data-besitz]', s);
+    w.innerHTML = Object.entries(BESITZ).map(([k, v]) =>
+      `<button class="chip" data-b="${k}" aria-pressed="${k === besitzWahl}"
+        style="${k === besitzWahl ? `border-color:${v.farbe};color:${v.farbe}` : ''}">${esc(v.name)}</button>`).join('');
+    $$('[data-b]', w).forEach(x => x.onclick = () => { besitzWahl = x.dataset.b; besitzMalen(); });
+  };
+  besitzMalen();
+
+  const kurzFeld = $('[data-kurz]', s), kurzZahl = $('[data-kurzzahl]', s);
+  const kurzZaehlen = () => {
+    const n = kurzFeld.value.trim().split(/\s+/).filter(Boolean).length;
+    kurzZahl.textContent = n + (n === 1 ? ' Wort' : ' Wörter') + (n > 15 ? ' – etwas lang' : '');
+    kurzZahl.style.color = n > 15 ? 'var(--accent)' : 'var(--text-3)';
+  };
+  kurzFeld.addEventListener('input', kurzZaehlen);
+  kurzZaehlen();
 
   $('[data-ok]', s).onclick = () => {
     const titel = $('[data-titel]', s).value.trim();
@@ -1617,7 +1881,10 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
       status: $('[data-status]', s).value,
       ausgabe: $('[data-ausgabe]', s).value.trim(),
       blockId: $('[data-block]', s).value,
-      beschreibung: $('[data-besch]', s).value.trim()
+      beschreibung: $('[data-besch]', s).value.trim(),
+      kurz: $('[data-kurz]', s).value.trim().replace(/\s+/g, ' '),
+      besitz: besitzWahl,
+      einkauf: $('[data-einkauf]', s).checked
     };
     aendern(() => {
       if (neu) {
@@ -1882,8 +2149,7 @@ const SEITEN = [
   { id: 'themen', label: 'Themenfelder' },
   { id: 'arten', label: 'Arten' },
   { id: 'notizen', label: 'Alle Notizen' },
-  { id: 'galerie', label: 'Galerie' },
-  { id: 'lesen', label: 'Lesen' }
+  { id: 'galerie', label: 'Galerie' }
 ];
 
 function buchOeffnen(buchId, startSeite) {
@@ -1923,7 +2189,6 @@ function buchOeffnen(buchId, startSeite) {
     seiteGruppen(b, $('[data-page="arten"]', node), 'art', allesMalen);
     seiteAlleNotizen(b, $('[data-page="notizen"]', node), allesMalen);
     seiteGalerie(b, $('[data-page="galerie"]', node), allesMalen);
-    seiteLesen(b, $('[data-page="lesen"]', node), allesMalen);
     viewMalen();
   };
 
@@ -1964,6 +2229,8 @@ function buchOeffnen(buchId, startSeite) {
 function seiteBeschreibung(b, root, neuMalen) {
   const min = buchMinuten(b), tempo = buchTempo(b);
   const lebt = lebensdaten(b.autorGeb, b.autorGest);
+  const tLauf = laufenderTimer();
+  const laeuftHier = !!(tLauf && tLauf.buchId === b.id);
   root.innerHTML = `
     ${b.beschreibung
       ? `<p class="desc">${esc(b.beschreibung).replace(/\n/g, '<br>')}</p>`
@@ -1974,6 +2241,7 @@ function seiteBeschreibung(b, root, neuMalen) {
       <div class="fact"><div class="k">Erschienen</div><div class="v" style="${b.jahr != null && b.jahr < 0 ? 'font-size:12.5px' : ''}">${esc(jahrText(b.jahr))}</div></div>
       <div class="fact"><div class="k">Seiten</div><div class="v">${b.seiten != null ? (b.seitenUnsicher ? '~' : '') + b.seiten : '–'}</div></div>
       <div class="fact"><div class="k">Preis</div><div class="v">${b.preis != null ? fmtGeld(b.preis) : '–'}</div></div>
+      <div class="fact"><div class="k">Besitz</div><div class="v" style="font-size:12.5px;color:${(BESITZ[b.besitz] || BESITZ.fehlt).farbe}">${esc((BESITZ[b.besitz] || BESITZ.fehlt).name)}</div></div>
       <div class="fact"><div class="k">Autor</div><div class="v" style="font-size:12.5px">${lebt ? esc(String(lebt)) : '–'}</div></div>
       <div class="fact"><div class="k">Lesezeit</div><div class="v">${min ? fmtDauer(min) : '–'}</div></div>
       <div class="fact"><div class="k">Tempo</div><div class="v">${tempo ? fmtZahl(tempo) + ' <small>S./h</small>' : '–'}</div></div>
@@ -1981,13 +2249,38 @@ function seiteBeschreibung(b, root, neuMalen) {
       <div class="fact"><div class="k">Status</div><div class="v" style="font-size:12.5px">${STATUS[b.status]}</div></div>
     </div>
     ${b.ausgabe ? `<p class="muted" style="font-size:12px;margin-top:10px">Ausgabe: ${esc(b.ausgabe)}</p>` : ''}
+    ${b.kurz ? `<p class="muted" style="font-size:12.5px;margin-top:10px;font-family:'Literata',Georgia,serif">In Kürze: ${esc(b.kurz)}</p>` : ''}
     <div class="btn-row" style="margin-top:16px">
       <button class="btn btn-primary" data-neu-notiz style="flex:1">${ICON.plus} Notiz anlegen</button>
       <button class="btn" data-alle-notizen>Alle Notizen (${b.notizen.length})</button>
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn" data-lesen style="flex:1">${laeuftHier ? ICON.pause + ' Sitzung beenden' : ICON.play + ' Sitzung starten'}</button>
+      <button class="btn" data-sitzungen>Sitzungen (${b.sessions.length})</button>
     </div>`;
   $('[data-edit-desc]', root).onclick = () => beschreibungBearbeiten(b, neuMalen);
   $('[data-neu-notiz]', root).onclick = () => notizBearbeiten(b, null, {}, neuMalen);
   $('[data-alle-notizen]', root).onclick = () => notizListe(b, { alle: true }, neuMalen);
+  $('[data-lesen]', root).onclick = () => { laeuftHier ? sitzungBeenden() : sitzungStarten(b.id); neuMalen(); };
+  $('[data-sitzungen]', root).onclick = () => sitzungenOeffnen(b, neuMalen);
+}
+
+/* Stoppuhr, Sitzungen und Lesetempo eines Buches als eigene Ansicht. */
+function sitzungenOeffnen(b, neuMalen) {
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">Lesen</div><div class="ovl-sub">${esc(b.titel)}</div></div>
+    </div>
+    <div class="ovl-body" style="padding:14px 14px 40px" data-body></div>`;
+  const malen = () => {
+    seiteLesen(b, $('[data-body]', node), () => { malen(); if (neuMalen) neuMalen(); });
+  };
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  layerOeffnen(node, () => { if (neuMalen) neuMalen(); });
+  malen();
 }
 
 function beschreibungBearbeiten(b, neuMalen) {
@@ -2605,6 +2898,10 @@ function uebersichtMalen(root) {
     ['Tempo', tempoGes ? fmtZahl(tempoGes) + ' <small>S./h</small>' : '–', 'aus den Sitzungen'],
     ['Kosten', kosten ? fmtGeld(kosten) : '–', mitPreis.length + ' von ' + alle.length + ' mit Preis'],
     ['Notizen', fmtZahl(notizen), pl(DB.themen.length, 'Themenfeld', 'Themenfelder')],
+    ['Fehlt mir', String(alle.filter(fehltMir).length), (() => {
+      const s = alle.filter(fehltMir).reduce((x, b) => x + (b.preis || 0), 0);
+      return s ? fmtGeld(s) + ' eingetragen' : 'ohne Preisangabe';
+    })()],
     ['Fertig etwa', prognose, 'bei bisherigem Tempo']
   ].map(([k, v, s]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${esc(s)}</div></div>`).join('');
   wrap.appendChild(tiles);
@@ -2713,43 +3010,120 @@ function uebersichtMalen(root) {
 /* ============================================================
    Themenfelder über alle Bücher hinweg
    ============================================================ */
-function themenMalen(root) {
-  const treffer = alleNotizen();
+let notizenUnter = 'themen';
+
+function notizenTabMalen(root) {
+  const unter = [['themen', 'Themenfelder'], ['arten', 'Arten'], ['alle', 'Alle Notizen'], ['galerie', 'Galerie']];
+  root.innerHTML = `
+    <div class="chiprow">
+      ${unter.map(([k, l]) => `<button class="chip" data-unter="${k}" aria-pressed="${notizenUnter === k}">${l}</button>`).join('')}
+    </div>
+    <div id="notizenInhalt" style="margin-top:14px"></div>`;
+  $$('[data-unter]', root).forEach(c => c.onclick = () => { notizenUnter = c.dataset.unter; viewMalen(); });
+
+  const ziel = $('#notizenInhalt', root);
+  if (notizenUnter === 'themen') gruppenGlobal(ziel, 'thema');
+  else if (notizenUnter === 'arten') gruppenGlobal(ziel, 'art');
+  else if (notizenUnter === 'alle') alleNotizenGlobal(ziel);
+  else galerieGlobal(ziel);
+}
+
+/* Themenfelder oder Arten über alle Bücher hinweg. */
+function gruppenGlobal(root, art) {
+  const nachThema = art === 'thema';
   const zaehl = new Map();
-  treffer.forEach(({ buch, notiz }) => {
-    const k = notiz.themaId || '__ohne';
+  alleNotizen().forEach(({ buch, notiz }) => {
+    const k = (nachThema ? notiz.themaId : notiz.artId) || '__ohne';
     if (!zaehl.has(k)) zaehl.set(k, { n: 0, buecher: new Set() });
     const e = zaehl.get(k); e.n++; e.buecher.add(buch.id);
   });
-  const liste = Array.from(zaehl.entries())
-    .map(([k, v]) => ({ id: k === '__ohne' ? null : k, name: k === '__ohne' ? 'Ohne Themenfeld' : themaName(k), n: v.n, b: v.buecher.size }))
-    .sort((a, b) => b.n - a.n);
+  const liste = Array.from(zaehl.entries()).map(([k, v]) => ({
+    id: k === '__ohne' ? null : k,
+    name: k === '__ohne' ? (nachThema ? 'Ohne Themenfeld' : 'Ohne Art') : (nachThema ? themaName(k) : artName(k)),
+    farbe: (!nachThema && k !== '__ohne') ? artFarbe(k) : null,
+    n: v.n, b: v.buecher.size
+  })).sort((a, b) => b.n - a.n);
 
   root.innerHTML = `
     <div class="section">
       <div class="section-head">
-        <h2>Themenfelder</h2>
+        <h2>${nachThema ? 'Themenfelder' : 'Arten'}</h2>
         <button class="btn btn-sm btn-ghost" data-verwalten>Verwalten</button>
       </div>
-      ${liste.length ? '<div data-liste></div>' : `<div class="empty"><strong>Noch keine Themenfelder</strong>Gib deinen Notizen ein Themenfeld – dann laufen hier die Fäden aus allen Büchern zusammen.</div>`}
+      ${liste.length ? '<div data-liste></div>' : `<div class="empty"><strong>Noch nichts da</strong>${nachThema
+      ? 'Gib deinen Notizen ein Themenfeld – dann laufen hier die Fäden aus allen Büchern zusammen.'
+      : 'Sobald Notizen eine Art tragen, sammeln sie sich hier über alle Bücher.'}</div>`}
     </div>`;
-  $('[data-verwalten]', root).onclick = themenVerwalten;
+  $('[data-verwalten]', root).onclick = nachThema ? themenVerwalten : artenVerwalten;
 
   const l = $('[data-liste]', root);
   if (!l) return;
   liste.forEach(t => {
     const row = document.createElement('button');
     row.className = 'grouprow';
-    row.innerHTML = `<span class="grow">
+    row.innerHTML = `
+      ${t.farbe ? `<span class="swatch" style="width:11px;height:11px;border-radius:4px;background:${t.farbe};flex:0 0 auto"></span>` : ''}
+      <span class="grow">
         <span class="gname">${esc(t.name)}</span>
-        <span class="gmeta">${t.n} ${t.n === 1 ? 'Notiz' : 'Notizen'} aus ${t.b} ${t.b === 1 ? 'Buch' : 'Büchern'}</span>
+        <span class="gmeta">${pl(t.n, 'Notiz', 'Notizen')} aus ${pl(t.b, 'Buch', 'Büchern')}</span>
       </span><span class="count num">${t.n}</span><span class="chev">${ICON.chev}</span>`;
-    row.onclick = () => themaOeffnen(t.id, t.name);
+    row.onclick = () => sammlungOeffnen(t.name, nachThema
+      ? n => (n.themaId || null) === t.id
+      : n => (n.artId || null) === t.id);
     l.appendChild(row);
   });
 }
 
-function themaOeffnen(themaId, name) {
+/* Alle Notizen aller Bücher, nach Buch und Seite. */
+function alleNotizenGlobal(root) {
+  const gesamt = alleNotizen().length;
+  root.innerHTML = `
+    <div class="section">
+      <div class="section-head"><h2>Alle Notizen</h2><span class="eyebrow">${gesamt}</span></div>
+      <div data-l></div>
+    </div>`;
+  const l = $('[data-l]', root);
+  if (!gesamt) {
+    l.innerHTML = `<div class="empty"><strong>Noch keine Notizen</strong>Öffne ein Buch und schreib die erste.</div>`;
+    return;
+  }
+  buecherNachPlan().forEach(b => {
+    if (!b.notizen.length) return;
+    const h = document.createElement('div');
+    h.className = 'section-head';
+    h.style.margin = '16px 0 8px';
+    h.innerHTML = `<h2 class="serif" style="font-weight:600">${esc(b.titel)}</h2><span class="eyebrow">${pl(b.notizen.length, 'Notiz', 'Notizen')}</span>`;
+    l.appendChild(h);
+    b.notizen.slice().sort((a, c) => seiteZahl(a.seite) - seiteZahl(c.seite))
+      .forEach(n => l.appendChild(notizKarte(b, n, () => viewMalen())));
+  });
+}
+
+/* Alle Fotos aller Bücher. */
+function galerieGlobal(root) {
+  const bilder = [];
+  buecherNachPlan().forEach(b => {
+    b.notizen.slice().sort((a, c) => seiteZahl(a.seite) - seiteZahl(c.seite))
+      .forEach(n => n.bilder.forEach(x => bilder.push({ src: x.src, seite: n.seite, notiz: n, buch: b })));
+  });
+  root.innerHTML = `
+    <div class="section">
+      <div class="section-head"><h2>Galerie</h2><span class="eyebrow">${pl(bilder.length, 'Foto', 'Fotos')}</span></div>
+      ${bilder.length ? '<div class="gal" data-g></div>' : `<div class="empty"><strong>Noch keine Fotos</strong>Alle abfotografierten Seiten aus allen Büchern landen hier.</div>`}
+    </div>`;
+  const g = $('[data-g]', root);
+  if (!g) return;
+  bilder.forEach((bi, i) => {
+    const btn = document.createElement('button');
+    btn.innerHTML = `<img src="${bi.src}" alt="Foto aus ${esc(bi.buch.titel)}">
+      <span class="cap">${bi.seite ? 'S. ' + esc(seiteText(bi.seite)) : ''}</span>`;
+    btn.onclick = () => bildGrossMitNotiz(bi.buch, bilder, i, () => viewMalen());
+    g.appendChild(btn);
+  });
+}
+
+/* Notizen aus allen Büchern, die einem Filter entsprechen. */
+function sammlungOeffnen(name, passt) {
   const node = document.createElement('div');
   node.className = 'overlay';
   node.innerHTML = `
@@ -2762,11 +3136,11 @@ function themaOeffnen(themaId, name) {
     const l = $('[data-liste]', node);
     l.innerHTML = '';
     const nachBuch = new Map();
-    alleNotizen().filter(x => (x.notiz.themaId || null) === themaId).forEach(x => {
+    alleNotizen().filter(x => passt(x.notiz)).forEach(x => {
       if (!nachBuch.has(x.buch.id)) nachBuch.set(x.buch.id, []);
       nachBuch.get(x.buch.id).push(x.notiz);
     });
-    if (!nachBuch.size) { l.innerHTML = `<div class="empty"><strong>Leer</strong>Zu diesem Themenfeld gibt es keine Notiz mehr.</div>`; return; }
+    if (!nachBuch.size) { l.innerHTML = `<div class="empty"><strong>Leer</strong>Hier gibt es keine Notiz mehr.</div>`; return; }
     nachBuch.forEach((notizen, buchId) => {
       const b = buchById(buchId);
       const h = document.createElement('div');
@@ -2891,6 +3265,142 @@ function sucheOeffnen() {
 }
 
 /* ============================================================
+   Einkaufsliste: was fehlt und was als Nächstes drankommt
+   ============================================================ */
+const fehltMir = b => b.besitz === 'fehlt' || b.besitz === 'bestellt';
+function einkaufDaten() {
+  const alle = buecherNachPlan().filter(fehltMir);
+  const naechste = alle.filter(b => b.einkauf);
+  const rest = alle.filter(b => !b.einkauf);
+  const summe = l => l.reduce((s, b) => s + (b.preis || 0), 0);
+  return { alle, naechste, rest, summeNaechste: summe(naechste), summeAlle: summe(alle) };
+}
+
+async function dateiAnbieten(name, text, typ) {
+  const dl = window.claude && window.claude.use ? await window.claude.use('downloads').catch(() => null) : null;
+  if (dl) {
+    try { await dl.save({ filename: name, data: text }); toast('Gesichert: ' + name); return; }
+    catch (e) {
+      if (e && e.code === 'declined') { toast('Abgebrochen.'); return; }
+      console.error(e);
+    }
+  }
+  try {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: typ || 'text/plain' }));
+    a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('Gesichert: ' + name);
+  } catch (e) { toast('Kein Weg zum Speichern verfügbar.', 3500); }
+}
+
+function einkaufText() {
+  const { naechste, rest, summeNaechste, summeAlle } = einkaufDaten();
+  const zeile = b => {
+    const teile = ['– ' + b.titel + ' — ' + (b.autor || 'ohne Autor')];
+    const zusatz = [];
+    if (b.ausgabe) zusatz.push(b.ausgabe);
+    if (b.seiten) zusatz.push((b.seitenUnsicher ? 'ca. ' : '') + b.seiten + ' S.');
+    if (b.besitz === 'bestellt') zusatz.push('bestellt');
+    if (zusatz.length) teile.push('  (' + zusatz.join(', ') + ')');
+    if (b.preis != null) teile.push('  ' + fmtGeld(b.preis));
+    return teile.join('');
+  };
+  const heuteText = new Date().toLocaleDateString('de-DE');
+  let out = 'Einkaufsliste – leseliste\nStand: ' + heuteText + '\n';
+  if (naechste.length) {
+    out += '\nALS NÄCHSTES (' + naechste.length + ')\n' + naechste.map(zeile).join('\n') + '\n';
+    if (summeNaechste) out += 'Zwischensumme: ' + fmtGeld(summeNaechste) + '\n';
+  }
+  if (rest.length) out += '\nFEHLT AUSSERDEM (' + rest.length + ')\n' + rest.map(zeile).join('\n') + '\n';
+  out += '\nSumme der eingetragenen Preise: ' + fmtGeld(summeAlle) + '\n';
+  out += '(Bücher ohne Preis sind darin nicht enthalten.)\n';
+  return out;
+}
+
+function einkaufslisteOeffnen() {
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">Einkaufsliste</div><div class="ovl-sub" data-sub></div></div>
+      <button class="icon-btn" data-ausgeben aria-label="Als Datei">${ICON.save}</button>
+    </div>
+    <div class="ovl-body" style="padding:12px 14px 40px" data-body></div>`;
+
+  const malen = () => {
+    const { alle, naechste, rest, summeNaechste, summeAlle } = einkaufDaten();
+    $('[data-sub]', node).textContent = alle.length
+      ? pl(alle.length, 'Buch', 'Bücher') + (summeAlle ? ' · ' + fmtGeld(summeAlle) : '')
+      : 'nichts offen';
+    const body = $('[data-body]', node);
+    body.innerHTML = '';
+    if (!alle.length) {
+      body.innerHTML = `<div class="empty"><strong>Nichts zu besorgen</strong>Alle Bücher deiner Listen sind als vorhanden oder aus der Bibliothek geführt.</div>`;
+      return;
+    }
+
+    const abschnitt = (titel, liste, summe, hinweis) => {
+      if (!liste.length) return;
+      const h = document.createElement('div');
+      h.className = 'section-head';
+      h.style.margin = '6px 0 8px';
+      h.innerHTML = `<h2>${esc(titel)} <span class="eyebrow" style="margin-left:6px">${liste.length}</span></h2>
+        <span class="eyebrow">${summe ? fmtGeld(summe) : ''}</span>`;
+      body.appendChild(h);
+      if (hinweis) body.insertAdjacentHTML('beforeend', `<p class="hinweis" style="padding:0 0 8px">${hinweis}</p>`);
+      const karte = document.createElement('div');
+      karte.className = 'list-card';
+      karte.style.marginBottom = '18px';
+      liste.forEach(b => {
+        const bes = BESITZ[b.besitz] || BESITZ.fehlt;
+        const r = document.createElement('div');
+        r.className = 'rowline';
+        r.innerHTML = `
+          <button data-mark="${b.id}" class="status-btn" style="width:26px;height:26px;${b.einkauf ? 'border-color:var(--accent);color:var(--accent);background:var(--accent-soft)' : ''}">${b.einkauf ? ICON.check : ''}</button>
+          <button class="grow" data-oeffne="${b.id}" style="text-align:left">
+            <span class="rn serif">${esc(b.titel)}</span>
+            <span class="rm">${esc(b.autor)}${b.ausgabe ? ' · ' + esc(b.ausgabe) : ''}${b.besitz === 'bestellt' ? ' · bestellt' : ''}</span>
+          </button>
+          <span class="bval">${b.preis != null ? fmtGeld(b.preis) : '–'}</span>`;
+        $('[data-mark]', r).onclick = () => { aendern(() => { b.einkauf = !b.einkauf; }); malen(); viewMalen(); };
+        $('[data-oeffne]', r).onclick = () => buchOeffnen(b.id);
+        karte.appendChild(r);
+      });
+      body.appendChild(karte);
+    };
+
+    abschnitt('Als Nächstes', naechste, summeNaechste,
+      'Angetippt wandert ein Buch zwischen „Als Nächstes“ und der übrigen Liste.');
+    abschnitt('Fehlt außerdem', rest, 0, naechste.length ? '' :
+      'Tippe den Kreis an, um ein Buch für den nächsten Einkauf vorzumerken.');
+
+    body.insertAdjacentHTML('beforeend',
+      `<p class="hinweis">Bücher ohne Preis zählen nicht in die Summe. Den Preis trägst du im Buch unter „Bearbeiten“ ein.</p>`);
+  };
+
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  $('[data-ausgeben]', node).onclick = () => {
+    const s = blatt('Einkaufsliste ausgeben', `
+      <div class="btn-row">
+        <button class="btn btn-primary" data-txt style="flex:1">Als Textdatei</button>
+        <button class="btn" data-kopieren style="flex:1">In die Zwischenablage</button>
+      </div>
+      <pre style="margin-top:14px;max-height:36vh;overflow:auto;font-size:11px;color:var(--text-2);white-space:pre-wrap;font-family:'IBM Plex Mono',monospace">${esc(einkaufText())}</pre>`,
+      { fokus: false });
+    $('[data-txt]', s).onclick = () => { dateiAnbieten('einkaufsliste-' + heute() + '.txt', einkaufText()); layerSchliessen(); };
+    $('[data-kopieren]', s).onclick = async () => {
+      try { await navigator.clipboard.writeText(einkaufText()); toast('Kopiert.'); }
+      catch (e) { toast('Kopieren ging nicht – nimm die Textdatei.', 3500); }
+      layerSchliessen();
+    };
+  };
+  layerOeffnen(node, () => viewMalen());
+  malen();
+}
+
+/* ============================================================
    Mehr: Speicher, Arten, Sicherung
    ============================================================ */
 function mehrMalen(root) {
@@ -2905,6 +3415,21 @@ function mehrMalen(root) {
             <span class="rm">${pl(DB.lesepleane.length, 'leseliste', 'leselisten')} insgesamt · ${pl(DB.buecher.length, 'Buch', 'Bücher')}</span>
           </span>
           <button class="btn btn-sm" data-plaene>Verwalten</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Einkauf</h2></div>
+      <div class="list-card">
+        <div class="rowline">
+          <span class="grow">
+            <span class="rn">Einkaufsliste</span>
+            <span class="rm">${einkaufDaten().alle.length
+      ? pl(einkaufDaten().alle.length, 'Buch fehlt', 'Bücher fehlen') + (einkaufDaten().summeAlle ? ' · ' + fmtGeld(einkaufDaten().summeAlle) + ' eingetragen' : '')
+      : 'Nichts offen'}</span>
+          </span>
+          <button class="btn btn-sm" data-einkauf>Öffnen</button>
         </div>
       </div>
     </div>
@@ -3011,6 +3536,7 @@ function mehrMalen(root) {
     viewMalen();
   });
   $('[data-plaene]', root).onclick = planWechsler;
+  $('[data-einkauf]', root).onclick = einkaufslisteOeffnen;
   $('[data-save]', root).onclick = () => Store.alsDateiSichern(false);
   $('[data-export]', root).onclick = () => Store.alsDateiSichern(false);
   $('[data-import]', root).onclick = () => importDialog(false);

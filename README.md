@@ -53,13 +53,13 @@ eine komplett andere Liste zu laden oder eine Sicherung zurückzuspielen.
 
 - **Liste** – Blöcke und Bücher, anlegen, ändern, verschieben, löschen. Der Kreis
   links schaltet den Status weiter: offen → lese ich → gelesen.
-- **Buch** – sechs Seiten, zwischen denen gewischt wird:
-  1. *Beschreibung* mit Erscheinungsjahr, Seitenzahl, Preis, Autor-Lebensdaten
+- **Buch** – fünf Seiten, zwischen denen gewischt wird:
+  1. *Beschreibung* mit Erscheinungsjahr, Seitenzahl, Preis, Besitz, Autor-Lebensdaten,
+     dazu Stoppuhr und Zugang zu den Sitzungen
   2. *Themenfelder* – Notizen nach Thema gruppiert, ein Tipp führt zu den Notizen
   3. *Arten* – dieselben Notizen nach Zitat, Gedanke, Frage, Widerspruch …
   4. *Alle Notizen* – ungruppiert, nach Seitenzahl gereiht
   5. *Galerie* – alle Fotos des Buches; von der Großansicht geht es zur Notiz
-  6. *Lesen* – Stoppuhr und alle Sitzungen, jede einzeln korrigierbar
 - **Notizen** – Seite, Themenfeld, Art, Text und beliebig viele Fotos. Die Seite ist
   ein Textfeld, `35-36` ist also erlaubt; gereiht wird nach der ersten Zahl. Fotos
   über die Kamera in der Seite (fällt auf die Kamera-App zurück, wo die Umgebung
@@ -68,8 +68,25 @@ eine komplett andere Liste zu laden oder eine Sicherung zurückzuspielen.
 - **Übersicht** – Kennzahlen und Graphen: Seiten pro Monat, gelesene Bücher
   kumuliert, Blöcke nach Seitenumfang, Kosten je Block, Lesetempo je Buch,
   Notizen nach Art und Themenfeld. Jeder Graph lässt sich als Tabelle aufklappen.
-- **Themen** – alle Notizen zu einem Themenfeld über alle Bücher hinweg.
+- **Notizen** – buchübergreifend, umschaltbar zwischen Themenfeldern, Arten, allen
+  Notizen und der Galerie aller Fotos.
 - **Suche** – über Titel, Autoren, Beschreibungen, Notizen und Themen.
+
+## Lesen und Einkaufen
+
+Über der Tableiste sitzt eine Leiste für die laufende Sitzung: Läuft eine, zeigt sie
+Buch und Uhr; läuft keine, startet sie das aktuelle Buch. Gibt es kein oder mehr als
+ein angefangenes Buch, wird gewählt. Starten geht auch im Buch und über langes Drücken
+auf eine Zeile der Liste – dort finden sich außerdem *nach oben* und *nach unten*.
+
+Ein Wisch nach links auf einer Buchzeile zeigt die **Kurzfassung**: das Buch in
+höchstens 15 Wörtern, änderbar unter *Bearbeiten*.
+
+Jedes Buch hat einen **Besitz**-Zustand: fehlt, bestellt, habe ich, Bibliothek. Was
+fehlt, sammelt die **Einkaufsliste** unter *Mehr* – angetippt wandert ein Buch nach
+*Als Nächstes*. Die Liste rechnet die eingetragenen Preise zusammen und lässt sich als
+Textdatei speichern oder in die Zwischenablage kopieren. Der Filter *Fehlt mir* in der
+Listenansicht zeigt dasselbe im Zusammenhang des Plans.
 
 Dunkel (reines Schwarz) ist die Grundeinstellung, umschaltbar über das Symbol in der
 Kopfzeile. Die Akzentfarbe lässt sich unter *Mehr → Darstellung* aus neun Farben
