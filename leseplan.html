@@ -215,16 +215,19 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .empty strong{display:block;color:var(--text-2);font-size:15px;margin-bottom:6px;font-family:"Literata",Georgia,serif;font-weight:600;}
 
 /* ---------- Overlay / Sheets ---------- */
+/* --vvh/--vvtop folgen dem sichtbaren Bereich: Wenn die Tastatur aufgeht,
+   schrumpft das Fenster mit, statt darunter zu verschwinden. */
 .overlay{
-  position:fixed;inset:0;z-index:60;background:var(--bg);
-  display:flex;flex-direction:column;
+  position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:60;
+  background:var(--bg);display:flex;flex-direction:column;
   animation:slideIn .22s ease;
 }
 @keyframes slideIn{from{transform:translateX(18px);opacity:.4}to{transform:none;opacity:1}}
-.sheet-scrim{position:fixed;inset:0;z-index:70;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center;animation:fade .18s ease;}
+.sheet-scrim{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:70;
+  background:var(--scrim);display:flex;align-items:flex-end;justify-content:center;animation:fade .18s ease;}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .sheet{
-  width:100%;max-width:680px;max-height:92vh;overflow-y:auto;background:var(--surface);
+  width:100%;max-width:680px;max-height:calc(var(--vvh,100dvh) - 20px);overflow-y:auto;background:var(--surface);
   border:1px solid var(--border);border-bottom:0;border-radius:18px 18px 0 0;box-shadow:var(--shadow);
   padding:8px 16px calc(20px + env(safe-area-inset-bottom));animation:up .24s cubic-bezier(.22,.8,.3,1);
 }
@@ -536,6 +539,35 @@ function toast(msg, ms) {
   clearTimeout(toastT);
   toastT = setTimeout(() => { t.hidden = true; }, ms || 2600);
 }
+
+/* ---------- Sichtbarer Bereich ----------
+   Auf dem Handy schiebt die Tastatur den unteren Teil des Fensters weg.
+   Diese beiden Werte folgen dem, was wirklich zu sehen ist. */
+(function viewportVerfolgen() {
+  const vv = window.visualViewport;
+  const setzen = () => {
+    const wurzel = document.documentElement.style;
+    wurzel.setProperty('--vvh', (vv ? vv.height : window.innerHeight) + 'px');
+    wurzel.setProperty('--vvtop', (vv ? vv.offsetTop : 0) + 'px');
+  };
+  if (vv) {
+    vv.addEventListener('resize', setzen);
+    vv.addEventListener('scroll', setzen);
+  }
+  window.addEventListener('resize', setzen);
+  window.addEventListener('orientationchange', () => setTimeout(setzen, 250));
+  setzen();
+})();
+
+/* Das gerade beschriebene Feld in den sichtbaren Bereich holen. */
+document.addEventListener('focusin', e => {
+  const feld = e.target;
+  if (!feld.matches || !feld.matches('input,textarea,select')) return;
+  if (!feld.closest('.sheet,.overlay')) return;
+  setTimeout(() => {
+    try { feld.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (err) { }
+  }, 320);
+});
 
 /* ============================================================
    Datenmodell
@@ -1008,7 +1040,7 @@ function vollbildAutostart() {
    Rahmen: Tabs, Kopfzeile
    ============================================================ */
 const TABS = [
-  { id: 'plan', label: 'Plan', icon: ICON.books },
+  { id: 'plan', label: 'Liste', icon: ICON.books },
   { id: 'uebersicht', label: 'Übersicht', icon: ICON.chart },
   { id: 'themen', label: 'Themen', icon: ICON.tags },
   { id: 'mehr', label: 'Mehr', icon: ICON.more }
@@ -1222,7 +1254,7 @@ function planMalen(root) {
       <div class="sortrow">
         <span>Sortiert nach</span>
         <select data-sort>
-          <option value="plan"${planSort === 'plan' ? ' selected' : ''}>Plan-Reihenfolge</option>
+          <option value="plan"${planSort === 'plan' ? ' selected' : ''}>Listen-Reihenfolge</option>
           <option value="titel"${planSort === 'titel' ? ' selected' : ''}>Titel A–Z</option>
           <option value="autor"${planSort === 'autor' ? ' selected' : ''}>Autor A–Z</option>
           <option value="seiten"${planSort === 'seiten' ? ' selected' : ''}>Seiten absteigend</option>
@@ -2553,7 +2585,7 @@ function uebersichtMalen(root) {
   const tiles = document.createElement('div');
   tiles.className = 'tiles';
   tiles.innerHTML = [
-    ['Gelesen', gelesen.length + ' <small>/ ' + alle.length + '</small>', Math.round(alle.length ? gelesen.length / alle.length * 100 : 0) + ' % des Plans'],
+    ['Gelesen', gelesen.length + ' <small>/ ' + alle.length + '</small>', Math.round(alle.length ? gelesen.length / alle.length * 100 : 0) + ' % der Liste'],
     ['Seiten gelesen', fmtZahl(seitenGelesen), 'von ' + fmtZahl(seitenGes)],
     ['Lesezeit', fmtDauerKurz(minGes), pl(sess.length, 'Sitzung', 'Sitzungen')],
     ['Tempo', tempoGes ? fmtZahl(tempoGes) + ' <small>S./h</small>' : '–', 'aus den Sitzungen'],

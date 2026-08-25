@@ -51,7 +51,7 @@ eine komplett andere Liste zu laden oder eine Sicherung zurückzuspielen.
 
 ## Aufbau
 
-- **Plan** – Blöcke und Bücher, anlegen, ändern, verschieben, löschen. Der Kreis
+- **Liste** – Blöcke und Bücher, anlegen, ändern, verschieben, löschen. Der Kreis
   links schaltet den Status weiter: offen → lese ich → gelesen.
 - **Buch** – sechs Seiten, zwischen denen gewischt wird:
   1. *Beschreibung* mit Erscheinungsjahr, Seitenzahl, Preis, Autor-Lebensdaten
