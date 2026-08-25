@@ -364,7 +364,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .bars{display:flex;flex-direction:column;gap:9px;}
 .barrow{display:grid;grid-template-columns:minmax(88px,34%) 1fr auto;gap:10px;align-items:center;}
 .blab{font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.btrack{height:12px;background:var(--surface-3);border-radius:4px;display:flex;gap:2px;overflow:hidden;}
+.btrack{height:12px;background:color-mix(in srgb,var(--text-3) 13%,transparent);border-radius:4px;display:flex;gap:2px;overflow:hidden;}
 .bseg{height:100%;border-radius:0 4px 4px 0;min-width:2px;}
 .bseg:first-child{border-radius:4px;}
 .bval{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-2);font-variant-numeric:tabular-nums;white-space:nowrap;}
@@ -435,6 +435,18 @@ function fmtDauerKurz(min) {
   return h ? h + ':' + String(m).padStart(2, '0') + ' h' : m + ' min';
 }
 const pl = (n, ein, viele) => n + ' ' + (n === 1 ? ein : viele);
+/* Antike Jahreszahlen stehen negativ in den Daten. */
+function jahrText(j) {
+  if (j == null || j === '') return '–';
+  return j < 0 ? Math.abs(j) + ' v. Chr.' : String(j);
+}
+function lebensdaten(geb, gest) {
+  if (geb == null && gest == null) return null;
+  const g = geb == null ? '?' : (geb < 0 ? Math.abs(geb) : geb);
+  const t = gest == null ? '' : (gest < 0 ? Math.abs(gest) : gest);
+  const vChr = (geb != null && geb < 0) || (gest != null && gest < 0);
+  return g + '–' + t + (vChr ? ' v. Chr.' : '');
+}
 function fmtGeld(v) {
   if (v == null || !isFinite(v)) return '–';
   return v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
@@ -626,7 +638,8 @@ const Store = {
   fehler: null,
   timer: null,
 
-  dateiApiDa() { return typeof window.showSaveFilePicker === 'function'; },
+  dateiGesperrt: false,
+  dateiApiDa() { return typeof window.showSaveFilePicker === 'function' && !this.dateiGesperrt; },
 
   async metaLesen() { return (await IDB.get('meta')) || null; },
   async metaSchreiben() {
@@ -838,7 +851,11 @@ function setupZeigen(nurWechsel) {
       } catch (err) {
         if (err && err.name === 'AbortError') return;
         console.error(err);
-        toast('Dateizugriff nicht möglich – hier hilft nur die Arbeitskopie.', 4600);
+        /* In einer eingebetteten Ansicht verbieten Browser den Dateidialog. */
+        Store.dateiGesperrt = true;
+        setupZeigen(nurWechsel);
+        $('.setup-inner').insertAdjacentHTML('afterbegin',
+          `<p class="lead" style="color:var(--accent)">Dieser Browser lässt die Seite hier nicht in eine Datei schreiben – das passiert, wenn die App eingebettet läuft. Nimm die Arbeitskopie; sichern als Datei geht später jederzeit über „Jetzt sichern“.</p>`);
       }
     }
   };
@@ -1140,7 +1157,7 @@ function buchZeile(b) {
       <span class="title serif ${b.status === 'gelesen' ? 'done' : ''}">${esc(b.titel)}</span>
       <span class="byline">
         <span>${esc(b.autor || 'ohne Autor')}</span>
-        ${b.jahr ? `<span class="num">${b.jahr}</span>` : ''}
+        ${b.jahr != null ? `<span class="num">${esc(jahrText(b.jahr))}</span>` : ''}
         ${b.seiten ? `<span class="num">${b.seitenUnsicher ? '~' : ''}${b.seiten} S.</span>` : ''}
       </span>
       ${(b.notizen.length || min) ? `<span class="tags">
@@ -1364,7 +1381,7 @@ function importDialog(erstStart) {
     if (!Store.modus) { Store.modus = 'geraet'; Store.handle = null; await Store.metaSchreiben(); }
 
     if (modus === 'ersetzen') {
-      const ok = erstStart || await bestaetigen('Alles ersetzen?',
+      const ok = erstStart || (!DB.buecher.length && !DB.bloecke.length) || await bestaetigen('Alles ersetzen?',
         `Dein jetziger Stand mit ${DB.buecher.length} Büchern wird verworfen und durch ${neu.buecher.length} Bücher aus der Datei ersetzt.`,
         'Ersetzen', true);
       if (!ok) return;
@@ -1617,9 +1634,7 @@ function buchOeffnen(buchId, startSeite) {
 /* ---------- Seite 1: Beschreibung und Daten ---------- */
 function seiteBeschreibung(b, root, neuMalen) {
   const min = buchMinuten(b), tempo = buchTempo(b);
-  const lebt = [b.autorGeb, b.autorGest].some(x => x != null)
-    ? (b.autorGeb != null ? b.autorGeb : '?') + '–' + (b.autorGest != null ? b.autorGest : '')
-    : null;
+  const lebt = lebensdaten(b.autorGeb, b.autorGest);
   root.innerHTML = `
     ${b.beschreibung
       ? `<p class="desc">${esc(b.beschreibung).replace(/\n/g, '<br>')}</p>`
@@ -1627,7 +1642,7 @@ function seiteBeschreibung(b, root, neuMalen) {
     <div style="margin-top:12px"><button class="btn btn-sm" data-edit-desc>${ICON.edit} Beschreibung ${b.beschreibung ? 'ändern' : 'schreiben'}</button></div>
 
     <div class="factgrid">
-      <div class="fact"><div class="k">Erschienen</div><div class="v">${b.jahr != null ? b.jahr : '–'}</div></div>
+      <div class="fact"><div class="k">Erschienen</div><div class="v" style="${b.jahr != null && b.jahr < 0 ? 'font-size:12.5px' : ''}">${esc(jahrText(b.jahr))}</div></div>
       <div class="fact"><div class="k">Seiten</div><div class="v">${b.seiten != null ? (b.seitenUnsicher ? '~' : '') + b.seiten : '–'}</div></div>
       <div class="fact"><div class="k">Preis</div><div class="v">${b.preis != null ? fmtGeld(b.preis) : '–'}</div></div>
       <div class="fact"><div class="k">Autor</div><div class="v" style="font-size:12.5px">${lebt ? esc(String(lebt)) : '–'}</div></div>
@@ -2435,7 +2450,7 @@ function sucheOeffnen() {
       buecher.slice(0, 30).forEach(b => {
         const r = document.createElement('button');
         r.className = 'grouprow';
-        r.innerHTML = `<span class="grow"><span class="gname serif">${esc(b.titel)}</span><span class="gmeta">${esc(b.autor)}${b.jahr ? ' · ' + b.jahr : ''}</span></span><span class="chev">${ICON.chev}</span>`;
+        r.innerHTML = `<span class="grow"><span class="gname serif">${esc(b.titel)}</span><span class="gmeta">${esc(b.autor)}${b.jahr != null ? ' · ' + esc(jahrText(b.jahr)) : ''}</span></span><span class="chev">${ICON.chev}</span>`;
         r.onclick = () => buchOeffnen(b.id);
         erg.appendChild(r);
       });
