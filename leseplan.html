@@ -916,6 +916,7 @@ function setupZeigen(nurWechsel) {
         ${dateiDa ? '<button class="btn btn-sm" data-act="import">Daten aus Datei laden</button>' : ''}
         ${nurWechsel ? '<button class="btn btn-sm btn-ghost" data-act="abbrechen">Abbrechen</button>' : ''}
         <button class="btn btn-sm btn-ghost" data-act="theme">Hell/Dunkel</button>
+        ${vollbildGeht() ? `<button class="btn btn-sm btn-ghost" data-act="voll">${ICON.voll} Vollbild</button>` : ''}
       </div>
     </div>`;
   s.hidden = false;
@@ -926,6 +927,7 @@ function setupZeigen(nurWechsel) {
     if (!b || b.disabled) return;
     const act = b.dataset.act;
     if (act === 'theme') { themeUmschalten(); return; }
+    if (act === 'voll') { vollbildUmschalten(); return; }
     if (act === 'abbrechen') { s.hidden = true; $('#app').hidden = false; return; }
     if (act === 'import') { importDialog(!nurWechsel); return; }
 
@@ -1024,13 +1026,16 @@ function vollbildKnopfMalen() {
 document.addEventListener('fullscreenchange', vollbildKnopfMalen);
 document.addEventListener('webkitfullscreenchange', vollbildKnopfMalen);
 
-/* Vollbild verlangt eine Geste des Nutzers – also bei der ersten Berührung, einmal. */
+/* Vollbild verlangt eine Geste des Nutzers – also bei der allerersten Berührung,
+   schon auf dem Startbildschirm. Die Einstellung wird erst beim Auslösen gelesen. */
 function vollbildAutostart() {
-  if (!DB.einstellungen.vollbildStart || !vollbildGeht() || vollbildAn()) return;
+  if (!vollbildGeht()) return;
   const versuch = () => {
     document.removeEventListener('pointerdown', versuch, true);
     document.removeEventListener('keydown', versuch, true);
-    try { if (!vollbildAn()) vollbildUmschalten(); } catch (e) { }
+    try {
+      if (DB.einstellungen.vollbildStart && !vollbildAn()) vollbildUmschalten();
+    } catch (e) { }
   };
   document.addEventListener('pointerdown', versuch, true);
   document.addEventListener('keydown', versuch, true);
@@ -1092,7 +1097,6 @@ function appStarten() {
   viewMalen();
   Store.autosaveStarten();
   saveChipMalen();
-  vollbildAutostart();
 }
 
 async function boot() {
@@ -3094,6 +3098,7 @@ function artenVerwalten() {
    ============================================================ */
 $('#btnSuche').innerHTML = ICON.search;
 $('#btnSuche').onclick = sucheOeffnen;
+vollbildAutostart();
 boot();
 
 
