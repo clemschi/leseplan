@@ -53,21 +53,23 @@ eine komplett andere Liste zu laden oder eine Sicherung zurückzuspielen.
 
 - **Liste** – Blöcke und Bücher, anlegen, ändern, verschieben, löschen. Der Kreis
   links schaltet den Status weiter: offen → lese ich → gelesen.
-- **Buch** – fünf Seiten, zwischen denen gewischt wird:
-  1. *Beschreibung* mit Erscheinungsjahr, Seitenzahl, Preis, Besitz, Autor-Lebensdaten,
+- **Buch** – sechs Seiten, zwischen denen gewischt wird:
+  1. *Beschreibung* mit Erscheinungsjahr, Seitenzahl, Preis, Besitz, Schwierigkeit,
      dazu Stoppuhr und Zugang zu den Sitzungen
-  2. *Themenfelder* – Notizen nach Thema gruppiert, ein Tipp führt zu den Notizen
-  3. *Arten* – dieselben Notizen nach Zitat, Gedanke, Frage, Widerspruch …
-  4. *Alle Notizen* – ungruppiert, nach Seitenzahl gereiht
-  5. *Galerie* – alle Fotos des Buches; von der Großansicht geht es zur Notiz
+  2. *Autor* – Lebensdaten, Biographie und die weiteren Werke desselben Autors
+  3. *Themenfelder* – Notizen nach Thema gruppiert, ein Tipp führt zu den Notizen
+  4. *Arten* – dieselben Notizen nach Zitat, Gedanke, Frage, Widerspruch …
+  5. *Alle Notizen* – ungruppiert, nach Seitenzahl gereiht
+  6. *Galerie* – alle Fotos des Buches; von der Großansicht geht es zur Notiz
 - **Notizen** – Seite, Themenfeld, Art, Text und beliebig viele Fotos. Die Seite ist
   ein Textfeld, `35-36` ist also erlaubt; gereiht wird nach der ersten Zahl. Fotos
   über die Kamera in der Seite (fällt auf die Kamera-App zurück, wo die Umgebung
   das verbietet) oder aus der Galerie; sie werden auf 1600 px Kantenlänge
   verkleinert, rund 300 KB je Bild.
-- **Übersicht** – Kennzahlen und Graphen: Seiten pro Monat, gelesene Bücher
-  kumuliert, Blöcke nach Seitenumfang, Kosten je Block, Lesetempo je Buch,
-  Notizen nach Art und Themenfeld. Jeder Graph lässt sich als Tabelle aufklappen.
+- **Übersicht** – vier Rubriken: *Zahlen* (Kennzahlen und Graphen, jeder als Tabelle
+  aufklappbar), *Zusammenfassungen* (je Block jedes Buch zum Auf- und Zuklappen),
+  *Autoren* (Biographien und Werke) und *Tage* (Tagesziel, Seiten pro Tag,
+  Protokoll jedes Lesetags).
 - **Notizen** – buchübergreifend, umschaltbar zwischen Themenfeldern, Arten, allen
   Notizen und der Galerie aller Fotos.
 - **Suche** – über Titel, Autoren, Beschreibungen, Notizen und Themen.
@@ -78,6 +80,20 @@ eine komplett andere Liste zu laden oder eine Sicherung zurückzuspielen.
 Buch und Uhr; läuft keine, startet sie das aktuelle Buch. Gibt es kein oder mehr als
 ein angefangenes Buch, wird gewählt. Starten geht auch im Buch und über langes Drücken
 auf eine Zeile der Liste – dort finden sich außerdem *nach oben* und *nach unten*.
+
+Wischen führt durch die App: nach links zur nächsten Ansicht, nach rechts zurück
+beziehungsweise aus einer geöffneten Ansicht heraus. Blätter von unten lassen sich
+nach unten wegschieben. Langes Drücken auf einen **Block** verschiebt ihn nach oben
+oder unten.
+
+Ein **Tagesziel** in Seiten wird bei der Einführung abgefragt, steht danach in der
+Kopfzeile und füllt sich aus den Lese-Sitzungen; die Rubrik *Tage* führt Protokoll.
+
+Jedes Buch trägt eine **Schwierigkeit** von 1 bis 5, im Katalog vorgeschlagen und
+überall als Punktreihe sichtbar.
+
+Beim ersten Start führt eine kurze **Einführung** durch Speichern, Tagesziel,
+leseliste, Block und Buch. Sie ist unter *Mehr* jederzeit wieder aufrufbar.
 
 Ein Wisch nach links auf einer Buchzeile zeigt die **Kurzfassung**: das Buch in
 höchstens 15 Wörtern, änderbar unter *Bearbeiten*.

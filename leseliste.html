@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0c0e11">
 <meta name="color-scheme" content="dark light">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -112,6 +112,14 @@ p{margin:0;}
 .savechip[data-state="error"] .dot{background:var(--bad);}
 .savechip[data-state="error"]{color:var(--bad);}
 
+.zielrow{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:7px 9px;
+  border-radius:10px;border:1px solid var(--border);background:var(--surface);}
+.zielrow .zt{font-size:11.5px;color:var(--text-2);white-space:nowrap;}
+.zielrow .zbar{flex:1;height:5px;border-radius:99px;background:var(--surface-3);overflow:hidden;}
+.zielrow .zbar > i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .35s ease;}
+.zielrow .zn{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-2);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.zielrow.geschafft .zbar > i{background:var(--good);}
+.zielrow.geschafft .zn{color:var(--good);}
 .progress-line{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--text-3);}
 .barwrap{height:5px;background:var(--surface-3);border-radius:99px;overflow:hidden;display:flex;gap:2px;}
 .bar-read{height:100%;background:var(--good);border-radius:99px;transition:width .35s ease;}
@@ -365,6 +373,22 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .chart th,.chart td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--border);}
 .chart td.n,.chart th.n{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;}
 .chart-scroll{overflow-x:auto;}
+
+/* Auf- und einklappbare Einträge (Zusammenfassungen, Autoren) */
+.akk{border:1px solid var(--border);border-radius:12px;background:var(--surface);margin-bottom:8px;overflow:hidden;}
+.akk > summary{list-style:none;padding:11px 12px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;}
+.akk > summary::-webkit-details-marker{display:none;}
+.akk .at{font-family:"Literata",Georgia,serif;font-size:14px;line-height:1.35;}
+.akk .ak{font-size:12px;color:var(--text-2);margin-top:4px;font-family:"Literata",Georgia,serif;line-height:1.5;}
+.akk .am{font-size:11px;color:var(--text-3);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;}
+.akk .ab{padding:11px 12px 13px;font-family:"Literata",Georgia,serif;font-size:13.5px;line-height:1.7;
+  color:var(--text-2);border-top:1px solid var(--border);}
+.akk[open] > summary .chev{transform:rotate(90deg);}
+.blockkopf{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:18px 0 9px;}
+.blockkopf h3{font-size:13px;font-weight:600;}
+.stufe{display:inline-flex;gap:2px;align-items:center;}
+.stufe i{width:5px;height:5px;border-radius:50%;background:var(--border-strong);display:block;}
+.stufe i.an{background:var(--accent);}
 .tip{
   position:fixed;z-index:99;pointer-events:none;background:var(--surface-3);border:1px solid var(--border-strong);
   border-radius:9px;padding:7px 9px;font-size:11.5px;box-shadow:var(--shadow);max-width:220px;
@@ -405,6 +429,7 @@ body.voll .cam{padding-top:14px;}
 .rowline{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--border);}
 .rowline:last-child{border-bottom:0;}
 .rowline .grow{flex:1;min-width:0;}
+.rowline svg,.rowline span > svg,.grouprow > svg,.nowbar svg{width:17px;height:17px;flex:0 0 auto;}
 .rowline .rn{font-size:14px;display:block;}
 .rowline .rm{font-size:11.5px;color:var(--text-3);margin-top:3px;display:block;line-height:1.45;}
 .list-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
@@ -470,6 +495,7 @@ body.voll .cam{padding-top:14px;}
           <i class="bar-active" id="barActive" style="width:0%"></i>
         </div>
       </div>
+      <button class="zielrow" id="zielRow" hidden></button>
     </div>
   </header>
 
@@ -586,6 +612,21 @@ function toast(msg, ms) {
    Auf dem Handy schiebt die Tastatur den unteren Teil des Fensters weg.
    Diese beiden Werte folgen dem, was wirklich zu sehen ist. */
 (function viewportVerfolgen() {
+  /* Der Browser soll das Layout selbst verkleinern, wenn die Tastatur aufgeht.
+     Ohne das bleibt die Seitenhöhe stehen und alles rutscht darunter. */
+  try {
+    let meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = 'width=device-width, initial-scale=1, viewport-fit=cover';
+      (document.head || document.documentElement).appendChild(meta);
+    }
+    if (!/interactive-widget/.test(meta.content)) {
+      meta.content = meta.content.trim().replace(/,$/, '') + ', interactive-widget=resizes-content';
+    }
+  } catch (e) { }
+
   const vv = window.visualViewport;
   const setzen = () => {
     const wurzel = document.documentElement.style;
@@ -631,7 +672,7 @@ function leereDb() {
     version: 2,
     erstellt: Date.now(),
     geaendert: Date.now(),
-    einstellungen: { theme: 'dark', akzent: 'messing', vollbildStart: true, autosaveSek: 60, aktiverPlanId: null },
+    einstellungen: { theme: 'dark', akzent: 'messing', vollbildStart: true, zielSeiten: null, einfuehrung: false, autosaveSek: 60, aktiverPlanId: null },
     arten: STD_ARTEN.map((n, i) => ({ id: uid(), name: n, farbe: ART_FARBEN[i % 8] })),
     themen: [],
     lesepleane: [],
@@ -652,7 +693,7 @@ function seiteText(s) { return (s == null || s === '') ? '' : String(s); }
 function normalisiere(raw) {
   const d = Object.assign(leereDb(), raw || {});
   d.einstellungen = Object.assign(
-    { theme: 'dark', akzent: 'messing', vollbildStart: true, autosaveSek: 60, aktiverPlanId: null },
+    { theme: 'dark', akzent: 'messing', vollbildStart: true, zielSeiten: null, einfuehrung: false, autosaveSek: 60, aktiverPlanId: null },
     raw && raw.einstellungen);
   d.arten = (Array.isArray(d.arten) ? d.arten : []).map((a, i) => ({
     id: a.id || uid(), name: String(a.name || 'Art'), farbe: a.farbe || ART_FARBEN[i % 8]
@@ -686,6 +727,8 @@ function normalisiere(raw) {
     autor: String(b.autor || ''),
     autorGeb: b.autorGeb == null ? null : b.autorGeb,
     autorGest: b.autorGest == null ? null : b.autorGest,
+    autorBio: b.autorBio || '',
+    schwierigkeit: (b.schwierigkeit >= 1 && b.schwierigkeit <= 5) ? +b.schwierigkeit : null,
     jahr: b.jahr == null ? null : b.jahr,
     seiten: b.seiten == null ? null : b.seiten,
     seitenUnsicher: !!b.seitenUnsicher,
@@ -754,6 +797,30 @@ function buchSeitenGelesen(b) {
   return b.sessions.reduce((s, x) => (x.von != null && x.bis != null && x.bis > x.von) ? s + (x.bis - x.von) : s, 0);
 }
 function buchTempo(b) { const m = buchMinuten(b), s = buchSeitenGelesen(b); return (m > 5 && s > 0) ? s / (m / 60) : null; }
+/* Was an einem Tag gelesen wurde – aus den Sitzungen. */
+function tagStatistik(datum) {
+  let seiten = 0, minuten = 0;
+  const buecher = new Set();
+  DB.buecher.forEach(b => b.sessions.forEach(x => {
+    if (x.datum !== datum) return;
+    minuten += +x.minuten || 0;
+    if (x.von != null && x.bis != null && x.bis > x.von) seiten += x.bis - x.von;
+    buecher.add(b.id);
+  }));
+  return { datum, seiten, minuten, buecher: buecher.size };
+}
+/* Alle Tage mit Sitzungen, neueste zuerst. */
+function tageMitSitzungen() {
+  const tage = new Set();
+  DB.buecher.forEach(b => b.sessions.forEach(x => tage.add(x.datum)));
+  return Array.from(tage).sort().reverse().map(tagStatistik);
+}
+function zielHeute() {
+  const ziel = +DB.einstellungen.zielSeiten || 0;
+  const t = tagStatistik(heute());
+  return { ziel, gelesen: t.seiten, minuten: t.minuten, geschafft: ziel > 0 && t.seiten >= ziel };
+}
+
 function alleNotizen() {
   const out = [];
   DB.buecher.forEach(b => b.notizen.forEach(n => out.push({ buch: b, notiz: n })));
@@ -1144,6 +1211,166 @@ function kopfMalen() {
   $('#progRight').textContent = seiten ? fmtZahl(seiten) + ' Seiten' : '';
   $('#barRead').style.width = (ges ? gelesen / ges * 100 : 0) + '%';
   $('#barActive').style.width = (ges ? lese / ges * 100 : 0) + '%';
+
+  const zr = $('#zielRow');
+  const z = zielHeute();
+  if (!z.ziel) { zr.hidden = true; }
+  else {
+    zr.hidden = false;
+    zr.classList.toggle('geschafft', z.geschafft);
+    zr.innerHTML = `
+      <span class="zt">Heute</span>
+      <span class="zbar"><i style="width:${clamp(z.gelesen / z.ziel * 100, 0, 100)}%"></i></span>
+      <span class="zn">${z.gelesen} / ${z.ziel} S.${z.geschafft ? ' ✓' : ''}</span>`;
+    zr.onclick = () => zielBearbeiten();
+  }
+}
+
+function zielBearbeiten(nachher) {
+  const s = blatt('Tagesziel', `
+    <div class="field">
+      <label>Seiten pro Tag</label>
+      <input type="number" data-z value="${DB.einstellungen.zielSeiten || ''}" placeholder="z.B. 20">
+      <span class="hint">Gezählt wird aus den Lese-Sitzungen, also aus „Seite von“ und „Seite bis“. Leer lassen schaltet das Ziel ab.</span>
+    </div>
+    <button class="btn btn-primary btn-block" data-ok>Sichern</button>`);
+  $('[data-ok]', s).onclick = () => {
+    const v = num($('[data-z]', s).value);
+    aendern(() => { DB.einstellungen.zielSeiten = (v && v > 0) ? Math.round(v) : null; });
+    layerSchliessen();
+    viewMalen();
+    if (nachher) nachher();
+  };
+}
+
+/* ============================================================
+   Einführung beim ersten Mal
+   ============================================================ */
+function einfuehrungZeigen() {
+  let schritt = 0;
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <div class="grow"><div class="ovl-title serif">Kurze Einführung</div><div class="ovl-sub" data-zaehler></div></div>
+      <button class="btn btn-sm btn-ghost" data-weg>Überspringen</button>
+    </div>
+    <div class="ovl-body" style="padding:18px 16px 40px" data-body></div>`;
+
+  const fertig = () => {
+    aendern(() => { DB.einstellungen.einfuehrung = true; });
+    layerSchliessen();
+    viewMalen();
+  };
+
+  const schritte = [
+    {
+      titel: 'Deine Daten liegen nicht in dieser Seite',
+      text: () => `Die Datei enthält nur das Programm. Alles, was du einträgst, liegt ${Store.modus === 'datei'
+        ? 'in <strong>' + esc(Store.dateiname) + '</strong> – dort schreibt die App still hinein.'
+        : '<strong>im Speicher dieses Browsers</strong>.'}
+        Gesichert wird automatisch: alle ${DB.einstellungen.autosaveSek || 60} Sekunden und kurz nach deiner letzten Eingabe.
+        ${Store.modus === 'datei' ? '' : 'Weil es dabei keine Datei gibt, hol dir über den Punkt oben rechts regelmäßig eine Sicherung – ein Tipp genügt.'}`,
+      aktion: null
+    },
+    {
+      titel: 'Wie viel willst du am Tag lesen?',
+      text: () => 'Das Ziel steht dann oben in der Kopfzeile und füllt sich mit jeder Lese-Sitzung. Du kannst es jederzeit ändern oder weglassen.',
+      feld: `<div class="field"><label>Seiten pro Tag</label><input type="number" data-ziel placeholder="z.B. 20" value="${DB.einstellungen.zielSeiten || ''}"></div>`,
+      vorWeiter: (body) => {
+        const v = num($('[data-ziel]', body).value);
+        aendern(() => { DB.einstellungen.zielSeiten = (v && v > 0) ? Math.round(v) : null; });
+      }
+    },
+    {
+      titel: 'Eine leseliste anlegen',
+      text: () => `Ganz oben steht die <strong>leseliste</strong> – sie bündelt mehrere Blöcke. Du kannst mehrere führen und zwischen ihnen wechseln.
+        ${DB.lesepleane.length ? 'Vorhanden: <strong>' + esc(plaeneSortiert().map(x => x.name).join(', ')) + '</strong>.' : ''}`,
+      feld: `<div class="field"><label>Name</label><input type="text" data-name placeholder="z.B. Lesestart"></div>
+             <p class="hinweis" style="padding:0 0 4px">Oder lade die fertige Liste als Datei – dann sind Blöcke und Bücher gleich mit dabei.</p>
+             <button class="btn btn-block" data-import>Fertige Liste aus Datei laden</button>`,
+      vorWeiter: (body) => {
+        const name = ($('[data-name]', body).value || '').trim();
+        if (!name) return;
+        aendern(() => {
+          const n = { id: uid(), name, ord: DB.lesepleane.length };
+          DB.lesepleane.push(n);
+          DB.einstellungen.aktiverPlanId = n.id;
+        });
+      }
+    },
+    {
+      titel: 'Blöcke gliedern die Liste',
+      text: () => `Ein Block ist ein Thema mit mehreren Werken – „Existentialismus“, „Faschismus“, was du willst.
+        ${bloeckeSortiert().length ? 'In „' + esc((aktiverPlan() || {}).name || '') + '“ gibt es schon ' + pl(bloeckeSortiert().length, 'Block', 'Blöcke') + '.' : ''}`,
+      feld: `<div class="field"><label>Name des Blocks</label><input type="text" data-name placeholder="z.B. Existentialismus"></div>`,
+      vorWeiter: (body) => {
+        const name = ($('[data-name]', body).value || '').trim();
+        if (!name) return;
+        const p = aktiverPlan();
+        if (!p) return;
+        aendern(() => DB.bloecke.push({ id: uid(), planId: p.id, name, notiz: '', ord: bloeckeSortiert().length }));
+      }
+    },
+    {
+      titel: 'Und dann die Bücher',
+      text: () => `Jedes Buch trägt Beschreibung, Autor, Seitenzahl, Preis und deine Notizen mit Fotos.
+        Der Kreis links schaltet weiter: offen → lese ich → gelesen. Langes Drücken öffnet die Schnellaktionen.
+        ${DB.buecher.length ? 'Deine Liste hat schon ' + pl(DB.buecher.length, 'Buch', 'Bücher') + '.' : ''}`,
+      feld: `<div class="grid2">
+               <div class="field"><label>Titel</label><input type="text" data-titel placeholder="Der Fremde"></div>
+               <div class="field"><label>Autor</label><input type="text" data-autor placeholder="Albert Camus"></div>
+             </div>`,
+      vorWeiter: (body) => {
+        const titel = ($('[data-titel]', body).value || '').trim();
+        if (!titel) return;
+        const blk = bloeckeSortiert()[bloeckeSortiert().length - 1];
+        if (!blk) return;
+        aendern(() => DB.buecher.push({
+          id: uid(), blockId: blk.id, ord: buecherIn(blk.id).length, titel,
+          autor: ($('[data-autor]', body).value || '').trim(),
+          autorGeb: null, autorGest: null, autorBio: '', jahr: null, seiten: null, seitenUnsicher: false,
+          ausgabe: '', beschreibung: '', kurz: '', schwierigkeit: null, preis: null,
+          status: 'offen', besitz: 'fehlt', einkauf: false, sessions: [], notizen: []
+        }));
+      }
+    },
+    {
+      titel: 'Fertig',
+      text: () => `Das war alles. Wischen führt zwischen den Ansichten hin und her, die Leiste über der Tableiste startet eine Lese-Sitzung,
+        und unter <strong>Mehr</strong> liegen Speicherort, Einkaufsliste und Darstellung. Diese Einführung findest du dort ebenfalls wieder.`,
+      aktion: null
+    }
+  ];
+
+  const malen = () => {
+    const sch = schritte[schritt];
+    $('[data-zaehler]', node).textContent = 'Schritt ' + (schritt + 1) + ' von ' + schritte.length;
+    const body = $('[data-body]', node);
+    body.innerHTML = `
+      <h2 class="serif" style="font-size:20px;margin-bottom:10px">${esc(sch.titel)}</h2>
+      <p class="desc" style="font-size:14px;margin-bottom:16px">${sch.text()}</p>
+      ${sch.feld || ''}
+      <div class="btn-row" style="margin-top:18px">
+        ${schritt > 0 ? '<button class="btn" data-zurueck>Zurück</button>' : ''}
+        <button class="btn btn-primary" data-weiter style="flex:1">${schritt === schritte.length - 1 ? 'Loslegen' : 'Weiter'}</button>
+      </div>`;
+    const imp = $('[data-import]', body);
+    if (imp) imp.onclick = () => importDialog(false);
+    const zur = $('[data-zurueck]', body);
+    if (zur) zur.onclick = () => { schritt--; malen(); };
+    $('[data-weiter]', body).onclick = () => {
+      if (sch.vorWeiter) sch.vorWeiter(body);
+      if (schritt === schritte.length - 1) { fertig(); return; }
+      schritt++;
+      malen();
+      viewMalen();
+    };
+  };
+
+  $('[data-weg]', node).onclick = fertig;
+  layerOeffnen(node, () => { if (!DB.einstellungen.einfuehrung) { aendern(() => { DB.einstellungen.einfuehrung = true; }); } viewMalen(); });
+  malen();
 }
 
 /* ============================================================
@@ -1152,11 +1379,13 @@ function kopfMalen() {
 function appStarten() {
   $('#setup').hidden = true;
   $('#app').hidden = false;
+  aktiverTab = 'plan';
   themeAnwenden();
   tabbarMalen();
   viewMalen();
   Store.autosaveStarten();
   saveChipMalen();
+  if (!DB.einstellungen.einfuehrung) setTimeout(einfuehrungZeigen, 350);
 }
 
 async function boot() {
@@ -1257,7 +1486,7 @@ function buchWaehlenFuerSitzung() {
       r.innerHTML = `<span class="grow">
           <span class="rn serif">${esc(b.titel)}</span>
           <span class="rm">${esc(b.autor)}${b.status === 'lese' ? ' · lese ich' : ''}</span>
-        </span>${ICON.play}`;
+        </span><span class="chev">${ICON.chev}</span>`;
       r.onclick = () => { layerSchliessen(); sitzungStarten(b.id); };
       l.appendChild(r);
     });
@@ -1356,8 +1585,68 @@ function blatt(titel, inhalt, opts) {
   layerOeffnen(scrim, opts.onClose);
   const erstes = $('input,textarea,select', body);
   if (erstes && opts.fokus !== false) setTimeout(() => erstes.focus(), 80);
+  ziehenZumSchliessen($('.sheet', scrim));
   return scrim;
 }
+
+/* Blatt mit dem Finger nach unten wegschieben. */
+function ziehenZumSchliessen(sheet) {
+  let startY = null, dy = 0, zieht = false;
+  const bewegen = e => {
+    if (startY == null) return;
+    dy = e.clientY - startY;
+    if (dy > 6) {
+      zieht = true;
+      sheet.style.transition = 'none';
+      sheet.style.transform = 'translateY(' + Math.min(dy, 420) + 'px)';
+    }
+  };
+  const ende = () => {
+    window.removeEventListener('pointermove', bewegen);
+    window.removeEventListener('pointerup', ende);
+    window.removeEventListener('pointercancel', ende);
+    if (startY == null) return;
+    startY = null;
+    sheet.style.transition = 'transform .2s ease';
+    if (zieht && dy > 90) { sheet.style.transform = 'translateY(110%)'; setTimeout(layerSchliessen, 130); }
+    else sheet.style.transform = '';
+  };
+  sheet.addEventListener('pointerdown', e => {
+    if (sheet.scrollTop > 3) return;
+    if (e.target.closest('input,textarea,select,button,pre,[data-akzent]')) return;
+    startY = e.clientY; dy = 0; zieht = false;
+    window.addEventListener('pointermove', bewegen);
+    window.addEventListener('pointerup', ende);
+    window.addEventListener('pointercancel', ende);
+  });
+}
+
+/* Wischen wie in einer App: nach rechts zurück, nach links weiter. */
+function tabVerschieben(d) {
+  const i = TABS.findIndex(t => t.id === aktiverTab);
+  const j = clamp(i + d, 0, TABS.length - 1);
+  if (j !== i) tabWechseln(TABS[j].id);
+}
+(function wischNavigation() {
+  let x0 = null, y0 = null, zeit = 0, gesperrt = false;
+  const tabu = '.book,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,input,textarea,select,.sheet';
+  document.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) { x0 = null; return; }
+    const t = e.touches[0];
+    gesperrt = !!(e.target.closest && e.target.closest(tabu));
+    x0 = t.clientX; y0 = t.clientY; zeit = Date.now();
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (x0 == null) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - x0, dy = t.clientY - y0, dt = Date.now() - zeit;
+    x0 = null;
+    if (gesperrt || dt > 700) return;
+    if (Math.abs(dx) < 70 || Math.abs(dy) > 60) return;
+    if (dx > 0) { if (Layers.length) layerSchliessen(); else tabVerschieben(-1); }
+    else if (!Layers.length) tabVerschieben(1);
+  }, { passive: true });
+})();
 
 function bestaetigen(titel, text, okLabel, gefaehrlich) {
   return new Promise(res => {
@@ -1475,7 +1764,8 @@ function planMalen(root) {
         <span class="grow">
           <span class="name">${esc(blk.name)}</span>
           <span class="meta">
-            <span>${alle.length} ${alle.length === 1 ? 'Werk' : 'Werke'}</span>
+            <span>${pl(alle.length, 'Werk', 'Werke')}</span>
+            <span>${pl(new Set(alle.map(x => (x.autor || '').trim()).filter(Boolean)).size, 'Autor', 'Autoren')}</span>
             <span>${gelesen} gelesen</span>
             ${seiten ? `<span class="num">${fmtZahl(seiten)} S.</span>` : ''}
           </span>
@@ -1485,10 +1775,17 @@ function planMalen(root) {
       <div class="block-bar"><i style="width:${alle.length ? gelesen / alle.length * 100 : 0}%"></i></div>
       <div class="books"></div>`;
 
-    $('[data-toggle]', node).onclick = () => {
+    const kopf = $('[data-toggle]', node);
+    kopf.onclick = () => {
+      if (node._langGedrueckt) { node._langGedrueckt = false; return; }
       if (offeneBloecke.has(blk.id)) offeneBloecke.delete(blk.id); else offeneBloecke.add(blk.id);
       viewMalen();
     };
+    let haltenB;
+    const startB = () => { clearTimeout(haltenB); haltenB = setTimeout(() => { node._langGedrueckt = true; blockAktionen(blk); }, 480); };
+    kopf.addEventListener('pointerdown', startB);
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(e => kopf.addEventListener(e, () => clearTimeout(haltenB)));
+    kopf.addEventListener('contextmenu', e => { e.preventDefault(); clearTimeout(haltenB); node._langGedrueckt = true; blockAktionen(blk); });
 
     const wrap = $('.books', node);
     if (!zeigen.length) {
@@ -1531,6 +1828,7 @@ function buchZeile(b) {
           <span>${esc(b.autor || 'ohne Autor')}</span>
           ${b.jahr != null ? `<span class="num">${esc(jahrText(b.jahr))}</span>` : ''}
           ${b.seiten ? `<span class="num">${b.seitenUnsicher ? '~' : ''}${b.seiten} S.</span>` : ''}
+          ${b.schwierigkeit ? stufeHtml(b.schwierigkeit) : ''}
         </span>
         ${marken.length ? `<span class="tags">${marken.join('')}</span>` : ''}
       </button>
@@ -1608,6 +1906,42 @@ function buchAktionen(b) {
     toast(b.einkauf ? 'Auf der Einkaufsliste.' : 'Von der Einkaufsliste genommen.');
   };
   $('[data-a="bearbeiten"]', s).onclick = () => { layerSchliessen(); setTimeout(() => buchBearbeiten(b, b.blockId), 70); };
+}
+
+/* Schnellaktionen zu einem Block. */
+function blockAktionen(blk) {
+  const l = bloeckeSortiert();
+  const i = l.findIndex(x => x.id === blk.id);
+  const s = blatt(blk.name, `
+    <div class="list-card">
+      <button class="rowline" data-a="hoch" style="width:100%;text-align:left"${i <= 0 ? ' disabled' : ''}>
+        ${ICON.up}
+        <span class="grow"><span class="rn">Block nach oben</span><span class="rm">${i <= 0 ? 'steht schon ganz oben' : 'Platz ' + (i + 1) + ' von ' + l.length}</span></span>
+      </button>
+      <button class="rowline" data-a="runter" style="width:100%;text-align:left"${i >= l.length - 1 ? ' disabled' : ''}>
+        ${ICON.down}
+        <span class="grow"><span class="rn">Block nach unten</span><span class="rm">${i >= l.length - 1 ? 'steht schon ganz unten' : 'Platz ' + (i + 1) + ' von ' + l.length}</span></span>
+      </button>
+      <button class="rowline" data-a="buch" style="width:100%;text-align:left">
+        ${ICON.plus}
+        <span class="grow"><span class="rn">Buch anlegen</span><span class="rm">in diesem Block</span></span>
+      </button>
+      <button class="rowline" data-a="bearbeiten" style="width:100%;text-align:left">
+        ${ICON.edit}
+        <span class="grow"><span class="rn">Block bearbeiten</span><span class="rm">Name, Notiz, löschen</span></span>
+      </button>
+    </div>`, { fokus: false });
+
+  const verschieben = d => {
+    const j = i + d;
+    if (j < 0 || j >= l.length) return;
+    aendern(() => { const t = l[i].ord; l[i].ord = l[j].ord; l[j].ord = t; bloeckeSortiert().forEach((x, k) => x.ord = k); });
+    layerSchliessen(); viewMalen();
+  };
+  $('[data-a="hoch"]', s).onclick = () => verschieben(-1);
+  $('[data-a="runter"]', s).onclick = () => verschieben(1);
+  $('[data-a="buch"]', s).onclick = () => { layerSchliessen(); setTimeout(() => buchBearbeiten(null, blk.id), 70); };
+  $('[data-a="bearbeiten"]', s).onclick = () => { layerSchliessen(); setTimeout(() => blockBearbeiten(blk), 70); };
 }
 
 /* ---------- Lesepläne ---------- */
@@ -1823,6 +2157,10 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
       <label>Besitz</label>
       <div style="display:flex;gap:7px;flex-wrap:wrap" data-besitz></div>
     </div>
+    <div class="field">
+      <label>Schwierigkeit</label>
+      <div style="display:flex;gap:7px;flex-wrap:wrap" data-stufe></div>
+    </div>
     <div class="field" style="flex-direction:row;align-items:center;gap:9px">
       <input type="checkbox" data-einkauf ${b.einkauf ? 'checked' : ''} style="width:auto">
       <label style="text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--text-2);font-weight:400">Als Nächstes kaufen (Einkaufsliste)</label>
@@ -1845,7 +2183,15 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
     <div class="btn-row" style="margin-top:16px">
       <button class="btn btn-primary" data-ok style="flex:1">${neu ? 'Anlegen' : 'Sichern'}</button>
       ${neu ? '' : `<button class="btn btn-danger" data-del>${ICON.trash}</button>`}
-    </div>`);
+    </div>`, { fokus: neu });
+
+  let stufenWahl = b.schwierigkeit || null;
+  const stufenMalen = () => {
+    const w = $('[data-stufe]', s);
+    w.innerHTML = [1, 2, 3, 4, 5].map(n =>
+      `<button class="chip" data-s="${n}" aria-pressed="${n === stufenWahl}">${stufeHtml(n)} ${esc(STUFEN[n])}</button>`).join('');
+    $$('[data-s]', w).forEach(x => x.onclick = () => { stufenWahl = (stufenWahl === +x.dataset.s) ? null : +x.dataset.s; stufenMalen(); });
+  };
 
   let besitzWahl = BESITZ[b.besitz] ? b.besitz : 'fehlt';
   const besitzMalen = () => {
@@ -1856,6 +2202,7 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
     $$('[data-b]', w).forEach(x => x.onclick = () => { besitzWahl = x.dataset.b; besitzMalen(); });
   };
   besitzMalen();
+  stufenMalen();
 
   const kurzFeld = $('[data-kurz]', s), kurzZahl = $('[data-kurzzahl]', s);
   const kurzZaehlen = () => {
@@ -1883,6 +2230,7 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
       blockId: $('[data-block]', s).value,
       beschreibung: $('[data-besch]', s).value.trim(),
       kurz: $('[data-kurz]', s).value.trim().replace(/\s+/g, ' '),
+      schwierigkeit: stufenWahl,
       besitz: besitzWahl,
       einkauf: $('[data-einkauf]', s).checked
     };
@@ -2146,6 +2494,7 @@ function bildGross(bilder, start, onLoeschen) {
    ============================================================ */
 const SEITEN = [
   { id: 'beschreibung', label: 'Beschreibung' },
+  { id: 'autor', label: 'Autor' },
   { id: 'themen', label: 'Themenfelder' },
   { id: 'arten', label: 'Arten' },
   { id: 'notizen', label: 'Alle Notizen' },
@@ -2185,6 +2534,7 @@ function buchOeffnen(buchId, startSeite) {
   const allesMalen = () => {
     kopf();
     seiteBeschreibung(b, $('[data-page="beschreibung"]', node), allesMalen);
+    seiteAutor(b, $('[data-page="autor"]', node), allesMalen);
     seiteGruppen(b, $('[data-page="themen"]', node), 'thema', allesMalen);
     seiteGruppen(b, $('[data-page="arten"]', node), 'art', allesMalen);
     seiteAlleNotizen(b, $('[data-page="notizen"]', node), allesMalen);
@@ -2247,6 +2597,7 @@ function seiteBeschreibung(b, root, neuMalen) {
       <div class="fact"><div class="k">Tempo</div><div class="v">${tempo ? fmtZahl(tempo) + ' <small>S./h</small>' : '–'}</div></div>
       <div class="fact"><div class="k">Notizen</div><div class="v">${b.notizen.length}</div></div>
       <div class="fact"><div class="k">Status</div><div class="v" style="font-size:12.5px">${STATUS[b.status]}</div></div>
+      <div class="fact"><div class="k">Schwierigkeit</div><div class="v" style="font-size:12.5px">${b.schwierigkeit ? stufeHtml(b.schwierigkeit) + ' <small>' + esc(STUFEN[b.schwierigkeit]) + '</small>' : '–'}</div></div>
     </div>
     ${b.ausgabe ? `<p class="muted" style="font-size:12px;margin-top:10px">Ausgabe: ${esc(b.ausgabe)}</p>` : ''}
     ${b.kurz ? `<p class="muted" style="font-size:12.5px;margin-top:10px;font-family:'Literata',Georgia,serif">In Kürze: ${esc(b.kurz)}</p>` : ''}
@@ -2295,6 +2646,62 @@ function beschreibungBearbeiten(b, neuMalen) {
     aendern(() => { b.beschreibung = $('[data-t]', s).value.trim(); });
     layerSchliessen(); neuMalen();
   };
+}
+
+/* ---------- Seite Autor ---------- */
+function seiteAutor(b, root, neuMalen) {
+  const name = (b.autor || '').trim();
+  const lebt = lebensdaten(b.autorGeb, b.autorGest);
+  const weitere = name ? DB.buecher.filter(x => (x.autor || '').trim() === name && x.id !== b.id) : [];
+  root.innerHTML = `
+    <div class="section-head" style="padding:0">
+      <h2 class="serif" style="font-size:17px;font-weight:600">${esc(name || 'Ohne Autor')}</h2>
+      ${lebt ? `<span class="eyebrow num">${esc(lebt)}</span>` : ''}
+    </div>
+    ${b.autorBio
+      ? `<p class="desc" style="margin-top:10px">${esc(b.autorBio).replace(/\n/g, '<br>')}</p>`
+      : `<div class="empty" style="margin:12px 0 0"><strong>Noch keine Biographie</strong>Ein paar Sätze zum Leben – wer war das, und woraus kommt dieses Buch?</div>`}
+    <div style="margin-top:12px"><button class="btn btn-sm" data-bio>${ICON.edit} Biographie ${b.autorBio ? 'ändern' : 'schreiben'}</button></div>
+    ${weitere.length ? `
+      <div class="section-head" style="padding:0;margin:20px 0 9px"><h2>Weitere Werke in deinen Listen</h2><span class="eyebrow">${weitere.length}</span></div>
+      <div data-weitere></div>` : ''}`;
+
+  $('[data-bio]', root).onclick = () => {
+    const s = blatt('Biographie', `
+      <div class="field">
+        <label>${esc(name || 'Autor')}</label>
+        <textarea data-t style="min-height:190px;font-family:'Literata',Georgia,serif;line-height:1.65">${esc(b.autorBio || '')}</textarea>
+        <span class="hint">Gilt für dieses Buch. Andere Bücher desselben Autors übernehmen den Text auf Wunsch.</span>
+      </div>
+      ${weitere.length ? `<div class="field" style="flex-direction:row;align-items:center;gap:9px">
+        <input type="checkbox" data-alle checked style="width:auto">
+        <label style="text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--text-2);font-weight:400">Auch für die ${weitere.length} weiteren Werke übernehmen</label>
+      </div>` : ''}
+      <button class="btn btn-primary btn-block" data-ok>Sichern</button>`);
+    $('[data-ok]', s).onclick = () => {
+      const text = $('[data-t]', s).value.trim();
+      const alle = $('[data-alle]', s) && $('[data-alle]', s).checked;
+      aendern(() => {
+        b.autorBio = text;
+        if (alle) weitere.forEach(x => { x.autorBio = text; });
+      });
+      layerSchliessen();
+      neuMalen();
+    };
+  };
+
+  const w = $('[data-weitere]', root);
+  if (!w) return;
+  weitere.forEach(x => {
+    const r = document.createElement('button');
+    r.className = 'grouprow';
+    r.innerHTML = `<span class="grow">
+        <span class="gname serif">${esc(x.titel)}</span>
+        <span class="gmeta">${x.jahr != null ? esc(jahrText(x.jahr)) + ' · ' : ''}${STATUS[x.status]}</span>
+      </span><span class="chev">${ICON.chev}</span>`;
+    r.onclick = () => { layerSchliessen(); setTimeout(() => buchOeffnen(x.id), 80); };
+    w.appendChild(r);
+  });
 }
 
 /* ---------- Seiten 2 und 3: Themenfelder und Arten ---------- */
@@ -2833,8 +3240,196 @@ function monatsListe(von, bis) {
 }
 
 let uebersichtAllePlaene = false;
+let uebersichtUnter = 'zahlen';
 
 function uebersichtMalen(root) {
+  const unter = [['zahlen', 'Zahlen'], ['zusammen', 'Zusammenfassungen'], ['autoren', 'Autoren'], ['tage', 'Tage']];
+  root.innerHTML = `
+    <div class="chiprow">
+      ${unter.map(([k, l]) => `<button class="chip" data-ub="${k}" aria-pressed="${uebersichtUnter === k}">${l}</button>`).join('')}
+    </div>
+    <div id="ueInhalt" style="margin-top:14px"></div>`;
+  $$('[data-ub]', root).forEach(c => c.onclick = () => { uebersichtUnter = c.dataset.ub; viewMalen(); });
+  const ziel = $('#ueInhalt', root);
+  if (uebersichtUnter === 'zahlen') zahlenMalen(ziel);
+  else if (uebersichtUnter === 'zusammen') zusammenfassungenMalen(ziel);
+  else if (uebersichtUnter === 'autoren') autorenMalen(ziel);
+  else tageMalen(ziel);
+}
+
+/* Kleine Punktreihe für den Schwierigkeitsgrad. */
+function stufeHtml(n) {
+  if (!n) return '';
+  return '<span class="stufe" title="Schwierigkeit ' + n + ' von 5">' +
+    [1, 2, 3, 4, 5].map(i => `<i class="${i <= n ? 'an' : ''}"></i>`).join('') + '</span>';
+}
+const STUFEN = { 1: 'leicht', 2: 'überschaubar', 3: 'fordernd', 4: 'schwer', 5: 'sehr schwer' };
+
+/* Je Block die Bücher, jedes zum Auf- und Zuklappen. */
+function zusammenfassungenMalen(root) {
+  const bloecke = bloeckeSortiert();
+  if (!bloecke.length) {
+    root.innerHTML = `<div class="empty"><strong>Nichts zusammenzufassen</strong>Sobald Blöcke und Bücher da sind, stehen hier alle Beschreibungen untereinander.</div>`;
+    return;
+  }
+  const wrap = document.createElement('div');
+  wrap.className = 'section';
+  root.appendChild(wrap);
+  bloecke.forEach((blk, i) => {
+    const bs = buecherIn(blk.id);
+    if (!bs.length) return;
+    wrap.insertAdjacentHTML('beforeend',
+      `<div class="blockkopf"><h3>${String(i + 1).padStart(2, '0')} · ${esc(blk.name)}</h3><span class="eyebrow">${pl(bs.length, 'Werk', 'Werke')}</span></div>`);
+    bs.forEach(b => {
+      const d = document.createElement('details');
+      d.className = 'akk';
+      d.innerHTML = `
+        <summary>
+          <span class="grow" style="flex:1;min-width:0">
+            <span class="at">${esc(b.titel)}</span>
+            ${b.kurz ? `<span class="ak">${esc(b.kurz)}</span>` : ''}
+            <span class="am">
+              <span>${esc(b.autor)}</span>
+              ${b.jahr != null ? `<span class="num">${esc(jahrText(b.jahr))}</span>` : ''}
+              ${b.seiten ? `<span class="num">${b.seitenUnsicher ? '~' : ''}${b.seiten} S.</span>` : ''}
+              ${b.schwierigkeit ? stufeHtml(b.schwierigkeit) : ''}
+            </span>
+          </span>
+          <span class="chev">${ICON.chev}</span>
+        </summary>
+        <div class="ab">${b.beschreibung ? esc(b.beschreibung).replace(/\n/g, '<br>') : '<em style="color:var(--text-3)">Noch keine Beschreibung.</em>'}</div>`;
+      d.querySelector('.ab').addEventListener('click', () => buchOeffnen(b.id));
+      wrap.appendChild(d);
+    });
+  });
+}
+
+/* Alle Autoren der aktiven leseliste mit Lebensdaten und Biographie. */
+function autorenMalen(root) {
+  const map = new Map();
+  buecherAktiv().forEach(b => {
+    const name = (b.autor || '').trim() || 'Ohne Autor';
+    if (!map.has(name)) map.set(name, { name, buecher: [], geb: b.autorGeb, gest: b.autorGest, bio: b.autorBio || '' });
+    const e = map.get(name);
+    e.buecher.push(b);
+    if (!e.bio && b.autorBio) e.bio = b.autorBio;
+    if (e.geb == null && b.autorGeb != null) e.geb = b.autorGeb;
+    if (e.gest == null && b.autorGest != null) e.gest = b.autorGest;
+  });
+  const liste = Array.from(map.values()).sort((a, b) => b.buecher.length - a.buecher.length || a.name.localeCompare(b.name, 'de'));
+  if (!liste.length) {
+    root.innerHTML = `<div class="empty"><strong>Noch keine Autoren</strong>Sie ergeben sich aus den Büchern deiner Liste.</div>`;
+    return;
+  }
+  const wrap = document.createElement('div');
+  wrap.className = 'section';
+  wrap.insertAdjacentHTML('beforeend',
+    `<div class="section-head"><h2>Autoren</h2><span class="eyebrow">${liste.length}</span></div>`);
+  root.appendChild(wrap);
+  liste.forEach(a => {
+    const lebt = lebensdaten(a.geb, a.gest);
+    const d = document.createElement('details');
+    d.className = 'akk';
+    d.innerHTML = `
+      <summary>
+        <span style="flex:1;min-width:0">
+          <span class="at">${esc(a.name)}</span>
+          <span class="am">
+            ${lebt ? `<span class="num">${esc(lebt)}</span>` : ''}
+            <span>${pl(a.buecher.length, 'Werk', 'Werke')}</span>
+            <span>${a.buecher.filter(b => b.status === 'gelesen').length} gelesen</span>
+          </span>
+        </span>
+        <span class="chev">${ICON.chev}</span>
+      </summary>
+      <div class="ab">
+        ${a.bio ? esc(a.bio).replace(/\n/g, '<br>') : '<em style="color:var(--text-3)">Noch keine Biographie hinterlegt.</em>'}
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px" data-werke></div>
+      </div>`;
+    const w = $('[data-werke]', d);
+    a.buecher.forEach(b => {
+      const btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.style.cssText = 'justify-content:flex-start;text-align:left;white-space:normal';
+      btn.innerHTML = `${esc(b.titel)}${b.jahr != null ? ' <span class="num" style="color:var(--text-3)">' + esc(jahrText(b.jahr)) + '</span>' : ''}`;
+      btn.onclick = () => buchOeffnen(b.id);
+      w.appendChild(btn);
+    });
+    wrap.appendChild(d);
+  });
+}
+
+/* Tagesprotokolle: was an welchem Tag gelesen wurde. */
+function tageMalen(root) {
+  const tage = tageMitSitzungen();
+  const ziel = +DB.einstellungen.zielSeiten || 0;
+  const wrap = document.createElement('div');
+  wrap.className = 'section';
+  root.appendChild(wrap);
+
+  const z = zielHeute();
+  wrap.insertAdjacentHTML('beforeend', `
+    <div class="list-card" style="margin-bottom:16px">
+      <div class="rowline">
+        <span class="grow">
+          <span class="rn">Tagesziel</span>
+          <span class="rm">${ziel ? ziel + ' Seiten pro Tag · heute ' + z.gelesen : 'Noch keins gesetzt'}</span>
+        </span>
+        <button class="btn btn-sm" data-ziel>${ziel ? 'Ändern' : 'Setzen'}</button>
+      </div>
+    </div>`);
+  $('[data-ziel]', wrap).onclick = () => zielBearbeiten();
+
+  if (!tage.length) {
+    wrap.insertAdjacentHTML('beforeend',
+      `<div class="empty" style="margin:0"><strong>Noch keine Tage</strong>Jede Lese-Sitzung schreibt einen Eintrag. Starte die Stoppuhr oder trage eine Sitzung von Hand ein.</div>`);
+    return;
+  }
+
+  /* Balken der letzten drei Wochen */
+  const heuteD = new Date();
+  const punkte = [];
+  for (let i = 20; i >= 0; i--) {
+    const d = new Date(heuteD.getFullYear(), heuteD.getMonth(), heuteD.getDate() - i);
+    const iso = d.toISOString().slice(0, 10);
+    const t = tage.find(x => x.datum === iso);
+    punkte.push({ label: fmtDatum(iso), kurz: String(d.getDate()), wert: t ? t.seiten : 0 });
+  }
+  wrap.appendChild(karte('Seiten pro Tag', 'Die letzten drei Wochen.' + (ziel ? ' Die gestrichelte Linie ist dein Ziel.' : ''),
+    zeitBalken(punkte, v => fmtZahl(v) + ' Seiten'), '',
+    tabelleHtml(['Tag', 'Seiten'], punkte.map(x => [x.label, fmtZahl(x.wert)]))));
+
+  const geschaffte = ziel ? tage.filter(t => t.seiten >= ziel).length : 0;
+  const summe = tage.reduce((s, t) => s + t.seiten, 0);
+  const tiles = document.createElement('div');
+  tiles.className = 'tiles';
+  tiles.innerHTML = [
+    ['Lesetage', String(tage.length), 'mit mindestens einer Sitzung'],
+    ['Seiten je Lesetag', fmtZahl(Math.round(summe / tage.length)), 'im Schnitt'],
+    ziel ? ['Ziel erreicht', geschaffte + ' <small>/ ' + tage.length + '</small>', Math.round(geschaffte / tage.length * 100) + ' % der Lesetage'] : null
+  ].filter(Boolean).map(([k, v, sub]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${esc(sub)}</div></div>`).join('');
+  wrap.appendChild(tiles);
+
+  wrap.insertAdjacentHTML('beforeend', `<div class="section-head" style="margin:18px 0 9px"><h2>Protokoll</h2><span class="eyebrow">${tage.length}</span></div>`);
+  const karteEl = document.createElement('div');
+  karteEl.className = 'list-card';
+  tage.slice(0, 120).forEach(t => {
+    const geschafft = ziel && t.seiten >= ziel;
+    const r = document.createElement('div');
+    r.className = 'rowline';
+    r.innerHTML = `
+      <span class="grow">
+        <span class="rn num">${fmtDatum(t.datum)}${geschafft ? ' <span style="color:var(--good)">✓</span>' : ''}</span>
+        <span class="rm">${t.seiten ? t.seiten + ' Seiten · ' : ''}${fmtDauer(t.minuten)} · ${pl(t.buecher, 'Buch', 'Bücher')}</span>
+      </span>
+      ${ziel ? `<span class="zbar" style="width:64px;height:5px;border-radius:99px;background:var(--surface-3);overflow:hidden">
+        <i style="display:block;height:100%;border-radius:99px;background:${geschafft ? 'var(--good)' : 'var(--accent)'};width:${clamp(t.seiten / ziel * 100, 0, 100)}%"></i></span>` : ''}`;
+    karteEl.appendChild(r);
+  });
+  wrap.appendChild(karteEl);
+}
+
+function zahlenMalen(root) {
   root.innerHTML = '';
   if (!DB.buecher.length) {
     root.innerHTML = `<div class="empty"><strong>Nichts auszuwerten</strong>Sobald Bücher im Plan stehen, entstehen hier die Graphen.</div>`;
@@ -3492,6 +4087,14 @@ function mehrMalen(root) {
           <span class="grow"><span class="rn">${DB.einstellungen.theme === 'light' ? 'Hell' : 'Dunkel'}</span><span class="rm">Auch über das Symbol in der Kopfzeile</span></span>
           <button class="btn btn-sm" data-theme>Umschalten</button>
         </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Tagesziel</span><span class="rm">${DB.einstellungen.zielSeiten ? DB.einstellungen.zielSeiten + ' Seiten pro Tag' : 'Keins gesetzt'}</span></span>
+          <button class="btn btn-sm" data-zielx>${DB.einstellungen.zielSeiten ? 'Ändern' : 'Setzen'}</button>
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Einführung</span><span class="rm">Die vier Schritte vom Anfang noch einmal</span></span>
+          <button class="btn btn-sm" data-einf>Zeigen</button>
+        </div>
         <div class="rowline" style="flex-direction:column;align-items:stretch;gap:10px">
           <span><span class="rn">Akzentfarbe</span><span class="rm">${esc(akzentAktiv().name)} – gilt für Knöpfe, Fortschritt und Markierungen</span></span>
           <div style="display:flex;gap:9px;flex-wrap:wrap" data-akzente>
@@ -3537,6 +4140,8 @@ function mehrMalen(root) {
   });
   $('[data-plaene]', root).onclick = planWechsler;
   $('[data-einkauf]', root).onclick = einkaufslisteOeffnen;
+  $('[data-einf]', root).onclick = einfuehrungZeigen;
+  $('[data-zielx]', root).onclick = () => zielBearbeiten();
   $('[data-save]', root).onclick = () => Store.alsDateiSichern(false);
   $('[data-export]', root).onclick = () => Store.alsDateiSichern(false);
   $('[data-import]', root).onclick = () => importDialog(false);

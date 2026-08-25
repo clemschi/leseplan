@@ -2,7 +2,7 @@
   "format": "leseplan",
   "version": 2,
   "titel": "Leseplan – Grundkatalog",
-  "hinweis": "Seitenzahlen beziehen sich auf gaengige deutsche Ausgaben und sind mit seitenUnsicher=true markiert, wo die Recherche keinen eindeutigen Wert ergab. jahr ist das Jahr der Erstveroeffentlichung im Original. preis ist ein bei Thalia recherchierter Richtpreis der genannten Ausgabe in Euro und aendert sich laufend. Alles ist in der App frei aenderbar.",
+  "hinweis": "Seitenzahlen beziehen sich auf gaengige deutsche Ausgaben und sind mit seitenUnsicher=true markiert, wo die Recherche keinen eindeutigen Wert ergab. jahr ist das Jahr der Erstveroeffentlichung im Original. preis ist ein bei Thalia recherchierter Richtpreis der genannten Ausgabe in Euro und aendert sich laufend. schwierigkeit ist eine Einschaetzung von 1 (leicht) bis 5 (sehr schwer). autorBio ist eine kurze Biographie. Alles ist in der App frei aenderbar.",
   "themen": [],
   "bloecke": [
     {
@@ -110,7 +110,9 @@
       "notizen": [],
       "kurz": "Leiden zählt, nicht Artzugehörigkeit – die utilitaristische Begründung der Tierbefreiung.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Australischer Moralphilosoph, geboren 1946 in Melbourne als Kind jüdischer Flüchtlinge aus Wien; drei seiner Großeltern wurden im Holocaust ermordet. Er lehrte in Melbourne und ab 1999 in Princeton und argumentiert konsequent utilitaristisch: Was zählt, ist die Fähigkeit zu leiden. Mit „Animal Liberation\" (1975) gab er der Tierrechtsbewegung ihre philosophische Grundlage, mit „Effective Altruism\" der Frage, wie man am meisten Gutes tut. Seine Positionen zu Sterbehilfe und schwerstbehinderten Neugeborenen haben in Deutschland zu Vortragsabsagen und Protesten geführt."
     },
     {
       "id": "bu0102",
@@ -131,7 +133,9 @@
       "notizen": [],
       "kurz": "Warum wir die Klimakrise wissen, aber nicht glauben – und vegan frühstücken sollten.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "US-amerikanischer Schriftsteller, geboren 1977 in Washington, D.C., Enkel einer Holocaust-Überlebenden. Sein Debüt „Alles ist erleuchtet\" (2002) machte ihn mit Mitte zwanzig berühmt, es folgte „Extrem laut und unglaublich nah\". Seit „Tiere essen\" (2009) schreibt er auch essayistisch über Ernährung, Klima und die Kluft zwischen Wissen und Handeln. Er lehrt kreatives Schreiben an der New York University."
     },
     {
       "id": "bu0103",
@@ -152,7 +156,9 @@
       "notizen": [],
       "kurz": "Kein grünes Wachstum: weniger produzieren, regional wirtschaften, halbe Erwerbsarbeit.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Deutscher Volkswirt, geboren 1960, außerplanmäßiger Professor in Siegen, zuvor lange in Oldenburg. Er ist der bekannteste deutschsprachige Vertreter der Postwachstumsökonomie und bestreitet, dass sich Wirtschaftswachstum von Ressourcenverbrauch entkoppeln lässt. Sein Gegenentwurf setzt auf Suffizienz, Subsistenz, Regionalwirtschaft und eine halbierte Erwerbsarbeitszeit. Er lebt die Konsequenzen weitgehend selbst – kein Auto, kein Flugzeug."
     },
     {
       "id": "bu0201",
@@ -173,7 +179,9 @@
       "notizen": [],
       "kurz": "1948 als geplante Vertreibung, belegt aus israelischen Militärakten. Umstritten.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Israelischer Historiker, geboren 1954 in Haifa als Sohn deutsch-jüdischer Flüchtlinge. Er gehört zu den „neuen Historikern\", die ab den 1980er Jahren die israelischen Staatsarchive zu 1948 auswerteten. Wegen seiner Unterstützung des akademischen Boykotts und seiner Thesen zur Vertreibung der Palästinenser wurde seine Stellung in Haifa unhaltbar; seit 2007 lehrt er in Exeter. Seine Arbeiten sind in der Forschung stark umstritten."
     },
     {
       "id": "bu0202",
@@ -194,7 +202,9 @@
       "notizen": [],
       "kurz": "Verteidigungsrede nach der Moncada als Programm für Land, Bildung, Gesundheit.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Kubanischer Revolutionär und Staatschef, 1926 als Sohn eines Plantagenbesitzers geboren, Jurist. Nach dem gescheiterten Angriff auf die Moncada-Kaserne 1953 verurteilt und amnestiert, kehrte er 1956 mit der „Granma\" zurück und stürzte 1959 den Diktator Batista. Bis 2008 führte er Kuba durch Enteignungen, Alphabetisierungskampagne, Raketenkrise und Jahrzehnte des US-Embargos. Er starb 2016 in Havanna."
     },
     {
       "id": "bu0203",
@@ -215,7 +225,9 @@
       "notizen": [],
       "kurz": "Ukrainische Geschichte gegen die russozentrische Sicht – und gegen eigene Nationalmythen.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Schweizer Osteuropahistoriker, geboren 1943 in Winterthur, bis 2011 Professor in Wien, davor Köln. Sein Lebensthema ist das Russische Reich als Vielvölkerstaat und die Geschichte der Ukraine als eigenständige, nicht als abgeleitete. Er ist Mitglied der Österreichischen und der Ukrainischen Akademie der Wissenschaften. Seine Überblicksdarstellungen gelten im deutschen Sprachraum als Standard."
     },
     {
       "id": "bu0301",
@@ -236,7 +248,9 @@
       "notizen": [],
       "kurz": "Zehn Mechanismen: mythische Vergangenheit, Propaganda, Antiintellektualismus, Unwirklichkeit, wir gegen sie.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "US-amerikanischer Philosoph, geboren 1969, Professor in Yale. Beide Elternteile flohen als Kinder vor den Nationalsozialisten, der Vater aus Berlin, die Mutter aus Polen – dieser Hintergrund prägt seine Arbeit über Propaganda und die Sprache autoritärer Politik. Nach „How Propaganda Works\" folgte „Wie Faschismus funktioniert\", das die Mechanismen als Handwerk beschreibt statt als Epoche. 2025 verließ er die USA aus Protest gegen die politische Lage und ging nach Toronto."
     },
     {
       "id": "bu0302",
@@ -257,7 +271,9 @@
       "notizen": [],
       "kurz": "Faschismus als Symptom des Systemversagens, plus Strategie für ein antifaschistisches Bündnis.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Britischer Journalist und Autor, geboren 1960 in Leigh als Sohn eines Bergmanns. Er war Wirtschaftsredakteur bei BBC Newsnight und Channel 4 News und berichtete von der Finanzkrise, aus Griechenland und aus Ägypten. Mit „Postkapitalismus\" wurde er zum Stichwortgeber der britischen Linken; er schreibt für den Guardian und ist Labour-Mitglied. Seine Bücher verbinden Reportage, Wirtschaftsgeschichte und politische Strategie."
     },
     {
       "id": "bu0303",
@@ -278,7 +294,9 @@
       "notizen": [],
       "kurz": "Vierzehn Merkmale des Urfaschismus; wenige genügen, damit er sich neu kristallisiert.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Italienischer Semiotiker, Mediävist und Romancier, 1932 in Alessandria geboren, aufgewachsen unter dem Faschismus – als Junge gewann er einen Preis für einen Aufsatz zum Lob Mussolinis, was er später als Lehrstück über Propaganda erzählte. Er lehrte Jahrzehnte in Bologna und schrieb über Zeichentheorie und die Rolle des Lesers. 1980 machte ihn „Der Name der Rose\" weltberühmt. Er starb 2016 in Mailand."
     },
     {
       "id": "bu0401",
@@ -299,7 +317,9 @@
       "notizen": [],
       "kurz": "Roulettesucht als Freiheit gegen Vernunft – in 26 Tagen gegen Schulden geschrieben.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Russischer Romancier, 1821 in Moskau geboren, Sohn eines Armenarztes. 1849 wegen Zugehörigkeit zu einem sozialistischen Zirkel zum Tode verurteilt, erst vor dem Erschießungskommando begnadigt – es folgten vier Jahre Zwangsarbeit in Sibirien. Epilepsie, Spielsucht und Schulden bestimmten sein Leben, in dem die großen Romane unter Termindruck entstanden. Er starb 1881 in Petersburg als gefeierter Autor."
     },
     {
       "id": "bu0402",
@@ -320,7 +340,9 @@
       "notizen": [],
       "kurz": "Ein Mord soll eine Theorie beweisen; Fieber und Gewissen zermürben sie.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Russischer Romancier, 1821 in Moskau geboren, Sohn eines Armenarztes. 1849 wegen Zugehörigkeit zu einem sozialistischen Zirkel zum Tode verurteilt, erst vor dem Erschießungskommando begnadigt – es folgten vier Jahre Zwangsarbeit in Sibirien. Epilepsie, Spielsucht und Schulden bestimmten sein Leben, in dem die großen Romane unter Termindruck entstanden. Er starb 1881 in Petersburg als gefeierter Autor."
     },
     {
       "id": "bu0403",
@@ -341,7 +363,9 @@
       "notizen": [],
       "kurz": "Eine Verschwörerzelle leitet Terror aus Ideen ab und gehorcht nur sich selbst.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Russischer Romancier, 1821 in Moskau geboren, Sohn eines Armenarztes. 1849 wegen Zugehörigkeit zu einem sozialistischen Zirkel zum Tode verurteilt, erst vor dem Erschießungskommando begnadigt – es folgten vier Jahre Zwangsarbeit in Sibirien. Epilepsie, Spielsucht und Schulden bestimmten sein Leben, in dem die großen Romane unter Termindruck entstanden. Er starb 1881 in Petersburg als gefeierter Autor."
     },
     {
       "id": "bu0404",
@@ -362,7 +386,9 @@
       "notizen": [],
       "kurz": "Verhaftet ohne Vorwurf: Die Bürokratie ist nicht Hindernis vor der Schuld, sondern ihre Form.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Deutschsprachiger Prager Schriftsteller, 1883 als Sohn eines jüdischen Kaufmanns geboren, promovierter Jurist und Beamter einer Arbeiter-Unfallversicherung. Geschrieben hat er nachts, veröffentlicht zu Lebzeiten wenig, das Verhältnis zum Vater und drei gelöste Verlobungen zogen sich durch sein Leben. 1924 starb er mit vierzig an Kehlkopftuberkulose. Sein Freund Max Brod missachtete die Anweisung, die Manuskripte zu verbrennen – dem verdanken wir die Romane."
     },
     {
       "id": "bu0405",
@@ -383,7 +409,9 @@
       "notizen": [],
       "kurz": "Je näher der Landvermesser der Behörde kommt, desto ferner rückt sie.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Deutschsprachiger Prager Schriftsteller, 1883 als Sohn eines jüdischen Kaufmanns geboren, promovierter Jurist und Beamter einer Arbeiter-Unfallversicherung. Geschrieben hat er nachts, veröffentlicht zu Lebzeiten wenig, das Verhältnis zum Vater und drei gelöste Verlobungen zogen sich durch sein Leben. 1924 starb er mit vierzig an Kehlkopftuberkulose. Sein Freund Max Brod missachtete die Anweisung, die Manuskripte zu verbrennen – dem verdanken wir die Romane."
     },
     {
       "id": "bu0406",
@@ -404,7 +432,9 @@
       "notizen": [],
       "kurz": "Als Ungeziefer erwacht, sorgt sich Gregor zuerst um den Zug zur Arbeit.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Deutschsprachiger Prager Schriftsteller, 1883 als Sohn eines jüdischen Kaufmanns geboren, promovierter Jurist und Beamter einer Arbeiter-Unfallversicherung. Geschrieben hat er nachts, veröffentlicht zu Lebzeiten wenig, das Verhältnis zum Vater und drei gelöste Verlobungen zogen sich durch sein Leben. 1924 starb er mit vierzig an Kehlkopftuberkulose. Sein Freund Max Brod missachtete die Anweisung, die Manuskripte zu verbrennen – dem verdanken wir die Romane."
     },
     {
       "id": "bu0407",
@@ -425,7 +455,9 @@
       "notizen": [],
       "kurz": "Die abstrakten Wörter zerfallen im Mund – Gründungsdokument der modernen Sprachkrise.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Österreichischer Dichter, 1874 in Wien geboren, ein Wunderkind, das mit sechzehn unter Pseudonym Verse veröffentlichte, die Stefan George elektrisierten. Die im Chandos-Brief beschriebene Sprachkrise beendete das lyrische Werk; danach schrieb er Dramen, Komödien und die Libretti für Richard Strauss. 1920 gründete er mit Max Reinhardt die Salzburger Festspiele. Er starb 1929, zwei Tage nach dem Suizid seines Sohnes."
     },
     {
       "id": "bu0408",
@@ -446,7 +478,9 @@
       "notizen": [],
       "kurz": "Der Tod holt den Reichen mitten im Fest; nur die Werke gehen mit.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Österreichischer Dichter, 1874 in Wien geboren, ein Wunderkind, das mit sechzehn unter Pseudonym Verse veröffentlichte, die Stefan George elektrisierten. Die im Chandos-Brief beschriebene Sprachkrise beendete das lyrische Werk; danach schrieb er Dramen, Komödien und die Libretti für Richard Strauss. 1920 gründete er mit Max Reinhardt die Salzburger Festspiele. Er starb 1929, zwei Tage nach dem Suizid seines Sohnes."
     },
     {
       "id": "bu0409",
@@ -467,7 +501,9 @@
       "notizen": [],
       "kurz": "Wiener Adel nach dem Krieg: Wer dem Reden misstraut, redet komisch aneinander vorbei.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Österreichischer Dichter, 1874 in Wien geboren, ein Wunderkind, das mit sechzehn unter Pseudonym Verse veröffentlichte, die Stefan George elektrisierten. Die im Chandos-Brief beschriebene Sprachkrise beendete das lyrische Werk; danach schrieb er Dramen, Komödien und die Libretti für Richard Strauss. 1920 gründete er mit Max Reinhardt die Salzburger Festspiele. Er starb 1929, zwei Tage nach dem Suizid seines Sohnes."
     },
     {
       "id": "bu0501",
@@ -488,7 +524,9 @@
       "notizen": [],
       "kurz": "Abraham hebt der Glaube über die Sittlichkeit – der Einzelne über das Allgemeine.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Dänischer Philosoph und Theologe, 1813 in Kopenhagen geboren, geprägt von einem schwermütigen, streng frommen Vater. Die gelöste Verlobung mit Regine Olsen wurde zum Motiv seines Werks, das er größtenteils unter Pseudonymen veröffentlichte, um Positionen gegeneinander sprechen zu lassen. Am Ende griff er die dänische Staatskirche offen an. Er starb 1855 mit 42 Jahren, kaum verstanden; erst das 20. Jahrhundert machte ihn zum Ahnherrn der Existenzphilosophie."
     },
     {
       "id": "bu0502",
@@ -509,7 +547,9 @@
       "notizen": [],
       "kurz": "Die Welt als blinder Wille; Auswege sind Kunst, Mitleid, Verneinung.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 5,
+      "autorBio": "Deutscher Philosoph, 1788 in Danzig geboren, Sohn eines Kaufmanns und der Schriftstellerin Johanna Schopenhauer. Sein Hauptwerk erschien 1819 und blieb fast unbeachtet; seine Berliner Vorlesungen legte er trotzig auf Hegels Stunde, der Saal blieb leer. Er lebte vom Erbe, zuletzt zurückgezogen in Frankfurt am Main mit seinem Pudel. Erst in den 1850er Jahren kam der Ruhm, der Wagner, Nietzsche, Freud und Thomas Mann prägte."
     },
     {
       "id": "bu0503",
@@ -530,7 +570,9 @@
       "notizen": [],
       "kurz": "Der Übermensch, gepredigt in Bildern: Tod Gottes, Wille zur Macht, ewige Wiederkunft.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Deutscher Philosoph und klassischer Philologe, 1844 in Röcken geboren, Sohn eines Pfarrers. Mit vierundzwanzig ohne Promotion auf einen Basler Lehrstuhl berufen, gab er ihn 1879 krankheitshalber auf und lebte danach als Reisender zwischen Sils-Maria, Nizza und Turin. Dort brach er Anfang 1889 zusammen und blieb bis zu seinem Tod 1900 geistig umnachtet. Seine Schwester Elisabeth verwaltete und verfälschte den Nachlass und lieferte ihn den Nationalsozialisten aus."
     },
     {
       "id": "bu0601",
@@ -551,7 +593,9 @@
       "notizen": [],
       "kurz": "Die Frage nach der Wirklichkeit einklammern und nur beschreiben, wie sich Dinge zeigen.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Begründer der Phänomenologie, 1859 in Proßnitz in Mähren geboren, zunächst Mathematiker und Schüler von Weierstraß und Brentano. In Göttingen und Freiburg entwickelte er die Methode, das Bewusstsein streng beschreibend zu untersuchen; Heidegger war sein Assistent und Nachfolger. Als Jude wurde er ab 1933 von der Universität ausgeschlossen. Er starb 1938; sein Nachlass wurde von einem belgischen Franziskaner in einer waghalsigen Aktion nach Löwen gerettet."
     },
     {
       "id": "bu0602",
@@ -572,7 +616,9 @@
       "notizen": [],
       "kurz": "Dasein von der Zeitlichkeit her: In-der-Welt-sein, Man, Angst, Sorge, Sein zum Tode.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 5,
+      "autorBio": "Deutscher Philosoph, 1889 in Meßkirch geboren, Sohn eines Mesners, zunächst für das Priesteramt bestimmt. Als Assistent Husserls verband er die Phänomenologie mit der Frage nach dem Sein; „Sein und Zeit\" machte ihn 1927 schlagartig berühmt. 1933 wurde er Rektor in Freiburg, trat der NSDAP bei und hielt Reden für das Regime – die „Schwarzen Hefte\" zeigen antisemitische Denkfiguren bis in sein Werk hinein. Er starb 1976 in Freiburg."
     },
     {
       "id": "bu0603",
@@ -593,7 +639,9 @@
       "notizen": [],
       "kurz": "Gegen Kant: Werte werden gefühlt, in einer Rangordnung – Ethik der Person.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 5,
+      "autorBio": "Deutscher Philosoph, 1874 in München geboren, einer der wirkungsvollsten Phänomenologen der ersten Generation. Er entwickelte eine materiale Wertethik gegen Kants Formalismus und begründete die philosophische Anthropologie mit; Heidegger nannte ihn die stärkste philosophische Kraft seiner Zeit. Sein Leben war von Skandalen, Konversionen und Lehrstuhlwechseln bewegt. 1928 starb er mit 53 kurz nach seiner Berufung nach Frankfurt."
     },
     {
       "id": "bu0701",
@@ -614,7 +662,9 @@
       "notizen": [],
       "kurz": "Existenz vor Essenz, zur Freiheit verurteilt, mit jeder Wahl für alle verantwortlich.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Französischer Philosoph, Romancier und Dramatiker, 1905 in Paris geboren, Absolvent der École normale supérieure. Mit Simone de Beauvoir verband ihn eine lebenslange, offene Partnerschaft. Nach Kriegsgefangenschaft und Résistance wurde er mit „Das Sein und das Nichts\" und der Zeitschrift „Les Temps Modernes\" zur zentralen Figur des Existenzialismus, später zum politischen Aktivisten an der Seite der Maoisten. 1964 lehnte er den Nobelpreis ab; 1980 folgten fünfzigtausend Menschen seinem Sarg."
     },
     {
       "id": "bu0702",
@@ -635,7 +685,9 @@
       "notizen": [],
       "kurz": "Die Dinge sind da, ohne Grund – Übelkeit vor der bloßen Existenz.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Französischer Philosoph, Romancier und Dramatiker, 1905 in Paris geboren, Absolvent der École normale supérieure. Mit Simone de Beauvoir verband ihn eine lebenslange, offene Partnerschaft. Nach Kriegsgefangenschaft und Résistance wurde er mit „Das Sein und das Nichts\" und der Zeitschrift „Les Temps Modernes\" zur zentralen Figur des Existenzialismus, später zum politischen Aktivisten an der Seite der Maoisten. 1964 lehnte er den Nobelpreis ab; 1980 folgten fünfzigtausend Menschen seinem Sarg."
     },
     {
       "id": "bu0703",
@@ -656,7 +708,9 @@
       "notizen": [],
       "kurz": "An-sich und Für-sich, böse Gläubigkeit, der Blick des Anderen macht mich zum Objekt.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 5,
+      "autorBio": "Französischer Philosoph, Romancier und Dramatiker, 1905 in Paris geboren, Absolvent der École normale supérieure. Mit Simone de Beauvoir verband ihn eine lebenslange, offene Partnerschaft. Nach Kriegsgefangenschaft und Résistance wurde er mit „Das Sein und das Nichts\" und der Zeitschrift „Les Temps Modernes\" zur zentralen Figur des Existenzialismus, später zum politischen Aktivisten an der Seite der Maoisten. 1964 lehnte er den Nobelpreis ab; 1980 folgten fünfzigtausend Menschen seinem Sarg."
     },
     {
       "id": "bu0704",
@@ -677,7 +731,9 @@
       "notizen": [],
       "kurz": "Das Absurde entsteht zwischen Sinnverlangen und schweigender Welt; man hält es aus.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Französisch-algerischer Schriftsteller, 1913 in Mondovi in Algerien geboren, der Vater fiel im Ersten Weltkrieg, die Mutter war Putzfrau und Analphabetin. Tuberkulose beendete seine Fußballkarriere und das Studium; im Krieg leitete er die Untergrundzeitung „Combat\". 1957 erhielt er mit 44 Jahren den Nobelpreis, zwei Jahre nach dem Bruch mit Sartre über die Gewaltfrage. 1960 starb er bei einem Autounfall, das Manuskript des „Ersten Menschen\" im Wagen."
     },
     {
       "id": "bu0705",
@@ -698,7 +754,9 @@
       "notizen": [],
       "kurz": "Verurteilt weniger für den Mord als dafür, nicht getrauert zu haben.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Französisch-algerischer Schriftsteller, 1913 in Mondovi in Algerien geboren, der Vater fiel im Ersten Weltkrieg, die Mutter war Putzfrau und Analphabetin. Tuberkulose beendete seine Fußballkarriere und das Studium; im Krieg leitete er die Untergrundzeitung „Combat\". 1957 erhielt er mit 44 Jahren den Nobelpreis, zwei Jahre nach dem Bruch mit Sartre über die Gewaltfrage. 1960 starb er bei einem Autounfall, das Manuskript des „Ersten Menschen\" im Wagen."
     },
     {
       "id": "bu0706",
@@ -719,7 +777,9 @@
       "notizen": [],
       "kurz": "Gegen die Seuche kein Held, sondern Solidarität als gemeinsame Anständigkeit.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Französisch-algerischer Schriftsteller, 1913 in Mondovi in Algerien geboren, der Vater fiel im Ersten Weltkrieg, die Mutter war Putzfrau und Analphabetin. Tuberkulose beendete seine Fußballkarriere und das Studium; im Krieg leitete er die Untergrundzeitung „Combat\". 1957 erhielt er mit 44 Jahren den Nobelpreis, zwei Jahre nach dem Bruch mit Sartre über die Gewaltfrage. 1960 starb er bei einem Autounfall, das Manuskript des „Ersten Menschen\" im Wagen."
     },
     {
       "id": "bu0707",
@@ -740,7 +800,9 @@
       "notizen": [],
       "kurz": "Wir haben keinen Körper, wir sind Leib – Wahrnehmung als Zur-Welt-sein.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 5,
+      "autorBio": "Französischer Philosoph, 1908 in Rochefort geboren, Mitschüler Sartres an der École normale supérieure. Er stellte die Phänomenologie vom Bewusstsein auf den Leib um und stützte sich dabei auf Neurologie und Gestaltpsychologie. Ab 1952 lehrte er als jüngster Professor am Collège de France; mit Sartre zerstritt er sich über die Haltung zur Sowjetunion und verließ „Les Temps Modernes\". 1961 starb er mit 53 plötzlich am Schreibtisch."
     },
     {
       "id": "bu0708",
@@ -761,7 +823,9 @@
       "notizen": [],
       "kurz": "Lässt sich revolutionäre Gewalt rechtfertigen? Und ist der liberale Staat gewaltfrei?",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Französischer Philosoph, 1908 in Rochefort geboren, Mitschüler Sartres an der École normale supérieure. Er stellte die Phänomenologie vom Bewusstsein auf den Leib um und stützte sich dabei auf Neurologie und Gestaltpsychologie. Ab 1952 lehrte er als jüngster Professor am Collège de France; mit Sartre zerstritt er sich über die Haltung zur Sowjetunion und verließ „Les Temps Modernes\". 1961 starb er mit 53 plötzlich am Schreibtisch."
     },
     {
       "id": "bu0709",
@@ -782,7 +846,9 @@
       "notizen": [],
       "kurz": "Der Sehende gehört selbst zum Sichtbaren: Leib und Welt aus einem Fleisch.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 5,
+      "autorBio": "Französischer Philosoph, 1908 in Rochefort geboren, Mitschüler Sartres an der École normale supérieure. Er stellte die Phänomenologie vom Bewusstsein auf den Leib um und stützte sich dabei auf Neurologie und Gestaltpsychologie. Ab 1952 lehrte er als jüngster Professor am Collège de France; mit Sartre zerstritt er sich über die Haltung zur Sowjetunion und verließ „Les Temps Modernes\". 1961 starb er mit 53 plötzlich am Schreibtisch."
     },
     {
       "id": "bu0801",
@@ -803,7 +869,9 @@
       "notizen": [],
       "kurz": "Gerechtigkeit im Staat als Modell der Seele – Höhle, Philosophenkönig, Dichterverbot.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Griechischer Philosoph, um 428 v. Chr. in eine vornehme athenische Familie geboren. Die Hinrichtung seines Lehrers Sokrates 399 v. Chr. prägte sein Denken und seine Skepsis gegenüber der Demokratie. Seine Reisen nach Syrakus, wo er den Tyrannen zum Philosophen erziehen wollte, endeten im Fiasko – einmal wurde er als Sklave verkauft. Die von ihm gegründete Akademie bestand fast neunhundert Jahre; er starb um 348 v. Chr."
     },
     {
       "id": "bu0802",
@@ -824,7 +892,9 @@
       "notizen": [],
       "kurz": "Kants Kurzfassung: Mathematik und Naturwissenschaft sind Tatsachen – wie sind sie möglich?",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Deutscher Philosoph, 1724 in Königsberg geboren, Sohn eines Riemers, aufgewachsen im Pietismus. Er verließ seine Heimatstadt nie und lehrte dort erst als Privatdozent, ab 1770 als Professor. Nach fast zwölf Jahren Schweigen erschien 1781 die „Kritik der reinen Vernunft\" und mit ihr die Wende, die das Denken teilt. Wegen seiner Religionsschrift geriet er mit der preußischen Zensur aneinander; er starb 1804."
     },
     {
       "id": "bu0803",
@@ -845,7 +915,9 @@
       "notizen": [],
       "kurz": "Vom sinnlichen Bewusstsein zum absoluten Wissen; Herr und Knecht unterwegs.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 5,
+      "autorBio": "Deutscher Philosoph, 1770 in Stuttgart geboren, im Tübinger Stift Zimmergenosse von Hölderlin und Schelling. Die „Phänomenologie des Geistes\" beendete er 1806 in Jena, während Napoleon die Stadt einnahm – „die Weltseele zu Pferde\". Nach Jahren als Zeitungsredakteur und Gymnasialdirektor wurde er in Berlin zum wirkmächtigsten Philosophen Preußens. 1831 starb er, vermutlich an der Cholera; aus dem Streit seiner Schüler ging der junge Marx hervor."
     },
     {
       "id": "bu0901",
@@ -866,7 +938,9 @@
       "notizen": [],
       "kurz": "Ware, Wert, Arbeitskraft, Mehrwert – das Kapital an einem Nachmittag.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Deutscher Philosoph, Ökonom und Revolutionär, 1818 in Trier geboren, Sohn eines zum Protestantismus konvertierten jüdischen Anwalts. Als Redakteur ausgewiesen, lebte er im Exil in Paris, Brüssel und ab 1849 in London, oft bitterarm; drei seiner Kinder starben früh. Im Lesesaal des British Museum entstand „Das Kapital\", finanziert durch Engels. Er starb 1883; an seinem Grab standen elf Menschen."
     },
     {
       "id": "bu0902",
@@ -887,7 +961,9 @@
       "notizen": [],
       "kurz": "Aus der Warenanalyse: Mehrwert, Arbeitstag, ursprüngliche Akkumulation, Profitrate, Kredit.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 5,
+      "autorBio": "Deutscher Philosoph, Ökonom und Revolutionär, 1818 in Trier geboren, Sohn eines zum Protestantismus konvertierten jüdischen Anwalts. Als Redakteur ausgewiesen, lebte er im Exil in Paris, Brüssel und ab 1849 in London, oft bitterarm; drei seiner Kinder starben früh. Im Lesesaal des British Museum entstand „Das Kapital\", finanziert durch Engels. Er starb 1883; an seinem Grab standen elf Menschen."
     },
     {
       "id": "bu0903",
@@ -908,7 +984,9 @@
       "notizen": [],
       "kurz": "Vierfach entfremdet: vom Produkt, vom Arbeiten, vom Gattungswesen, vom anderen Menschen.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Deutscher Philosoph, Ökonom und Revolutionär, 1818 in Trier geboren, Sohn eines zum Protestantismus konvertierten jüdischen Anwalts. Als Redakteur ausgewiesen, lebte er im Exil in Paris, Brüssel und ab 1849 in London, oft bitterarm; drei seiner Kinder starben früh. Im Lesesaal des British Museum entstand „Das Kapital\", finanziert durch Engels. Er starb 1883; an seinem Grab standen elf Menschen."
     },
     {
       "id": "bu0904",
@@ -929,7 +1007,9 @@
       "notizen": [],
       "kurz": "Von den Utopisten zu Marx zwei Entdeckungen: Geschichtsauffassung und Mehrwert.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Deutscher Fabrikantensohn, Revolutionär und Marx' lebenslanger Mitstreiter, 1820 in Barmen geboren. In Manchester führte er die väterliche Baumwollspinnerei und finanzierte davon jahrzehntelang die Familie Marx – während er die Verhältnisse in denselben Fabriken anklagte. Er kämpfte 1849 mit der Waffe im badischen Aufstand. Nach Marx' Tod gab er die Bände 2 und 3 des „Kapital\" aus dem Nachlass heraus; er starb 1895."
     },
     {
       "id": "bu0905",
@@ -950,7 +1030,9 @@
       "notizen": [],
       "kurz": "Manchester 1844: Wohnen, Arbeiten, Sterben – die erste große Sozialreportage.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Deutscher Fabrikantensohn, Revolutionär und Marx' lebenslanger Mitstreiter, 1820 in Barmen geboren. In Manchester führte er die väterliche Baumwollspinnerei und finanzierte davon jahrzehntelang die Familie Marx – während er die Verhältnisse in denselben Fabriken anklagte. Er kämpfte 1849 mit der Waffe im badischen Aufstand. Nach Marx' Tod gab er die Bände 2 und 3 des „Kapital\" aus dem Nachlass heraus; er starb 1895."
     },
     {
       "id": "bu0906",
@@ -971,7 +1053,9 @@
       "notizen": [],
       "kurz": "Monogamie, Privateigentum und Staat aus einer Wurzel; Ethnologie überholt, Frage nicht.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Deutscher Fabrikantensohn, Revolutionär und Marx' lebenslanger Mitstreiter, 1820 in Barmen geboren. In Manchester führte er die väterliche Baumwollspinnerei und finanzierte davon jahrzehntelang die Familie Marx – während er die Verhältnisse in denselben Fabriken anklagte. Er kämpfte 1849 mit der Waffe im badischen Aufstand. Nach Marx' Tod gab er die Bände 2 und 3 des „Kapital\" aus dem Nachlass heraus; er starb 1895."
     },
     {
       "id": "bu0907",
@@ -992,7 +1076,9 @@
       "notizen": [],
       "kurz": "Der bürgerliche Staat lässt sich nicht übernehmen, nur zerschlagen – dann abstirbt er.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Russischer Revolutionär und Staatsgründer, 1870 als Wladimir Uljanow in Simbirsk geboren. Die Hinrichtung seines älteren Bruders wegen eines Attentatsplans 1887 prägte seinen Weg; es folgten Verbannung nach Sibirien und lange Jahre im Schweizer Exil. 1917 brachte ihn ein deutscher Zug nach Petrograd, wenige Monate später führte er die Oktoberrevolution an. Nach mehreren Schlaganfällen starb er 1924, sein Testament mit der Warnung vor Stalin wurde unterdrückt."
     },
     {
       "id": "bu0908",
@@ -1013,7 +1099,9 @@
       "notizen": [],
       "kurz": "Berufsrevolutionäre statt Spontaneität; das Bewusstsein kommt von außen in die Klasse.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Russischer Revolutionär und Staatsgründer, 1870 als Wladimir Uljanow in Simbirsk geboren. Die Hinrichtung seines älteren Bruders wegen eines Attentatsplans 1887 prägte seinen Weg; es folgten Verbannung nach Sibirien und lange Jahre im Schweizer Exil. 1917 brachte ihn ein deutscher Zug nach Petrograd, wenige Monate später führte er die Oktoberrevolution an. Nach mehreren Schlaganfällen starb er 1924, sein Testament mit der Warnung vor Stalin wurde unterdrückt."
     },
     {
       "id": "bu0909",
@@ -1034,7 +1122,9 @@
       "notizen": [],
       "kurz": "Monopole, Finanzkapital, Kapitalexport – der Weltkrieg als notwendige Folge.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Russischer Revolutionär und Staatsgründer, 1870 als Wladimir Uljanow in Simbirsk geboren. Die Hinrichtung seines älteren Bruders wegen eines Attentatsplans 1887 prägte seinen Weg; es folgten Verbannung nach Sibirien und lange Jahre im Schweizer Exil. 1917 brachte ihn ein deutscher Zug nach Petrograd, wenige Monate später führte er die Oktoberrevolution an. Nach mehreren Schlaganfällen starb er 1924, sein Testament mit der Warnung vor Stalin wurde unterdrückt."
     },
     {
       "id": "bu1001",
@@ -1055,7 +1145,9 @@
       "notizen": [],
       "kurz": "Acht Generationen einer Familie erzählen zweihundert Jahre Ungleichheit, mit Kurven im Bild.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 1,
+      "autorBio": "Die Graphic Novel stammt von der Wirtschaftsjournalistin Claire Alet und dem Zeichner Benjamin Adam, in Zusammenarbeit mit Thomas Piketty. Piketty, geboren 1971 bei Paris, hat aus Steuer- und Erbschaftsakten zweier Jahrhunderte die World Inequality Database aufgebaut und mit „Das Kapital im 21. Jahrhundert\" die Ungleichheitsforschung populär gemacht. Alet und Adam übersetzen seine Kurven in die Geschichte einer Familie über acht Generationen."
     },
     {
       "id": "bu1002",
@@ -1076,7 +1168,9 @@
       "notizen": [],
       "kurz": "Wenn die Rendite dauerhaft über dem Wachstum liegt, konzentriert sich Vermögen von selbst.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Französischer Ökonom, geboren 1971 bei Paris, promovierte mit zweiundzwanzig und lehrte kurz am MIT, bevor er nach Frankreich zurückkehrte. Er baute die Datenbank auf, aus der die World Inequality Database wurde: Steuer- und Erbschaftsakten über zwei Jahrhunderte statt Modellannahmen. „Das Kapital im 21. Jahrhundert\" (2013) wurde zum meistdiskutierten Wirtschaftsbuch seiner Generation. Er lehrt an der EHESS und der Paris School of Economics."
     },
     {
       "id": "bu1003",
@@ -1097,7 +1191,9 @@
       "notizen": [],
       "kurz": "Ungleichheit ist nie notwendig, immer gerechtfertigt – weltweit, von Sklaverei bis Steuerpolitik.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Französischer Ökonom, geboren 1971 bei Paris, promovierte mit zweiundzwanzig und lehrte kurz am MIT, bevor er nach Frankreich zurückkehrte. Er baute die Datenbank auf, aus der die World Inequality Database wurde: Steuer- und Erbschaftsakten über zwei Jahrhunderte statt Modellannahmen. „Das Kapital im 21. Jahrhundert\" (2013) wurde zum meistdiskutierten Wirtschaftsbuch seiner Generation. Er lehrt an der EHESS und der Paris School of Economics."
     },
     {
       "id": "bu1004",
@@ -1118,7 +1214,9 @@
       "notizen": [],
       "kurz": "Blasen entstehen aus Rückkopplung, Herdentrieb und Erzählungen, nicht aus Fundamentaldaten.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "US-amerikanischer Ökonom, geboren 1946 in Detroit, Professor in Yale. Er wies empirisch nach, dass Aktienkurse weit stärker schwanken, als es Dividendenerwartungen rechtfertigen – ein Schlag gegen die Markteffizienzhypothese. Der von ihm mitentwickelte Case-Shiller-Index machte den US-Immobilienmarkt messbar; er warnte vor der Dotcom- wie vor der Immobilienblase. 2013 erhielt er den Wirtschaftsnobelpreis, geteilt ausgerechnet mit Eugene Fama."
     },
     {
       "id": "bu1005",
@@ -1139,7 +1237,9 @@
       "notizen": [],
       "kurz": "Zuversicht, Fairness, Korruption, Geldillusion, Geschichten – die Psyche in der Makroökonomie.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "George Akerlof, geboren 1940, erhielt 2001 den Nobelpreis für seine Analyse von Märkten mit ungleicher Information – berühmt sein Aufsatz über den Gebrauchtwagenmarkt. Robert Shiller, geboren 1946, Yale-Ökonom und Nobelpreisträger von 2013, erforscht Spekulationsblasen und die Psychologie der Märkte. Gemeinsam holten sie Keynes' „animal spirits\" zurück in die Makroökonomie."
     },
     {
       "id": "bu1006",
@@ -1160,7 +1260,9 @@
       "notizen": [],
       "kurz": "Erzählungen verbreiten sich wie Epidemien und lösen Rezessionen aus.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "US-amerikanischer Ökonom, geboren 1946 in Detroit, Professor in Yale. Er wies empirisch nach, dass Aktienkurse weit stärker schwanken, als es Dividendenerwartungen rechtfertigen – ein Schlag gegen die Markteffizienzhypothese. Der von ihm mitentwickelte Case-Shiller-Index machte den US-Immobilienmarkt messbar; er warnte vor der Dotcom- wie vor der Immobilienblase. 2013 erhielt er den Wirtschaftsnobelpreis, geteilt ausgerechnet mit Eugene Fama."
     },
     {
       "id": "bu1007",
@@ -1181,7 +1283,9 @@
       "notizen": [],
       "kurz": "System 1 urteilt schnell, System 2 stimmt zu faul zu.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Israelisch-amerikanischer Psychologe, 1934 in Tel Aviv geboren, aufgewachsen im besetzten Frankreich, wo die Familie versteckt überlebte – der Vater starb 1944. In der israelischen Armee entwickelte er Auswahlverfahren, danach begann mit Amos Tversky die Zusammenarbeit, die Urteilsfehler zum Forschungsgegenstand machte. 2002 erhielt er als Psychologe den Wirtschaftsnobelpreis; Tversky war 1996 gestorben. Er starb 2024 mit neunzig Jahren durch begleiteten Suizid in der Schweiz."
     },
     {
       "id": "bu1008",
@@ -1202,7 +1306,9 @@
       "notizen": [],
       "kurz": "Nicht der Bias, die bloße Streuung der Urteile – und niemand merkt sie.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Daniel Kahneman (1934–2024), Psychologe und Wirtschaftsnobelpreisträger, erforschte mit Amos Tversky die systematischen Fehler des Urteilens. Olivier Sibony, geboren 1965, war lange Berater bei McKinsey und lehrt Strategie an der HEC Paris. Cass Sunstein, geboren 1954, ist Jurist in Harvard, Mitautor von „Nudge\" und war unter Obama für Regulierungsfragen zuständig."
     },
     {
       "id": "bu1009",
@@ -1223,7 +1329,9 @@
       "notizen": [],
       "kurz": "Die Empirie hinter den Heuristiken: 35 Aufsätze, englisch, trocken, überprüfbar.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 5,
+      "autorBio": "Die Herausgeber sind die Gründerfiguren der Heuristiken-Forschung. Daniel Kahneman (1934–2024) und Amos Tversky (1937–1996) arbeiteten ab 1969 in Jerusalem so eng zusammen, dass sie ihre Aufsätze per Münzwurf zeichneten; Tversky starb, bevor der gemeinsame Nobelpreis möglich wurde. Paul Slovic, geboren 1938, erforscht in Oregon die Wahrnehmung von Risiken und die psychische Betäubung gegenüber großen Opferzahlen."
     },
     {
       "id": "bu1101",
@@ -1244,7 +1352,9 @@
       "notizen": [],
       "kurz": "Vom Marterfest zur Dressur: Zeitpläne, Prüfungen, ständige Sichtbarkeit, das Panopticon.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Französischer Philosoph und Historiker, 1926 in Poitiers als Sohn eines Chirurgen geboren. Nach Jahren in Uppsala, Warschau und Hamburg lehrte er ab 1970 am Collège de France auf einem Lehrstuhl für „Geschichte der Denksysteme\". Seine Untersuchungen zu Wahnsinn, Klinik, Gefängnis und Sexualität lasen Wissen und Macht als ein Verhältnis. Er engagierte sich für Gefangene und starb 1984 als einer der ersten prominenten AIDS-Toten Frankreichs."
     },
     {
       "id": "bu1102",
@@ -1265,7 +1375,9 @@
       "notizen": [],
       "kurz": "Der Westen erfand den Orient, den er zu beschreiben vorgab – und regierte ihn.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Palästinensisch-amerikanischer Literaturwissenschaftler, 1935 in Jerusalem geboren, aufgewachsen in Kairo, ausgebildet in den USA. Ab 1963 lehrte er Vergleichende Literaturwissenschaft an der Columbia University. Mit „Orientalismus\" (1978) begründete er die postkoloniale Theorie; zugleich war er Mitglied des Palästinensischen Nationalrats, brach aber mit Arafat über Oslo. Als exzellenter Pianist gründete er mit Daniel Barenboim das West-Eastern Divan Orchestra; er starb 2003 an Leukämie."
     },
     {
       "id": "bu1103",
@@ -1286,7 +1398,9 @@
       "notizen": [],
       "kurz": "Die Kolonie entstand durch Gewalt und endet durch sie; dazu klinische Fallgeschichten.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Psychiater und Theoretiker der Entkolonialisierung, 1925 auf Martinique geboren. Als Achtzehnjähriger schloss er sich den Freien Französischen Streitkräften an und erlebte den Rassismus der eigenen Armee. Als Chefarzt einer psychiatrischen Klinik in Algerien behandelte er Folteropfer und Folterer, trat zurück und schloss sich der FLN an. Er starb 1961 mit 36 Jahren an Leukämie, kurz nachdem er „Die Verdammten dieser Erde\" diktiert hatte."
     },
     {
       "id": "bu1201",
@@ -1307,7 +1421,9 @@
       "notizen": [],
       "kurz": "Volkskongresse statt Parlament, Bedarfseigentum statt Lohn – Herrschaft, die sich eine Theorie gibt.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 1,
+      "autorBio": "Libyscher Offizier und Machthaber, 1942 in einem Beduinenzelt bei Sirte geboren. 1969 stürzte er als 27-jähriger Hauptmann die Monarchie und regierte Libyen 42 Jahre lang – ohne formales Staatsamt, gestützt auf Öl, Revolutionskomitees und seine „Dritte Universaltheorie\". Er unterstützte Terrorgruppen, kehrte nach 2003 in die internationale Diplomatie zurück und wurde 2011 im Bürgerkrieg von Aufständischen getötet."
     },
     {
       "id": "bu1202",
@@ -1328,7 +1444,9 @@
       "notizen": [],
       "kurz": "Politische Theorie als Katechismus, nach 33 Themen sortiert, millionenfach gedruckt.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 1,
+      "autorBio": "Chinesischer Revolutionär und Staatsgründer, 1893 in Hunan als Bauernsohn geboren. Er baute die Rote Armee auf dem Land auf, überstand den Langen Marsch und rief 1949 die Volksrepublik aus. Der „Große Sprung nach vorn\" führte in eine Hungersnot mit Dutzenden Millionen Toten, die Kulturrevolution ab 1966 in ein Jahrzehnt der Verfolgung. Er starb 1976; die Partei bilanzierte sein Wirken später als „zu 70 Prozent richtig\"."
     },
     {
       "id": "bu1203",
@@ -1349,7 +1467,9 @@
       "notizen": [],
       "kurz": "Reden bis 1945, im Rückblick zurechtgelegt – Quelle vor allem für Personenkult.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "Gründer und lebenslanger Herrscher Nordkoreas, 1912 bei Pjöngjang geboren, aufgewachsen in der Mandschurei. Er kämpfte in einer kommunistischen Partisaneneinheit gegen die japanische Besatzung und kehrte 1945 im Gefolge der Roten Armee zurück. 1950 löste er mit dem Angriff auf den Süden den Koreakrieg aus. Bis zu seinem Tod 1994 baute er die Chuch'e-Ideologie und einen beispiellosen Personenkult auf; die Verfassung führt ihn bis heute als „ewigen Präsidenten\"."
     },
     {
       "id": "bu1301",
@@ -1370,7 +1490,9 @@
       "notizen": [],
       "kurz": "Klasse, Rasse und Geschlecht zusammen gedacht – wo die weiße Frauenbewegung wegsah.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 2,
+      "autorBio": "US-amerikanische Philosophin und Aktivistin, 1944 im segregierten Birmingham, Alabama, geboren – in einem Viertel, das wegen der Anschläge „Dynamite Hill\" hieß. Sie studierte bei Herbert Marcuse und in Frankfurt bei Adorno, trat der Kommunistischen Partei und den Black Panthers nahe. 1970 stand sie auf der Fahndungsliste des FBI und wurde in einem weltweit beachteten Prozess freigesprochen. Sie lehrte in Santa Cruz und arbeitet seither für die Abschaffung des Gefängnissystems."
     },
     {
       "id": "bu1302",
@@ -1391,7 +1513,9 @@
       "notizen": [],
       "kurz": "Die Hexenverfolgung als ursprüngliche Akkumulation: der Übergang zum Kapitalismus als Geschlechterkrieg.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Italienisch-amerikanische Philosophin und Aktivistin, 1942 in Parma geboren, seit 1967 in den USA. Sie gehörte 1972 zu den Gründerinnen der Kampagne „Wages for Housework\", die unbezahlte Reproduktionsarbeit als Grundlage des Kapitalismus sichtbar machte. Jahre in Nigeria prägten ihren Blick auf Strukturanpassung und Enteignung. Sie lehrte an der Hofstra University; „Caliban und die Hexe\" wurde ihr einflussreichstes Buch."
     },
     {
       "id": "bu1303",
@@ -1412,7 +1536,9 @@
       "notizen": [],
       "kurz": "Man kommt nicht als Frau zur Welt, man wird es.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Französische Philosophin und Schriftstellerin, 1908 in Paris in großbürgerlichem Haus geboren. In der Agrégation 1929 wurde sie als jüngste Kandidatin Zweite hinter Sartre, mit dem sie eine lebenslange offene Beziehung führte. Nach Jahren als Lehrerin machte „Das andere Geschlecht\" (1949) sie zur Begründerin des modernen Feminismus – das Buch stand auf dem Index der katholischen Kirche. 1954 erhielt sie den Prix Goncourt; sie starb 1986 und liegt neben Sartre."
     },
     {
       "id": "bu1401",
@@ -1433,7 +1559,9 @@
       "notizen": [],
       "kurz": "Arbeitsteilung schafft Reichtum – samt scharfer Kritik an Monopolen und stumpfer Arbeit.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 4,
+      "autorBio": "Schottischer Moralphilosoph, 1723 in Kirkcaldy geboren, Sohn eines Zollbeamten, aufgewachsen ohne Vater. Er lehrte in Glasgow Moralphilosophie und veröffentlichte 1759 die „Theorie der ethischen Gefühle\", in der Mitgefühl die Grundlage der Moral bildet. Nach einer Reise als Hauslehrer durch Frankreich, wo er die Physiokraten traf, arbeitete er zehn Jahre am „Wohlstand der Nationen\" (1776). Ausgerechnet er wurde danach Zollkommissar; er starb 1790."
     },
     {
       "id": "bu1402",
@@ -1454,7 +1582,9 @@
       "notizen": [],
       "kurz": "Nachfrage bestimmt Beschäftigung; Erwartungen unter Unsicherheit steuern alles. Also Wirtschaftspolitik.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 5,
+      "autorBio": "Britischer Ökonom, 1883 in Cambridge geboren, Sohn eines Ökonomen. Als Vertreter des Schatzamts verließ er 1919 die Versailler Verhandlungen aus Protest und sagte in „Die wirtschaftlichen Folgen des Friedens\" die Katastrophe voraus. Er gehörte zur Bloomsbury Group, spekulierte erfolgreich an der Börse und sanierte damit sein College. Seine „Allgemeine Theorie\" (1936) begründete die Makroökonomie; 1944 prägte er die Konferenz von Bretton Woods und starb zwei Jahre später."
     },
     {
       "id": "bu1403",
@@ -1475,7 +1605,9 @@
       "notizen": [],
       "kurz": "Zentrale Planung scheitert am verstreuten Wissen – und der Versuch führt zum Zwang.",
       "besitz": "fehlt",
-      "einkauf": false
+      "einkauf": false,
+      "schwierigkeit": 3,
+      "autorBio": "Österreichisch-britischer Ökonom, 1899 in Wien geboren, Schüler von Ludwig von Mises. Ab 1931 lehrte er an der London School of Economics, wo er sich lange Duelle mit Keynes lieferte, später in Chicago und Freiburg. „Der Weg zur Knechtschaft\" (1944) machte ihn im angelsächsischen Raum zur politischen Figur, was ihm selbst nicht immer behagte. 1947 gründete er die Mont Pèlerin Society, 1974 erhielt er den Wirtschaftsnobelpreis; er starb 1992."
     }
   ],
   "lesepleane": [
