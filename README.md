@@ -1,4 +1,4 @@
-# Leseplan
+# leseliste
 
 Eine Lese-App für einen mehrjährigen Leseplan: Blöcke, Bücher, Notizen mit Fotos,
 Lese-Sitzungen mit Stoppuhr und eine Auswertung mit Graphen.
@@ -14,13 +14,13 @@ separaten Datei und wird bewusst geladen.
 | `leseplan.html` | Die App. Quelle der Wahrheit, ohne Dokumentrahmen – so wird sie als Artifact veröffentlicht. |
 | `leseliste.html` | Daraus erzeugt: eigenständige Seite zum lokalen Öffnen. **Nicht von Hand bearbeiten.** |
 | `build.js` | Erzeugt `leseliste.html` aus `leseplan.html`: `node build.js` |
-| `leseplan-katalog.json` | Der Leseplan „Lesestart": 14 Blöcke, 66 Bücher mit Seitenzahl, Erscheinungsjahr, Autor-Lebensdaten und Beschreibung. |
+| `leseplan-katalog.json` | Die leseliste „Lesestart": 14 Blöcke, 66 Bücher mit Seitenzahl, Erscheinungsjahr, Autor-Lebensdaten und Beschreibung. |
 
 ## Ebenen
 
-`Leseplan → Block → Buch → Notiz`. Es kann mehrere Lesepläne nebeneinander geben;
+`leseliste → Block → Buch → Notiz`. Es kann mehrere leselisten nebeneinander geben;
 umgeschaltet wird über die Leiste ganz oben in der Planansicht oder unter *Mehr →
-Lesepläne*. Beim Start öffnet sich immer der zuletzt benutzte.
+leselisten*. Beim Start öffnet sich immer die zuletzt benutzte.
 
 ## Speicherort
 
@@ -71,9 +71,10 @@ eine komplett andere Liste zu laden oder eine Sicherung zurückzuspielen.
 - **Themen** – alle Notizen zu einem Themenfeld über alle Bücher hinweg.
 - **Suche** – über Titel, Autoren, Beschreibungen, Notizen und Themen.
 
-Dunkel (reines Schwarz) ist die Grundeinstellung, hell über *Mehr → Darstellung*.
-Das Symbol oben rechts schaltet auf Vollbild, wo der Browser es zulässt; am iPhone
-liefert „Zum Home-Bildschirm hinzufügen" dasselbe Ergebnis.
+Dunkel (reines Schwarz) ist die Grundeinstellung, umschaltbar über das Symbol in der
+Kopfzeile. Die Akzentfarbe lässt sich unter *Mehr → Darstellung* aus neun Farben
+wählen. Vollbild startet von selbst bei der ersten Berührung, wo der Browser es
+zulässt (abschaltbar); am iPhone liefert „Zum Home-Bildschirm hinzufügen" dasselbe.
 
 Ein `preis` steht im Katalog nicht: Buchhandels-Seiten sind aus der Umgebung, in der
 dieser Katalog entstanden ist, nicht erreichbar. Das Feld ist im Buch vorhanden und

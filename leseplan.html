@@ -1,4 +1,4 @@
-<title>Leseplan</title>
+<title>leseliste</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
@@ -15,8 +15,8 @@
   --text-2:#a5a7ae;
   --text-3:#71737b;
   --accent:#dba43f;
-  --accent-2:#b8842a;
-  --accent-soft:rgba(219,164,63,.14);
+  --accent-2:color-mix(in srgb,var(--accent) 78%,#000);
+  --accent-soft:color-mix(in srgb,var(--accent) 15%,transparent);
   --good:#3fbe8c;
   --good-soft:rgba(63,190,140,.15);
   --bad:#e66767;
@@ -40,8 +40,8 @@
   --text-2:#4d5762;
   --text-3:#78838e;
   --accent:#8a6114;
-  --accent-2:#6d4c0d;
-  --accent-soft:rgba(138,97,20,.10);
+  --accent-2:color-mix(in srgb,var(--accent) 80%,#000);
+  --accent-soft:color-mix(in srgb,var(--accent) 11%,transparent);
   --good:#0e7a53;
   --good-soft:rgba(14,122,83,.10);
   --bad:#c2312f;
@@ -87,15 +87,15 @@ p{margin:0;}
 .brand h1{font-family:"Literata",Georgia,serif;font-size:17.5px;letter-spacing:-.01em;}
 .brand .sub{font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .icon-btn{
-  width:34px;height:34px;border-radius:9px;border:1px solid var(--border);
+  width:32px;height:32px;border-radius:9px;border:1px solid var(--border);
   background:var(--surface);color:var(--text-2);display:grid;place-items:center;flex:0 0 auto;
 }
 .icon-btn:hover{color:var(--text);border-color:var(--border-strong);}
 .icon-btn svg{width:17px;height:17px;display:block;}
 .savechip{
-  display:flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:9px;
-  border:1px solid var(--border);background:var(--surface);font-size:11.5px;color:var(--text-2);
-  white-space:nowrap;
+  display:flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:9px;
+  border:1px solid var(--border);background:var(--surface);font-size:11px;color:var(--text-2);
+  white-space:nowrap;margin-left:auto;
 }
 .savechip .dot{width:7px;height:7px;border-radius:50%;background:var(--good);flex:0 0 auto;}
 .savechip[data-state="dirty"] .dot{background:var(--accent);}
@@ -268,8 +268,8 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
   background:var(--surface);border:1px solid var(--border);width:100%;text-align:left;margin-bottom:8px;
 }
 .grouprow .grow{flex:1;min-width:0;}
-.grouprow .gname{font-size:14px;font-weight:500;}
-.grouprow .gmeta{font-size:11.5px;color:var(--text-3);margin-top:2px;}
+.grouprow .gname{font-size:14px;font-weight:500;display:block;}
+.grouprow .gmeta{font-size:11.5px;color:var(--text-3);margin-top:3px;display:block;}
 .grouprow .count{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-2);}
 
 .note{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 12px;margin-bottom:8px;width:100%;text-align:left;display:block;}
@@ -344,9 +344,9 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .opt .on svg{width:18px;height:18px;flex:0 0 auto;color:var(--text-2);}
 
 /* Im Vollbild fehlen die Leisten des Browsers – der Rand muss von der App kommen. */
-body.voll .topbar-inner{padding-top:24px;}
-body.voll .ovl-head{padding-top:26px;}
-body.voll .tabbar{padding-bottom:18px;}
+body.voll .topbar-inner{padding-top:46px;}
+body.voll .ovl-head{padding-top:44px;}
+body.voll .tabbar{padding-bottom:26px;}
 body.voll .sheet{padding-bottom:30px;}
 body.voll .cam-bar{padding-bottom:28px;}
 body.voll .lightbox .lb-bar{padding-bottom:26px;}
@@ -363,8 +363,8 @@ body.voll .cam{padding-top:14px;}
 .rowline{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--border);}
 .rowline:last-child{border-bottom:0;}
 .rowline .grow{flex:1;min-width:0;}
-.rowline .rn{font-size:14px;}
-.rowline .rm{font-size:11.5px;color:var(--text-3);margin-top:2px;}
+.rowline .rn{font-size:14px;display:block;}
+.rowline .rm{font-size:11.5px;color:var(--text-3);margin-top:3px;display:block;line-height:1.45;}
 .list-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
 .timer-big{font-family:"IBM Plex Mono",monospace;font-size:40px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:center;padding:6px 0 2px;}
 .searchbar{display:flex;gap:8px;padding:10px 14px 4px;}
@@ -387,7 +387,7 @@ body.voll .cam{padding-top:14px;}
   border:1px solid var(--border);background:var(--surface);flex:1;min-width:0;text-align:left;}
 .planbtn:hover{border-color:var(--border-strong);}
 .planbtn .grow{flex:1;min-width:0;}
-.planbtn .pl-k{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);font-weight:600;display:block;}
+.planbtn .pl-k{font-size:10px;letter-spacing:.06em;color:var(--text-3);font-weight:600;display:block;}
 .planbtn .pl-n{font-family:"Literata",Georgia,serif;font-size:14.5px;margin-top:1px;display:block;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sortrow{display:flex;align-items:center;gap:8px;padding:9px 14px 0;font-size:11.5px;color:var(--text-3);}
@@ -410,11 +410,11 @@ body.voll .cam{padding-top:14px;}
     <div class="topbar-inner shell">
       <div class="topbar-row">
         <div class="brand">
-          <h1>Leseplan</h1>
-          <span class="sub" id="storeLabel"></span>
+          <h1>leseliste</h1>
         </div>
-        <button class="icon-btn" id="btnSuche" title="Suchen" aria-label="Suchen"></button>
         <button class="savechip" id="saveChip" data-state="clean" title="Jetzt sichern"><span class="dot"></span><span id="saveText">gesichert</span></button>
+        <button class="icon-btn" id="btnSuche" title="Suchen" aria-label="Suchen"></button>
+        <button class="icon-btn" id="btnTheme" title="Hell oder dunkel" aria-label="Hell oder dunkel umschalten"></button>
         <button class="icon-btn" id="btnVoll" title="Vollbild" aria-label="Vollbild ein oder aus" hidden></button>
       </div>
       <div>
@@ -550,7 +550,7 @@ function leereDb() {
     version: 2,
     erstellt: Date.now(),
     geaendert: Date.now(),
-    einstellungen: { theme: 'dark', autosaveSek: 60, aktiverPlanId: null },
+    einstellungen: { theme: 'dark', akzent: 'messing', vollbildStart: true, autosaveSek: 60, aktiverPlanId: null },
     arten: STD_ARTEN.map((n, i) => ({ id: uid(), name: n, farbe: ART_FARBEN[i % 8] })),
     themen: [],
     lesepleane: [],
@@ -570,7 +570,9 @@ function seiteText(s) { return (s == null || s === '') ? '' : String(s); }
 /* Fehlende Felder ergänzen, damit auch fremde oder ältere Dateien laufen. */
 function normalisiere(raw) {
   const d = Object.assign(leereDb(), raw || {});
-  d.einstellungen = Object.assign({ theme: 'dark', autosaveSek: 60, aktiverPlanId: null }, raw && raw.einstellungen);
+  d.einstellungen = Object.assign(
+    { theme: 'dark', akzent: 'messing', vollbildStart: true, autosaveSek: 60, aktiverPlanId: null },
+    raw && raw.einstellungen);
   d.arten = (Array.isArray(d.arten) ? d.arten : []).map((a, i) => ({
     id: a.id || uid(), name: String(a.name || 'Art'), farbe: a.farbe || ART_FARBEN[i % 8]
   }));
@@ -579,7 +581,7 @@ function normalisiere(raw) {
     typeof t === 'string' ? { id: uid(), name: t } : { id: t.id || uid(), name: String(t.name || '') }
   ).filter(t => t.name);
   d.lesepleane = (Array.isArray(d.lesepleane) ? d.lesepleane : []).map((p, i) => ({
-    id: p.id || uid(), name: String(p.name || 'Leseplan'), ord: p.ord != null ? p.ord : i
+    id: p.id || uid(), name: String(p.name || 'leseliste'), ord: p.ord != null ? p.ord : i
   }));
   d.bloecke = (Array.isArray(d.bloecke) ? d.bloecke : []).map((b, i) => ({
     id: b.id || uid(), planId: b.planId || null, name: String(b.name || 'Block'),
@@ -826,9 +828,9 @@ function saveChipMalen() {
   const chip = $('#saveChip'), txt = $('#saveText');
   if (!chip) return;
   if (Store.fehler) { chip.dataset.state = 'error'; txt.textContent = 'Fehler'; return; }
-  if (Store.dirty) { chip.dataset.state = 'dirty'; txt.textContent = 'ungesichert'; return; }
+  if (Store.dirty) { chip.dataset.state = 'dirty'; txt.textContent = 'offen'; return; }
   chip.dataset.state = 'clean';
-  txt.textContent = Store.letzteSicherung ? 'gesichert ' + relZeit(Store.letzteSicherung) : 'gesichert';
+  txt.textContent = Store.letzteSicherung ? relZeit(Store.letzteSicherung).replace('vor ', '') : 'gesichert';
 }
 setInterval(saveChipMalen, 30000);
 
@@ -846,7 +848,7 @@ function setupZeigen(nurWechsel) {
   const dateiDa = Store.dateiApiDa();
   s.innerHTML = `
     <div class="setup-inner">
-      <div class="mark serif">Leseplan</div>
+      <div class="mark serif">leseliste</div>
       ${dateiDa ? `
         <p class="lead">Wo sollen deine Bücher, Notizen und Fotos liegen?</p>
 
@@ -909,11 +911,11 @@ function setupZeigen(nurWechsel) {
         if (act === 'datei-neu') {
           handle = await window.showSaveFilePicker({
             suggestedName: 'leseplan.json',
-            types: [{ description: 'Leseplan', accept: { 'application/json': ['.json'] } }]
+            types: [{ description: 'leseliste', accept: { 'application/json': ['.json'] } }]
           });
         } else {
           const [h] = await window.showOpenFilePicker({
-            types: [{ description: 'Leseplan', accept: { 'application/json': ['.json'] } }]
+            types: [{ description: 'leseliste', accept: { 'application/json': ['.json'] } }]
           });
           handle = h;
         }
@@ -940,9 +942,27 @@ function setupZeigen(nurWechsel) {
 /* ============================================================
    Erscheinungsbild
    ============================================================ */
+/* Akzentfarben: je ein Wert für dunkel und hell, im Menü umstellbar. */
+const AKZENTE = [
+  { id: 'messing', name: 'Messing', dark: '#dba43f', light: '#8a6114' },
+  { id: 'kupfer', name: 'Kupfer', dark: '#e08a55', light: '#a04d1c' },
+  { id: 'rot', name: 'Rot', dark: '#e5706c', light: '#b02e2a' },
+  { id: 'magenta', name: 'Magenta', dark: '#d97ab0', light: '#a02f75' },
+  { id: 'violett', name: 'Violett', dark: '#9b8bf0', light: '#5344b5' },
+  { id: 'blau', name: 'Blau', dark: '#5b9df0', light: '#1a5eb0' },
+  { id: 'tuerkis', name: 'Türkis', dark: '#3fbfb2', light: '#0c766c' },
+  { id: 'gruen', name: 'Grün', dark: '#5fbf7a', light: '#177a3c' },
+  { id: 'grau', name: 'Grau', dark: '#c3c7cf', light: '#454d57' }
+];
+const akzentAktiv = () => AKZENTE.find(a => a.id === DB.einstellungen.akzent) || AKZENTE[0];
+
 function themeAnwenden() {
   const hell = DB.einstellungen.theme === 'light';
   document.documentElement.setAttribute('data-app-theme', hell ? 'light' : 'dark');
+  const a = akzentAktiv();
+  document.documentElement.style.setProperty('--accent', hell ? a.light : a.dark);
+  const b = $('#btnTheme');
+  if (b) b.innerHTML = hell ? ICON.moon : ICON.sun;
 }
 function themeUmschalten() {
   DB.einstellungen.theme = DB.einstellungen.theme === 'light' ? 'dark' : 'light';
@@ -971,6 +991,18 @@ function vollbildKnopfMalen() {
 }
 document.addEventListener('fullscreenchange', vollbildKnopfMalen);
 document.addEventListener('webkitfullscreenchange', vollbildKnopfMalen);
+
+/* Vollbild verlangt eine Geste des Nutzers – also bei der ersten Berührung, einmal. */
+function vollbildAutostart() {
+  if (!DB.einstellungen.vollbildStart || !vollbildGeht() || vollbildAn()) return;
+  const versuch = () => {
+    document.removeEventListener('pointerdown', versuch, true);
+    document.removeEventListener('keydown', versuch, true);
+    try { if (!vollbildAn()) vollbildUmschalten(); } catch (e) { }
+  };
+  document.addEventListener('pointerdown', versuch, true);
+  document.addEventListener('keydown', versuch, true);
+}
 
 /* ============================================================
    Rahmen: Tabs, Kopfzeile
@@ -1015,8 +1047,6 @@ function kopfMalen() {
   $('#progRight').textContent = seiten ? fmtZahl(seiten) + ' Seiten' : '';
   $('#barRead').style.width = (ges ? gelesen / ges * 100 : 0) + '%';
   $('#barActive').style.width = (ges ? lese / ges * 100 : 0) + '%';
-  const lbl = $('#storeLabel');
-  lbl.textContent = Store.modus === 'datei' ? Store.dateiname : 'Arbeitskopie auf diesem Gerät';
 }
 
 /* ============================================================
@@ -1030,11 +1060,13 @@ function appStarten() {
   viewMalen();
   Store.autosaveStarten();
   saveChipMalen();
+  vollbildAutostart();
 }
 
 async function boot() {
   vollbildKnopfMalen();
   $('#btnVoll').onclick = vollbildUmschalten;
+  $('#btnTheme').onclick = () => { themeUmschalten(); viewMalen(); };
   $('#saveChip').onclick = () => Store.alsDateiSichern(false);
 
   let meta = null;
@@ -1159,10 +1191,10 @@ function planMalen(root) {
   if (!plan) {
     root.innerHTML = `
       <div class="empty">
-        <strong>Noch kein Leseplan</strong>
-        Ein Leseplan fasst mehrere Blöcke zusammen. Lege einen an – oder lade eine fertige Liste als Datei.
+        <strong>Noch keine leseliste</strong>
+        Eine leseliste fasst mehrere Blöcke zusammen. Lege eine an – oder lade eine fertige Liste als Datei.
         <div class="btn-row" style="justify-content:center;margin-top:16px">
-          <button class="btn btn-primary" data-neu-plan>${ICON.plus} Leseplan anlegen</button>
+          <button class="btn btn-primary" data-neu-plan>${ICON.plus} leseliste anlegen</button>
           <button class="btn" data-import>Liste laden</button>
         </div>
       </div>`;
@@ -1177,7 +1209,7 @@ function planMalen(root) {
     <div class="planbar">
       <button class="planbtn" data-plaene>
         <span class="grow">
-          <span class="pl-k">Leseplan${DB.lesepleane.length > 1 ? ' ' + (plaeneSortiert().findIndex(p => p.id === plan.id) + 1) + ' von ' + DB.lesepleane.length : ''}</span>
+          <span class="pl-k">leseliste${DB.lesepleane.length > 1 ? ' ' + (plaeneSortiert().findIndex(p => p.id === plan.id) + 1) + ' von ' + DB.lesepleane.length : ''}</span>
           <span class="pl-n">${esc(plan.name)}</span>
         </span>
         <span class="chev">${ICON.chev}</span>
@@ -1203,7 +1235,7 @@ function planMalen(root) {
       </div>`
       : `<div class="empty">
           <strong>„${esc(plan.name)}" ist noch leer</strong>
-          Blöcke gruppieren die Bücher innerhalb dieses Leseplans.
+          Blöcke gruppieren die Bücher innerhalb dieser leseliste.
           <div class="btn-row" style="justify-content:center;margin-top:16px">
             <button class="btn btn-primary" data-neu-block>${ICON.plus} Block anlegen</button>
             <button class="btn" data-import>Liste laden</button>
@@ -1302,12 +1334,12 @@ function buchZeile(b) {
 
 /* ---------- Lesepläne ---------- */
 function planWechsler() {
-  const s = blatt('Lesepläne', '<div data-l></div>', { fokus: false });
+  const s = blatt('leselisten', '<div data-l></div>', { fokus: false });
   const malen = () => {
     const l = $('[data-l]', s);
     const aktiv = aktiverPlan();
     l.innerHTML = `
-      <p class="hinweis" style="padding:0 0 10px">Ein Leseplan bündelt mehrere Blöcke. Beim Start öffnet sich immer der zuletzt benutzte.</p>
+      <p class="hinweis" style="padding:0 0 10px">Eine leseliste bündelt mehrere Blöcke. Beim Start öffnet sich immer die zuletzt benutzte.</p>
       <div class="list-card">${plaeneSortiert().map(p => {
       const bs = buecherImPlan(p.id);
       const g = bs.filter(b => b.status === 'gelesen').length;
@@ -1320,7 +1352,7 @@ function planWechsler() {
           <button class="icon-btn" data-um="${p.id}" aria-label="Bearbeiten">${ICON.edit}</button>
         </div>`;
     }).join('')}</div>
-      <button class="btn btn-block" style="margin-top:12px" data-neu>${ICON.plus} Leseplan anlegen</button>`;
+      <button class="btn btn-block" style="margin-top:12px" data-neu>${ICON.plus} leseliste anlegen</button>`;
 
     $$('[data-w]', l).forEach(b => b.onclick = () => {
       aendern(() => { DB.einstellungen.aktiverPlanId = b.dataset.w; });
@@ -1338,7 +1370,7 @@ function planWechsler() {
 function planBearbeiten(plan, neuMalen) {
   const neu = !plan;
   const p = plan || { id: null, name: '' };
-  const s = blatt(neu ? 'Neuer Leseplan' : 'Leseplan bearbeiten', `
+  const s = blatt(neu ? 'Neue leseliste' : 'leseliste bearbeiten', `
     <div class="field">
       <label>Name</label>
       <input type="text" data-name value="${esc(p.name)}" placeholder="z.B. Lesestart">
@@ -1357,7 +1389,7 @@ function planBearbeiten(plan, neuMalen) {
 
   $('[data-ok]', s).onclick = () => {
     const name = $('[data-name]', s).value.trim();
-    if (!name) { toast('Der Leseplan braucht einen Namen.'); return; }
+    if (!name) { toast('Die leseliste braucht einen Namen.'); return; }
     aendern(() => {
       if (neu) {
         const n = { id: uid(), name, ord: DB.lesepleane.length };
@@ -1383,7 +1415,7 @@ function planBearbeiten(plan, neuMalen) {
     $('[data-down]', s).onclick = () => verschieben(1);
     $('[data-del]', s).onclick = async () => {
       const bs = buecherImPlan(p.id);
-      const ok = await bestaetigen('Leseplan löschen?',
+      const ok = await bestaetigen('leseliste löschen?',
         `„${esc(p.name)}" verschwindet mit ${pl(bloeckeVonPlan(p.id).length, 'Block', 'Blöcken')} und ${pl(bs.length, 'Buch', 'Büchern')} samt Notizen und Fotos.`,
         'Endgültig löschen', true);
       if (!ok) return;
@@ -1400,7 +1432,7 @@ function planBearbeiten(plan, neuMalen) {
       layerSchliessen();
       if (neuMalen) neuMalen();
       viewMalen();
-      toast('Leseplan gelöscht.');
+      toast('leseliste gelöscht.');
     };
   }
 }
@@ -1583,7 +1615,7 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
 function importDialog(erstStart) {
   const s = blatt('Daten aus Datei laden', `
     <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
-      Erwartet wird eine <span class="num">.json</span> im Leseplan-Format – eine frühere Sicherung oder eine fertige Liste.
+      Erwartet wird eine <span class="num">.json</span> im leseliste-Format – eine frühere Sicherung oder eine fertige Liste.
     </p>
     <input type="file" accept=".json,application/json" data-file style="padding:9px">
     <div class="field" style="margin-top:14px">
@@ -1606,7 +1638,7 @@ function importDialog(erstStart) {
     try { roh = JSON.parse(await f.text()); }
     catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); return; }
     if (!roh || (!Array.isArray(roh.buecher) && !Array.isArray(roh.bloecke))) {
-      toast('Darin steckt kein Leseplan.', 4000); return;
+      toast('Darin steckt keine leseliste.', 4000); return;
     }
     const modus = $('input[name=impmode]:checked', s).value;
     const neu = normalisiere(roh);
@@ -2478,8 +2510,8 @@ function uebersichtMalen(root) {
     chips.className = 'chiprow';
     chips.style.marginBottom = '12px';
     chips.innerHTML = `
-      <button class="chip" data-u="plan" aria-pressed="${!ueberAlles}">${esc(plan ? plan.name : 'Leseplan')}</button>
-      <button class="chip" data-u="alle" aria-pressed="${ueberAlles}">Alle Lesepläne</button>`;
+      <button class="chip" data-u="plan" aria-pressed="${!ueberAlles}">${esc(plan ? plan.name : 'leseliste')}</button>
+      <button class="chip" data-u="alle" aria-pressed="${ueberAlles}">Alle leselisten</button>`;
     $$('[data-u]', chips).forEach(c => c.onclick = () => { uebersichtAllePlaene = c.dataset.u === 'alle'; viewMalen(); });
     root.appendChild(chips);
   }
@@ -2819,12 +2851,12 @@ function mehrMalen(root) {
   const dateiModus = Store.modus === 'datei';
   root.innerHTML = `
     <div class="section">
-      <div class="section-head"><h2>Lesepläne</h2></div>
+      <div class="section-head"><h2>leselisten</h2></div>
       <div class="list-card">
         <div class="rowline">
           <span class="grow">
             <span class="rn">${esc((aktiverPlan() || {}).name || 'Noch keiner')}</span>
-            <span class="rm">${pl(DB.lesepleane.length, 'Leseplan', 'Lesepläne')} insgesamt · ${pl(DB.buecher.length, 'Buch', 'Bücher')}</span>
+            <span class="rm">${pl(DB.lesepleane.length, 'leseliste', 'leselisten')} insgesamt · ${pl(DB.buecher.length, 'Buch', 'Bücher')}</span>
           </span>
           <button class="btn btn-sm" data-plaene>Verwalten</button>
         </div>
@@ -2886,14 +2918,30 @@ function mehrMalen(root) {
       <div class="section-head"><h2>Darstellung</h2></div>
       <div class="list-card">
         <div class="rowline">
-          <span class="grow"><span class="rn">${DB.einstellungen.theme === 'light' ? 'Hell' : 'Dunkel'}</span><span class="rm">Dunkel ist die Grundeinstellung</span></span>
+          <span class="grow"><span class="rn">${DB.einstellungen.theme === 'light' ? 'Hell' : 'Dunkel'}</span><span class="rm">Auch über das Symbol in der Kopfzeile</span></span>
           <button class="btn btn-sm" data-theme>Umschalten</button>
+        </div>
+        <div class="rowline" style="flex-direction:column;align-items:stretch;gap:10px">
+          <span><span class="rn">Akzentfarbe</span><span class="rm">${esc(akzentAktiv().name)} – gilt für Knöpfe, Fortschritt und Markierungen</span></span>
+          <div style="display:flex;gap:9px;flex-wrap:wrap" data-akzente>
+            ${AKZENTE.map(a => {
+      const farbe = DB.einstellungen.theme === 'light' ? a.light : a.dark;
+      const ist = a.id === akzentAktiv().id;
+      return `<button data-akzent="${a.id}" title="${esc(a.name)}" aria-label="${esc(a.name)}"
+                style="width:30px;height:30px;border-radius:50%;background:${farbe};flex:0 0 auto;
+                       border:2px solid ${ist ? 'var(--text)' : 'transparent'};box-shadow:0 0 0 1px var(--border)"></button>`;
+    }).join('')}
+          </div>
         </div>
         <div class="rowline">
           <span class="grow"><span class="rn">Vollbild</span><span class="rm">${vollbildGeht()
-      ? 'Blendet die Leisten des Browsers aus. Geht auch über das Symbol oben rechts.'
-      : 'Dieser Browser kann das nicht auf Zuruf. Am iPhone: Teilen-Menü → „Zum Home-Bildschirm“ – von dort startet die App ohne Leisten.'}</span></span>
+      ? 'Blendet die Leisten des Browsers aus'
+      : 'Dieser Browser kann das nicht auf Zuruf. Am iPhone: Teilen-Menü → „Zum Home-Bildschirm“, von dort startet die App ohne Leisten.'}</span></span>
           ${vollbildGeht() ? `<button class="btn btn-sm" data-voll>${vollbildAn() ? 'Beenden' : 'Einschalten'}</button>` : ''}
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Beim Start ins Vollbild</span><span class="rm">Greift bei der ersten Berührung, wo der Browser es zulässt</span></span>
+          <button class="btn btn-sm" data-vollstart>${DB.einstellungen.vollbildStart ? 'An' : 'Aus'}</button>
         </div>
       </div>
     </div>
@@ -2907,6 +2955,15 @@ function mehrMalen(root) {
 
   const vollBtn = $('[data-voll]', root);
   if (vollBtn) vollBtn.onclick = () => { vollbildUmschalten(); setTimeout(viewMalen, 300); };
+  $('[data-vollstart]', root).onclick = () => {
+    aendern(() => { DB.einstellungen.vollbildStart = !DB.einstellungen.vollbildStart; });
+    viewMalen();
+  };
+  $$('[data-akzent]', root).forEach(b => b.onclick = () => {
+    aendern(() => { DB.einstellungen.akzent = b.dataset.akzent; });
+    themeAnwenden();
+    viewMalen();
+  });
   $('[data-plaene]', root).onclick = planWechsler;
   $('[data-save]', root).onclick = () => Store.alsDateiSichern(false);
   $('[data-export]', root).onclick = () => Store.alsDateiSichern(false);
