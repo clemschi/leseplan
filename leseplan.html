@@ -119,7 +119,7 @@ p{margin:0;}
 /* ---------- Tableiste ---------- */
 /* Laufende Sitzung bzw. Startknopf, direkt über der Tableiste */
 .nowbar{
-  position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom));z-index:39;
+  position:fixed;left:0;right:0;bottom:calc(var(--tabh, 58px) + 6px);z-index:39;
   display:flex;justify-content:center;padding:0 12px 8px;pointer-events:none;
 }
 .nowbar-inner{
@@ -133,8 +133,10 @@ p{margin:0;}
 .nowbar .nt{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .nowbar .nm{font-size:10.5px;color:var(--text-3);margin-top:2px;display:block;}
 .nowbar .uhr{font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--accent);font-variant-numeric:tabular-nums;}
-body.hat-nowbar main{padding-bottom:150px;}
-body.hat-nowbar .toast{bottom:calc(128px + env(safe-area-inset-bottom));}
+main{padding-bottom:calc(var(--tabh, 58px) + 38px);}
+body.hat-nowbar main{padding-bottom:calc(var(--tabh, 58px) + 96px);}
+.toast{bottom:calc(var(--tabh, 58px) + 16px);}
+body.hat-nowbar .toast{bottom:calc(var(--tabh, 58px) + 74px);}
 
 .tabbar{
   position:fixed;left:0;right:0;bottom:0;z-index:40;
@@ -150,7 +152,7 @@ body.hat-nowbar .toast{bottom:calc(128px + env(safe-area-inset-bottom));}
 }
 .tabbar button svg{width:19px;height:19px;}
 .tabbar button[aria-selected="true"]{color:var(--accent);}
-main{padding:18px 0 96px;}
+main{padding:18px 0 0;}
 
 /* ---------- Bausteine ---------- */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;}
@@ -1491,7 +1493,19 @@ function buchWaehlenFuerSitzung() {
 }
 
 let nowTick = null;
+/* Die Tableiste ist im Vollbild höher – ihre Höhe wird gemessen, nicht geraten. */
+function leistenHoeheMessen() {
+  const tb = document.querySelector('.tabbar');
+  if (!tb) return;
+  const h = Math.round(tb.getBoundingClientRect().height);
+  if (h > 0) document.documentElement.style.setProperty('--tabh', h + 'px');
+}
+window.addEventListener('resize', leistenHoeheMessen);
+document.addEventListener('fullscreenchange', () => setTimeout(leistenHoeheMessen, 60));
+document.addEventListener('webkitfullscreenchange', () => setTimeout(leistenHoeheMessen, 60));
+
 function nowbarMalen() {
+  leistenHoeheMessen();
   const bar = $('#nowbar'), inner = $('#nowbarInner');
   if (!bar) return;
   clearInterval(nowTick);
