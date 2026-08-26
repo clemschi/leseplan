@@ -143,8 +143,7 @@ p{margin:0;}
 .nowbar .grow{flex:1;min-width:0;}
 .nowbar .nt{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .nowbar .nm{font-size:10.5px;color:var(--text-3);margin-top:2px;display:block;}
-.nowbar .uhr{font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--accent);font-variant-numeric:tabular-nums;
-  background:none;border:0;padding:0 2px;cursor:pointer;}
+.nowbar .uhr{font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--accent);font-variant-numeric:tabular-nums;}
 main{padding-bottom:calc(var(--tabh, 58px) + 38px);}
 body.hat-nowbar main{padding-bottom:calc(var(--tabh, 58px) + 96px);}
 .toast{bottom:calc(var(--tabh, 58px) + 16px);}
@@ -518,21 +517,90 @@ body.voll .cam{padding-top:14px;}
 .list-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
 .timer-big{font-family:"IBM Plex Mono",monospace;font-size:40px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:center;padding:6px 0 2px;}
 
-/* Sanduhr: immer auf reinem Schwarz, unabhängig von hell oder dunkel. */
-.sanduhr{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:60;
-  background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:0;padding:16px;animation:fade .3s ease;}
-.sanduhr canvas{display:block;touch-action:none;}
-.sanduhr .suTitel{font-family:"Literata",Georgia,serif;font-size:14px;color:rgba(255,255,255,.62);
-  text-align:center;max-width:22em;margin-bottom:2px;}
-.sanduhr .suRest{font-family:"IBM Plex Mono",monospace;font-size:34px;font-variant-numeric:tabular-nums;
-  letter-spacing:-.02em;color:var(--accent);margin-top:10px;}
-.sanduhr .suSub{font-size:11.5px;color:rgba(255,255,255,.38);margin-top:4px;letter-spacing:.04em;}
-.sanduhr .suKnoepfe{display:flex;gap:10px;margin-top:26px;}
-.sanduhr .suKnoepfe button{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);
-  color:rgba(255,255,255,.85);border-radius:99px;padding:9px 18px;font-size:13px;font-family:inherit;cursor:pointer;}
-.sanduhr .suKnoepfe button.stop{border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent);}
-.sanduhr.aus .suRest{color:var(--good);}
+/* ===== Stöbern: Werke sichten, merken, zu Blöcken ordnen ===== */
+.sto{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:60;
+  background:var(--bg);display:flex;flex-direction:column;animation:slideIn .22s ease;}
+.sto-kopf{display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--surface);
+  border-bottom:1px solid var(--border);flex:0 0 auto;}
+.sto-kopf .grow{flex:1;min-width:0;}
+.sto-kopf .t{font-family:"Literata",Georgia,serif;font-size:16px;letter-spacing:-.01em;}
+.sto-kopf .u{font-size:11px;color:var(--text-3);margin-top:2px;}
+.sto-zaehler{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--good);
+  background:var(--good-soft);border-radius:99px;padding:5px 12px;font-variant-numeric:tabular-nums;
+  flex:0 0 auto;border:1px solid color-mix(in srgb,var(--good) 30%,transparent);}
+.sto-zaehler svg{width:13px;height:13px;}
+.sto-zaehler.puls{animation:stoPuls .5s cubic-bezier(.2,.8,.3,1);}
+@keyframes stoPuls{0%{transform:scale(1)}32%{transform:scale(1.3)}100%{transform:scale(1)}}
+.sto-fort{height:3px;background:var(--surface-3);flex:0 0 auto;}
+.sto-fort i{display:block;height:100%;background:var(--accent);transition:width .3s ease;}
+.sto-body{flex:1;min-height:0;overflow-y:auto;padding:14px 14px 24px;}
+.sto-fuss{flex:0 0 auto;padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border);background:var(--surface);}
+
+/* Kartenstapel */
+.stoBuehne{flex:1;min-height:0;display:flex;align-items:center;}
+.stoDeck{width:100%;height:min(100%,600px);position:relative;touch-action:none;}
+.stoKarte{position:absolute;left:16px;right:16px;top:10px;bottom:28px;
+  background:var(--surface);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);
+  padding:20px 18px;display:flex;flex-direction:column;overflow:hidden;
+  will-change:transform;transition:transform .34s cubic-bezier(.2,.7,.3,1),opacity .34s ease;}
+.stoKarte.hinten{pointer-events:none;}
+.stoKarte .kKopf{display:flex;align-items:center;gap:8px;}
+.stoKarte .kThema{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;
+  color:var(--accent);background:var(--accent-soft);border-radius:99px;padding:4px 10px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%;}
+.stoKarte .kJahr{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-3);}
+.stoKarte .kTitel{font-family:"Literata",Georgia,serif;font-size:21px;line-height:1.26;margin-top:15px;}
+.stoKarte .kAutor{font-size:13px;color:var(--text-2);margin-top:8px;}
+.stoKarte .kKurz{font-size:13.5px;font-style:italic;color:var(--text-2);margin-top:15px;line-height:1.5;}
+.stoKarte .kText{font-size:12.5px;color:var(--text-3);margin-top:12px;line-height:1.6;min-height:0;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:8;-webkit-box-orient:vertical;}
+.stoKarte .kMehr{align-self:flex-start;margin-top:10px;background:none;border:0;padding:0;
+  color:var(--accent);font-size:12px;font-family:inherit;cursor:pointer;}
+.stoKarte .kFuss{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:auto;padding-top:14px;
+  border-top:1px solid var(--border);font-size:11.5px;color:var(--text-3);}
+.stoKarte .kStempel{position:absolute;top:24px;font-size:18px;font-weight:800;letter-spacing:.1em;
+  padding:5px 13px;border-radius:9px;border:3px solid;opacity:0;pointer-events:none;}
+.stoKarte .kJa{left:22px;transform:rotate(-15deg);color:var(--good);border-color:var(--good);}
+.stoKarte .kNein{right:22px;transform:rotate(15deg);color:var(--bad);border-color:var(--bad);}
+.stoHerz{position:absolute;left:50%;top:42%;opacity:0;pointer-events:none;z-index:40;color:var(--good);
+  transform:translate(-50%,-50%) scale(.4);}
+.stoHerz svg{width:76px;height:76px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.45));}
+.stoHerz.los{animation:stoHerz .66s cubic-bezier(.2,.8,.3,1);}
+@keyframes stoHerz{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}
+  28%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}
+  55%{opacity:.95;transform:translate(-50%,-54%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-78%) scale(.9)}
+}
+.stoKnoepfe{display:flex;align-items:center;justify-content:center;gap:18px;}
+.stoKnoepfe button{width:58px;height:58px;border-radius:50%;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--text-2);display:grid;place-items:center;cursor:pointer;
+  transition:transform .12s ease,background .15s ease;}
+.stoKnoepfe button:active{transform:scale(.88);}
+.stoKnoepfe button svg{width:25px;height:25px;}
+.stoKnoepfe .nein{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 50%,var(--border));}
+.stoKnoepfe .ja{color:var(--good);border-color:color-mix(in srgb,var(--good) 50%,var(--border));}
+.stoKnoepfe .rueck{width:44px;height:44px;}
+.stoKnoepfe .rueck svg{width:19px;height:19px;}
+.stoKnoepfe button:disabled{opacity:.32;cursor:default;}
+.sto .btn:disabled{opacity:.4;cursor:default;}
+
+/* Blöcke bauen */
+.stoBlock{background:var(--surface);border:1px solid var(--border);border-radius:15px;
+  margin-bottom:12px;overflow:hidden;}
+.stoBlock.leer{border-style:dashed;}
+.stoBlock .bk{display:flex;align-items:center;gap:6px;padding:9px 8px 9px 12px;
+  background:var(--surface-2);border-bottom:1px solid var(--border);}
+.stoBlock .bk input{flex:1;min-width:0;background:none;border:0;padding:5px 0;font-family:inherit;
+  font-size:14px;font-weight:600;color:var(--text);}
+.stoBlock .bk input:focus{outline:none;border-bottom:1px solid var(--accent);}
+.stoBlock .bz{font-size:11px;color:var(--text-3);font-variant-numeric:tabular-nums;flex:0 0 auto;padding:0 4px;}
+.stoWerk{display:flex;align-items:center;gap:8px;padding:9px 8px 9px 12px;border-bottom:1px solid var(--border);}
+.stoWerk:last-child{border-bottom:0;}
+.stoWerk .wn{font-family:"Literata",Georgia,serif;font-size:13.5px;display:block;line-height:1.35;}
+.stoWerk .wm{font-size:11px;color:var(--text-3);margin-top:3px;display:block;}
+.stoLeer{padding:15px 12px;font-size:12.5px;color:var(--text-3);text-align:center;}
 .searchbar{display:flex;gap:8px;padding:10px 14px 4px;}
 .searchbar input{flex:1;}
 
@@ -688,6 +756,9 @@ const ICON = {
   up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
   down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  herz: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-9.6-9A5.4 5.4 0 0 1 12 6.2 5.4 5.4 0 0 1 21.6 12c-2.1 4.1-9.6 9-9.6 9z"/></svg>',
+  rueck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h11a5 5 0 0 1 0 10h-3"/><path d="M7 5L3 9l4 4"/></svg>',
+  schieben: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h12M13 4l3 3-3 3"/><path d="M20 17H8M11 14l-3 3 3 3"/></svg>',
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
   save: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h11L20.5 8v12.5H5z"/><path d="M8.5 3.5v6h7v-6M8.5 20.5V14h7v6.5"/></svg>',
@@ -1594,9 +1665,9 @@ function zugriffFreigebenZeigen() {
    Lese-Sitzungen: starten, beenden, laufende anzeigen
    ============================================================ */
 /* „ersetzen“ heisst: der Start kommt aus einer offenen Ebene – der Buchauswahl.
-   Die Kette Buchauswahl → Timer-Frage → Sanduhr bleibt dann eine einzige
-   Ebene mit einem einzigen Verlaufseintrag. Schliessen und im selben Zug
-   wieder Öffnen brächte den Verlauf durcheinander. */
+   Die Kette Buchauswahl → Timer-Frage bleibt dann eine einzige Ebene mit
+   einem einzigen Verlaufseintrag. Schliessen und im selben Zug wieder
+   Öffnen brächte den Verlauf durcheinander. */
 function sitzungStarten(buchId, ersetzen) {
   const b = buchById(buchId);
   if (!b) return;
@@ -1652,9 +1723,9 @@ function timerFrageZeigen(buch, ersetzen) {
         DB.einstellungen.timer.weckMin = min;
       }
     });
+    layerSchliessen();
     viewMalen();
-    /* Die Timer-Frage weicht unmittelbar der Sanduhr. */
-    sanduhrOeffnen(true);
+    toast('Wecker nach ' + pl(min, 'Minute', 'Minuten') + '.');
   };
 
   $('[data-ok]', s).onclick = stellen;
@@ -1670,605 +1741,6 @@ function timerFrageZeigen(buch, ersetzen) {
   };
 }
 
-/* ---------- Vollbild-Sanduhr ----------
-   Auf reinem Schwarz gezeichnet, damit im Dunkeln nichts blendet. Der
-   Sandstand folgt der echten Uhr, das Rieseln der eingestellten Dauer:
-   eine Minute stürzt, fünfundvierzig tröpfeln. */
-const suHex = h => {
-  const s = h.replace('#', '');
-  const n = parseInt(s.length === 3 ? s.split('').map(c => c + c).join('') : s, 16);
-  return [n >> 16 & 255, n >> 8 & 255, n & 255];
-};
-const suRgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
-const suHell = (c, f) => c.map(v => Math.round(v + (255 - v) * f));
-const suDunkel = (c, f) => c.map(v => Math.round(v * (1 - f)));
-/* Wärmer machen, damit aus jeder Akzentfarbe glaubhafter Sand wird. */
-const suWarm = (c, f) => [
-  Math.round(Math.min(255, c[0] + 46 * f)),
-  Math.round(Math.min(255, c[1] + 20 * f)),
-  Math.round(Math.max(0, c[2] - 26 * f))
-];
-/* Immer dieselbe Streuung je Korn, damit der Strahl nicht flackert. */
-const suStreu = i => { const f = Math.sin(i * 127.1 + 311.7) * 43758.5453; return f - Math.floor(f); };
-
-function suRundRect(ctx, x, y, w, h, r) {
-  r = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
-}
-
-/* Eine Kachel voller Körner, einmal erzeugt und als Muster über den Sand
-   gelegt – Tausende Körner je Einzelbild wären auf dem Telefon zu teuer. */
-let suKachel = null;
-function suKornKachel() {
-  if (suKachel) return suKachel;
-  const K = 84;
-  const c = document.createElement('canvas');
-  c.width = c.height = K;
-  const g = c.getContext('2d');
-  for (let i = 0; i < 1400; i++) {
-    const x = suStreu(i * 3 + 1) * K, y = suStreu(i * 3 + 2) * K;
-    const h = suStreu(i * 3 + 3);
-    g.beginPath();
-    g.arc(x, y, 0.32 + h * 0.9, 0, Math.PI * 2);
-    g.fillStyle = h > 0.5
-      ? `rgba(255,242,214,${0.05 + (h - 0.5) * 0.34})`
-      : `rgba(58,30,4,${0.05 + (0.5 - h) * 0.46})`;
-    g.fill();
-  }
-  suKachel = c;
-  return c;
-}
-
-/* Die halbe Glasbreite über die Höhe einer Kammer: 0 am Hals, 1 am Rand.
-   Der Bauch sitzt bei 0,70 und der Rand zieht sich wieder ein – das
-   unterscheidet geblasenes Glas vom bloßen Trichter. */
-const SU_PROFIL = [[0, 0], [0.15, 0.45], [0.40, 0.855], [0.70, 1], [0.88, 0.985], [1, 0.895]];
-/* Hals und Bauch als Anteil der Gesamthöhe – die Volumentabelle unten muss
-   mit derselben Form rechnen wie die Zeichnung. */
-const SU_HALS = 0.0165, SU_BAUCH = 0.252;
-function suProfil(u, hals, bauch) {
-  u = clamp(u, 0, 1);
-  let i = 0;
-  while (i < SU_PROFIL.length - 2 && u > SU_PROFIL[i + 1][0]) i++;
-  const a = SU_PROFIL[i], b = SU_PROFIL[i + 1];
-  const t = (u - a[0]) / (b[0] - a[0]);
-  const s = t * t * (3 - 2 * t);
-  return hals + (bauch - hals) * (a[1] + (b[1] - a[1]) * s);
-}
-
-/* Wie viel Sand fasst eine Kammer bis zur Höhe u? Das Integral über die
-   Querschnittsfläche, einmal berechnet und normiert auf 1. */
-const SU_STUFEN = 400;
-let suVolTab = null;
-function suVolumen() {
-  if (suVolTab) return suVolTab;
-  const t = new Float64Array(SU_STUFEN + 1);
-  let summe = 0;
-  for (let i = 1; i <= SU_STUFEN; i++) {
-    const r = suProfil(i / SU_STUFEN, SU_HALS / SU_BAUCH, 1);
-    summe += r * r;
-    t[i] = summe;
-  }
-  for (let i = 0; i <= SU_STUFEN; i++) t[i] /= summe;
-  suVolTab = t;
-  return t;
-}
-/* Auf welcher Höhe steht die Oberfläche, wenn noch dieser Anteil da ist? */
-function suHoeheZuMenge(menge) {
-  const t = suVolumen();
-  const v = clamp(menge, 0, 1);
-  let lo = 0, hi = SU_STUFEN;
-  while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < v) lo = m + 1; else hi = m; }
-  if (!lo) return 0;
-  const a = t[lo - 1], b = t[lo];
-  return (lo - 1 + (b > a ? (v - a) / (b - a) : 0)) / SU_STUFEN;
-}
-
-function sanduhrZeichnen(ctx, B, H, anteil, sek, minuten, rgb, muster) {
-  ctx.clearRect(0, 0, B, H);
-  const cx = B / 2, cy = H / 2;
-  const hg = Math.min(H * 0.95, B * 1.46);
-  const bauch = hg * SU_BAUCH, hals = hg * SU_HALS;
-  const kh = hg * 0.047, kb = bauch * 1.30;      /* halbe Kappenhöhe und -breite */
-  const oben = cy - hg / 2, unten = cy + hg / 2;
-  const glasOben = oben + kh * 1.55, glasUnten = unten - kh * 1.55;
-  const halbH = (glasUnten - glasOben) / 2;
-  const halb = u => suProfil(u, hals, bauch);
-  const breiteBei = y => halb(Math.abs(y - cy) / halbH);
-
-  /* Farbklaviatur: warmer Sand, kühles Gestell. */
-  const sandHell = suHell(suWarm(rgb, 1), 0.42);
-  const sandMitte = suWarm(rgb, 0.7);
-  const sandTief = suDunkel(suWarm(rgb, 0.5), 0.62);
-  const metall = [122, 131, 144];
-
-  const kammer = nachOben => {
-    const N = 54, ri = nachOben ? -1 : 1;
-    ctx.beginPath();
-    for (let i = 0; i <= N; i++) {
-      const u = i / N, y = cy + ri * halbH * u, x = cx - halb(u);
-      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-    }
-    for (let i = N; i >= 0; i--) {
-      const u = i / N;
-      ctx.lineTo(cx + halb(u), cy + ri * halbH * u);
-    }
-    ctx.closePath();
-  };
-
-  /* Kornstruktur – nur über den Sand, nie über leeres Glas. */
-  const koernen = (y0, y1) => {
-    if (!muster || y1 <= y0) return;
-    ctx.save();
-    ctx.globalAlpha = 0.55;
-    ctx.fillStyle = muster;
-    ctx.fillRect(cx - bauch - 2, y0, bauch * 2 + 4, y1 - y0);
-    ctx.restore();
-  };
-
-  /* --- Grund: Schein und Schlagschatten --- */
-  const schein = ctx.createRadialGradient(cx, cy, hg * 0.05, cx, cy, hg * 0.74);
-  schein.addColorStop(0, suRgba(sandMitte, 0.15));
-  schein.addColorStop(0.55, suRgba(sandMitte, 0.045));
-  schein.addColorStop(1, suRgba(sandMitte, 0));
-  ctx.fillStyle = schein;
-  ctx.fillRect(0, 0, B, H);
-
-  const sy = unten + hg * 0.03;
-  ctx.save();
-  ctx.translate(cx, sy); ctx.scale(1, 0.16); ctx.translate(-cx, -sy);
-  const schatten = ctx.createRadialGradient(cx, sy, 0, cx, sy, bauch * 1.6);
-  schatten.addColorStop(0, 'rgba(0,0,0,.9)');
-  schatten.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = schatten;
-  ctx.beginPath(); ctx.arc(cx, sy, bauch * 1.6, 0, Math.PI * 2); ctx.fill();
-  ctx.restore();
-
-  /* --- Gestell: zwei Säulen hinter dem Glas --- */
-  const saeuleX = bauch * 1.17, saeuleB = hg * 0.0125;
-  [-1, 1].forEach(s => {
-    const x = cx + s * saeuleX;
-    const g = ctx.createLinearGradient(x - saeuleB, 0, x + saeuleB, 0);
-    g.addColorStop(0, suRgba(suDunkel(metall, 0.88), 1));
-    g.addColorStop(0.22, suRgba(suHell(metall, 0.55), 1));
-    g.addColorStop(0.44, suRgba(suDunkel(metall, 0.12), 1));
-    g.addColorStop(0.78, suRgba(suDunkel(metall, 0.68), 1));
-    g.addColorStop(1, suRgba(suDunkel(metall, 0.85), 1));
-    ctx.fillStyle = g;
-    suRundRect(ctx, x - saeuleB, oben + kh * 0.6, saeuleB * 2, (unten - oben) - kh * 1.2, saeuleB);
-    ctx.fill();
-    /* Warmes Streiflicht vom Sand her, zur Mitte hin am stärksten */
-    const w = ctx.createLinearGradient(0, cy - halbH, 0, cy + halbH);
-    w.addColorStop(0, suRgba(sandMitte, 0.04));
-    w.addColorStop(0.5, suRgba(sandMitte, 0.34));
-    w.addColorStop(1, suRgba(sandMitte, 0.07));
-    ctx.fillStyle = w;
-    suRundRect(ctx, x - saeuleB * (s < 0 ? 0.9 : 0.1), oben + kh * 0.6, saeuleB, (unten - oben) - kh * 1.2, saeuleB * 0.4);
-    ctx.fill();
-  });
-
-  /* --- Glas: dunkler Innenraum --- */
-  [true, false].forEach(o => {
-    kammer(o);
-    const g = ctx.createLinearGradient(cx - bauch, 0, cx + bauch, 0);
-    g.addColorStop(0, 'rgba(150,180,210,.13)');
-    g.addColorStop(0.22, 'rgba(9,12,17,.60)');
-    g.addColorStop(0.5, 'rgba(14,18,24,.38)');
-    g.addColorStop(0.78, 'rgba(9,12,17,.54)');
-    g.addColorStop(1, 'rgba(150,180,210,.11)');
-    ctx.fillStyle = g;
-    ctx.fill();
-  });
-
-  const sandVerlauf = () => {
-    const g = ctx.createLinearGradient(cx - bauch, 0, cx + bauch, 0);
-    g.addColorStop(0, suRgba(suDunkel(sandTief, 0.30), 1));
-    g.addColorStop(0.17, suRgba(sandMitte, 1));
-    g.addColorStop(0.36, suRgba(sandHell, 1));
-    g.addColorStop(0.62, suRgba(sandMitte, 1));
-    g.addColorStop(1, suRgba(sandTief, 1));
-    return g;
-  };
-
-  /* Durch den Hals fällt je Sekunde dieselbe Menge, nicht dieselbe Höhe.
-     Weil der Bauch weit und der Hals eng ist, sinkt die Oberfläche zuerst
-     kaum und stürzt zum Schluss – und beide Kammern stehen spiegelbildlich,
-     was oben fehlt, liegt unten. */
-  const uRest = suHoeheZuMenge(1 - anteil);
-
-  /* --- Sand in der oberen Kammer --- */
-  const flaeche = cy - halbH * uRest;
-  const rF = breiteBei(flaeche);
-  if (anteil < 0.999) {
-    /* Körper: streng auf den Sandbereich begrenzt */
-    ctx.save();
-    kammer(true); ctx.clip();
-    ctx.beginPath();
-    ctx.rect(cx - bauch - 2, flaeche, bauch * 2 + 4, cy - flaeche + 3);
-    ctx.clip();
-    ctx.fillStyle = sandVerlauf();
-    ctx.fillRect(cx - bauch - 2, flaeche, bauch * 2 + 4, cy - flaeche + 3);
-    koernen(flaeche, cy + 3);
-    ctx.restore();
-
-    /* Oberfläche mit Trichter, der sich zum Ende hin vertieft */
-    ctx.save();
-    kammer(true); ctx.clip();
-    ctx.beginPath();
-    ctx.ellipse(cx, flaeche, rF, rF * 0.19, 0, 0, Math.PI * 2);
-    const og = ctx.createLinearGradient(cx - rF, 0, cx + rF, 0);
-    og.addColorStop(0, suRgba(suDunkel(sandMitte, 0.30), 1));
-    og.addColorStop(0.34, suRgba(suHell(sandHell, 0.20), 1));
-    og.addColorStop(1, suRgba(suDunkel(sandMitte, 0.44), 1));
-    ctx.fillStyle = og;
-    ctx.fill();
-    if (anteil > 0.01) {
-      const tief = 0.36 + 0.5 * anteil;
-      const kr = Math.min(rF * 0.74, hals * 7.5) * (0.55 + 0.6 * anteil);
-      ctx.beginPath();
-      ctx.ellipse(cx, flaeche + kr * 0.06, kr, kr * 0.27, 0, 0, Math.PI * 2);
-      const kg = ctx.createRadialGradient(cx, flaeche + kr * 0.05, kr * 0.05, cx, flaeche, kr);
-      kg.addColorStop(0, suRgba(suDunkel(sandTief, 0.6 * tief), 1));
-      kg.addColorStop(0.45, suRgba(suDunkel(sandMitte, 0.5 * tief), 1));
-      kg.addColorStop(1, suRgba(sandMitte, 0));
-      ctx.fillStyle = kg;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(cx, flaeche + kr * 0.06, kr * 0.96, kr * 0.26, 0, Math.PI * 1.08, Math.PI * 1.92);
-      ctx.strokeStyle = suRgba(suHell(sandHell, 0.4), 0.48);
-      ctx.lineWidth = Math.max(0.7, hg * 0.0035);
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  /* --- Haufen in der unteren Kammer --- */
-  const spiegel = cy + halbH * uRest;
-  const rS = breiteBei(spiegel);
-  /* Der Kegel wächst am Anfang ein und verschwindet, wenn die Kammer voll
-     ist – sonst ragte er in den Hals. Sein Winkel ist der Schüttwinkel. */
-  const kegelSkala = Math.min(1, anteil * 6, (spiegel - cy) / (halbH * 0.26));
-  const kegelR = Math.min(rS * 0.72, bauch * 0.52) * clamp(kegelSkala, 0, 1);
-  const kegelH = kegelR * 0.62;
-  if (anteil > 0.001) {
-    /* Ein einziger Körper aus Spiegelfläche und Kuppe – so bekommt nur
-       der Sand die Kornstruktur, nicht das leere Glas darüber. */
-    const sandPfad = () => {
-      ctx.beginPath();
-      ctx.moveTo(cx - bauch - 2, glasUnten + 3);
-      ctx.lineTo(cx - bauch - 2, spiegel);
-      ctx.lineTo(cx - kegelR, spiegel);
-      ctx.quadraticCurveTo(cx - kegelR * 0.34, spiegel - kegelH * 1.30, cx, spiegel - kegelH);
-      ctx.quadraticCurveTo(cx + kegelR * 0.34, spiegel - kegelH * 1.30, cx + kegelR, spiegel);
-      ctx.lineTo(cx + bauch + 2, spiegel);
-      ctx.lineTo(cx + bauch + 2, glasUnten + 3);
-      ctx.closePath();
-    };
-    ctx.save();
-    kammer(false); ctx.clip();
-    sandPfad();
-    ctx.fillStyle = sandVerlauf();
-    ctx.fill();
-    ctx.save(); sandPfad(); ctx.clip();
-    koernen(spiegel - kegelH * 1.4, glasUnten + 3);
-    ctx.restore();
-
-    /* Spiegelfläche als Ellipse, damit die Kuppe darauf sitzt */
-    ctx.beginPath();
-    ctx.ellipse(cx, spiegel, rS, rS * 0.17, 0, 0, Math.PI * 2);
-    const fg = ctx.createLinearGradient(cx - rS, 0, cx + rS, 0);
-    fg.addColorStop(0, suRgba(suDunkel(sandMitte, 0.34), 1));
-    fg.addColorStop(0.36, suRgba(suHell(sandHell, 0.10), 1));
-    fg.addColorStop(1, suRgba(suDunkel(sandMitte, 0.46), 1));
-    ctx.fillStyle = fg;
-    ctx.fill();
-
-    /* Kuppe mit eigenem Licht von links oben */
-    ctx.beginPath();
-    ctx.moveTo(cx - kegelR, spiegel);
-    ctx.quadraticCurveTo(cx - kegelR * 0.34, spiegel - kegelH * 1.30, cx, spiegel - kegelH);
-    ctx.quadraticCurveTo(cx + kegelR * 0.34, spiegel - kegelH * 1.30, cx + kegelR, spiegel);
-    ctx.ellipse(cx, spiegel, kegelR, kegelR * 0.17, 0, 0, Math.PI, false);
-    ctx.closePath();
-    const kg2 = ctx.createLinearGradient(cx - kegelR, spiegel - kegelH, cx + kegelR, spiegel);
-    kg2.addColorStop(0, suRgba(suHell(sandHell, 0.26), 1));
-    kg2.addColorStop(0.40, suRgba(sandMitte, 1));
-    kg2.addColorStop(1, suRgba(suDunkel(sandTief, 0.16), 1));
-    ctx.fillStyle = kg2;
-    ctx.fill();
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(cx - kegelR, spiegel);
-    ctx.quadraticCurveTo(cx - kegelR * 0.34, spiegel - kegelH * 1.30, cx, spiegel - kegelH);
-    ctx.quadraticCurveTo(cx + kegelR * 0.34, spiegel - kegelH * 1.30, cx + kegelR, spiegel);
-    ctx.closePath(); ctx.clip();
-    koernen(spiegel - kegelH * 1.4, spiegel + 2);
-    ctx.restore();
-    /* Grat auf der Kuppe */
-    ctx.beginPath();
-    ctx.moveTo(cx - kegelR * 0.60, spiegel - kegelH * 0.42);
-    ctx.quadraticCurveTo(cx - kegelR * 0.14, spiegel - kegelH * 1.24, cx + kegelR * 0.12, spiegel - kegelH * 0.94);
-    ctx.strokeStyle = suRgba(suHell(sandHell, 0.55), 0.5);
-    ctx.lineWidth = Math.max(0.8, hg * 0.0048);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  /* --- Rieselnder Sand --- */
-  const flott = clamp(1 - (minuten - 1) / 44, 0, 1);
-  const zielY = spiegel - kegelH * 0.88;
-  const weg = zielY - cy;
-  /* Kein Strahl mehr, sobald der Haufen den Hals erreicht – sonst stapeln
-     sich alle Körner auf der geschrumpften Fallstrecke zu einem Balken. */
-  if (anteil > 0.0005 && anteil < 0.9995 && weg > hals * 2.5) {
-    const strahl = hals * (0.30 + 0.55 * flott);
-    /* Ein echter Sandstrahl steht nie still – er pendelt leicht. */
-    const pendel = y => Math.sin(sek * 1.9 + (y - cy) * 0.035) * strahl * 0.5 * ((y - cy) / weg);
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(cx - bauch, cy, bauch * 2, weg);
-    ctx.clip();
-
-    /* Dichter Faden bei kurzer Dauer, kaum sichtbar bei langer. Als zwei
-       durchgehende Bänder statt vieler Streifen – das bleibt glatt und
-       spart je Bild ein Dutzend Verläufe. */
-    const dicht = 0.08 + 0.62 * flott;
-    const band = (weite, farbe) => {
-      ctx.beginPath();
-      const N = 30;
-      for (let i = 0; i <= N; i++) {
-        const y = cy + weg * (i / N), b0 = strahl * weite * (0.72 + 0.5 * (i / N));
-        const x = cx + pendel(y) - b0;
-        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-      }
-      for (let i = N; i >= 0; i--) {
-        const y = cy + weg * (i / N), b0 = strahl * weite * (0.72 + 0.5 * (i / N));
-        ctx.lineTo(cx + pendel(y) + b0, y);
-      }
-      ctx.closePath();
-      ctx.fillStyle = farbe;
-      ctx.fill();
-    };
-    const verlauf = ctx.createLinearGradient(0, cy, 0, cy + weg);
-    verlauf.addColorStop(0, suRgba(sandHell, dicht));
-    verlauf.addColorStop(0.75, suRgba(sandHell, dicht * 0.9));
-    verlauf.addColorStop(1, suRgba(sandHell, dicht * 0.5));
-    band(1, suRgba(sandTief, dicht * 0.55));
-    band(0.46, verlauf);
-
-    /* Einzelne Körner mit Bewegungsunschärfe */
-    const fallZeit = 0.12 + 1.55 * (1 - flott);
-    /* Weniger Körner, wenn die Strecke kurz ist – sonst drängen sie sich. */
-    const gedraenge = clamp(weg / (halbH * 0.55), 0.25, 1);
-    const koerner = Math.max(3, Math.round((7 + 45 * flott) * gedraenge));
-    for (let i = 0; i < koerner; i++) {
-      const z = suStreu(i), z2 = suStreu(i + 500);
-      /* Nicht alle gleich schnell – sonst wirkt es wie eine Perlenkette. */
-      const ph = ((sek / (fallZeit * (0.82 + z2 * 0.4))) + i / koerner) % 1;
-      const y = cy + weg * (ph * ph * 0.55 + ph * 0.45);
-      /* Der Fächer haengt nicht an der Strahlbreite – sonst faedeln sich
-         die wenigen Koerner langer Timer zu einer Perlenschnur auf. */
-      const spreiz = hals * (0.55 + 0.85 * flott);
-      const x = cx + pendel(y) + (z - 0.5) * spreiz * (1.1 + ph * 3.2);
-      const r = hals * (0.15 + z * 0.19) * (1.35 - 0.4 * flott);
-      const streck = 1.5 + 2.6 * flott * (0.4 + ph);
-      ctx.beginPath();
-      ctx.ellipse(x, y, r, r * streck, 0, 0, Math.PI * 2);
-      ctx.fillStyle = suRgba(suHell(sandHell, z2 * 0.45), 0.5 + z2 * 0.45);
-      ctx.fill();
-    }
-    ctx.restore();
-
-    /* Aufprall: springende Körner und ein Hauch Staub */
-    ctx.save();
-    kammer(false); ctx.clip();
-    const staub = ctx.createRadialGradient(cx, zielY, 0, cx, zielY, kegelR * 0.7 + hals * 3);
-    staub.addColorStop(0, suRgba(sandHell, 0.15 * (0.4 + flott)));
-    staub.addColorStop(1, suRgba(sandHell, 0));
-    ctx.fillStyle = staub;
-    ctx.fillRect(cx - bauch, zielY - kegelR, bauch * 2, kegelR * 2);
-    const spritzer = Math.round(3 + 7 * flott);
-    for (let i = 0; i < spritzer; i++) {
-      const z = suStreu(i + 900), z2 = suStreu(i + 1300);
-      const ph = ((sek / (0.30 + 0.5 * (1 - flott))) + i / spritzer) % 1;
-      const seite = z < 0.5 ? -1 : 1;
-      const x = cx + seite * kegelR * 0.95 * ph * (0.5 + z2 * 0.7);
-      const y = zielY + kegelH * 0.55 * ph * ph - kegelH * 0.5 * Math.sin(ph * Math.PI) * (0.4 + z2 * 0.6);
-      const r = hals * (0.2 + z2 * 0.22);
-      ctx.beginPath();
-      ctx.ellipse(x, y, r, r * 1.2, 0, 0, Math.PI * 2);
-      ctx.fillStyle = suRgba(suHell(sandHell, 0.25), (1 - ph) * 0.7);
-      ctx.fill();
-    }
-    ctx.restore();
-
-    /* Glut am Hals */
-    const neck = ctx.createRadialGradient(cx, cy, 0, cx, cy, hals * 6);
-    neck.addColorStop(0, suRgba(suHell(sandHell, 0.6), 0.5));
-    neck.addColorStop(0.4, suRgba(sandMitte, 0.2));
-    neck.addColorStop(1, suRgba(sandMitte, 0));
-    ctx.fillStyle = neck;
-    ctx.fillRect(cx - hals * 6, cy - hals * 6, hals * 12, hals * 12);
-  }
-
-  /* --- Glas von vorn: Dicke, Glanz, Kante --- */
-  [true, false].forEach(o => {
-    const y0 = o ? glasOben : cy;
-    ctx.save(); kammer(o); ctx.clip();
-    /* Glasdicke verdunkelt die Ränder – das gibt dem Rohr Rundung. */
-    const dick = ctx.createLinearGradient(cx - bauch, 0, cx + bauch, 0);
-    dick.addColorStop(0, 'rgba(0,0,0,.66)');
-    dick.addColorStop(0.13, 'rgba(0,0,0,.17)');
-    dick.addColorStop(0.42, 'rgba(0,0,0,0)');
-    dick.addColorStop(0.80, 'rgba(0,0,0,.21)');
-    dick.addColorStop(1, 'rgba(0,0,0,.70)');
-    ctx.fillStyle = dick;
-    ctx.fillRect(cx - bauch, y0, bauch * 2, halbH);
-    /* Breiter, weicher Glanz links */
-    const gl = ctx.createLinearGradient(cx - bauch * 0.82, 0, cx - bauch * 0.18, 0);
-    gl.addColorStop(0, 'rgba(255,255,255,0)');
-    gl.addColorStop(0.45, 'rgba(255,255,255,.13)');
-    gl.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = gl;
-    ctx.fillRect(cx - bauch, y0, bauch, halbH);
-    /* Schmaler Glanz daneben – weich ausgelaufen, kein harter Strich */
-    const gx = cx - bauch * 0.60, gr = hg * 0.013;
-    ctx.save();
-    ctx.translate(gx, y0 + halbH * (o ? 0.42 : 0.52));
-    ctx.scale(1, halbH * 0.34 / gr);
-    const sp = ctx.createRadialGradient(0, 0, 0, 0, 0, gr);
-    sp.addColorStop(0, 'rgba(255,255,255,.30)');
-    sp.addColorStop(0.55, 'rgba(255,255,255,.11)');
-    sp.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = sp;
-    ctx.beginPath(); ctx.arc(0, 0, gr, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
-    /* Kühler Widerschein rechts */
-    const rs = ctx.createLinearGradient(cx + bauch * 0.35, 0, cx + bauch, 0);
-    rs.addColorStop(0, 'rgba(150,190,240,0)');
-    rs.addColorStop(1, 'rgba(150,190,240,.15)');
-    ctx.fillStyle = rs;
-    ctx.fillRect(cx, y0, bauch, halbH);
-    ctx.restore();
-
-    /* Silhouettenkante, oben heller als unten */
-    kammer(o);
-    const kante = ctx.createLinearGradient(0, o ? glasOben : cy, 0, o ? cy : glasUnten);
-    kante.addColorStop(0, o ? 'rgba(255,255,255,.44)' : 'rgba(255,255,255,.13)');
-    kante.addColorStop(1, o ? 'rgba(255,255,255,.13)' : 'rgba(255,255,255,.36)');
-    ctx.strokeStyle = kante;
-    ctx.lineWidth = Math.max(1, hg * 0.0045);
-    ctx.stroke();
-  });
-
-  /* Randellipsen an den Übergängen zu den Kappen */
-  [glasOben, glasUnten].forEach((y, i) => {
-    const r = breiteBei(y);
-    ctx.beginPath();
-    ctx.ellipse(cx, y, r, r * 0.17, 0, 0, Math.PI * 2);
-    ctx.strokeStyle = i ? 'rgba(255,255,255,.15)' : 'rgba(255,255,255,.24)';
-    ctx.lineWidth = Math.max(0.8, hg * 0.0035);
-    ctx.stroke();
-  });
-
-  /* --- Kappen aus gebürstetem Metall --- */
-  const kappeMalen = (mitte, obenAuf) => {
-    const g = ctx.createLinearGradient(0, mitte - kh, 0, mitte + kh);
-    g.addColorStop(0, suRgba(suHell(metall, obenAuf ? 0.55 : 0.34), 1));
-    g.addColorStop(0.32, suRgba(metall, 1));
-    g.addColorStop(0.66, suRgba(suDunkel(metall, 0.55), 1));
-    g.addColorStop(1, suRgba(suDunkel(metall, 0.32), 1));
-    ctx.fillStyle = g;
-    suRundRect(ctx, cx - kb, mitte - kh, kb * 2, kh * 2, kh * 0.55);
-    ctx.fill();
-    /* Waagerechte Wölbung */
-    const w = ctx.createLinearGradient(cx - kb, 0, cx + kb, 0);
-    w.addColorStop(0, 'rgba(0,0,0,.58)');
-    w.addColorStop(0.26, 'rgba(255,255,255,.17)');
-    w.addColorStop(0.55, 'rgba(255,255,255,.04)');
-    w.addColorStop(1, 'rgba(0,0,0,.52)');
-    ctx.fillStyle = w;
-    suRundRect(ctx, cx - kb, mitte - kh, kb * 2, kh * 2, kh * 0.55);
-    ctx.fill();
-    /* Deckfläche */
-    ctx.beginPath();
-    ctx.ellipse(cx, mitte + (obenAuf ? -kh * 0.58 : kh * 0.58), kb * 0.96, kb * 0.135, 0, 0, Math.PI * 2);
-    const d = ctx.createLinearGradient(cx - kb, 0, cx + kb, 0);
-    d.addColorStop(0, suRgba(suDunkel(metall, 0.45), 1));
-    d.addColorStop(0.34, suRgba(suHell(metall, 0.60), 1));
-    d.addColorStop(1, suRgba(suDunkel(metall, 0.36), 1));
-    ctx.fillStyle = d;
-    ctx.fill();
-    /* Warmer Widerschein des Sandes auf dem Metall */
-    ctx.fillStyle = suRgba(sandMitte, 0.11);
-    suRundRect(ctx, cx - kb, mitte + (obenAuf ? kh * 0.1 : -kh * 0.6), kb * 2, kh * 0.5, kh * 0.2);
-    ctx.fill();
-  };
-  kappeMalen(oben + kh, true);
-  kappeMalen(unten - kh, false);
-}
-
-function sanduhrOeffnen(ersetzen) {
-  const t = laufenderTimer();
-  if (!t) { toast('Es läuft keine Sitzung.'); return; }
-  if (!(+t.weckMin || +DB.einstellungen.weckerMin)) { toast('Dafür braucht es einen Timer.'); return; }
-  const buch = buchById(t.buchId);
-
-  const node = document.createElement('div');
-  node.className = 'sanduhr';
-  /* Auf Schwarz gilt immer die dunkle Akzentfassung – die helle wäre hier
-     zu dunkel für Restzeit und Knopf. */
-  node.style.setProperty('--accent', akzentAktiv().dark);
-  node.innerHTML = `
-    <div class="suTitel">${esc(buch ? buch.titel : 'Lese-Sitzung')}</div>
-    <canvas data-c></canvas>
-    <div class="suRest" data-rest>–</div>
-    <div class="suSub" data-sub></div>
-    <div class="suKnoepfe">
-      <button data-zu>Zur App</button>
-      <button class="stop" data-stop>Sitzung beenden</button>
-    </div>`;
-
-  const cv = $('[data-c]', node);
-  const ctx = cv.getContext('2d');
-  const rgb = suHex(akzentAktiv().dark);
-  const muster = ctx.createPattern(suKornKachel(), 'repeat');
-  let laeuft = true, raf = 0, B = 0, Hc = 0;
-
-  const messen = () => {
-    B = Math.max(120, Math.min(node.clientWidth - 32, 320));
-    Hc = Math.max(160, Math.min(node.clientHeight * 0.5, 400));
-    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-    cv.style.width = B + 'px';
-    cv.style.height = Hc + 'px';
-    cv.width = Math.round(B * dpr);
-    cv.height = Math.round(Hc * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  };
-
-  const uhrText = s => {
-    const teile = s >= 3600
-      ? [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60]
-      : [Math.floor(s / 60), s % 60];
-    return teile.map(x => String(x).padStart(2, '0')).join(':');
-  };
-
-  const bild = () => {
-    if (!laeuft) return;
-    /* Die Dauer wird jedes Bild neu gelesen: „Noch einmal 20 Minuten“
-       verlängert den Timer, und das Glas füllt sich sichtbar nach. */
-    const min = +t.weckMin || +DB.einstellungen.weckerMin || 45;
-    const sek = (Date.now() - t.startTs) / 1000;
-    const ganz = min * 60;
-    sanduhrZeichnen(ctx, B, Hc, clamp(sek / ganz, 0, 1), sek, min, rgb, muster);
-    const rest = Math.ceil(ganz - sek);
-    node.classList.toggle('aus', rest <= 0);
-    $('[data-rest]', node).textContent = rest > 0 ? uhrText(rest) : uhrText(Math.floor(sek));
-    $('[data-sub]', node).textContent = rest > 0
-      ? 'von ' + pl(min, 'Minute', 'Minuten')
-      : 'Zeit um – die Stoppuhr läuft weiter';
-    raf = requestAnimationFrame(bild);
-  };
-
-  $('[data-zu]', node).onclick = () => layerSchliessen();
-  $('[data-stop]', node).onclick = () => { layerSchliessen(); setTimeout(sitzungBeenden, 80); };
-  /* Erst einhängen, dann messen – ausserhalb des Dokuments ist alles 0 breit. */
-  (ersetzen === true ? layerErsetzen : layerOeffnen)(node, () => {
-    laeuft = false;
-    cancelAnimationFrame(raf);
-    window.removeEventListener('resize', messen);
-  });
-  messen();
-  bild();
-  window.addEventListener('resize', messen);
-}
-
 function sitzungBeenden() {
   const t = laufenderTimer();
   if (!t) return;
@@ -2282,7 +1754,6 @@ function sitzungBeenden() {
   sessionBearbeiten(b, null, { minuten, von: stand || null }, () => viewMalen());
 }
 
-/* Kein oder mehrere angefangene Bücher: dann wird gewählt. */
 function buchWaehlenFuerSitzung() {
   const angefangen = DB.buecher.filter(b => b.status === 'lese');
   const offen = DB.buecher.filter(b => b.status !== 'gelesen');
@@ -2448,7 +1919,7 @@ function nowbarMalen() {
         <span class="nt serif">${esc(b ? b.titel : 'Sitzung')}</span>
         <span class="nm">Sitzung läuft</span>
       </span>
-      <button class="uhr" data-uhr title="Sanduhr">00:00</button>
+      <span class="uhr" data-uhr>00:00</span>
       <button class="btn btn-sm" data-wecker title="Lese-Wecker">${DB.einstellungen.weckerMin ? DB.einstellungen.weckerMin + '′' : '⏰'}</button>
       <button class="btn btn-sm" data-stop>Beenden</button>`;
     const malen = () => {
@@ -2468,7 +1939,6 @@ function nowbarMalen() {
     malen();
     nowTick = setInterval(malen, 1000);
     $('[data-stop]', inner).onclick = sitzungBeenden;
-    $('[data-uhr]', inner).onclick = () => sanduhrOeffnen();
     $('[data-wecker]', inner).onclick = () => timerFrageZeigen(b);
     if (b) $('.grow', inner).onclick = () => buchOeffnen(b.id);
   } else {
@@ -2631,7 +2101,7 @@ function tabVerschieben(d) {
 (function wischNavigation() {
   let x0 = null, y0 = null, zeit = 0, gesperrt = false;
   const tabu = '.book,.arow,.block,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,'
-    + '.nowbar,.zsRahmen,.netz,input,textarea,select,.sheet,.akk';
+    + '.nowbar,.zsRahmen,.netz,.sto,input,textarea,select,.sheet,.akk';
   document.addEventListener('touchstart', e => {
     if (e.touches.length !== 1 || window.__zieht) { x0 = null; return; }
     const t = e.touches[0];
@@ -2691,15 +2161,18 @@ function planMalen(root) {
     root.innerHTML = `
       <div class="empty">
         <strong>Noch keine leseliste</strong>
-        Eine leseliste fasst mehrere Blöcke zusammen. Lege eine an, lade eine fertige Liste als Datei –
-        oder lass dir zu einer Frage, einer These oder einem Thema eine zusammenstellen.
+        Eine leseliste fasst mehrere Blöcke zusammen. Lege eine an, stöbere dich durch eine
+        Sammlung von Werken, lade eine fertige Liste als Datei – oder lass dir zu einer Frage,
+        einer These oder einem Thema eine zusammenstellen.
         <div class="btn-row" style="justify-content:center;margin-top:16px;flex-wrap:wrap">
           <button class="btn btn-primary" data-neu-plan>${ICON.plus} leseliste anlegen</button>
+          <button class="btn" data-stoebern>${ICON.herz} Stöbern</button>
           <button class="btn" data-import>Liste laden</button>
           <button class="btn" data-ki>${ICON.tags} Von KI zusammenstellen</button>
         </div>
       </div>`;
     $('[data-neu-plan]', root).onclick = () => planBearbeiten(null);
+    $('[data-stoebern]', root).onclick = () => stoebernOeffnen();
     $('[data-import]', root).onclick = () => importDialog(false);
     $('[data-ki]', root).onclick = () => kiErstellenOeffnen();
     return;
@@ -2962,7 +2435,8 @@ function planWechsler() {
           <button class="icon-btn" data-um="${p.id}" aria-label="Bearbeiten">${ICON.edit}</button>
         </div>`;
     }).join('')}</div>
-      <button class="btn btn-block" style="margin-top:12px" data-neu>${ICON.plus} leseliste anlegen</button>`;
+      <button class="btn btn-block" style="margin-top:12px" data-neu>${ICON.plus} leseliste anlegen</button>
+      <button class="btn btn-block" style="margin-top:8px" data-stoebern>${ICON.herz} Stöbern – aus einer Sammlung wählen</button>`;
 
     $$('[data-w]', l).forEach(b => b.onclick = () => {
       aendern(() => { DB.einstellungen.aktiverPlanId = b.dataset.w; });
@@ -2973,6 +2447,7 @@ function planWechsler() {
     $$('[data-um]', l).forEach(b => b.onclick = () => planBearbeiten(DB.lesepleane.find(p => p.id === b.dataset.um), malen));
     /* Nach dem Anlegen soll der neue Leseplan offen liegen, nicht die Liste. */
     $('[data-neu]', l).onclick = () => { layerSchliessen(); setTimeout(() => planBearbeiten(null, null), 70); };
+    $('[data-stoebern]', l).onclick = () => { layerSchliessen(); setTimeout(stoebernOeffnen, 70); };
   };
   malen();
 }
@@ -5555,17 +5030,30 @@ function einkaufslisteOeffnen() {
 /* ============================================================
    KI-Prompts: Leseliste erstellen oder bewerten lassen
    ============================================================ */
-function kiSchemaText(regeln, mitArtikeln) {
-  return `## Wie du antwortest
-
-Lege das Ergebnis als **Datei zum Herunterladen** an, Dateiname \`leseliste.json\`, und gib mir diese Datei.
-Schreib den Inhalt nicht als Nachricht in den Chat und nicht in einen Code-Block – ich brauche eine Datei,
-die ich unverändert speichern kann. Nutze dafür dein Werkzeug zum Erstellen von Dateien. Im Chat genügt
-ein Satz, was drin ist. Die Datei selbst enthält reines JSON: kein Text davor oder danach, keine Kommentare,
-kein Markdown. Prüfe vor der Ausgabe, dass sie sich fehlerfrei mit \`JSON.parse\` lesen lässt.
-
-## Aufbau der Datei
-{
+function kiSchemaText(regeln, mitArtikeln, stoebern) {
+  /* Beim Stöbern kommt kein fertiger Plan zurück, sondern nur der Vorrat an
+     Werken – Blöcke baut man danach selbst aus dem Gemerkten. */
+  const aufbau = stoebern ? `{
+  "format": "leseliste-stoebern",
+  "version": 1,
+  "themen": ["Erstes Thema", "Zweites Thema"],
+  "werke": [{
+    "titel": "...",
+    "thema": "Erstes Thema",
+    "autor": "Anzeigename, bei mehreren Autoren durch Komma getrennt",
+    "autoren": [{ "name": "...", "geb": 1946, "gest": null,
+      "bio": "Zwei bis vier Sätze Biographie.",
+      "einfluss": ["Name einer Person, von der er/sie beeinflusst wurde", "..."] }],
+    "jahr": 1975,
+    "seiten": 300,
+    "seitenUnsicher": false,
+    "ausgabe": "Verlag, ggf. Übersetzer:in einer gängigen deutschen Ausgabe",
+    "beschreibung": "Ein Absatz: worum es geht und für wen es sich lohnt.",
+    "kurz": "Das Werk in höchstens 15 Wörtern.",
+    "schwierigkeit": 3,
+    "besitz": "fehlt"
+  }]
+}` : `{
   "lesepleane": [{ "id": "p1", "name": "..." }],
   "bloecke": [{ "id": "b1", "planId": "p1", "name": "...", "ord": 0 }],
   "buecher": [{
@@ -5584,7 +5072,22 @@ kein Markdown. Prüfe vor der Ausgabe, dass sie sich fehlerfrei mit \`JSON.parse
     "schwierigkeit": 3,
     "besitz": "fehlt"
   }]
-}
+}`;
+  const eigen = stoebern
+    ? '- "thema" trägt jedes Werk; die Schreibweise muss genau einem Eintrag aus "themen" entsprechen.\n'
+      + '- Keine Blöcke, keine leseliste, keine "id"-Felder – nur der flache Vorrat unter "werke".\n'
+      + '- Keine Dopplungen: kein Titel zweimal, auch nicht unter verschiedenen Themen.'
+    : '- "id"-Werte müssen nur innerhalb dieser Antwort zueinander passen ("planId" verweist auf eine "id" aus "lesepleane", "blockId" auf eine "id" aus "bloecke").';
+  return `## Wie du antwortest
+
+Lege das Ergebnis als **Datei zum Herunterladen** an, Dateiname \`${stoebern ? 'stoebern' : 'leseliste'}.json\`, und gib mir diese Datei.
+Schreib den Inhalt nicht als Nachricht in den Chat und nicht in einen Code-Block – ich brauche eine Datei,
+die ich unverändert speichern kann. Nutze dafür dein Werkzeug zum Erstellen von Dateien. Im Chat genügt
+ein Satz, was drin ist. Die Datei selbst enthält reines JSON: kein Text davor oder danach, keine Kommentare,
+kein Markdown. Prüfe vor der Ausgabe, dass sie sich fehlerfrei mit \`JSON.parse\` lesen lässt.
+
+## Aufbau der Datei
+${aufbau}
 
 ## Regeln
 - Nur real existierende, überprüfbare Werke – nichts erfinden, keine erfundenen DOI oder Seitenzahlen.
@@ -5592,7 +5095,7 @@ kein Markdown. Prüfe vor der Ausgabe, dass sie sich fehlerfrei mit \`JSON.parse
 - "seiten" ist der Umfang; bei Unsicherheit "seitenUnsicher": true setzen und trotzdem schätzen.
 - "schwierigkeit" von 1 (leicht) bis 5 (sehr anspruchsvoll).
 - Bei mehreren Autoren jede:n einzeln in "autoren" auflisten, mit je eigenen Lebensdaten, Biographie und Einfluss.
-- "id"-Werte müssen nur innerhalb dieser Antwort zueinander passen ("planId" verweist auf eine "id" aus "lesepleane", "blockId" auf eine "id" aus "bloecke").
+${eigen}
 
 ## Sprache
 - Bei Büchern **vorzugsweise deutsche Ausgaben**: Titel und "ausgabe" dann auf Deutsch, "jahr" bleibt aber das Original-Erscheinungsjahr.
@@ -5608,11 +5111,12 @@ kein Markdown. Prüfe vor der Ausgabe, dass sie sich fehlerfrei mit \`JSON.parse
 - "seiten" ist bei Artikeln der Umfang in Seiten, "besitz" setzt du bei Artikeln auf \`"bibliothek"\` – dann landen sie nicht auf der Einkaufsliste.` : ''}${regeln ? '\n' + regeln : ''}`;
 }
 
-function kiPromptZeigen(prompt, dateiname) {
+function kiPromptZeigen(prompt, dateiname, stoebern) {
   const s = blatt('Prompt', `
     <p class="hinweis" style="padding:0 0 10px">
-      Kopieren, in Claude einfügen. Die Antwort als <span class="num">.json</span> speichern und hier unter
-      „Daten aus Datei laden“ → „Ergänzen“ einspielen.
+      Kopieren, in Claude einfügen. Die Antwort als <span class="num">.json</span> speichern und hier ${stoebern
+      ? 'unter <strong>Stöbern</strong> laden.'
+      : 'unter „Daten aus Datei laden“ → „Ergänzen“ einspielen.'}
     </p>
     <div class="btn-row">
       <button class="btn btn-primary" data-kopieren style="flex:1">In die Zwischenablage</button>
@@ -5731,6 +5235,719 @@ ${kiSchemaText('- "lesepleane" enthält genau einen Eintrag mit dem Namen exakt 
 }
 
 /* ============================================================
+   Stöbern, Teil 1: der Prompt für eine Werke-Sammlung
+   ============================================================ */
+function stoebernPromptOeffnen() {
+  const s = blatt('Sammlung zum Stöbern', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
+      Hier entsteht keine fertige leseliste, sondern ein Vorrat an Werken zu mehreren Themen.
+      Den lädst du unter <strong>Stöbern</strong> und wischst dich durch: nach rechts, was dich
+      interessiert. Aus dem Gemerkten baust du danach die Blöcke.
+    </p>
+    <div class="field">
+      <label>Themen – eines je Zeile</label>
+      <textarea data-themen style="min-height:120px" placeholder="Wachstumskritik&#10;Erkenntnistheorie&#10;Kolonialismus und seine Folgen&#10;Verhaltensökonomik"></textarea>
+      <span class="hint">Zwei bis acht Themen sind eine gute Spanne. Je Thema kommt etwa der gleiche Anteil.</span>
+    </div>
+    <div class="field">
+      <label>Wie viele Werke insgesamt?</label>
+      <input type="number" data-anzahl value="100" min="20" max="250">
+    </div>
+    <div class="field">
+      <label>Worauf soll besonders geachtet werden? (optional)</label>
+      <textarea data-zusatz style="min-height:60px" placeholder="z. B. auch ältere Grundlagentexte, nichts vor 1900, gern Gegenpositionen …"></textarea>
+    </div>
+    <div class="field">
+      <label class="optzeile"><input type="checkbox" data-artikel checked>
+        <span><strong>Auch Fachartikel</strong><br>Peer-reviewed und viel zitiert, wie über Google Scholar
+        auffindbar – bei Artikeln zählt allein die Qualität, nicht die Sprache.</span></label>
+    </div>
+    <button class="btn btn-primary btn-block" data-ok>Prompt erzeugen</button>`, { fokus: false });
+
+  $('[data-ok]', s).onclick = () => {
+    const themen = $('[data-themen]', s).value.split('\n').map(x => x.trim()).filter(Boolean);
+    if (!themen.length) { toast('Bitte mindestens ein Thema eintragen.'); return; }
+    const anzahl = clamp(Math.round(num($('[data-anzahl]', s).value) || 100), 20, 250);
+    const zusatz = $('[data-zusatz]', s).value.trim();
+    const artikel = $('[data-artikel]', s).checked;
+    const jeThema = Math.max(3, Math.round(anzahl / themen.length));
+
+    const prompt = `Ich nutze eine App für einen mehrjährigen Leseplan. Stell mir keinen fertigen Plan zusammen, sondern einen **Vorrat an Werken**, durch den ich mich anschließend durchblättere und auswähle. Diese Themen sollen darin vorkommen:
+
+${themen.map((t, i) => (i + 1) + '. ' + t).join('\n')}
+
+Etwa ${anzahl} Werke insgesamt, ungefähr gleich auf die Themen verteilt (rund ${jeThema} je Thema)${artikel ? ' – Bücher und wissenschaftliche Fachartikel gemischt' : ' (nur Bücher)'}. Innerhalb eines Themas soll die Spannweite groß sein: Grundlagentexte neben aktuellen Arbeiten, unterschiedliche Positionen, wo möglich Primärquellen statt Sekundärliteratur darüber. Keine Dopplungen.
+
+Jedes Werk trägt das Thema, zu dem es gehört – gib genau die Schreibweise aus meiner Liste zurück.
+
+${kiSchemaText('', artikel, true)}${zusatz ? '\n\n## Außerdem\n' + zusatz : ''}`;
+    kiPromptZeigen(prompt, 'stoebern-prompt.txt', true);
+  };
+}
+
+/* ============================================================
+   Stöbern, Teil 2: die App in der App
+   Laden → Themen wählen → wischen → Sammlung → Blöcke → anlegen
+   ============================================================ */
+
+/* Ein Werk aus der Datei auf die Felder bringen, die die App kennt.
+   Fremde Dateien dürfen unvollständig sein; fehlt etwas, bleibt es leer. */
+function stoWerkNorm(roh, i) {
+  const b = roh || {};
+  const autoren = normAutoren(b);
+  return {
+    id: 'w' + i,
+    titel: String(b.titel || b.title || 'Ohne Titel').trim(),
+    thema: String(b.thema || b.themenfeld || b.kategorie || 'Ohne Thema').trim() || 'Ohne Thema',
+    autor: String(b.autor || (autoren.length ? autoren.map(a => a.name).join(', ') : '')).trim(),
+    autoren,
+    jahr: b.jahr == null ? null : b.jahr,
+    seiten: b.seiten == null ? null : b.seiten,
+    seitenUnsicher: !!b.seitenUnsicher,
+    ausgabe: b.ausgabe || '',
+    beschreibung: b.beschreibung || '',
+    kurz: b.kurz || '',
+    schwierigkeit: (b.schwierigkeit >= 1 && b.schwierigkeit <= 5) ? +b.schwierigkeit : null,
+    besitz: BESITZ[b.besitz] ? b.besitz : 'fehlt'
+  };
+}
+
+/* Aus einer Datei die Werke ziehen – die Sammlung selbst, aber notfalls
+   auch eine gewöhnliche leseliste, deren Bücher dann den Vorrat bilden. */
+function stoWerkeAus(roh) {
+  if (!roh) return [];
+  const liste = Array.isArray(roh) ? roh
+    : Array.isArray(roh.werke) ? roh.werke
+      : Array.isArray(roh.buecher) ? roh.buecher : [];
+  /* Kommt eine leseliste, liefern ihre Blöcke die Themen. */
+  const blockNamen = {};
+  if (Array.isArray(roh.bloecke)) roh.bloecke.forEach(bl => { blockNamen[bl.id] = bl.name; });
+  return liste.map((w, i) => {
+    const n = stoWerkNorm(w, i);
+    if (n.thema === 'Ohne Thema' && w && blockNamen[w.blockId]) n.thema = blockNamen[w.blockId];
+    return n;
+  }).filter(w => w.titel && w.titel !== 'Ohne Titel');
+}
+
+/* Aus einem gemerkten Werk ein Buch der leseliste machen. */
+function stoBuchAus(w, blockId, ord) {
+  return {
+    id: uid(), blockId, ord,
+    titel: w.titel, autor: w.autor,
+    autorGeb: null, autorGest: null, autorBio: '', autorEinfluss: [],
+    autoren: w.autoren,
+    schwierigkeit: w.schwierigkeit,
+    jahr: w.jahr, seiten: w.seiten, seitenUnsicher: w.seitenUnsicher,
+    ausgabe: w.ausgabe, beschreibung: w.beschreibung, kurz: w.kurz,
+    preis: null, status: 'offen', besitz: w.besitz, einkauf: false,
+    sessions: [], notizen: []
+  };
+}
+
+function stoWerkZeile(w, ohneJahr) {
+  const a = w.autoren[0];
+  const lebt = a ? lebensdaten(a.geb, a.gest) : '';
+  return [w.autor || 'ohne Autor', lebt,
+    (ohneJahr || w.jahr == null) ? '' : jahrText(w.jahr),
+    w.seiten ? (w.seitenUnsicher ? 'ca. ' : '') + w.seiten + ' S.' : '']
+    .filter(Boolean).join(' · ');
+}
+
+function stoebernOeffnen() {
+  let werke = [], themen = [], gewaehlteThemen = new Set();
+  let stapel = [], zeiger = 0, gemerkt = [], verlauf = [];
+  let bloecke = [], frei = [], listenName = '';
+  let schritt = 'laden';
+
+  const node = document.createElement('div');
+  node.className = 'sto';
+  node.innerHTML = `
+    <div class="sto-kopf">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="t" data-t>Stöbern</div><div class="u" data-u></div></div>
+      <span class="sto-zaehler" data-zaehler hidden>${ICON.herz}<span data-zahl>0</span></span>
+    </div>
+    <div class="sto-fort"><i data-fort style="width:0%"></i></div>
+    <div class="sto-inhalt" style="flex:1;min-height:0;display:flex;flex-direction:column" data-inhalt></div>`;
+
+  const inhalt = $('[data-inhalt]', node);
+  const kopfT = $('[data-t]', node), kopfU = $('[data-u]', node);
+  const zaehler = $('[data-zaehler]', node), zahl = $('[data-zahl]', node);
+  const fort = $('[data-fort]', node);
+
+  const zaehlerAuffrischen = (puls) => {
+    zaehler.hidden = !(schritt === 'wischen' || schritt === 'sammlung');
+    zahl.textContent = String(gemerkt.length);
+    if (puls) {
+      zaehler.classList.remove('puls');
+      void zaehler.offsetWidth;
+      zaehler.classList.add('puls');
+    }
+  };
+
+  /* ---------- Schritt 1: laden ---------- */
+  const schrittLaden = () => {
+    kopfT.textContent = 'Stöbern';
+    kopfU.textContent = 'Eine Sammlung laden';
+    fort.style.width = '0%';
+    inhalt.innerHTML = `
+      <div class="sto-body">
+        <div class="empty" style="margin:0 0 14px">
+          <strong>Werke sichten statt Listen bauen</strong>
+          Lade einen Vorrat an Werken. Du bekommst sie einzeln gezeigt und wischst nach rechts,
+          was dich interessiert – nach links, was nicht. Aus dem Gemerkten baust du danach die Blöcke.
+        </div>
+        <button class="btn btn-primary btn-block" data-waehlen>${ICON.books} Sammlung wählen</button>
+        <input type="file" accept=".json,application/json" data-file hidden>
+        <p class="hinweis" style="padding:14px 0 8px">
+          Noch keine Sammlung? Die App baut dir den Prompt dafür – mehrere Themen hinein,
+          rund hundert Werke heraus.
+        </p>
+        <button class="btn btn-block" data-prompt>${ICON.tags} Prompt für eine Sammlung</button>
+      </div>`;
+    const datei = $('[data-file]', inhalt);
+    $('[data-waehlen]', inhalt).onclick = () => datei.click();
+    $('[data-prompt]', inhalt).onclick = () => stoebernPromptOeffnen();
+    datei.onchange = async () => {
+      const f = datei.files[0];
+      if (!f) return;
+      let roh;
+      try { roh = JSON.parse(await f.text()); }
+      catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); return; }
+      const gefunden = stoWerkeAus(roh);
+      if (!gefunden.length) { toast('Darin stecken keine Werke.', 4000); return; }
+      werke = gefunden;
+      themen = [];
+      werke.forEach(w => { if (!themen.includes(w.thema)) themen.push(w.thema); });
+      gewaehlteThemen = new Set(themen);
+      schritt = 'themen';
+      malen();
+    };
+  };
+
+  /* ---------- Schritt 2: Themen ---------- */
+  const schrittThemen = () => {
+    kopfT.textContent = 'Woraus stöbern?';
+    kopfU.textContent = pl(werke.length, 'Werk', 'Werke') + ' in ' + pl(themen.length, 'Thema', 'Themen');
+    fort.style.width = '8%';
+    const zaehle = t => werke.filter(w => w.thema === t).length;
+    inhalt.innerHTML = `
+      <div class="sto-body">
+        <p class="hinweis" style="padding:0 0 12px">Tippe ein Thema an, um es aus dem Stapel zu nehmen.</p>
+        <div class="list-card">${themen.map(t => `
+          <button class="rowline" data-thema="${esc(t)}" style="width:100%;text-align:left">
+            <span class="status-btn" data-hk style="width:24px;height:24px"></span>
+            <span class="grow"><span class="rn">${esc(t)}</span>
+              <span class="rm">${pl(zaehle(t), 'Werk', 'Werke')}</span></span>
+          </button>`).join('')}</div>
+        <div class="btn-row" style="margin-top:14px">
+          <button class="btn btn-sm" data-alle style="flex:1">Alle</button>
+          <button class="btn btn-sm" data-keine style="flex:1">Keines</button>
+        </div>
+        <label class="optzeile" style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--text-2);margin-top:16px">
+          <input type="checkbox" data-mischen checked style="width:auto;margin-top:3px">
+          <span><strong style="color:var(--text)">Durchmischen</strong><br>Die Themen wechseln sich ab, statt blockweise zu kommen.</span>
+        </label>
+      </div>
+      <div class="sto-fuss">
+        <button class="btn btn-primary btn-block" data-los></button>
+      </div>`;
+
+    const auffrischen = () => {
+      $$('[data-thema]', inhalt).forEach(b => {
+        const an = gewaehlteThemen.has(b.dataset.thema);
+        const hk = $('[data-hk]', b);
+        hk.innerHTML = an ? ICON.check : '';
+        hk.style.cssText = 'width:24px;height:24px;' + (an
+          ? 'border-color:var(--accent);color:var(--accent);background:var(--accent-soft)' : '');
+      });
+      const n = werke.filter(w => gewaehlteThemen.has(w.thema)).length;
+      const los = $('[data-los]', inhalt);
+      los.textContent = n ? 'Losstöbern · ' + pl(n, 'Werk', 'Werke') : 'Kein Thema gewählt';
+      los.disabled = !n;
+    };
+    $$('[data-thema]', inhalt).forEach(b => b.onclick = () => {
+      const t = b.dataset.thema;
+      gewaehlteThemen.has(t) ? gewaehlteThemen.delete(t) : gewaehlteThemen.add(t);
+      auffrischen();
+    });
+    $('[data-alle]', inhalt).onclick = () => { gewaehlteThemen = new Set(themen); auffrischen(); };
+    $('[data-keine]', inhalt).onclick = () => { gewaehlteThemen.clear(); auffrischen(); };
+    $('[data-los]', inhalt).onclick = () => {
+      stapel = werke.filter(w => gewaehlteThemen.has(w.thema));
+      if ($('[data-mischen]', inhalt).checked) stapel = stoMischen(stapel);
+      zeiger = 0; gemerkt = []; verlauf = [];
+      schritt = 'wischen';
+      malen();
+    };
+    auffrischen();
+  };
+
+  /* Die Themen abwechselnd ziehen, damit nicht alles am Stück kommt. */
+  const stoMischen = (liste) => {
+    const faecher = new Map();
+    liste.forEach(w => {
+      if (!faecher.has(w.thema)) faecher.set(w.thema, []);
+      faecher.get(w.thema).push(w);
+    });
+    const reihen = Array.from(faecher.values());
+    const out = [];
+    let i = 0;
+    while (out.length < liste.length) {
+      const r = reihen[i % reihen.length];
+      if (r.length) out.push(r.shift());
+      i++;
+      if (reihen.every(x => !x.length)) break;
+    }
+    return out;
+  };
+
+  /* ---------- Schritt 3: wischen ---------- */
+  const schrittWischen = () => {
+    kopfT.textContent = 'Stöbern';
+    inhalt.innerHTML = `
+      <div class="stoBuehne">
+        <div class="stoDeck" data-deck>
+          <div class="stoHerz" data-herz>${ICON.herz}</div>
+        </div>
+      </div>
+      <div class="sto-fuss">
+        <div class="stoKnoepfe">
+          <button class="nein" data-nein aria-label="Weg">${ICON.x}</button>
+          <button class="rueck" data-rueck aria-label="Zurück">${ICON.rueck}</button>
+          <button class="ja" data-ja aria-label="Merken">${ICON.herz}</button>
+        </div>
+        <button class="btn btn-block btn-ghost btn-sm" style="margin-top:10px" data-fertig></button>
+      </div>`;
+    const deck = $('[data-deck]', inhalt);
+    const herz = $('[data-herz]', inhalt);
+    let karten = [];
+    let sperre = false;
+
+    const tiefeSetzen = (el, t, f) => {
+      const s = 1 - t * 0.04 + f * 0.04, y = t * 26 - f * 26;
+      el.style.transform = `translateY(${y}px) scale(${s})`;
+    };
+
+    const kopfAuffrischen = () => {
+      kopfU.textContent = Math.min(zeiger + 1, stapel.length) + ' von ' + stapel.length;
+      fort.style.width = (zeiger / Math.max(1, stapel.length) * 100) + '%';
+      $('[data-rueck]', inhalt).disabled = !verlauf.length;
+      const f = $('[data-fertig]', inhalt);
+      f.textContent = gemerkt.length
+        ? 'Fertig – ' + pl(gemerkt.length, 'Werk gemerkt', 'Werke gemerkt')
+        : 'Noch nichts gemerkt';
+      f.disabled = !gemerkt.length;
+      zaehlerAuffrischen(false);
+    };
+
+    const karteBauen = (w) => {
+      const el = document.createElement('div');
+      el.className = 'stoKarte';
+      el.innerHTML = `
+        <span class="kStempel kJa">MERKEN</span>
+        <span class="kStempel kNein">WEG</span>
+        <div class="kKopf">
+          <span class="kThema">${esc(w.thema)}</span>
+          <span class="kJahr num">${w.jahr != null ? esc(jahrText(w.jahr)) : ''}</span>
+        </div>
+        <div class="kTitel">${esc(w.titel)}</div>
+        <div class="kAutor">${esc(stoWerkZeile(w, true))}</div>
+        ${w.kurz ? `<div class="kKurz">${esc(w.kurz)}</div>` : ''}
+        ${w.beschreibung ? `<div class="kText">${esc(w.beschreibung)}</div>` : '<div class="kText"></div>'}
+        ${w.beschreibung && w.beschreibung.length > 260 ? '<button class="kMehr" data-mehr>Ganzen Text lesen</button>' : ''}
+        <div class="kFuss">
+          ${w.schwierigkeit ? stufeHtml(w.schwierigkeit) : ''}
+          ${w.ausgabe ? `<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(w.ausgabe)}</span>` : ''}
+        </div>`;
+      const mehr = $('[data-mehr]', el);
+      if (mehr) mehr.onclick = e => { e.stopPropagation(); stoWerkBlatt(w); };
+      return el;
+    };
+
+    const deckMalen = () => {
+      deck.querySelectorAll('.stoKarte').forEach(n => n.remove());
+      karten = [];
+      const rest = stapel.length - zeiger;
+      if (rest <= 0) { schritt = 'sammlung'; malen(); return; }
+      for (let t = Math.min(2, rest - 1); t >= 0; t--) {
+        const el = karteBauen(stapel[zeiger + t]);
+        el.style.zIndex = String(10 - t);
+        if (t > 0) el.classList.add('hinten');
+        tiefeSetzen(el, t, 0);
+        deck.appendChild(el);
+        karten.unshift({ el, werk: stapel[zeiger + t] });
+      }
+      if (karten[0]) ziehenBinden(karten[0].el);
+      kopfAuffrischen();
+    };
+
+    /* Die Entscheidung festhalten und zur nächsten Karte gehen. */
+    const entscheiden = (mochte) => {
+      const w = stapel[zeiger];
+      if (!w) return;
+      verlauf.push({ werk: w, mochte });
+      if (mochte) { gemerkt.push(w); zaehlerAuffrischen(true); }
+      zeiger++;
+      deckMalen();
+    };
+
+    const wegfliegen = (richtung) => {
+      if (sperre || !karten[0]) return;
+      sperre = true;
+      const el = karten[0].el;
+      const b = deck.clientWidth || 320;
+      el.style.transition = 'transform .38s cubic-bezier(.3,.6,.4,1),opacity .38s ease';
+      el.style.transform = `translate(${richtung * b * 1.5}px,${richtung * 40}px) rotate(${richtung * 26}deg)`;
+      el.style.opacity = '0';
+      const st = $('.' + (richtung > 0 ? 'kJa' : 'kNein'), el);
+      if (st) st.style.opacity = '1';
+      if (richtung > 0) {
+        herz.classList.remove('los');
+        void herz.offsetWidth;
+        herz.classList.add('los');
+      }
+      if (karten[1]) tiefeSetzen(karten[1].el, 1, 1);
+      setTimeout(() => { sperre = false; entscheiden(richtung > 0); }, 300);
+    };
+
+    const zurueck = () => {
+      if (sperre || !verlauf.length) return;
+      const letzt = verlauf.pop();
+      if (letzt.mochte) {
+        const i = gemerkt.lastIndexOf(letzt.werk);
+        if (i >= 0) gemerkt.splice(i, 1);
+        zaehlerAuffrischen(false);
+      }
+      zeiger = Math.max(0, zeiger - 1);
+      deckMalen();
+      /* Von der Seite wieder hereinschieben, aus der sie verschwunden ist. */
+      const el = karten[0] && karten[0].el;
+      if (el) {
+        const b = deck.clientWidth || 320;
+        el.style.transition = 'none';
+        el.style.transform = `translate(${(letzt.mochte ? 1 : -1) * b * 1.2}px,0) rotate(${(letzt.mochte ? 1 : -1) * 18}deg)`;
+        void el.offsetWidth;
+        el.style.transition = 'transform .34s cubic-bezier(.2,.7,.3,1)';
+        tiefeSetzen(el, 0, 0);
+      }
+    };
+
+    /* Ziehen mit dem Finger: die Karte folgt, kippt und stempelt sich. */
+    const ziehenBinden = (el) => {
+      let x0 = 0, y0 = 0, dx = 0, dy = 0, zieht = false, zeigerId = null;
+      const stJa = $('.kJa', el), stNein = $('.kNein', el);
+      const schwelle = () => Math.max(70, (deck.clientWidth || 320) * 0.26);
+
+      const setzen = () => {
+        el.style.transform = `translate(${dx}px,${dy * 0.35}px) rotate(${dx * 0.05}deg)`;
+        const f = clamp(Math.abs(dx) / schwelle(), 0, 1);
+        if (stJa) stJa.style.opacity = dx > 0 ? String(f) : '0';
+        if (stNein) stNein.style.opacity = dx < 0 ? String(f) : '0';
+        if (karten[1]) tiefeSetzen(karten[1].el, 1, f);
+      };
+
+      el.addEventListener('pointerdown', e => {
+        if (sperre || (e.target.closest && e.target.closest('[data-mehr]'))) return;
+        zieht = true; zeigerId = e.pointerId;
+        x0 = e.clientX; y0 = e.clientY; dx = dy = 0;
+        el.style.transition = 'none';
+        window.__zieht = true;
+        try { el.setPointerCapture(zeigerId); } catch (err) { }
+      });
+      el.addEventListener('pointermove', e => {
+        if (!zieht || e.pointerId !== zeigerId) return;
+        dx = e.clientX - x0; dy = e.clientY - y0;
+        setzen();
+      });
+      const loslassen = () => {
+        if (!zieht) return;
+        zieht = false;
+        window.__zieht = false;
+        try { el.releasePointerCapture(zeigerId); } catch (err) { }
+        el.style.transition = '';
+        if (Math.abs(dx) > schwelle()) { wegfliegen(dx > 0 ? 1 : -1); return; }
+        el.style.transition = 'transform .3s cubic-bezier(.2,.8,.3,1)';
+        tiefeSetzen(el, 0, 0);
+        if (stJa) stJa.style.opacity = '0';
+        if (stNein) stNein.style.opacity = '0';
+        if (karten[1]) tiefeSetzen(karten[1].el, 1, 0);
+      };
+      el.addEventListener('pointerup', loslassen);
+      el.addEventListener('pointercancel', loslassen);
+      /* Ein Tipp öffnet die ganze Beschreibung. */
+      el.addEventListener('click', e => {
+        if (Math.abs(dx) > 6 || (e.target.closest && e.target.closest('[data-mehr]'))) return;
+        const w = karten[0] && karten[0].werk;
+        if (w) stoWerkBlatt(w);
+      });
+    };
+
+    $('[data-nein]', inhalt).onclick = () => wegfliegen(-1);
+    $('[data-ja]', inhalt).onclick = () => wegfliegen(1);
+    $('[data-rueck]', inhalt).onclick = zurueck;
+    $('[data-fertig]', inhalt).onclick = () => { schritt = 'sammlung'; malen(); };
+    deckMalen();
+  };
+
+  /* ---------- Schritt 4: Sammlung ---------- */
+  const schrittSammlung = () => {
+    kopfT.textContent = 'Gemerkt';
+    kopfU.textContent = pl(gemerkt.length, 'Werk', 'Werke')
+      + (zeiger < stapel.length ? ' · ' + (stapel.length - zeiger) + ' ungesichtet' : '');
+    fort.style.width = '66%';
+    if (!gemerkt.length) {
+      inhalt.innerHTML = `
+        <div class="sto-body">
+          <div class="empty" style="margin:0">
+            <strong>Noch nichts gemerkt</strong>
+            Wische nach rechts, was dich interessiert – daraus entsteht die leseliste.
+          </div>
+        </div>
+        <div class="sto-fuss"><button class="btn btn-block" data-weiter>Weiter stöbern</button></div>`;
+      $('[data-weiter]', inhalt).onclick = () => { schritt = 'wischen'; malen(); };
+      return;
+    }
+    const nachThema = [];
+    gemerkt.forEach(w => {
+      let g = nachThema.find(x => x.thema === w.thema);
+      if (!g) { g = { thema: w.thema, werke: [] }; nachThema.push(g); }
+      g.werke.push(w);
+    });
+    inhalt.innerHTML = `
+      <div class="sto-body">
+        ${nachThema.map(g => `
+          <div class="section-head" style="padding:0"><h2>${esc(g.thema)}</h2>
+            <span class="eyebrow">${g.werke.length}</span></div>
+          <div class="list-card" style="margin-bottom:16px">${g.werke.map(w => `
+            <div class="stoWerk">
+              <span class="grow"><span class="wn">${esc(w.titel)}</span>
+                <span class="wm">${esc(stoWerkZeile(w))}</span></span>
+              <button class="icon-btn" data-raus="${w.id}" aria-label="Verwerfen">${ICON.x}</button>
+            </div>`).join('')}</div>`).join('')}
+      </div>
+      <div class="sto-fuss">
+        ${zeiger < stapel.length ? '<button class="btn btn-block btn-sm" style="margin-bottom:8px" data-weiter>Weiter stöbern · ' + (stapel.length - zeiger) + ' offen</button>' : ''}
+        <button class="btn btn-primary btn-block" data-bloecke>Zu Blöcken ordnen</button>
+      </div>`;
+    $$('[data-raus]', inhalt).forEach(b => b.onclick = () => {
+      const i = gemerkt.findIndex(w => w.id === b.dataset.raus);
+      if (i >= 0) gemerkt.splice(i, 1);
+      zaehlerAuffrischen(false);
+      malen();
+    });
+    const w8 = $('[data-weiter]', inhalt);
+    if (w8) w8.onclick = () => { schritt = 'wischen'; malen(); };
+    $('[data-bloecke]', inhalt).onclick = () => {
+      /* Vorschlag: jedes Thema wird ein Block, in der Reihenfolge des Vorrats. */
+      bloecke = [];
+      frei = [];
+      gemerkt.forEach(w => {
+        let bl = bloecke.find(x => x.name === w.thema);
+        if (!bl) { bl = { id: uid(), name: w.thema, werke: [] }; bloecke.push(bl); }
+        bl.werke.push(w);
+      });
+      if (!listenName) listenName = bloecke.length === 1 ? bloecke[0].name : 'Meine Auswahl';
+      schritt = 'bloecke';
+      malen();
+    };
+  };
+
+  /* ---------- Schritt 5: Blöcke ---------- */
+  const schrittBloecke = () => {
+    kopfT.textContent = 'Blöcke ordnen';
+    const n = bloecke.reduce((s, b) => s + b.werke.length, 0) + frei.length;
+    kopfU.textContent = pl(bloecke.length, 'Block', 'Blöcke') + ' · ' + pl(n, 'Werk', 'Werke');
+    fort.style.width = '100%';
+
+    const werkZeile = (w, blockId) => `
+      <div class="stoWerk">
+        <span class="grow"><span class="wn">${esc(w.titel)}</span>
+          <span class="wm">${esc(stoWerkZeile(w))}</span></span>
+        <button class="icon-btn" data-schieb="${w.id}" data-von="${blockId}" aria-label="In anderen Block">${ICON.schieben}</button>
+        <button class="icon-btn" data-raus="${w.id}" data-von="${blockId}" aria-label="Verwerfen">${ICON.x}</button>
+      </div>`;
+
+    inhalt.innerHTML = `
+      <div class="sto-body">
+        <div class="field">
+          <label>Name der neuen leseliste</label>
+          <input type="text" data-name value="${esc(listenName)}" placeholder="z. B. Meine Auswahl">
+        </div>
+        ${bloecke.map((bl, i) => `
+          <div class="stoBlock${bl.werke.length ? '' : ' leer'}">
+            <div class="bk">
+              <input type="text" data-bname="${bl.id}" value="${esc(bl.name)}" placeholder="Blockname">
+              <span class="bz">${bl.werke.length}</span>
+              <button class="icon-btn" data-hoch="${bl.id}" aria-label="Nach oben"${i ? '' : ' disabled'}>${ICON.up}</button>
+              <button class="icon-btn" data-runter="${bl.id}" aria-label="Nach unten"${i < bloecke.length - 1 ? '' : ' disabled'}>${ICON.down}</button>
+              <button class="icon-btn" data-blweg="${bl.id}" aria-label="Block auflösen">${ICON.trash}</button>
+            </div>
+            <div class="bw">${bl.werke.length
+        ? bl.werke.map(w => werkZeile(w, bl.id)).join('')
+        : '<div class="stoLeer">Leer – verschiebe Werke hierher oder löse den Block auf.</div>'}</div>
+          </div>`).join('')}
+        <button class="btn btn-block btn-sm" data-neublock>${ICON.plus} Block anlegen</button>
+        ${frei.length ? `
+          <div class="section-head" style="margin-top:20px;padding:0"><h2>Ohne Block</h2>
+            <span class="eyebrow">${frei.length}</span></div>
+          <div class="list-card">${frei.map(w => werkZeile(w, '')).join('')}</div>
+          <p class="hinweis" style="padding:8px 0 0">Was hier stehen bleibt, kommt als Block „Weitere“ mit.</p>` : ''}
+      </div>
+      <div class="sto-fuss">
+        <button class="btn btn-primary btn-block" data-anlegen></button>
+      </div>`;
+
+    const anlegen = $('[data-anlegen]', inhalt);
+    anlegen.textContent = n ? 'leseliste anlegen · ' + pl(n, 'Werk', 'Werke') : 'Nichts zu übernehmen';
+    anlegen.disabled = !n;
+
+    $('[data-name]', inhalt).oninput = e => { listenName = e.target.value; };
+    $$('[data-bname]', inhalt).forEach(i => i.oninput = () => {
+      const bl = bloecke.find(x => x.id === i.dataset.bname);
+      if (bl) bl.name = i.value;
+    });
+    $$('[data-hoch]', inhalt).forEach(b => b.onclick = () => {
+      const i = bloecke.findIndex(x => x.id === b.dataset.hoch);
+      if (i > 0) { bloecke.splice(i - 1, 0, bloecke.splice(i, 1)[0]); malen(); }
+    });
+    $$('[data-runter]', inhalt).forEach(b => b.onclick = () => {
+      const i = bloecke.findIndex(x => x.id === b.dataset.runter);
+      if (i >= 0 && i < bloecke.length - 1) { bloecke.splice(i + 1, 0, bloecke.splice(i, 1)[0]); malen(); }
+    });
+    $$('[data-blweg]', inhalt).forEach(b => b.onclick = () => {
+      const i = bloecke.findIndex(x => x.id === b.dataset.blweg);
+      if (i < 0) return;
+      frei = frei.concat(bloecke[i].werke);
+      bloecke.splice(i, 1);
+      malen();
+    });
+    $('[data-neublock]', inhalt).onclick = () => {
+      bloecke.push({ id: uid(), name: 'Neuer Block', werke: [] });
+      malen();
+    };
+    $$('[data-raus]', inhalt).forEach(b => b.onclick = () => {
+      const von = b.dataset.von;
+      const topf = von ? (bloecke.find(x => x.id === von) || {}).werke : frei;
+      if (!topf) return;
+      const i = topf.findIndex(w => w.id === b.dataset.raus);
+      if (i >= 0) {
+        const w = topf.splice(i, 1)[0];
+        const g = gemerkt.indexOf(w);
+        if (g >= 0) gemerkt.splice(g, 1);
+      }
+      zaehlerAuffrischen(false);
+      malen();
+    });
+    $$('[data-schieb]', inhalt).forEach(b => b.onclick = () => {
+      const von = b.dataset.von;
+      const topf = von ? (bloecke.find(x => x.id === von) || {}).werke : frei;
+      if (!topf) return;
+      const w = topf.find(x => x.id === b.dataset.schieb);
+      if (!w) return;
+      stoVerschieben(w, () => {
+        const i = topf.indexOf(w);
+        if (i >= 0) topf.splice(i, 1);
+      });
+    });
+    $('[data-anlegen]', inhalt).onclick = () => fertigstellen();
+  };
+
+  /* Wohin mit diesem Werk? */
+  const stoVerschieben = (w, entfernen) => {
+    const s = blatt('„' + w.titel + '“ verschieben', `
+      <div class="list-card" data-l></div>
+      <button class="btn btn-block btn-sm" style="margin-top:12px" data-neu>${ICON.plus} In neuen Block</button>`,
+      { fokus: false });
+    const l = $('[data-l]', s);
+    l.innerHTML = bloecke.map(bl => `
+      <button class="rowline" data-zu="${bl.id}" style="width:100%;text-align:left">
+        <span class="grow"><span class="rn">${esc(bl.name || 'Ohne Namen')}</span>
+          <span class="rm">${pl(bl.werke.length, 'Werk', 'Werke')}</span></span>
+        <span class="chev">${ICON.chev}</span>
+      </button>`).join('')
+      + `<button class="rowline" data-zu="" style="width:100%;text-align:left">
+           <span class="grow"><span class="rn">Ohne Block</span>
+             <span class="rm">später zuordnen</span></span>
+           <span class="chev">${ICON.chev}</span></button>`;
+    $$('[data-zu]', s).forEach(b => b.onclick = () => {
+      entfernen();
+      const ziel = b.dataset.zu ? bloecke.find(x => x.id === b.dataset.zu) : null;
+      if (ziel) ziel.werke.push(w); else frei.push(w);
+      layerSchliessen();
+      malen();
+    });
+    $('[data-neu]', s).onclick = () => {
+      const bl = { id: uid(), name: w.thema || 'Neuer Block', werke: [] };
+      entfernen();
+      bl.werke.push(w);
+      bloecke.push(bl);
+      layerSchliessen();
+      malen();
+    };
+  };
+
+  const fertigstellen = () => {
+    const name = (listenName || '').trim() || 'Meine Auswahl';
+    const fertig = bloecke.filter(b => b.werke.length).map(b => ({
+      name: (b.name || '').trim() || 'Ohne Namen', werke: b.werke
+    }));
+    if (frei.length) fertig.push({ name: 'Weitere', werke: frei.slice() });
+    if (!fertig.length) { toast('Kein Werk zugeordnet.'); return; }
+    let planId = null;
+    aendern(() => {
+      const plan = { id: uid(), name, ord: DB.lesepleane.length };
+      DB.lesepleane.push(plan);
+      planId = plan.id;
+      DB.einstellungen.aktiverPlanId = plan.id;
+      fertig.forEach((bl, i) => {
+        const block = { id: uid(), planId: plan.id, name: bl.name, notiz: '', ord: i };
+        DB.bloecke.push(block);
+        bl.werke.forEach((w, j) => DB.buecher.push(stoBuchAus(w, block.id, j)));
+      });
+    });
+    const anzahl = fertig.reduce((s, b) => s + b.werke.length, 0);
+    layerSchliessen();
+    offeneBloecke.clear();
+    if (aktiverTab !== 'plan') tabWechseln('plan'); else viewMalen();
+    toast('„' + name + '“ angelegt: ' + pl(fertig.length, 'Block', 'Blöcke') + ', ' + pl(anzahl, 'Werk', 'Werke') + '.', 4000);
+  };
+
+  const malen = () => {
+    if (schritt === 'laden') schrittLaden();
+    else if (schritt === 'themen') schrittThemen();
+    else if (schritt === 'wischen') schrittWischen();
+    else if (schritt === 'sammlung') schrittSammlung();
+    else schrittBloecke();
+    zaehlerAuffrischen(false);
+  };
+
+  /* Der Pfeil oben führt einen Schritt zurück, aus dem ersten heraus. */
+  $('[data-back]', node).onclick = () => {
+    const zurueckZu = { themen: 'laden', wischen: 'themen', sammlung: 'wischen', bloecke: 'sammlung' };
+    if (zurueckZu[schritt]) { schritt = zurueckZu[schritt]; malen(); }
+    else layerSchliessen();
+  };
+
+  layerOeffnen(node, () => { window.__zieht = false; });
+  malen();
+}
+
+/* Ein Werk in ganzer Länge – aus der Karte heraus. */
+function stoWerkBlatt(w) {
+  blatt(w.titel, `
+    <p class="muted" style="font-size:12.5px;margin-bottom:12px">${esc(stoWerkZeile(w))}</p>
+    ${w.kurz ? `<p style="font-size:14px;font-style:italic;color:var(--text-2);line-height:1.55;margin-bottom:12px">${esc(w.kurz)}</p>` : ''}
+    ${w.beschreibung ? `<p class="desc">${esc(w.beschreibung).replace(/\n/g, '<br>')}</p>` : ''}
+    ${w.autoren.filter(a => a.bio).map(a => `
+      <div class="section-head" style="margin:18px 0 6px;padding:0"><h2>${esc(a.name)}</h2>
+        ${lebensdaten(a.geb, a.gest) ? `<span class="eyebrow num">${esc(lebensdaten(a.geb, a.gest))}</span>` : ''}</div>
+      <p class="desc" style="font-size:13px">${esc(a.bio)}</p>`).join('')}
+    ${w.ausgabe ? `<p class="hinweis" style="padding:14px 0 0">${esc(w.ausgabe)}</p>` : ''}`,
+    { fokus: false });
+}
+
+/* ============================================================
    Mehr: Speicher, Arten, Sicherung
    ============================================================ */
 function mehrMalen(root) {
@@ -5825,6 +6042,26 @@ function mehrMalen(root) {
           </span>
           <button class="btn btn-sm" data-ki-bewerten>Prompt</button>
         </div>
+        <div class="rowline">
+          <span class="grow">
+            <span class="rn">Sammlung zum Stöbern</span>
+            <span class="rm">Prompt über mehrere Themen – rund hundert Werke zum Durchwischen</span>
+          </span>
+          <button class="btn btn-sm" data-ki-stoebern>Prompt</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Stöbern</h2></div>
+      <div class="list-card">
+        <div class="rowline">
+          <span class="grow">
+            <span class="rn">Sammlung durchsehen</span>
+            <span class="rm">Werk für Werk wischen, Gemerktes zu Blöcken ordnen</span>
+          </span>
+          <button class="btn btn-sm" data-stoebern>Öffnen</button>
+        </div>
       </div>
     </div>
 
@@ -5909,6 +6146,8 @@ function mehrMalen(root) {
   $('[data-plaene]', root).onclick = planWechsler;
   $('[data-ki-erstellen]', root).onclick = kiErstellenOeffnen;
   $('[data-ki-bewerten]', root).onclick = kiBewertenOeffnen;
+  $('[data-ki-stoebern]', root).onclick = stoebernPromptOeffnen;
+  $('[data-stoebern]', root).onclick = () => stoebernOeffnen();
   $('[data-einkauf]', root).onclick = einkaufslisteOeffnen;
   $('[data-einf]', root).onclick = einfuehrungZeigen;
   $('[data-zielx]', root).onclick = () => zielBearbeiten();

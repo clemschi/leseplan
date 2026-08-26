@@ -96,7 +96,7 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
 
 ## Mit KI
 
-Unter *Mehr → Mit KI* stehen zwei Prompt-Generatoren. Beide erzeugen einen Text zum
+Unter *Mehr → Mit KI* stehen drei Prompt-Generatoren. Alle erzeugen einen Text zum
 Kopieren, der in Claude eingefügt wird. Der Prompt verlangt die Antwort als
 **herunterladbare `leseliste.json`**, nicht als Nachricht im Chat – die Datei wird
 unter *Daten aus Datei laden → Ergänzen* eingespielt.
@@ -109,11 +109,37 @@ unter *Daten aus Datei laden → Ergänzen* eingespielt.
   Autoren, Jahr, Kurzfassung) mit; die Beurteilung kommt in den Chat, die Vorschläge in
   die Datei, einsortiert in bestehende oder neue Blöcke.
 
-Beide Prompts nehmen auf Wunsch **Fachartikel** mit auf – peer-reviewed und viel
+Ein dritter Prompt, **Sammlung zum Stöbern**, liefert keinen fertigen Plan, sondern
+einen Vorrat: mehrere Themen hinein, rund hundert Werke heraus, jedes mit seinem Thema.
+Diese Datei ist das Futter fürs Stöbern.
+
+Alle drei Prompts nehmen auf Wunsch **Fachartikel** mit auf – peer-reviewed und viel
 zitiert, wie über Google Scholar auffindbar. Bei Büchern werden deutsche Ausgaben
 bevorzugt, einschlägige englische aber ausdrücklich mitgenommen; bei Artikeln zählt
 allein die Qualität, nicht die Sprache. Artikel tragen Zeitschrift, Seiten und DOI im
 Feld *Ausgabe* und landen nicht auf der Einkaufsliste.
+
+## Stöbern
+
+Eine App in der App, erreichbar über *Stöbern* – in der noch leeren Listenansicht, unter
+*Mehr → leselisten* und unter *Mehr → Stöbern*. Sie führt in fünf Schritten von einem
+Vorrat an Werken zu einer fertigen leseliste:
+
+1. **Laden** – eine Sammlung als `.json`. Es geht auch eine gewöhnliche leseliste; dann
+   werden ihre Blöcke zu Themen.
+2. **Themen wählen** – jedes Thema lässt sich aus dem Stapel nehmen. *Durchmischen* sorgt
+   dafür, dass die Themen sich abwechseln, statt blockweise zu kommen.
+3. **Wischen** – ein Werk je Karte, mit Thema, Autor, Kurzfassung, Beschreibung und
+   Schwierigkeit. Nach rechts heißt merken, nach links weg; die Karte folgt dem Finger,
+   kippt und stempelt sich. Ein Tipp öffnet den ganzen Text, der Pfeil nimmt die letzte
+   Entscheidung zurück. Wer lieber tippt, nimmt die drei Knöpfe darunter.
+4. **Sammlung** – das Gemerkte nach Themen geordnet, einzeln wieder verwerfbar.
+5. **Blöcke ordnen** – jedes Thema wird als Block vorgeschlagen. Blöcke lassen sich
+   umbenennen, verschieben, anlegen und auflösen; einzelne Werke wandern per Knopf in
+   einen anderen Block. Was ohne Block bleibt, kommt als Block *Weitere* mit. Ein Name
+   für die leseliste, und sie steht.
+
+Es wird nichts gespeichert, bevor du am Ende *leseliste anlegen* drückst.
 
 ## Lesen und Einkaufen
 
@@ -131,11 +157,7 @@ nach unten wegschieben. Langes Drücken auf einen **Block** verschiebt ihn nach 
 oder unten.
 
 Nach dem Start einer Lese-Sitzung fragt die App, ob und wie lange ein **Timer**
-laufen soll. Steht er, tritt an die Stelle der Frage sofort eine **Sanduhr** auf reinem
-Schwarz – unabhängig davon, ob die App hell oder dunkel läuft. Der Sandstand folgt der
-echten Uhr, das Rieseln der eingestellten Dauer: eine Minute stürzt, fünfundvierzig
-tröpfeln. *Zur App* lässt die Sitzung weiterlaufen, die Uhrzeit in der Leiste holt die
-Sanduhr zurück. Der Wecker meldet sich mit Ton und Vibration, solange die Seite geöffnet
+laufen soll. Der Wecker meldet sich mit Ton und Vibration, solange die Seite geöffnet
 ist; bei gesperrtem Bildschirm friert das System die Seite ein – dafür braucht es den
 Timer der Uhr-App. Die Rückfrage lässt sich unter *Mehr* abschalten.
 
