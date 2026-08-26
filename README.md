@@ -22,13 +22,17 @@ separaten Datei und wird bewusst geladen.
 umgeschaltet wird über die Leiste ganz oben in der Planansicht oder unter *Mehr →
 leselisten*. Beim Start öffnet sich immer die zuletzt benutzte.
 
-## Erster Start
+## Startseite
 
-Zuerst steht nur der Name der App auf dem Grund – karg wie ein Homescreen, daneben ein
-Platzhalter für später. Ein Tipp auf **leseliste** öffnet sie; derselbe Tipp löst das
-Vollbild aus, denn ohne Geste des Nutzers lässt kein Browser es zu. Unten sitzen
+Jeder Start beginnt hier: nur der Name der App auf dem Grund, karg wie ein Homescreen,
+daneben ein Platzhalter für später. Ein Tipp auf **leseliste** öffnet sie; derselbe Tipp
+löst das Vollbild aus, denn ohne Geste des Nutzers lässt kein Browser es zu. Unten sitzen
 Hell/Dunkel, Vollbild und *Speicherort und Daten* – dahinter liegen die ausführlichen
 Wege: Datei anlegen, Datei öffnen, Daten laden, von KI zusammenstellen, Stöbern.
+
+Zurück führt das **×** in der Kopfzeile oder ein Wisch nach rechts, wenn die Liste offen
+ist. **Hell/Dunkel und Vollbild** stehen überall zur Verfügung: jede Ebene und jedes
+Blatt trägt das Paar oben rechts.
 
 ## Speicherort
 
@@ -156,7 +160,10 @@ Vorrat an Werken zu einer fertigen leseliste:
    einen anderen Block. Was ohne Block bleibt, kommt als Block *Weitere* mit. Ein Name
    für die leseliste, und sie steht.
 
-Es wird nichts gespeichert, bevor du am Ende *leseliste anlegen* drückst.
+Es wird nichts in die leseliste geschrieben, bevor du am Ende *leseliste anlegen*
+drückst. Der Durchgang selbst wird aber gemerkt: Vorrat, Stelle im Stapel, Gemerktes und
+die begonnenen Blöcke. Beim nächsten Öffnen geht es weiter, wo du aufgehört hast. Nach
+dem Anlegen bleibt der Vorrat samt Stelle stehen, das Gemerkte ist verbraucht.
 
 ## Lesen und Einkaufen
 

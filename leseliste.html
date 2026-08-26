@@ -323,6 +323,14 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .ovl-title{font-family:"Literata",Georgia,serif;font-size:15px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ovl-sub{font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ovl-body{flex:1;overflow-y:auto;}
+/* Hell/Dunkel und Vollbild sind überall erreichbar – auch dort, wo die
+   Kopfzeile der App verdeckt liegt. */
+.gknoepfe{display:flex;gap:2px;flex:0 0 auto;}
+.gknoepfe .icon-btn{width:32px;height:32px;background:none;border:0;color:var(--text-3);}
+.gknoepfe .icon-btn svg{width:16px;height:16px;}
+.sheet{position:relative;}
+.sheet > .gknoepfe{position:absolute;top:8px;right:8px;z-index:2;}
+.sheet h3{padding-right:74px;}
 
 /* ---------- Pager ---------- */
 .pagertabs{display:flex;gap:2px;padding:0 10px;border-bottom:1px solid var(--border);background:var(--bg);flex:0 0 auto;overflow-x:auto;scrollbar-width:none;}
@@ -894,7 +902,9 @@ function leereDb() {
     themen: [],
     lesepleane: [],
     bloecke: [],
-    buecher: []
+    buecher: [],
+    /* Der angefangene Stöber-Durchgang, damit man ihn später fortsetzen kann. */
+    stoebern: null
   };
 }
 
@@ -969,6 +979,8 @@ function normalisiere(raw) {
   if (!d.einstellungen.aktiverPlanId || !planIds.has(d.einstellungen.aktiverPlanId)) {
     d.einstellungen.aktiverPlanId = ersterPlan ? ersterPlan.id : null;
   }
+  d.stoebern = (raw && raw.stoebern && Array.isArray(raw.stoebern.werke) && raw.stoebern.werke.length)
+    ? raw.stoebern : null;
   d.buecher = (Array.isArray(d.buecher) ? d.buecher : []).map((b, i) => ({
     id: b.id || uid(),
     blockId: b.blockId || (d.bloecke[0] && d.bloecke[0].id) || null,
@@ -1262,10 +1274,10 @@ function zumStartbildschirm() {
   alleLayerSchliessen();
   Store.sichern(true);
   clearInterval(nowTick);
-  splashZeigen();
+  splashZeigen(appStarten);
 }
 
-function splashZeigen() {
+function splashZeigen(oeffnen) {
   const s = $('#setup');
   s.innerHTML = `
     <div class="splash">
@@ -1300,6 +1312,7 @@ function splashZeigen() {
     if (!e.target.closest('[data-oeffnen]')) return;
     /* Erst das Vollbild – nach einem await ist die Geste verbraucht. */
     try { if (DB.einstellungen.vollbildStart && !vollbildAn()) vollbildUmschalten(); } catch (err) { }
+    if (oeffnen) { oeffnen(); return; }
     Store.modus = 'geraet'; Store.handle = null;
     await Store.metaSchreiben();
     DB = normalisiere(await IDB.get('daten'));
@@ -1479,6 +1492,7 @@ function vollbildUmschalten() {
 }
 function vollbildKnopfMalen() {
   document.body.classList.toggle('voll', vollbildAn());
+  if (typeof globalKnoepfeMalen === 'function') globalKnoepfeMalen();
   const b = $('#btnVoll');
   if (!b) return;
   b.hidden = !vollbildGeht();
@@ -1816,8 +1830,12 @@ async function boot() {
     Store.modus = 'datei'; Store.handle = meta.handle; Store.dateiname = meta.dateiname || 'leseplan.json';
     const ok = await Store.rechtePruefen(meta.handle, false);
     if (ok) {
-      try { DB = normalisiere(await Store.ladeDaten()); appStarten(); return; }
-      catch (e) { console.error(e); }
+      try {
+        DB = normalisiere(await Store.ladeDaten());
+        themeAnwenden();
+        splashZeigen(appStarten);
+        return;
+      } catch (e) { console.error(e); }
     }
     /* Der Browser will die Freigabe erneut bestätigt haben. */
     zugriffFreigebenZeigen();
@@ -1826,7 +1844,8 @@ async function boot() {
   if (meta && meta.modus === 'geraet') {
     Store.modus = 'geraet';
     DB = normalisiere(await IDB.get('daten'));
-    appStarten();
+    themeAnwenden();
+    splashZeigen(appStarten);
     return;
   }
   splashZeigen();
@@ -2163,6 +2182,7 @@ const Layers = [];
 function layerOeffnen(node, onClose) {
   Layers.push({ node, onClose });
   $('#layers').appendChild(node);
+  globalKnoepfeEinsetzen(node);
   try { history.pushState({ layer: Layers.length }, ''); } catch (e) { }
   return node;
 }
@@ -2191,11 +2211,46 @@ function alleLayerSchliessen() {
 /* Die oberste Ebene gegen eine andere tauschen, ohne den Verlauf anzufassen.
    Schliessen und gleich wieder Öffnen ginge schief: das nachlaufende popstate
    des back() räumt sonst die eben erst geöffnete Ebene wieder weg. */
+/* ---------- Hell/Dunkel und Vollbild, überall erreichbar ----------
+   Jede Ebene und jedes Blatt bekommt das Paar automatisch eingesetzt; die
+   Kopfzeile der App liegt darunter verdeckt. */
+function globalKnoepfeHtml() {
+  return '<span class="gknoepfe">'
+    + '<button class="icon-btn" data-gtheme title="Hell oder dunkel" aria-label="Hell oder dunkel"></button>'
+    + (vollbildGeht() ? '<button class="icon-btn" data-gvoll title="Vollbild" aria-label="Vollbild"></button>' : '')
+    + '</span>';
+}
+function globalKnoepfeMalen(wurzel) {
+  $$('[data-gtheme]', wurzel || document).forEach(b => {
+    b.innerHTML = DB.einstellungen.theme === 'light' ? ICON.moon : ICON.sun;
+  });
+  $$('[data-gvoll]', wurzel || document).forEach(b => {
+    b.innerHTML = vollbildAn() ? ICON.vollAus : ICON.voll;
+  });
+}
+function globalKnoepfeEinsetzen(node) {
+  const kopf = $('.ovl-head', node);
+  if (kopf && !$('[data-gtheme]', kopf)) kopf.insertAdjacentHTML('beforeend', globalKnoepfeHtml());
+  const blatt = $('.sheet', node);
+  if (blatt && !$('[data-gtheme]', blatt)) blatt.insertAdjacentHTML('afterbegin', globalKnoepfeHtml());
+  globalKnoepfeMalen(node);
+}
+$('#layers').addEventListener('click', e => {
+  if (e.target.closest('[data-gtheme]')) {
+    themeUmschalten();
+    globalKnoepfeMalen();
+    viewMalen();
+  } else if (e.target.closest('[data-gvoll]')) {
+    vollbildUmschalten();
+  }
+});
+
 function layerErsetzen(node, onClose) {
   const alt = Layers.pop();
   if (alt) { alt.node.remove(); if (alt.onClose) alt.onClose(); }
   Layers.push({ node, onClose });
   $('#layers').appendChild(node);
+  globalKnoepfeEinsetzen(node);
   return node;
 }
 function layerPop() {
@@ -2301,7 +2356,9 @@ function tabVerschieben(d) {
 }
 (function wischNavigation() {
   let x0 = null, y0 = null, zeit = 0, gesperrt = false;
-  const tabu = '.book,.arow,.block,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,'
+  /* .block steht bewusst nicht hier: dort gibt es nur langes Drücken zum
+     Sortieren, kein waagerechtes Ziehen – der Wisch soll durchkommen. */
+  const tabu = '.book,.arow,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,'
     + '.nowbar,.zsRahmen,.netz,.sto,input,textarea,select,.sheet,.akk';
   document.addEventListener('touchstart', e => {
     if (e.touches.length !== 1 || window.__zieht) { x0 = null; return; }
@@ -5730,6 +5787,47 @@ function stoebernOeffnen() {
   let bloecke = [], frei = [], listenName = '';
   let schritt = 'laden';
 
+  /* Der Durchgang wird laufend im Speicher abgelegt: Werke einmal, alles
+     andere als Verweis darauf. So steht beim nächsten Mal derselbe Stand. */
+  const nachId = id => werke.find(w => w.id === id) || null;
+  const merken = () => {
+    if (!werke.length) return;
+    aendern(() => {
+      DB.stoebern = {
+        werke,
+        themen,
+        gewaehlt: Array.from(gewaehlteThemen),
+        stapel: stapel.map(w => w.id),
+        zeiger,
+        gemerkt: gemerkt.map(w => w.id),
+        verlauf: verlauf.map(v => ({ id: v.werk.id, mochte: v.mochte })),
+        bloecke: bloecke.map(b => ({ id: b.id, name: b.name, werke: b.werke.map(w => w.id) })),
+        frei: frei.map(w => w.id),
+        name: listenName,
+        schritt
+      };
+    });
+  };
+  const wiederherstellen = () => {
+    const g = DB.stoebern;
+    if (!g || !Array.isArray(g.werke) || !g.werke.length) return false;
+    werke = g.werke;
+    themen = Array.isArray(g.themen) ? g.themen : [];
+    gewaehlteThemen = new Set(Array.isArray(g.gewaehlt) ? g.gewaehlt : themen);
+    stapel = (g.stapel || []).map(nachId).filter(Boolean);
+    zeiger = clamp(+g.zeiger || 0, 0, stapel.length);
+    gemerkt = (g.gemerkt || []).map(nachId).filter(Boolean);
+    verlauf = (g.verlauf || []).map(v => ({ werk: nachId(v.id), mochte: !!v.mochte })).filter(v => v.werk);
+    bloecke = (g.bloecke || []).map(b => ({
+      id: b.id || uid(), name: b.name || '', werke: (b.werke || []).map(nachId).filter(Boolean)
+    }));
+    frei = (g.frei || []).map(nachId).filter(Boolean);
+    listenName = g.name || '';
+    schritt = ['themen', 'wischen', 'sammlung', 'bloecke'].includes(g.schritt) ? g.schritt : 'themen';
+    if (schritt === 'wischen' && !stapel.length) schritt = 'themen';
+    return true;
+  };
+
   const node = document.createElement('div');
   node.className = 'sto';
   node.innerHTML = `
@@ -5776,6 +5874,13 @@ function stoebernOeffnen() {
         </p>
         <button class="btn btn-block" data-prompt>${ICON.tags} Prompt für eine Sammlung</button>
       </div>`;
+    if (werke.length) {
+      /* Ein angefangener Durchgang liegt noch da – nur der Vollständigkeit
+         halber, denn beim Öffnen wird er ohnehin gleich fortgesetzt. */
+      $('.sto-body', inhalt).insertAdjacentHTML('afterbegin',
+        `<button class="btn btn-block" style="margin-bottom:14px" data-weiter>${ICON.rueck} Angefangenes fortsetzen</button>`);
+      $('[data-weiter]', inhalt).onclick = () => { schritt = 'themen'; malen(); };
+    }
     const datei = $('[data-file]', inhalt);
     $('[data-waehlen]', inhalt).onclick = () => datei.click();
     $('[data-prompt]', inhalt).onclick = () => stoebernPromptOeffnen();
@@ -5791,7 +5896,10 @@ function stoebernOeffnen() {
       themen = [];
       werke.forEach(w => { if (!themen.includes(w.thema)) themen.push(w.thema); });
       gewaehlteThemen = new Set(themen);
+      stapel = []; zeiger = 0; gemerkt = []; verlauf = [];
+      bloecke = []; frei = []; listenName = '';
       schritt = 'themen';
+      merken();
       malen();
     };
   };
@@ -5961,6 +6069,7 @@ function stoebernOeffnen() {
       if (mochte) { gemerkt.push(w); zaehlerAuffrischen(true); }
       zeiger++;
       deckMalen();
+      merken();
     };
 
     const wegfliegen = (richtung) => {
@@ -5992,6 +6101,7 @@ function stoebernOeffnen() {
       }
       zeiger = Math.max(0, zeiger - 1);
       deckMalen();
+      merken();
       /* Von der Seite wieder hereinschieben, aus der sie verschwunden ist. */
       const el = karten[0] && karten[0].el;
       if (el) {
@@ -6173,10 +6283,10 @@ function stoebernOeffnen() {
     anlegen.textContent = n ? 'leseliste anlegen · ' + pl(n, 'Werk', 'Werke') : 'Nichts zu übernehmen';
     anlegen.disabled = !n;
 
-    $('[data-name]', inhalt).oninput = e => { listenName = e.target.value; };
+    $('[data-name]', inhalt).oninput = e => { listenName = e.target.value; merken(); };
     $$('[data-bname]', inhalt).forEach(i => i.oninput = () => {
       const bl = bloecke.find(x => x.id === i.dataset.bname);
-      if (bl) bl.name = i.value;
+      if (bl) { bl.name = i.value; merken(); }
     });
     $$('[data-hoch]', inhalt).forEach(b => b.onclick = () => {
       const i = bloecke.findIndex(x => x.id === b.dataset.hoch);
@@ -6278,6 +6388,11 @@ function stoebernOeffnen() {
       });
     });
     const anzahl = fertig.reduce((s, b) => s + b.werke.length, 0);
+    /* Das Gemerkte ist verbraucht; der Vorrat und der Stand im Stapel
+       bleiben, damit man später weiterstöbern kann. */
+    gemerkt = []; verlauf = []; bloecke = []; frei = []; listenName = '';
+    schritt = zeiger < stapel.length ? 'wischen' : 'themen';
+    merken();
     layerSchliessen();
     offeneBloecke.clear();
     if (aktiverTab !== 'plan') tabWechseln('plan'); else viewMalen();
@@ -6291,6 +6406,7 @@ function stoebernOeffnen() {
     else if (schritt === 'sammlung') schrittSammlung();
     else schrittBloecke();
     zaehlerAuffrischen(false);
+    merken();
   };
 
   /* Der Pfeil oben führt einen Schritt zurück, aus dem ersten heraus. */
@@ -6300,7 +6416,14 @@ function stoebernOeffnen() {
     else layerSchliessen();
   };
 
-  layerOeffnen(node, () => { window.__zieht = false; });
+  layerOeffnen(node, () => {
+    window.__zieht = false;
+    /* Beim Verlassen wird der Stand sofort weggeschrieben – die
+       Selbstsicherung käme erst Sekunden später. */
+    merken();
+    Store.sichern(true);
+  });
+  if (wiederherstellen()) toast('Weiter, wo du aufgehört hast.');
   malen();
 }
 
