@@ -81,13 +81,27 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
   Aufklappen; ein Wisch zeigt die Kurzinfo. Jeder Autor führt, von wem er beeinflusst
   wurde; wer auf wen wirkt, leitet die App daraus ab und verlinkt es. Zwei Ansichten
   dazu: **Vernetzung** (alle Einflusslinien, nach Geburtsjahr gereiht, ein Tipp
-  zeigt nur die eines Autors) und **Zeitstrahl** (Lebenszeit als Balken, jedes Buch
+  zeigt nur die eines Autors; wer ohne Linie zu den anderen dasteht, wird eigens
+  aufgeführt, samt Einfluss in reinem Text) und **Zeitstrahl** (Lebenszeit als Balken, jedes Buch
   als Punkt im Jahr seiner Erstveröffentlichung). Die Skala des Zeitstrahls wird aus
   den Daten gebaut: belegte Zeitspannen bekommen Platz, leere Jahrhunderte werden
   schraffiert zusammengezogen – so steht Platon auf derselben Achse wie Piketty.
 - **Notizen** – buchübergreifend, umschaltbar zwischen Themenfeldern, Arten, allen
   Notizen und der Galerie aller Fotos.
 - **Suche** – über Titel, Autoren, Beschreibungen, Notizen und Themen.
+
+## Mit KI
+
+Unter *Mehr → Mit KI* stehen zwei Prompt-Generatoren. Beide erzeugen einen Text zum
+Kopieren, der in Claude eingefügt wird; die Antwort ist reines JSON im Ergänzen-Format
+– als Datei sichern und unter *Daten aus Datei laden → Ergänzen* einspielen.
+
+- **Leseliste erstellen lassen** – Forschungsfrage, These oder Thema eintragen,
+  gewünschte Buchzahl und Name der neuen leseliste dazu; die Antwort liefert eine
+  vollständige neue leseliste in Blöcken.
+- **Aktuelle Liste bewerten lassen** – schickt die aktuelle leseliste (Blöcke, Titel,
+  Autoren, Jahr, Kurzfassung) mit; die Antwort benennt Lücken und schlägt zusätzliche,
+  real existierende Bücher vor, einsortiert in bestehende oder neue Blöcke.
 
 ## Lesen und Einkaufen
 

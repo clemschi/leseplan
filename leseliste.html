@@ -3937,13 +3937,22 @@ function netzOeffnen() {
     if (!gewaehlt) {
       const zaehl = namen.map(a => ({ n: a.name, w: (inv.get(a.name) || []).length })).filter(x => x.w > 0)
         .sort((a, b) => b.w - a.w).slice(0, 5);
-      info.innerHTML = zaehl.length
+      const isoliert = namen.filter(a =>
+        !a.einfluss.some(q => autorAufloesen(alle, q)) && !(inv.get(a.name) || []).length);
+      info.innerHTML = (zaehl.length
         ? `<div class="section-head"><h2>Wirkt am weitesten</h2></div>
            <div class="list-card">${zaehl.map(x => `<button class="rowline" data-waehl="${esc(x.n)}" style="width:100%;text-align:left">
              <span class="grow"><span class="rn">${esc(x.n)}</span>
              <span class="rm">wirkt auf ${pl(x.w, 'Autor', 'Autoren')} dieser Liste</span></span>
              <span class="chev">${ICON.chev}</span></button>`).join('')}</div>`
-        : `<p class="hinweis">Noch keine Einflüsse eingetragen. Du findest das Feld beim Autor unter „Biographie &amp; Einfluss“.</p>`;
+        : `<p class="hinweis">Noch keine Einflüsse eingetragen. Du findest das Feld beim Autor unter „Biographie &amp; Einfluss“.</p>`)
+        + (isoliert.length
+          ? `<div class="section-head" style="margin-top:18px"><h2>Ohne Vernetzung in dieser Liste</h2><span class="eyebrow">${isoliert.length}</span></div>
+             <div class="list-card">${isoliert.map(a => `<button class="rowline" data-waehl="${esc(a.name)}" style="width:100%;text-align:left">
+               <span class="grow"><span class="rn">${esc(a.name)}</span>
+               <span class="rm">${a.einfluss.length ? 'beeinflusst von ' + a.einfluss.map(esc).join(', ') : 'keine Einflüsse eingetragen'}</span></span>
+               <span class="chev">${ICON.chev}</span></button>`).join('')}</div>`
+          : '');
     } else {
       const a = alle.get(gewaehlt);
       const von = a.einfluss.filter(q => autorAufloesen(alle, q));
@@ -4751,6 +4760,156 @@ function einkaufslisteOeffnen() {
 }
 
 /* ============================================================
+   KI-Prompts: Leseliste erstellen oder bewerten lassen
+   ============================================================ */
+function kiSchemaText(regeln) {
+  return `Antworte ausschließlich mit rohem JSON – kein Fließtext davor oder danach, kein Markdown-Codeblock. Aufbau:
+{
+  "lesepleane": [{ "id": "p1", "name": "..." }],
+  "bloecke": [{ "id": "b1", "planId": "p1", "name": "...", "ord": 0 }],
+  "buecher": [{
+    "id": "bu1", "blockId": "b1", "ord": 0,
+    "titel": "...",
+    "autor": "Anzeigename, bei mehreren Autoren durch Komma getrennt",
+    "autoren": [{ "name": "...", "geb": 1946, "gest": null,
+      "bio": "Zwei bis vier Sätze Biographie.",
+      "einfluss": ["Name einer Person, von der er/sie beeinflusst wurde", "..."] }],
+    "jahr": 1975,
+    "seiten": 300,
+    "seitenUnsicher": false,
+    "ausgabe": "Verlag, ggf. Übersetzer:in einer gängigen deutschen Ausgabe",
+    "beschreibung": "Ein Absatz: worum es geht und warum es in diese Liste gehört.",
+    "kurz": "Das Buch in höchstens 15 Wörtern.",
+    "schwierigkeit": 3
+  }]
+}
+Regeln:
+- Nur real existierende, überprüfbare Bücher – nichts erfinden.
+- "jahr" ist das Jahr der Erstveröffentlichung im Original; vor Christus als negative Zahl (z. B. -380 für 380 v. Chr.).
+- "seiten" bezieht sich auf eine gängige deutsche Ausgabe; bei Unsicherheit "seitenUnsicher": true setzen und trotzdem schätzen.
+- "schwierigkeit" von 1 (leicht) bis 5 (sehr anspruchsvoll).
+- Bei mehreren Autoren jede:n einzeln in "autoren" auflisten, mit je eigenen Lebensdaten, Biographie und Einfluss.
+- "id"-Werte müssen nur innerhalb dieser Antwort zueinander passen ("planId" verweist auf eine "id" aus "lesepleane", "blockId" auf eine "id" aus "bloecke").${regeln ? '\n' + regeln : ''}`;
+}
+
+function kiPromptZeigen(prompt, dateiname) {
+  const s = blatt('Prompt', `
+    <p class="hinweis" style="padding:0 0 10px">
+      Kopieren, in Claude einfügen. Die Antwort als <span class="num">.json</span> speichern und hier unter
+      „Daten aus Datei laden“ → „Ergänzen“ einspielen.
+    </p>
+    <div class="btn-row">
+      <button class="btn btn-primary" data-kopieren style="flex:1">In die Zwischenablage</button>
+      <button class="btn" data-txt style="flex:1">Als Textdatei</button>
+    </div>
+    <pre style="margin-top:14px;max-height:44vh;overflow:auto;font-size:11px;color:var(--text-2);white-space:pre-wrap;font-family:'IBM Plex Mono',monospace">${esc(prompt)}</pre>`,
+    { fokus: false });
+  $('[data-kopieren]', s).onclick = async () => {
+    try { await navigator.clipboard.writeText(prompt); toast('Kopiert.'); }
+    catch (e) { toast('Kopieren ging nicht – nimm die Textdatei.', 3500); }
+  };
+  $('[data-txt]', s).onclick = () => dateiAnbieten(dateiname, prompt);
+}
+
+function kiErstellenOeffnen() {
+  const artLabel = { forschungsfrage: 'Forschungsfrage', these: 'These', thema: 'Thema' };
+  const s = blatt('Leseliste per KI erstellen', `
+    <div class="field">
+      <label>Was soll die Liste erschließen?</label>
+      <label style="display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;font-size:13px;color:var(--text-2)">
+        <input type="radio" name="kiart" value="forschungsfrage" checked style="width:auto;margin-top:3px">
+        <span><strong style="color:var(--text)">Forschungsfrage</strong></span>
+      </label>
+      <label style="display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;font-size:13px;color:var(--text-2)">
+        <input type="radio" name="kiart" value="these" style="width:auto;margin-top:3px">
+        <span><strong style="color:var(--text)">These</strong></span>
+      </label>
+      <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--text-2)">
+        <input type="radio" name="kiart" value="thema" style="width:auto;margin-top:3px">
+        <span><strong style="color:var(--text)">Thema</strong></span>
+      </label>
+    </div>
+    <div class="field">
+      <label data-artlabel>Forschungsfrage</label>
+      <textarea data-text style="min-height:90px"></textarea>
+    </div>
+    <div class="field">
+      <label>Name der neuen leseliste</label>
+      <input type="text" data-name placeholder="z. B. Wachstumskritik">
+    </div>
+    <div class="field">
+      <label>Wie viele Bücher ungefähr?</label>
+      <input type="number" data-anzahl value="16" min="4" max="60">
+    </div>
+    <button class="btn btn-primary btn-block" data-ok>Prompt erzeugen</button>`, { fokus: false });
+
+  $$('input[name=kiart]', s).forEach(r => r.onchange = () => {
+    $('[data-artlabel]', s).textContent = artLabel[r.value];
+  });
+
+  $('[data-ok]', s).onclick = () => {
+    const art = $('input[name=kiart]:checked', s).value;
+    const text = $('[data-text]', s).value.trim();
+    if (!text) { toast('Bitte erst ' + artLabel[art].toLowerCase() + ' eintragen.'); return; }
+    const anzahl = clamp(Math.round(num($('[data-anzahl]', s).value) || 16), 4, 60);
+    const name = $('[data-name]', s).value.trim() || (art === 'thema' ? text : artLabel[art]);
+    const einleitung = {
+      forschungsfrage: 'die folgender Forschungsfrage nachgeht',
+      these: 'die folgende These von mehreren Seiten beleuchtet – auch mit Gegenpositionen, nicht nur zustimmender Literatur',
+      thema: 'die folgendes Thema erschließt'
+    }[art];
+    const prompt = `Ich nutze eine App für einen mehrjährigen Leseplan (leselisten aus Blöcken aus Büchern, mit Autor:innen-Biographien und deren Einflüssen). Stell mir eine neue leseliste zusammen, ${einleitung}:
+
+"${text}"
+
+Etwa ${anzahl} Bücher, sinnvoll in thematische Blöcke gegliedert (mehrere Bücher je Block). Wo das Thema kontrovers ist, nimm bewusst unterschiedliche Positionen und wo möglich Primärquellen auf, nicht nur Sekundärliteratur darüber. Die leseliste soll „${name}“ heißen.
+
+${kiSchemaText()}`;
+    kiPromptZeigen(prompt, 'leseliste-prompt.txt');
+  };
+}
+
+function kiBewertenOeffnen() {
+  const plan = aktiverPlan();
+  if (!plan) { toast('Erst eine leseliste anlegen.'); return; }
+  const bloecke = bloeckeSortiert().filter(bl => buecherIn(bl.id).length);
+  const buecher = buecherAktiv();
+  if (!buecher.length) { toast('Diese leseliste hat noch keine Bücher.'); return; }
+
+  const s = blatt('Leseliste per KI bewerten', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
+      Erzeugt einen Prompt mit deiner aktuellen leseliste „${esc(plan.name)}“ (${pl(buecher.length, 'Buch', 'Bücher')}).
+      Die Antwort schlägt fehlende Werke vor, passend zum Einspielen über „Ergänzen“.
+    </p>
+    <div class="field">
+      <label>Worauf soll besonders geachtet werden? (optional)</label>
+      <textarea data-zusatz style="min-height:70px" placeholder="z. B. mehr internationale Stimmen, mehr Gegenpositionen zu Block 3 …"></textarea>
+    </div>
+    <button class="btn btn-primary btn-block" data-ok>Prompt erzeugen</button>`, { fokus: false });
+
+  $('[data-ok]', s).onclick = () => {
+    const zusatz = $('[data-zusatz]', s).value.trim();
+    const listing = bloecke.map(bl =>
+      `### ${bl.name}\n` + buecherIn(bl.id).map(b =>
+        `- ${b.titel} — ${b.autor || 'ohne Autor'} (${jahrText(b.jahr)})${b.kurz ? ' — ' + b.kurz : ''}`
+      ).join('\n')
+    ).join('\n\n');
+
+    const prompt = `Ich nutze eine App für einen mehrjährigen Leseplan. Das ist meine aktuelle leseliste „${plan.name}“, ${pl(bloecke.length, 'Block', 'Blöcke')}, ${pl(buecher.length, 'Buch', 'Bücher')}:
+
+${listing}
+
+Bitte:
+1. Beurteile diese Liste: Wo gibt es Lücken, Einseitigkeiten oder fehlende Gegenpositionen? Was fehlt, um das Thema bzw. die Themen ausgewogen abzudecken?${zusatz ? ' ' + zusatz : ''}
+2. Schlag mir zusätzliche, real existierende Bücher vor, die diese Lücken schließen – keine Titel, die schon oben stehen.
+3. Ordne jeden Vorschlag entweder einem der bestehenden Blöcke zu (dann exakt denselben Blocknamen wie oben verwenden) oder einem neuen, treffend benannten Block.
+
+${kiSchemaText('- "lesepleane" enthält genau einen Eintrag mit dem Namen exakt „' + plan.name + '“, damit die Vorschläge in diese leseliste einsortiert werden statt eine neue anzulegen.\n- Nur die vorgeschlagenen, neuen Bücher ausgeben – nicht die schon vorhandenen.')}`;
+    kiPromptZeigen(prompt, 'leseliste-ergaenzen-prompt.txt');
+  };
+}
+
+/* ============================================================
    Mehr: Speicher, Arten, Sicherung
    ============================================================ */
 function mehrMalen(root) {
@@ -4824,6 +4983,26 @@ function mehrMalen(root) {
         <div class="rowline">
           <span class="grow"><span class="rn" style="color:var(--bad)">Alles löschen</span><span class="rm">Setzt diesen Speicherort auf leer zurück</span></span>
           <button class="btn btn-sm btn-danger" data-reset>Zurücksetzen</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Mit KI</h2></div>
+      <div class="list-card">
+        <div class="rowline">
+          <span class="grow">
+            <span class="rn">Leseliste erstellen lassen</span>
+            <span class="rm">Prompt zu Forschungsfrage, These oder Thema – als JSON importierbar</span>
+          </span>
+          <button class="btn btn-sm" data-ki-erstellen>Prompt</button>
+        </div>
+        <div class="rowline">
+          <span class="grow">
+            <span class="rn">Aktuelle Liste bewerten lassen</span>
+            <span class="rm">Prompt mit deiner leseliste – Antwort schlägt fehlende Werke vor</span>
+          </span>
+          <button class="btn btn-sm" data-ki-bewerten>Prompt</button>
         </div>
       </div>
     </div>
@@ -4907,6 +5086,8 @@ function mehrMalen(root) {
     viewMalen();
   });
   $('[data-plaene]', root).onclick = planWechsler;
+  $('[data-ki-erstellen]', root).onclick = kiErstellenOeffnen;
+  $('[data-ki-bewerten]', root).onclick = kiBewertenOeffnen;
   $('[data-einkauf]', root).onclick = einkaufslisteOeffnen;
   $('[data-einf]', root).onclick = einfuehrungZeigen;
   $('[data-zielx]', root).onclick = () => zielBearbeiten();
