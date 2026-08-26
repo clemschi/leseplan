@@ -82,7 +82,9 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
   wurde; wer auf wen wirkt, leitet die App daraus ab und verlinkt es. Zwei Ansichten
   dazu: **Vernetzung** (alle Einflusslinien, nach Geburtsjahr gereiht, ein Tipp
   zeigt nur die eines Autors) und **Zeitstrahl** (Lebenszeit als Balken, jedes Buch
-  als Punkt im Jahr seiner Erstveröffentlichung).
+  als Punkt im Jahr seiner Erstveröffentlichung). Die Skala des Zeitstrahls wird aus
+  den Daten gebaut: belegte Zeitspannen bekommen Platz, leere Jahrhunderte werden
+  schraffiert zusammengezogen – so steht Platon auf derselben Achse wie Piketty.
 - **Notizen** – buchübergreifend, umschaltbar zwischen Themenfeldern, Arten, allen
   Notizen und der Galerie aller Fotos.
 - **Suche** – über Titel, Autoren, Beschreibungen, Notizen und Themen.

@@ -434,9 +434,12 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
   border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);}
 .zsName{position:absolute;top:6px;font-size:10.5px;line-height:14px;padding:0 7px;white-space:nowrap;
   color:var(--text);text-shadow:0 0 4px var(--surface),0 0 3px var(--surface);pointer-events:none;}
-.zsPunkt{position:absolute;top:9px;width:9px;height:9px;border-radius:50%;background:var(--s1);
-  border:1.5px solid var(--chart-surface);transform:translateX(-50%);cursor:pointer;}
+.zsPunkt{position:absolute;top:8px;width:11px;height:11px;border-radius:50%;background:var(--accent);
+  border:2px solid var(--surface);transform:translateX(-50%);cursor:pointer;z-index:3;}
 .zsPunkt.gelesen{background:var(--good);}
+.zsBruch{position:absolute;top:24px;bottom:0;width:18px;z-index:1;
+  background:repeating-linear-gradient(115deg,transparent 0 4px,var(--grid) 4px 6px);
+  border-left:1px dashed var(--border-strong);border-right:1px dashed var(--border-strong);}
 
 .blockkopf{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:18px 0 9px;}
 .blockkopf h3{font-size:13px;font-weight:600;}
@@ -1947,7 +1950,8 @@ function tabVerschieben(d) {
 }
 (function wischNavigation() {
   let x0 = null, y0 = null, zeit = 0, gesperrt = false;
-  const tabu = '.book,.arow,.block,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,.nowbar,input,textarea,select,.sheet,.akk';
+  const tabu = '.book,.arow,.block,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,'
+    + '.nowbar,.zsRahmen,.netz,input,textarea,select,.sheet,.akk';
   document.addEventListener('touchstart', e => {
     if (e.touches.length !== 1 || window.__zieht) { x0 = null; return; }
     const t = e.touches[0];
@@ -3935,22 +3939,53 @@ function netzOeffnen() {
         .sort((a, b) => b.w - a.w).slice(0, 5);
       info.innerHTML = zaehl.length
         ? `<div class="section-head"><h2>Wirkt am weitesten</h2></div>
-           <div class="list-card">${zaehl.map(x => `<div class="rowline"><span class="grow"><span class="rn">${esc(x.n)}</span>
-             <span class="rm">wirkt auf ${pl(x.w, 'Autor', 'Autoren')} dieser Liste</span></span></div>`).join('')}</div>`
+           <div class="list-card">${zaehl.map(x => `<button class="rowline" data-waehl="${esc(x.n)}" style="width:100%;text-align:left">
+             <span class="grow"><span class="rn">${esc(x.n)}</span>
+             <span class="rm">wirkt auf ${pl(x.w, 'Autor', 'Autoren')} dieser Liste</span></span>
+             <span class="chev">${ICON.chev}</span></button>`).join('')}</div>`
         : `<p class="hinweis">Noch keine Einflüsse eingetragen. Du findest das Feld beim Autor unter „Biographie &amp; Einfluss“.</p>`;
     } else {
       const a = alle.get(gewaehlt);
       const von = a.einfluss.filter(q => autorAufloesen(alle, q));
       const auf = inv.get(gewaehlt) || [];
+      const nurText = a.einfluss.filter(q => !autorAufloesen(alle, q));
       info.innerHTML = `
         <div class="section-head"><h2>${esc(gewaehlt)}</h2><button class="btn btn-sm btn-ghost" data-weg>Auswahl lösen</button></div>
         <div class="einfluss">
-          <div><div class="eg">Beeinflusst von</div><div class="er">${von.length ? von.map(n => `<span class="en link">${esc(n)}</span>`).join('') : '<span class="en" style="opacity:.6">niemandem hier</span>'}</div></div>
-          <div><div class="eg">Wirkt auf</div><div class="er">${auf.length ? auf.map(n => `<span class="en link">${esc(n)}</span>`).join('') : '<span class="en" style="opacity:.6">niemanden hier</span>'}</div></div>
-        </div>`;
+          <div><div class="eg">Beeinflusst von</div><div class="er">${(von.length || nurText.length)
+        ? von.map(n => `<span class="en link" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
+        + nurText.map(n => `<span class="en">${esc(n)}</span>`).join('')
+        : '<span class="en" style="opacity:.6">niemandem hier</span>'}</div></div>
+          <div><div class="eg">Wirkt auf</div><div class="er">${auf.length
+        ? auf.map(n => `<span class="en link" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
+        : '<span class="en" style="opacity:.6">niemanden hier</span>'}</div></div>
+        </div>
+        <div class="section-head" style="margin:18px 0 9px"><h2>Werke in deinen Listen</h2><span class="eyebrow">${a.buecher.length}</span></div>
+        <div data-werke></div>`;
       const weg = $('[data-weg]', info);
       if (weg) weg.onclick = () => { gewaehlt = null; malen(); };
+      const w = $('[data-werke]', info);
+      a.buecher.forEach(x => {
+        const r = document.createElement('button');
+        r.className = 'grouprow';
+        r.innerHTML = `<span class="grow">
+            <span class="gname serif">${esc(x.titel)}</span>
+            <span class="gmeta">${x.jahr != null ? esc(jahrText(x.jahr)) + ' · ' : ''}${STATUS[x.status]}${x.seiten ? ' · ' + x.seiten + ' S.' : ''}</span>
+          </span><span class="chev">${ICON.chev}</span>`;
+        r.onclick = () => buchOeffnen(x.id);
+        w.appendChild(r);
+      });
     }
+    /* Ein Name unten wählt oben aus und holt die Zeile ins Bild. */
+    $$('[data-waehl]', info).forEach(x => x.onclick = () => {
+      const ziel = autorAufloesen(alle, x.dataset.waehl);
+      if (!ziel) return;
+      gewaehlt = ziel;
+      malen();
+      const i = namen.findIndex(a => a.name === ziel);
+      const zeile = behaelter.children[i + 1];
+      if (zeile && zeile.scrollIntoView) zeile.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
   };
 
   $('[data-back]', node).onclick = () => layerSchliessen();
@@ -3958,20 +3993,62 @@ function netzOeffnen() {
   malen();
 }
 
-/* ---------- Zeitstrahl: Lebzeiten und Erscheinungsjahre ---------- */
+/* ---------- Zeitstrahl: Lebzeiten und Erscheinungsjahre ----------
+   Die Skala wird aus den Daten gebaut: belegte Zeitspannen bekommen Platz,
+   leere Jahrhunderte werden zu einem Bruch zusammengezogen. So passt die
+   Antike neben die Neuzeit, ohne dass dazwischen Leere steht. */
+function zeitSkala(spannen, px, minLuecke, bruchBreite) {
+  const s = spannen.filter(x => x && x.von != null && x.bis != null)
+    .map(x => ({ von: Math.min(x.von, x.bis) - 6, bis: Math.max(x.von, x.bis) + 6 }))
+    .sort((a, b) => a.von - b.von);
+  const teile = [];
+  s.forEach(x => {
+    const letzt = teile[teile.length - 1];
+    if (letzt && x.von - letzt.bis <= minLuecke) letzt.bis = Math.max(letzt.bis, x.bis);
+    else teile.push({ von: x.von, bis: x.bis });
+  });
+  let cursor = 0;
+  teile.forEach((t, i) => {
+    t.x0 = cursor;
+    t.breite = Math.max(30, (t.bis - t.von) * px);
+    cursor += t.breite;
+    t.x1 = cursor;
+    if (i < teile.length - 1) { t.bruchX = cursor; cursor += bruchBreite; }
+  });
+  const x = jahr => {
+    for (const t of teile) {
+      if (jahr >= t.von && jahr <= t.bis) return t.x0 + (jahr - t.von) * px;
+    }
+    /* Zwischen zwei Abschnitten: an den nächstgelegenen Rand legen. */
+    let best = teile[0], dist = Infinity;
+    teile.forEach(t => {
+      const d = jahr < t.von ? t.von - jahr : jahr - t.bis;
+      if (d < dist) { dist = d; best = t; }
+    });
+    return jahr < best.von ? best.x0 : best.x1;
+  };
+  return { teile, x, breite: cursor };
+}
+
 function zeitstrahlOeffnen() {
   const alle = autorenIndex(buecherAktiv());
   const jetzt = new Date().getFullYear();
   const liste = Array.from(alle.values()).filter(a => a.geb != null).sort((a, b) => a.geb - b.geb);
-  const antike = liste.filter(a => a.geb < 1000);
-  const neuzeit = liste.filter(a => a.geb >= 1000);
   const ohne = Array.from(alle.values()).filter(a => a.geb == null);
 
-  const von = neuzeit.length ? Math.floor((neuzeit[0].geb - 15) / 10) * 10 : 1700;
-  const bis = Math.ceil((jetzt + 2) / 10) * 10;
-  const PX = 2.8;
-  const breite = Math.max(700, (bis - von) * PX);
-  const x = j => (j - von) * PX;
+  if (!liste.length) {
+    toast('Noch keine Lebensdaten eingetragen.');
+    return;
+  }
+
+  const PX = 2.9, LUECKE = 60, BRUCH = 18;
+  const spannen = [];
+  liste.forEach(a => {
+    spannen.push({ von: a.geb, bis: a.gest != null ? a.gest : jetzt });
+    a.buecher.forEach(b => { if (b.jahr != null) spannen.push({ von: b.jahr, bis: b.jahr }); });
+  });
+  const skala = zeitSkala(spannen, PX, LUECKE, BRUCH);
+  const breite = Math.max(700, Math.round(skala.breite) + 20);
 
   const node = document.createElement('div');
   node.className = 'overlay';
@@ -3979,52 +4056,58 @@ function zeitstrahlOeffnen() {
     <div class="ovl-head">
       <button class="icon-btn" data-back>${ICON.back}</button>
       <div class="grow"><div class="ovl-title serif">Zeitstrahl</div>
-        <div class="ovl-sub">${von}–${bis} · ${pl(neuzeit.length, 'Autor', 'Autoren')}</div></div>
+        <div class="ovl-sub">${pl(liste.length, 'Autor', 'Autoren')} · ${pl(skala.teile.length, 'Abschnitt', 'Abschnitte')}</div></div>
     </div>
     <div class="ovl-body" style="padding:12px 14px 40px">
       <p class="hinweis" style="padding:0 0 10px">
-        Der Balken ist die Lebenszeit, jeder Punkt ein Buch aus deiner Liste im Jahr seiner
-        Erstveröffentlichung. Grün heißt gelesen. Seitlich wischen, Punkte antippen.
+        Der Balken ist die Lebenszeit, jeder Punkt ein Buch im Jahr seiner Erstveröffentlichung –
+        grün heißt gelesen. Wo Jahrhunderte ohne Einträge liegen, ist die Skala schraffiert
+        zusammengezogen. Seitlich wischen, Punkte antippen.
       </p>
       <div class="zsRahmen"><div class="zsInner" style="width:${breite}px" data-zs></div></div>
-      <div data-antike style="margin-top:14px"></div>
+      <div data-rest style="margin-top:14px"></div>
     </div>`;
 
-  const inner = $('[data-zs]', node);
+  /* Achse: je Abschnitt eigene Schritte, damit die Beschriftung passt */
   let html = '<div class="zsAchse">';
-  for (let j = Math.ceil(von / 25) * 25; j <= bis; j += 25) {
-    html += `<span style="left:${x(j)}px">${j}</span>`;
-  }
+  const striche = [];
+  skala.teile.forEach(t => {
+    const spanne = t.bis - t.von;
+    const schritt = [10, 25, 50, 100, 250, 500, 1000].find(x => spanne / x <= 6) || 1000;
+    const start = Math.ceil(t.von / schritt) * schritt;
+    for (let j = start; j <= t.bis; j += schritt) {
+      html += `<span style="left:${skala.x(j)}px">${esc(jahrText(j).replace(' v. Chr.', ' v'))}</span>`;
+      striche.push(skala.x(j));
+    }
+  });
   html += '</div>';
-  for (let j = Math.ceil(von / 25) * 25; j <= bis; j += 25) {
-    html += `<div class="zsGitter" style="left:${x(j)}px"></div>`;
-  }
-  neuzeit.forEach((a, reihe) => {
+  striche.forEach(x => { html += `<div class="zsGitter" style="left:${x}px"></div>`; });
+  skala.teile.forEach(t => { if (t.bruchX != null) html += `<div class="zsBruch" style="left:${t.bruchX}px"></div>`; });
+
+  liste.forEach((a, reihe) => {
     const ende = a.gest != null ? a.gest : jetzt;
-    const l = x(a.geb), b = Math.max(18, x(ende) - x(a.geb));
+    const l = skala.x(a.geb), b = Math.max(18, skala.x(ende) - l);
     html += `<div class="zsZeile"${reihe % 2 ? ' style="background:color-mix(in srgb,var(--text-3) 6%,transparent)"' : ''}>
       <div class="zsBalken" style="left:${l}px;width:${b}px"></div>
-      <div class="zsName" style="left:${l + 4}px">${esc(a.name)}${a.gest == null ? '' : ''}</div>`;
-    a.buecher.filter(x2 => x2.jahr != null && x2.jahr >= von).forEach(b2 => {
-      html += `<div class="zsPunkt${b2.status === 'gelesen' ? ' gelesen' : ''}" style="left:${x(b2.jahr)}px"
+      <div class="zsName" style="left:${l + 4}px">${esc(a.name)}</div>`;
+    a.buecher.filter(x => x.jahr != null).forEach(b2 => {
+      html += `<div class="zsPunkt${b2.status === 'gelesen' ? ' gelesen' : ''}" style="left:${skala.x(b2.jahr)}px"
         data-buch="${b2.id}" title="${esc(b2.titel)} (${esc(jahrText(b2.jahr))})"></div>`;
     });
     html += '</div>';
   });
+
+  const inner = $('[data-zs]', node);
   inner.innerHTML = html;
   $$('[data-buch]', inner).forEach(p => p.onclick = () => {
     const b = buchById(p.dataset.buch);
-    if (b) toast(b.titel + ' · ' + jahrText(b.jahr));
+    if (b) toast(b.titel + ' · ' + jahrText(b.jahr) + ' · zweimal tippen öffnet das Buch');
   });
   $$('[data-buch]', inner).forEach(p => p.ondblclick = () => buchOeffnen(p.dataset.buch));
 
-  const rest = $('[data-antike]', node);
-  const zeilen = [];
-  antike.forEach(a => zeilen.push(esc(a.name) + ' (' + esc(lebensdaten(a.geb, a.gest) || '') + ')'));
-  ohne.forEach(a => zeilen.push(esc(a.name) + ' (ohne Lebensdaten)'));
-  if (zeilen.length) {
-    rest.innerHTML = `<div class="section-head"><h2>Außerhalb der Skala</h2></div>
-      <p class="hinweis" style="padding:0">${zeilen.join(' · ')}</p>`;
+  if (ohne.length) {
+    $('[data-rest]', node).innerHTML = `<div class="section-head"><h2>Ohne Lebensdaten</h2></div>
+      <p class="hinweis" style="padding:0">${ohne.map(a => esc(a.name)).join(' · ')}</p>`;
   }
 
   $('[data-back]', node).onclick = () => layerSchliessen();
