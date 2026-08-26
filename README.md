@@ -86,6 +86,12 @@ beziehungsweise aus einer geöffneten Ansicht heraus. Blätter von unten lassen 
 nach unten wegschieben. Langes Drücken auf einen **Block** verschiebt ihn nach oben
 oder unten.
 
+Nach dem Start einer Lese-Sitzung fragt die App, ob und wie lange ein **Timer**
+laufen soll. Der Wecker in der leseliste meldet sich mit Ton und Vibration, solange
+die Seite offen ist. Auf Android lässt sich derselbe Timer zusätzlich in der Uhr-App
+stellen – nur der klingelt auch bei gesperrtem Bildschirm, weil eine Webseite dann
+vom System eingefroren wird. Die Rückfrage lässt sich unter *Mehr* abschalten.
+
 Ein **Tagesziel** in Seiten wird bei der Einführung abgefragt, steht danach in der
 Kopfzeile und füllt sich aus den Lese-Sitzungen; die Rubrik *Tage* führt Protokoll.
 

@@ -670,7 +670,7 @@ function leereDb() {
     version: 2,
     erstellt: Date.now(),
     geaendert: Date.now(),
-    einstellungen: { theme: 'dark', akzent: 'messing', vollbildStart: true, zielSeiten: null, einfuehrung: false, weckerMin: 45, autosaveSek: 60, aktiverPlanId: null },
+    einstellungen: { theme: 'dark', akzent: 'messing', vollbildStart: true, zielSeiten: null, einfuehrung: false, weckerMin: 45, timerFragen: true, autosaveSek: 60, aktiverPlanId: null },
     arten: STD_ARTEN.map((n, i) => ({ id: uid(), name: n, farbe: ART_FARBEN[i % 8] })),
     themen: [],
     lesepleane: [],
@@ -691,7 +691,7 @@ function seiteText(s) { return (s == null || s === '') ? '' : String(s); }
 function normalisiere(raw) {
   const d = Object.assign(leereDb(), raw || {});
   d.einstellungen = Object.assign(
-    { theme: 'dark', akzent: 'messing', vollbildStart: true, zielSeiten: null, einfuehrung: false, weckerMin: 45, autosaveSek: 60, aktiverPlanId: null },
+    { theme: 'dark', akzent: 'messing', vollbildStart: true, zielSeiten: null, einfuehrung: false, weckerMin: 45, timerFragen: true, autosaveSek: 60, aktiverPlanId: null },
     raw && raw.einstellungen);
   d.arten = (Array.isArray(d.arten) ? d.arten : []).map((a, i) => ({
     id: a.id || uid(), name: String(a.name || 'Art'), farbe: a.farbe || ART_FARBEN[i % 8]
@@ -1438,6 +1438,35 @@ function zugriffFreigebenZeigen() {
 /* ============================================================
    Lese-Sitzungen: starten, beenden, laufende anzeigen
    ============================================================ */
+const istAndroid = () => /Android/i.test(navigator.userAgent || '');
+
+/* Übergabe an die Uhr-App des Handys: Nur ein Systemwecker klingelt auch,
+   wenn der Bildschirm gesperrt ist. */
+async function handyTimerStellen(minuten, titel) {
+  await Store.sichern(true);
+  const url = 'intent:#Intent;action=android.intent.action.SET_TIMER'
+    + ';i.android.intent.extra.alarm.LENGTH=' + Math.round(minuten * 60)
+    + ';S.android.intent.extra.alarm.MESSAGE=' + encodeURIComponent('Lesen: ' + (titel || 'leseliste'))
+    + ';B.android.intent.extra.alarm.SKIP_UI=true;end';
+  let gewechselt = false;
+  const merken = () => { gewechselt = true; };
+  document.addEventListener('visibilitychange', merken, { once: true });
+  try {
+    const a = document.createElement('a');
+    a.href = url;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 500);
+  } catch (e) { }
+  setTimeout(() => {
+    document.removeEventListener('visibilitychange', merken);
+    if (!gewechselt && !document.hidden) {
+      toast('Die Uhr-App hat sich nicht gemeldet – dein Browser gibt die Anfrage womöglich nicht weiter. Der Wecker in der leseliste läuft trotzdem.', 5200);
+    }
+  }, 2200);
+}
+
 function sitzungStarten(buchId) {
   const b = buchById(buchId);
   if (!b) return;
@@ -1446,7 +1475,71 @@ function sitzungStarten(buchId) {
     if (b.status === 'offen') b.status = 'lese';
   });
   viewMalen();
-  toast('Sitzung läuft: ' + b.titel);
+  if (DB.einstellungen.timerFragen) timerFrageZeigen(b);
+  else toast('Sitzung läuft: ' + b.titel);
+}
+
+/* Nach dem Start: Timer stellen – und wenn ja, wie lange? */
+function timerFrageZeigen(buch) {
+  const werte = [15, 25, 45, 60, 90];
+  let wahl = DB.einstellungen.weckerMin || 45;
+  const android = istAndroid();
+
+  const s = blatt('Timer stellen?', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
+      Die Sitzung läuft${buch ? ': „' + esc(buch.titel) + '“' : ''}. Soll dich etwas erinnern?
+    </p>
+    <div style="display:flex;gap:7px;flex-wrap:wrap" data-w></div>
+    <div class="field" style="margin-top:14px"><label>Eigener Wert in Minuten</label>
+      <input type="number" data-eigen value="${wahl}" placeholder="45"></div>
+    <label style="display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--text-2);margin-bottom:14px">
+      <input type="checkbox" data-handy ${android ? 'checked' : 'disabled'} style="width:auto;margin-top:3px">
+      <span>${android
+      ? 'Zusätzlich einen Timer in der Uhr-App des Handys stellen.<br><span style="color:var(--text-3)">Nur der klingelt auch bei gesperrtem Bildschirm; die leseliste wird dafür kurz verlassen.</span>'
+      : '<span style="color:var(--text-3)">Der Handy-Timer geht nur auf Android.</span>'}</span>
+    </label>
+    <div class="btn-row">
+      <button class="btn btn-primary" data-ok style="flex:1">Timer stellen</button>
+      <button class="btn" data-ohne style="flex:1">Ohne Timer</button>
+    </div>
+    <button class="btn btn-block btn-ghost btn-sm" style="margin-top:10px" data-nie>Nicht mehr fragen</button>`,
+    { fokus: false });
+
+  const malen = () => {
+    $('[data-w]', s).innerHTML = werte.map(v =>
+      `<button class="chip" data-v="${v}" aria-pressed="${wahl === v}">${v} min</button>`).join('');
+    $$('[data-v]', s).forEach(x => x.onclick = () => { wahl = +x.dataset.v; $('[data-eigen]', s).value = wahl; malen(); });
+  };
+  malen();
+
+  const stellen = () => {
+    const eigen = num($('[data-eigen]', s).value);
+    const min = eigen && eigen > 0 ? Math.round(eigen) : wahl;
+    const handy = $('[data-handy]', s).checked;
+    aendern(() => {
+      DB.einstellungen.weckerMin = min;
+      if (DB.einstellungen.timer) {
+        DB.einstellungen.timer.geweckt = false;
+        DB.einstellungen.timer.weckMin = min;
+      }
+    });
+    layerSchliessen();
+    viewMalen();
+    if (handy) handyTimerStellen(min, buch && buch.titel);
+    else toast('Wecker nach ' + min + ' Minuten.');
+  };
+
+  $('[data-ok]', s).onclick = stellen;
+  $('[data-ohne]', s).onclick = () => {
+    aendern(() => { DB.einstellungen.weckerMin = null; });
+    layerSchliessen(); viewMalen();
+    toast('Sitzung läuft ohne Timer.');
+  };
+  $('[data-nie]', s).onclick = () => {
+    aendern(() => { DB.einstellungen.timerFragen = false; });
+    layerSchliessen();
+    toast('Wird nicht mehr gefragt. Unter „Mehr“ wieder einschaltbar.');
+  };
 }
 
 function sitzungBeenden() {
@@ -1541,7 +1634,19 @@ function wecken(buch, minuten) {
     <div class="btn-row">
       <button class="btn btn-primary" data-weiter style="flex:1">Weiterlesen</button>
       <button class="btn" data-stop style="flex:1">Sitzung beenden</button>
-    </div>`, { fokus: false });
+    </div>
+    <button class="btn btn-block btn-ghost btn-sm" style="margin-top:10px" data-nochmal>Noch einmal ${minuten} Minuten</button>`,
+    { fokus: false });
+  $('[data-nochmal]', s).onclick = () => {
+    const t = laufenderTimer();
+    /* Die Startzeit bleibt stehen – sonst wäre die bisherige Lesezeit weg.
+       Verschoben wird nur die Marke, ab der wieder geweckt wird. */
+    if (t) aendern(() => { t.geweckt = false; t.weckMin = Math.round(timerMinuten(t)) + minuten; });
+    layerSchliessen();
+    if (istAndroid()) handyTimerStellen(minuten, buch && buch.titel);
+    viewMalen();
+    toast('Weiter für ' + minuten + ' Minuten.');
+  };
   $('[data-weiter]', s).onclick = () => layerSchliessen();
   $('[data-stop]', s).onclick = () => { layerSchliessen(); setTimeout(sitzungBeenden, 80); };
 }
@@ -1628,16 +1733,16 @@ function nowbarMalen() {
         ? [Math.floor(sek / 3600), Math.floor(sek / 60) % 60, sek % 60]
         : [Math.floor(sek / 60), sek % 60];
       el.textContent = teile.map(x => String(x).padStart(2, '0')).join(':');
-      const w = +DB.einstellungen.weckerMin || 0;
+      const w = +t.weckMin || +DB.einstellungen.weckerMin || 0;
       if (w && !t.geweckt && sek >= w * 60) {
         aendern(() => { t.geweckt = true; });
-        wecken(buchById(t.buchId), w);
+        wecken(buchById(t.buchId), +DB.einstellungen.weckerMin || w);
       }
     };
     malen();
     nowTick = setInterval(malen, 1000);
     $('[data-stop]', inner).onclick = sitzungBeenden;
-    $('[data-wecker]', inner).onclick = () => weckerBearbeiten();
+    $('[data-wecker]', inner).onclick = () => timerFrageZeigen(b);
     if (b) $('.grow', inner).onclick = () => buchOeffnen(b.id);
   } else {
     const lese = DB.buecher.filter(b => b.status === 'lese');
@@ -4252,6 +4357,13 @@ function mehrMalen(root) {
           <button class="btn btn-sm" data-weckerx>${DB.einstellungen.weckerMin ? 'Ändern' : 'Setzen'}</button>
         </div>
         <div class="rowline">
+          <span class="grow"><span class="rn">Nach dem Start nach Timer fragen</span>
+            <span class="rm">${DB.einstellungen.timerFragen
+      ? 'Fragt jedes Mal, ob und wie lange'
+      : 'Startet ohne Rückfrage'}${istAndroid() ? ' · kann den Timer der Uhr-App mitstellen' : ''}</span></span>
+          <button class="btn btn-sm" data-fragenx>${DB.einstellungen.timerFragen ? 'An' : 'Aus'}</button>
+        </div>
+        <div class="rowline">
           <span class="grow"><span class="rn">Einführung</span><span class="rm">Die vier Schritte vom Anfang noch einmal</span></span>
           <button class="btn btn-sm" data-einf>Zeigen</button>
         </div>
@@ -4303,6 +4415,10 @@ function mehrMalen(root) {
   $('[data-einf]', root).onclick = einfuehrungZeigen;
   $('[data-zielx]', root).onclick = () => zielBearbeiten();
   $('[data-weckerx]', root).onclick = () => weckerBearbeiten();
+  $('[data-fragenx]', root).onclick = () => {
+    aendern(() => { DB.einstellungen.timerFragen = !DB.einstellungen.timerFragen; });
+    viewMalen();
+  };
   $('[data-save]', root).onclick = () => Store.alsDateiSichern(false);
   $('[data-export]', root).onclick = () => Store.alsDateiSichern(false);
   $('[data-import]', root).onclick = () => importDialog(false);
