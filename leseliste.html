@@ -392,6 +392,48 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .akk .ab{padding:11px 12px 13px;font-family:"Literata",Georgia,serif;font-size:13.5px;line-height:1.7;
   color:var(--text-2);border-top:1px solid var(--border);}
 .akk[open] > summary .chev{transform:rotate(90deg);}
+/* Zeile mit zweitem Feld zum Wischen (Autoren) */
+.zweifach{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+  width:100%;min-width:0;flex:1;}
+.zweifach::-webkit-scrollbar{display:none;}
+.zweifach > span{flex:0 0 100%;width:100%;scroll-snap-align:start;min-width:0;display:block;}
+.zweifach .kurzinfo{font-family:"Literata",Georgia,serif;font-size:12.5px;line-height:1.5;color:var(--text-2);}
+.zweifach .kurzinfo b{display:block;font-family:"IBM Plex Sans",sans-serif;font-size:10px;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);margin-bottom:3px;font-weight:600;}
+
+/* Einflusslinien */
+.einfluss{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.einfluss .eg{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:5px;}
+.einfluss .er{display:flex;gap:6px;flex-wrap:wrap;}
+.einfluss .en{font-size:11.5px;padding:3px 9px;border-radius:99px;background:var(--surface-2);
+  border:1px solid var(--border);color:var(--text-2);}
+.einfluss .en.link{border-color:color-mix(in srgb,var(--accent) 45%,var(--border));color:var(--accent);}
+
+/* Vernetzung */
+.netz{position:relative;padding:0 0 20px;}
+.netzzeile{display:flex;align-items:center;height:28px;gap:8px;position:relative;z-index:2;}
+.netzzeile .nn{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;
+  padding:2px 6px;border-radius:7px;}
+.netzzeile .nj{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--text-3);width:42px;text-align:right;}
+.netzzeile.aktiv .nn{background:var(--accent-soft);color:var(--accent);font-weight:600;}
+.netzzeile.blass{opacity:.35;}
+.netzsvg{position:absolute;top:0;right:0;height:100%;pointer-events:none;z-index:1;}
+
+/* Zeitstrahl */
+.zsRahmen{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface);}
+.zsInner{position:relative;}
+.zsAchse{position:sticky;top:0;height:24px;background:var(--surface);border-bottom:1px solid var(--border);z-index:2;}
+.zsAchse span{position:absolute;top:5px;font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:var(--text-3);transform:translateX(-50%);}
+.zsGitter{position:absolute;top:24px;bottom:0;width:1px;background:var(--grid);}
+.zsZeile{position:relative;height:26px;}
+.zsBalken{position:absolute;top:6px;height:14px;border-radius:7px;background:color-mix(in srgb,var(--accent) 26%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);}
+.zsName{position:absolute;top:6px;font-size:10.5px;line-height:14px;padding:0 7px;white-space:nowrap;
+  color:var(--text);text-shadow:0 0 4px var(--surface),0 0 3px var(--surface);pointer-events:none;}
+.zsPunkt{position:absolute;top:9px;width:9px;height:9px;border-radius:50%;background:var(--s1);
+  border:1.5px solid var(--chart-surface);transform:translateX(-50%);cursor:pointer;}
+.zsPunkt.gelesen{background:var(--good);}
+
 .blockkopf{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:18px 0 9px;}
 .blockkopf h3{font-size:13px;font-weight:600;}
 .stufe{display:inline-flex;gap:2px;align-items:center;}
@@ -736,6 +778,7 @@ function normalisiere(raw) {
     autorGeb: b.autorGeb == null ? null : b.autorGeb,
     autorGest: b.autorGest == null ? null : b.autorGest,
     autorBio: b.autorBio || '',
+    autorEinfluss: Array.isArray(b.autorEinfluss) ? b.autorEinfluss.map(x => String(x).trim()).filter(Boolean) : [],
     schwierigkeit: (b.schwierigkeit >= 1 && b.schwierigkeit <= 5) ? +b.schwierigkeit : null,
     jahr: b.jahr == null ? null : b.jahr,
     seiten: b.seiten == null ? null : b.seiten,
@@ -1448,35 +1491,6 @@ function zugriffFreigebenZeigen() {
 /* ============================================================
    Lese-Sitzungen: starten, beenden, laufende anzeigen
    ============================================================ */
-const istAndroid = () => /Android/i.test(navigator.userAgent || '');
-
-/* Übergabe an die Uhr-App des Handys: Nur ein Systemwecker klingelt auch,
-   wenn der Bildschirm gesperrt ist. */
-async function handyTimerStellen(minuten, titel) {
-  await Store.sichern(true);
-  const url = 'intent:#Intent;action=android.intent.action.SET_TIMER'
-    + ';i.android.intent.extra.alarm.LENGTH=' + Math.round(minuten * 60)
-    + ';S.android.intent.extra.alarm.MESSAGE=' + encodeURIComponent('Lesen: ' + (titel || 'leseliste'))
-    + ';B.android.intent.extra.alarm.SKIP_UI=true;end';
-  let gewechselt = false;
-  const merken = () => { gewechselt = true; };
-  document.addEventListener('visibilitychange', merken, { once: true });
-  try {
-    const a = document.createElement('a');
-    a.href = url;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => a.remove(), 500);
-  } catch (e) { }
-  setTimeout(() => {
-    document.removeEventListener('visibilitychange', merken);
-    if (!gewechselt && !document.hidden) {
-      toast('Die Uhr-App hat sich nicht gemeldet – dein Browser gibt die Anfrage womöglich nicht weiter. Der Wecker in der leseliste läuft trotzdem.', 5200);
-    }
-  }, 2200);
-}
-
 function sitzungStarten(buchId) {
   const b = buchById(buchId);
   if (!b) return;
@@ -1493,7 +1507,6 @@ function sitzungStarten(buchId) {
 function timerFrageZeigen(buch) {
   const werte = [15, 25, 45, 60, 90];
   let wahl = DB.einstellungen.weckerMin || 45;
-  const android = istAndroid();
 
   const s = blatt('Timer stellen?', `
     <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
@@ -1502,12 +1515,10 @@ function timerFrageZeigen(buch) {
     <div style="display:flex;gap:7px;flex-wrap:wrap" data-w></div>
     <div class="field" style="margin-top:14px"><label>Eigener Wert in Minuten</label>
       <input type="number" data-eigen value="${wahl}" placeholder="45"></div>
-    <label style="display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--text-2);margin-bottom:14px">
-      <input type="checkbox" data-handy ${android ? 'checked' : 'disabled'} style="width:auto;margin-top:3px">
-      <span>${android
-      ? 'Zusätzlich einen Timer in der Uhr-App des Handys stellen.<br><span style="color:var(--text-3)">Nur der klingelt auch bei gesperrtem Bildschirm; die leseliste wird dafür kurz verlassen.</span>'
-      : '<span style="color:var(--text-3)">Der Handy-Timer geht nur auf Android.</span>'}</span>
-    </label>
+    <p class="hinweis" style="padding:4px 0 12px">
+      Der Wecker meldet sich, solange die leseliste geöffnet ist. Bei gesperrtem Bildschirm
+      friert der Browser die Seite ein – dafür brauchst du den Timer deiner Uhr-App.
+    </p>
     <div class="btn-row">
       <button class="btn btn-primary" data-ok style="flex:1">Timer stellen</button>
       <button class="btn" data-ohne style="flex:1">Ohne Timer</button>
@@ -1525,7 +1536,6 @@ function timerFrageZeigen(buch) {
   const stellen = () => {
     const eigen = num($('[data-eigen]', s).value);
     const min = eigen && eigen > 0 ? Math.round(eigen) : wahl;
-    const handy = $('[data-handy]', s).checked;
     aendern(() => {
       DB.einstellungen.weckerMin = min;
       if (DB.einstellungen.timer) {
@@ -1535,8 +1545,7 @@ function timerFrageZeigen(buch) {
     });
     layerSchliessen();
     viewMalen();
-    if (handy) handyTimerStellen(min, buch && buch.titel);
-    else toast('Wecker nach ' + min + ' Minuten.');
+    toast('Wecker nach ' + min + ' Minuten.');
   };
 
   $('[data-ok]', s).onclick = stellen;
@@ -1653,7 +1662,6 @@ function wecken(buch, minuten) {
        Verschoben wird nur die Marke, ab der wieder geweckt wird. */
     if (t) aendern(() => { t.geweckt = false; t.weckMin = Math.round(timerMinuten(t)) + minuten; });
     layerSchliessen();
-    if (istAndroid()) handyTimerStellen(minuten, buch && buch.titel);
     viewMalen();
     toast('Weiter für ' + minuten + ' Minuten.');
   };
@@ -3573,59 +3581,382 @@ function zusammenfassungenMalen(root) {
   });
 }
 
-/* Alle Autoren der aktiven leseliste mit Lebensdaten und Biographie. */
-function autorenMalen(root) {
+/* ---------- Autoren ---------- */
+function ersterSatz(text, max) {
+  if (!text) return '';
+  const m = String(text).match(/^[^.!?]*[.!?]/);
+  let t = (m ? m[0] : String(text)).trim();
+  if (max && t.length > max) t = t.slice(0, max - 1).replace(/\s+\S*$/, '') + '…';
+  return t;
+}
+
+/* Autoren aus einer Buchmenge, mit Lebensdaten, Biographie und Einflüssen. */
+function autorenIndex(buecher) {
   const map = new Map();
-  buecherAktiv().forEach(b => {
+  buecher.forEach(b => {
     const name = (b.autor || '').trim() || 'Ohne Autor';
-    if (!map.has(name)) map.set(name, { name, buecher: [], geb: b.autorGeb, gest: b.autorGest, bio: b.autorBio || '' });
+    if (!map.has(name)) map.set(name, { name, buecher: [], geb: null, gest: null, bio: '', einfluss: [] });
     const e = map.get(name);
     e.buecher.push(b);
-    if (!e.bio && b.autorBio) e.bio = b.autorBio;
     if (e.geb == null && b.autorGeb != null) e.geb = b.autorGeb;
     if (e.gest == null && b.autorGest != null) e.gest = b.autorGest;
+    if (!e.bio && b.autorBio) e.bio = b.autorBio;
+    (b.autorEinfluss || []).forEach(x => { if (!e.einfluss.includes(x)) e.einfluss.push(x); });
   });
-  const liste = Array.from(map.values()).sort((a, b) => b.buecher.length - a.buecher.length || a.name.localeCompare(b.name, 'de'));
-  if (!liste.length) {
-    root.innerHTML = `<div class="empty"><strong>Noch keine Autoren</strong>Sie ergeben sich aus den Büchern deiner Liste.</div>`;
-    return;
-  }
+  return map;
+}
+/* Namen aus der Einflussliste auf die Autoren der Liste abbilden. */
+function autorAufloesen(map, name) {
+  if (map.has(name)) return name;
+  const treffer = Array.from(map.keys()).filter(k => k === name || k.startsWith(name + ' ') || k.startsWith(name + ','));
+  return treffer.length === 1 ? treffer[0] : null;
+}
+/* Wen hat wer beeinflusst – die Umkehrung der Einflussangaben. */
+function einflussAufIndex(map) {
+  const inv = new Map();
+  map.forEach(a => a.einfluss.forEach(q => {
+    const ziel = autorAufloesen(map, q);
+    if (!ziel) return;
+    if (!inv.has(ziel)) inv.set(ziel, []);
+    if (!inv.get(ziel).includes(a.name)) inv.get(ziel).push(a.name);
+  }));
+  return inv;
+}
+
+function autorenMalen(root) {
+  const bloecke = bloeckeSortiert();
+  const alle = autorenIndex(buecherAktiv());
+  const inv = einflussAufIndex(alle);
+
   const wrap = document.createElement('div');
   wrap.className = 'section';
-  wrap.insertAdjacentHTML('beforeend',
-    `<div class="section-head"><h2>Autoren</h2><span class="eyebrow">${liste.length}</span></div>`);
+  wrap.innerHTML = `
+    <div class="section-head"><h2>Autoren</h2><span class="eyebrow">${alle.size}</span></div>
+    <div class="btn-row" style="margin-bottom:14px">
+      <button class="btn" data-netz style="flex:1">${ICON.tags} Vernetzung</button>
+      <button class="btn" data-zeit style="flex:1">${ICON.chart} Zeitstrahl</button>
+    </div>`;
   root.appendChild(wrap);
-  liste.forEach(a => {
-    const lebt = lebensdaten(a.geb, a.gest);
-    const d = document.createElement('details');
-    d.className = 'akk';
-    d.innerHTML = `
-      <summary>
-        <span style="flex:1;min-width:0">
+  $('[data-netz]', wrap).onclick = () => netzOeffnen();
+  $('[data-zeit]', wrap).onclick = () => zeitstrahlOeffnen();
+
+  if (!alle.size) {
+    wrap.insertAdjacentHTML('beforeend',
+      `<div class="empty" style="margin:0"><strong>Noch keine Autoren</strong>Sie ergeben sich aus den Büchern deiner Liste.</div>`);
+    return;
+  }
+
+  const gezeigt = new Set();
+  bloecke.forEach((blk, i) => {
+    const bs = buecherIn(blk.id);
+    if (!bs.length) return;
+    const namen = [];
+    bs.forEach(b => {
+      const n = (b.autor || '').trim() || 'Ohne Autor';
+      if (!namen.includes(n)) namen.push(n);
+    });
+    if (!namen.length) return;
+    wrap.insertAdjacentHTML('beforeend',
+      `<div class="blockkopf"><h3>${String(i + 1).padStart(2, '0')} · ${esc(blk.name)}</h3><span class="eyebrow">${pl(namen.length, 'Autor', 'Autoren')}</span></div>`);
+    namen.forEach(n => {
+      gezeigt.add(n);
+      wrap.appendChild(autorKarte(alle.get(n), alle, inv, bs));
+    });
+  });
+
+  /* Autoren aus Büchern ohne gültigen Block */
+  const rest = Array.from(alle.values()).filter(a => !gezeigt.has(a.name));
+  if (rest.length) {
+    wrap.insertAdjacentHTML('beforeend', `<div class="blockkopf"><h3>Ohne Block</h3><span class="eyebrow">${rest.length}</span></div>`);
+    rest.forEach(a => wrap.appendChild(autorKarte(a, alle, inv, null)));
+  }
+}
+
+function autorKarte(a, alle, inv, nurAusBlock) {
+  if (!a) return document.createElement('div');
+  const lebt = lebensdaten(a.geb, a.gest);
+  const werke = nurAusBlock ? a.buecher.filter(b => nurAusBlock.includes(b)) : a.buecher;
+  const beeinflusstVon = a.einfluss;
+  const beeinflusste = inv.get(a.name) || [];
+  const kurz = ersterSatz(a.bio, 150);
+
+  const chip = (n, klickbar) => `<span class="en${klickbar ? ' link' : ''}"${klickbar ? ` data-spring="${esc(n)}"` : ''}>${esc(n)}</span>`;
+
+  const d = document.createElement('details');
+  d.className = 'akk';
+  d.innerHTML = `
+    <summary>
+      <span class="zweifach">
+        <span>
           <span class="at">${esc(a.name)}</span>
           <span class="am">
             ${lebt ? `<span class="num">${esc(lebt)}</span>` : ''}
-            <span>${pl(a.buecher.length, 'Werk', 'Werke')}</span>
-            <span>${a.buecher.filter(b => b.status === 'gelesen').length} gelesen</span>
+            <span>${pl(werke.length, 'Werk', 'Werke')}</span>
+            <span>${werke.filter(b => b.status === 'gelesen').length} gelesen</span>
+            ${beeinflusste.length ? `<span style="color:var(--accent)">wirkt auf ${beeinflusste.length}</span>` : ''}
           </span>
         </span>
-        <span class="chev">${ICON.chev}</span>
-      </summary>
-      <div class="ab">
-        ${a.bio ? esc(a.bio).replace(/\n/g, '<br>') : '<em style="color:var(--text-3)">Noch keine Biographie hinterlegt.</em>'}
-        <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px" data-werke></div>
-      </div>`;
-    const w = $('[data-werke]', d);
-    a.buecher.forEach(b => {
-      const btn = document.createElement('button');
-      btn.className = 'chip';
-      btn.style.cssText = 'justify-content:flex-start;text-align:left;white-space:normal';
-      btn.innerHTML = `${esc(b.titel)}${b.jahr != null ? ' <span class="num" style="color:var(--text-3)">' + esc(jahrText(b.jahr)) + '</span>' : ''}`;
-      btn.onclick = () => buchOeffnen(b.id);
-      w.appendChild(btn);
-    });
-    wrap.appendChild(d);
+        <span class="kurzinfo"><b>In Kürze</b>${kurz ? esc(kurz) : '<em style="color:var(--text-3)">Noch keine Biographie.</em>'}</span>
+      </span>
+      <span class="chev">${ICON.chev}</span>
+    </summary>
+    <div class="ab">
+      ${a.bio ? esc(a.bio).replace(/\n/g, '<br>') : '<em style="color:var(--text-3)">Noch keine Biographie hinterlegt.</em>'}
+      <div class="einfluss">
+        <div>
+          <div class="eg">Beeinflusst von</div>
+          <div class="er">${beeinflusstVon.length
+      ? beeinflusstVon.map(n => chip(n, !!autorAufloesen(alle, n))).join('')
+      : '<span class="en" style="opacity:.6">nichts eingetragen</span>'}</div>
+        </div>
+        <div>
+          <div class="eg">Wirkt auf</div>
+          <div class="er">${beeinflusste.length
+      ? beeinflusste.map(n => chip(n, true)).join('')
+      : '<span class="en" style="opacity:.6">niemanden in dieser Liste</span>'}</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px" data-werke></div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-sm" data-bio>${ICON.edit} Biographie &amp; Einfluss</button>
+      </div>
+    </div>`;
+
+  const w = $('[data-werke]', d);
+  werke.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.style.cssText = 'justify-content:flex-start;text-align:left;white-space:normal';
+    btn.innerHTML = `${esc(b.titel)}${b.jahr != null ? ' <span class="num" style="color:var(--text-3)">' + esc(jahrText(b.jahr)) + '</span>' : ''}`;
+    btn.onclick = () => buchOeffnen(b.id);
+    w.appendChild(btn);
   });
+  $$('[data-spring]', d).forEach(x => x.onclick = () => {
+    const ziel = autorAufloesen(alle, x.dataset.spring);
+    if (ziel) autorOeffnen(alle.get(ziel), alle, inv);
+  });
+  $('[data-bio]', d).onclick = () => autorBearbeiten(a, () => viewMalen());
+  return d;
+}
+
+/* Ein Autor als eigene Ansicht – beim Springen zwischen Einflüssen. */
+function autorOeffnen(a, alle, inv) {
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">${esc(a.name)}</div>
+        <div class="ovl-sub">${esc(lebensdaten(a.geb, a.gest) || pl(a.buecher.length, 'Werk', 'Werke'))}</div></div>
+    </div>
+    <div class="ovl-body" style="padding:12px 14px 40px" data-b></div>`;
+  const karte = autorKarte(a, alle, inv, null);
+  karte.open = true;
+  $('[data-b]', node).appendChild(karte);
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  layerOeffnen(node, () => viewMalen());
+}
+
+function autorBearbeiten(a, nachher) {
+  const betroffen = DB.buecher.filter(b => (b.autor || '').trim() === a.name);
+  const s = blatt(a.name, `
+    <div class="field">
+      <label>Biographie</label>
+      <textarea data-bio style="min-height:170px;font-family:'Literata',Georgia,serif;line-height:1.65">${esc(a.bio || '')}</textarea>
+    </div>
+    <div class="field">
+      <label>Beeinflusst von</label>
+      <textarea data-ein style="min-height:64px" placeholder="Namen mit Komma trennen">${esc((a.einfluss || []).join(', '))}</textarea>
+      <span class="hint">Wer auf wen wirkt, ergibt sich daraus von selbst: Steht hier ein Name aus deiner Liste, taucht dieser Autor drüben unter „Wirkt auf“ auf.</span>
+    </div>
+    <p class="hinweis" style="padding:0 0 10px">Gilt für alle ${pl(betroffen.length, 'Eintrag', 'Einträge')} dieses Autors.</p>
+    <button class="btn btn-primary btn-block" data-ok>Sichern</button>`, { fokus: false });
+  $('[data-ok]', s).onclick = () => {
+    const bio = $('[data-bio]', s).value.trim();
+    const ein = $('[data-ein]', s).value.split(',').map(x => x.trim()).filter(Boolean);
+    aendern(() => betroffen.forEach(b => { b.autorBio = bio; b.autorEinfluss = ein.slice(); }));
+    layerSchliessen();
+    if (nachher) nachher();
+  };
+}
+
+/* ---------- Vernetzung: wer wirkt auf wen ---------- */
+function netzOeffnen() {
+  const alle = autorenIndex(buecherAktiv());
+  const inv = einflussAufIndex(alle);
+  const namen = Array.from(alle.values())
+    .sort((a, b) => (a.geb == null ? 9999 : a.geb) - (b.geb == null ? 9999 : b.geb));
+  const kanten = [];
+  namen.forEach(a => a.einfluss.forEach(q => {
+    const von = autorAufloesen(alle, q);
+    if (von && von !== a.name) kanten.push({ von, auf: a.name });
+  }));
+
+  let gewaehlt = null;
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">Vernetzung</div>
+        <div class="ovl-sub">${pl(kanten.length, 'Linie', 'Linien')} zwischen ${pl(namen.length, 'Autor', 'Autoren')}</div></div>
+    </div>
+    <div class="ovl-body" style="padding:12px 14px 40px">
+      <p class="hinweis" style="padding:0 0 10px">
+        Nach Geburtsjahr gereiht. Eine Linie führt von dem, der wirkt, zu dem, auf den gewirkt wird.
+        Tippe einen Namen an, um nur seine Linien zu sehen.
+      </p>
+      <div class="netz" data-netz></div>
+      <div data-info style="margin-top:14px"></div>
+    </div>`;
+
+  const behaelter = $('[data-netz]', node);
+  const H = 28, GUT = 118;
+
+  const malen = () => {
+    behaelter.innerHTML = '';
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('class', 'netzsvg');
+    svg.setAttribute('width', GUT);
+    svg.setAttribute('height', namen.length * H);
+    svg.setAttribute('viewBox', '0 0 ' + GUT + ' ' + (namen.length * H));
+    behaelter.appendChild(svg);
+
+    namen.forEach((a, i) => {
+      const z = document.createElement('div');
+      z.className = 'netzzeile';
+      const beteiligt = !gewaehlt || gewaehlt === a.name ||
+        kanten.some(k => (k.von === gewaehlt && k.auf === a.name) || (k.auf === gewaehlt && k.von === a.name));
+      if (gewaehlt === a.name) z.classList.add('aktiv');
+      if (!beteiligt) z.classList.add('blass');
+      z.innerHTML = `<span class="nj num">${a.geb != null ? esc(jahrText(a.geb)).replace(' v. Chr.', ' v') : '–'}</span>
+        <span class="nn">${esc(a.name)}</span>`;
+      z.style.marginRight = GUT + 'px';
+      z.onclick = () => { gewaehlt = (gewaehlt === a.name) ? null : a.name; malen(); };
+      behaelter.appendChild(z);
+    });
+
+    const y = n => namen.findIndex(a => a.name === n) * H + H / 2;
+    kanten.forEach(k => {
+      const y1 = y(k.von), y2 = y(k.auf);
+      if (y1 < 0 || y2 < 0) return;
+      const aktiv = gewaehlt && (k.von === gewaehlt || k.auf === gewaehlt);
+      const bauch = Math.min(GUT - 8, 14 + Math.abs(y2 - y1) * 0.32);
+      const pfad = document.createElementNS(svgNS, 'path');
+      pfad.setAttribute('d', `M 2 ${y1} Q ${bauch} ${(y1 + y2) / 2} 2 ${y2}`);
+      pfad.setAttribute('fill', 'none');
+      pfad.setAttribute('stroke', aktiv ? 'var(--accent)' : 'var(--border-strong)');
+      pfad.setAttribute('stroke-width', aktiv ? 1.8 : 1);
+      pfad.setAttribute('opacity', gewaehlt ? (aktiv ? 1 : 0.12) : 0.5);
+      svg.appendChild(pfad);
+      const punkt = document.createElementNS(svgNS, 'circle');
+      punkt.setAttribute('cx', 2); punkt.setAttribute('cy', y2); punkt.setAttribute('r', aktiv ? 3 : 2);
+      punkt.setAttribute('fill', aktiv ? 'var(--accent)' : 'var(--border-strong)');
+      punkt.setAttribute('opacity', gewaehlt ? (aktiv ? 1 : 0.12) : 0.6);
+      svg.appendChild(punkt);
+    });
+
+    const info = $('[data-info]', node);
+    if (!gewaehlt) {
+      const zaehl = namen.map(a => ({ n: a.name, w: (inv.get(a.name) || []).length })).filter(x => x.w > 0)
+        .sort((a, b) => b.w - a.w).slice(0, 5);
+      info.innerHTML = zaehl.length
+        ? `<div class="section-head"><h2>Wirkt am weitesten</h2></div>
+           <div class="list-card">${zaehl.map(x => `<div class="rowline"><span class="grow"><span class="rn">${esc(x.n)}</span>
+             <span class="rm">wirkt auf ${pl(x.w, 'Autor', 'Autoren')} dieser Liste</span></span></div>`).join('')}</div>`
+        : `<p class="hinweis">Noch keine Einflüsse eingetragen. Du findest das Feld beim Autor unter „Biographie &amp; Einfluss“.</p>`;
+    } else {
+      const a = alle.get(gewaehlt);
+      const von = a.einfluss.filter(q => autorAufloesen(alle, q));
+      const auf = inv.get(gewaehlt) || [];
+      info.innerHTML = `
+        <div class="section-head"><h2>${esc(gewaehlt)}</h2><button class="btn btn-sm btn-ghost" data-weg>Auswahl lösen</button></div>
+        <div class="einfluss">
+          <div><div class="eg">Beeinflusst von</div><div class="er">${von.length ? von.map(n => `<span class="en link">${esc(n)}</span>`).join('') : '<span class="en" style="opacity:.6">niemandem hier</span>'}</div></div>
+          <div><div class="eg">Wirkt auf</div><div class="er">${auf.length ? auf.map(n => `<span class="en link">${esc(n)}</span>`).join('') : '<span class="en" style="opacity:.6">niemanden hier</span>'}</div></div>
+        </div>`;
+      const weg = $('[data-weg]', info);
+      if (weg) weg.onclick = () => { gewaehlt = null; malen(); };
+    }
+  };
+
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  layerOeffnen(node);
+  malen();
+}
+
+/* ---------- Zeitstrahl: Lebzeiten und Erscheinungsjahre ---------- */
+function zeitstrahlOeffnen() {
+  const alle = autorenIndex(buecherAktiv());
+  const jetzt = new Date().getFullYear();
+  const liste = Array.from(alle.values()).filter(a => a.geb != null).sort((a, b) => a.geb - b.geb);
+  const antike = liste.filter(a => a.geb < 1000);
+  const neuzeit = liste.filter(a => a.geb >= 1000);
+  const ohne = Array.from(alle.values()).filter(a => a.geb == null);
+
+  const von = neuzeit.length ? Math.floor((neuzeit[0].geb - 15) / 10) * 10 : 1700;
+  const bis = Math.ceil((jetzt + 2) / 10) * 10;
+  const PX = 2.8;
+  const breite = Math.max(700, (bis - von) * PX);
+  const x = j => (j - von) * PX;
+
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">Zeitstrahl</div>
+        <div class="ovl-sub">${von}–${bis} · ${pl(neuzeit.length, 'Autor', 'Autoren')}</div></div>
+    </div>
+    <div class="ovl-body" style="padding:12px 14px 40px">
+      <p class="hinweis" style="padding:0 0 10px">
+        Der Balken ist die Lebenszeit, jeder Punkt ein Buch aus deiner Liste im Jahr seiner
+        Erstveröffentlichung. Grün heißt gelesen. Seitlich wischen, Punkte antippen.
+      </p>
+      <div class="zsRahmen"><div class="zsInner" style="width:${breite}px" data-zs></div></div>
+      <div data-antike style="margin-top:14px"></div>
+    </div>`;
+
+  const inner = $('[data-zs]', node);
+  let html = '<div class="zsAchse">';
+  for (let j = Math.ceil(von / 25) * 25; j <= bis; j += 25) {
+    html += `<span style="left:${x(j)}px">${j}</span>`;
+  }
+  html += '</div>';
+  for (let j = Math.ceil(von / 25) * 25; j <= bis; j += 25) {
+    html += `<div class="zsGitter" style="left:${x(j)}px"></div>`;
+  }
+  neuzeit.forEach((a, reihe) => {
+    const ende = a.gest != null ? a.gest : jetzt;
+    const l = x(a.geb), b = Math.max(18, x(ende) - x(a.geb));
+    html += `<div class="zsZeile"${reihe % 2 ? ' style="background:color-mix(in srgb,var(--text-3) 6%,transparent)"' : ''}>
+      <div class="zsBalken" style="left:${l}px;width:${b}px"></div>
+      <div class="zsName" style="left:${l + 4}px">${esc(a.name)}${a.gest == null ? '' : ''}</div>`;
+    a.buecher.filter(x2 => x2.jahr != null && x2.jahr >= von).forEach(b2 => {
+      html += `<div class="zsPunkt${b2.status === 'gelesen' ? ' gelesen' : ''}" style="left:${x(b2.jahr)}px"
+        data-buch="${b2.id}" title="${esc(b2.titel)} (${esc(jahrText(b2.jahr))})"></div>`;
+    });
+    html += '</div>';
+  });
+  inner.innerHTML = html;
+  $$('[data-buch]', inner).forEach(p => p.onclick = () => {
+    const b = buchById(p.dataset.buch);
+    if (b) toast(b.titel + ' · ' + jahrText(b.jahr));
+  });
+  $$('[data-buch]', inner).forEach(p => p.ondblclick = () => buchOeffnen(p.dataset.buch));
+
+  const rest = $('[data-antike]', node);
+  const zeilen = [];
+  antike.forEach(a => zeilen.push(esc(a.name) + ' (' + esc(lebensdaten(a.geb, a.gest) || '') + ')'));
+  ohne.forEach(a => zeilen.push(esc(a.name) + ' (ohne Lebensdaten)'));
+  if (zeilen.length) {
+    rest.innerHTML = `<div class="section-head"><h2>Außerhalb der Skala</h2></div>
+      <p class="hinweis" style="padding:0">${zeilen.join(' · ')}</p>`;
+  }
+
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  layerOeffnen(node);
 }
 
 /* Tagesprotokolle: was an welchem Tag gelesen wurde. */
@@ -4370,7 +4701,7 @@ function mehrMalen(root) {
           <span class="grow"><span class="rn">Nach dem Start nach Timer fragen</span>
             <span class="rm">${DB.einstellungen.timerFragen
       ? 'Fragt jedes Mal, ob und wie lange'
-      : 'Startet ohne Rückfrage'}${istAndroid() ? ' · kann den Timer der Uhr-App mitstellen' : ''}</span></span>
+      : 'Startet ohne Rückfrage'}</span></span>
           <button class="btn btn-sm" data-fragenx>${DB.einstellungen.timerFragen ? 'An' : 'Aus'}</button>
         </div>
         <div class="rowline">
