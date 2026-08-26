@@ -44,10 +44,17 @@ der Seite. Der Punkt oben rechts zeigt den Stand: grün gesichert, gelb offene
 
 ## Den Leseplan laden
 
-*Mehr → Daten aus Datei laden → `leseplan-katalog.json` wählen.* Zwei Modi:
-**Ersetzen** wirft den bisherigen Stand weg, **Ergänzen** fügt nur hinzu, was noch
-fehlt (Abgleich über Blockname und Buchtitel). Derselbe Weg dient dazu, später
-eine komplett andere Liste zu laden oder eine Sicherung zurückzuspielen.
+*Mehr → Daten aus Datei laden → `leseplan-katalog.json` wählen.* Drei Modi, alle
+gleichen über leseliste-Name → Blockname → Buchtitel ab:
+
+- **Ersetzen** – der bisherige Stand wird verworfen. Für den ersten Start und zum
+  Zurückspielen einer Sicherung.
+- **Ergänzen** – nur Fehlendes kommt dazu, Vorhandenes bleibt unangetastet.
+- **Abgleichen** – wie Ergänzen, aber vorhandene Bücher übernehmen zusätzlich die
+  Katalogangaben: Titel, Autoren samt Biographien und Einflüssen, Jahr, Seitenzahl,
+  Ausgabe, Beschreibung, Kurzfassung, Schwierigkeit. **Dein Fortschritt bleibt:**
+  Status, Lese-Sitzungen, Notizen, Fotos, Preis, Besitz und Einkaufsliste werden
+  nicht angefasst. So kommen Korrekturen an, ohne dass du etwas verlierst.
 
 ## Aufbau
 
@@ -56,7 +63,8 @@ eine komplett andere Liste zu laden oder eine Sicherung zurückzuspielen.
 - **Buch** – sechs Seiten, zwischen denen gewischt wird:
   1. *Beschreibung* mit Erscheinungsjahr, Seitenzahl, Preis, Besitz, Schwierigkeit,
      dazu Stoppuhr und Zugang zu den Sitzungen
-  2. *Autor* – Lebensdaten, Biographie und die weiteren Werke desselben Autors
+  2. *Autor* – bei mehreren Autoren jeder einzeln, mit Lebensdaten, Biographie,
+     Einflüssen und den weiteren Werken desselben Autors
   3. *Themenfelder* – Notizen nach Thema gruppiert, ein Tipp führt zu den Notizen
   4. *Arten* – dieselben Notizen nach Zitat, Gedanke, Frage, Widerspruch …
   5. *Alle Notizen* – ungruppiert, nach Seitenzahl gereiht

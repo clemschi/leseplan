@@ -735,6 +735,39 @@ function leereDb() {
   };
 }
 
+/* Ein Buch kann mehrere Autoren haben. Jeder trägt eigene Lebensdaten,
+   Biographie und Einflüsse; b.autor bleibt die Anzeigezeile. */
+function normAutoren(b) {
+  const roh = Array.isArray(b.autoren) ? b.autoren : null;
+  if (roh && roh.length) {
+    const l = roh.map(a => ({
+      name: String((a && a.name) || '').trim(),
+      geb: a && a.geb != null ? a.geb : null,
+      gest: a && a.gest != null ? a.gest : null,
+      bio: (a && a.bio) || '',
+      einfluss: Array.isArray(a && a.einfluss) ? a.einfluss.map(x => String(x).trim()).filter(Boolean) : []
+    })).filter(a => a.name);
+    if (l.length) return l;
+  }
+  const name = String(b.autor || '').trim();
+  if (!name) return [];
+  return [{
+    name,
+    geb: b.autorGeb == null ? null : b.autorGeb,
+    gest: b.autorGest == null ? null : b.autorGest,
+    bio: b.autorBio || '',
+    einfluss: Array.isArray(b.autorEinfluss) ? b.autorEinfluss.map(x => String(x).trim()).filter(Boolean) : []
+  }];
+}
+/* Freitext in Namen zerlegen – nur wenn keine Klammer im Spiel ist. */
+function autorenAusText(text, alt) {
+  const t = String(text || '').trim();
+  if (!t) return [];
+  const teile = /[()]/.test(t) ? [t] : t.split(/\s*,\s*|\s+und\s+/).map(x => x.trim()).filter(Boolean);
+  return teile.map(n => (alt || []).find(a => a.name === n) || { name: n, geb: null, gest: null, bio: '', einfluss: [] });
+}
+const buchAutoren = b => (b.autoren && b.autoren.length) ? b.autoren : normAutoren(b);
+
 /* Notiz-Seiten dürfen Text sein ("35-36"); zum Sortieren zählt die erste Zahl. */
 function seiteZahl(s) {
   if (s == null || s === '') return Infinity;
@@ -783,6 +816,7 @@ function normalisiere(raw) {
     autorGest: b.autorGest == null ? null : b.autorGest,
     autorBio: b.autorBio || '',
     autorEinfluss: Array.isArray(b.autorEinfluss) ? b.autorEinfluss.map(x => String(x).trim()).filter(Boolean) : [],
+    autoren: normAutoren(b),
     schwierigkeit: (b.schwierigkeit >= 1 && b.schwierigkeit <= 5) ? +b.schwierigkeit : null,
     jahr: b.jahr == null ? null : b.jahr,
     seiten: b.seiten == null ? null : b.seiten,
@@ -2049,7 +2083,7 @@ function planMalen(root) {
           <span class="name">${esc(blk.name)}</span>
           <span class="meta">
             <span>${pl(alle.length, 'Werk', 'Werke')}</span>
-            <span>${pl(new Set(alle.map(x => (x.autor || '').trim()).filter(Boolean)).size, 'Autor', 'Autoren')}</span>
+            <span>${pl(new Set(alle.flatMap(x => buchAutoren(x).map(a => a.name))).size, 'Autor', 'Autoren')}</span>
             <span>${gelesen} gelesen</span>
             ${seiten ? `<span class="num">${fmtZahl(seiten)} S.</span>` : ''}
           </span>
@@ -2513,10 +2547,16 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
     };
     aendern(() => {
       if (neu) {
-        DB.buecher.push(Object.assign({
-          id: uid(), ord: buecherIn(werte.blockId).length, sessions: [], notizen: []
-        }, werte));
-      } else Object.assign(b, werte);
+        const n = Object.assign({ id: uid(), ord: buecherIn(werte.blockId).length, sessions: [], notizen: [] }, werte);
+        n.autoren = autorenAusText(n.autor, null).map((x, i) => i === 0
+          ? Object.assign(x, { geb: n.autorGeb, gest: n.autorGest }) : x);
+        DB.buecher.push(n);
+      } else {
+        const alteListe = buchAutoren(b);
+        Object.assign(b, werte);
+        b.autoren = autorenAusText(werte.autor, alteListe);
+        if (b.autoren[0]) { b.autoren[0].geb = werte.autorGeb; b.autoren[0].gest = werte.autorGest; }
+      }
     });
     layerSchliessen();
     viewMalen();
@@ -2561,9 +2601,15 @@ function importDialog(erstStart) {
         <input type="radio" name="impmode" value="ersetzen" checked style="width:auto;margin-top:3px">
         <span><strong style="color:var(--text)">Alles ersetzen</strong><br>Der bisherige Inhalt wird verworfen.</span>
       </label>
-      <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--text-2)">
+      <label style="display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;font-size:13px;color:var(--text-2)">
         <input type="radio" name="impmode" value="ergaenzen" style="width:auto;margin-top:3px">
         <span><strong style="color:var(--text)">Ergänzen</strong><br>Neue Blöcke und Bücher kommen dazu, vorhandene bleiben unangetastet.</span>
+      </label>
+      <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--text-2)">
+        <input type="radio" name="impmode" value="abgleichen" style="width:auto;margin-top:3px">
+        <span><strong style="color:var(--text)">Abgleichen</strong><br>Wie „Ergänzen“, aber vorhandene Bücher übernehmen zusätzlich die
+        Angaben aus der Datei: Seitenzahl, Jahr, Ausgabe, Beschreibung, Kurzfassung, Schwierigkeit, Autoren.
+        <span style="color:var(--text-3)">Dein Fortschritt bleibt: Status, Sitzungen, Notizen, Fotos, Preis, Besitz.</span></span>
       </label>
     </div>
     <button class="btn btn-primary btn-block" data-ok>Laden</button>`, { fokus: false });
@@ -2579,6 +2625,7 @@ function importDialog(erstStart) {
     }
     const modus = $('input[name=impmode]:checked', s).value;
     const neu = normalisiere(roh);
+    let neuBuch = 0, aktualisiert = 0;
     /* Wer gleich beim Start eine Datei lädt, bekommt die Arbeitskopie als Speicherort. */
     if (!Store.modus) { Store.modus = 'geraet'; Store.handle = null; await Store.metaSchreiben(); }
 
@@ -2618,13 +2665,23 @@ function importDialog(erstStart) {
           const n = { id: uid(), planId: zielPlan, name: bl.name, notiz: bl.notiz, ord: bloeckeVonPlan(zielPlan).length };
           DB.bloecke.push(n); blockNach[bl.id] = n.id;
         });
+        /* Felder, die aus der Datei kommen dürfen – alles andere ist dein Fortschritt. */
+        const katalogFelder = ['titel', 'autor', 'autoren', 'autorGeb', 'autorGest', 'autorBio', 'autorEinfluss',
+          'jahr', 'seiten', 'seitenUnsicher', 'ausgabe', 'beschreibung', 'kurz', 'schwierigkeit'];
         neu.buecher.forEach(bu => {
           const zielBlock = blockNach[bu.blockId] || (DB.bloecke[0] && DB.bloecke[0].id);
-          const doppelt = DB.buecher.some(x => x.blockId === zielBlock && x.titel.toLowerCase() === bu.titel.toLowerCase());
-          if (doppelt) return;
+          const da = DB.buecher.find(x => x.blockId === zielBlock && x.titel.toLowerCase() === bu.titel.toLowerCase());
+          if (da) {
+            if (modus === 'abgleichen') {
+              katalogFelder.forEach(f => { if (bu[f] !== undefined && bu[f] !== null && bu[f] !== '') da[f] = bu[f]; });
+              aktualisiert++;
+            }
+            return;
+          }
           bu.id = uid(); bu.blockId = zielBlock; bu.ord = buecherIn(zielBlock).length;
           bu.notizen.forEach(n => { n.artId = artNach[n.artId] || null; n.themaId = themaNach[n.themaId] || null; });
           DB.buecher.push(bu);
+          neuBuch++;
         });
       });
     }
@@ -2634,7 +2691,10 @@ function importDialog(erstStart) {
     layerSchliessen();
     themeAnwenden();
     viewMalen();
-    toast(modus === 'ersetzen' ? 'Liste geladen.' : 'Liste ergänzt.');
+    if (modus === 'ersetzen') toast('Liste geladen.');
+    else toast([neuBuch ? pl(neuBuch, 'Buch neu', 'Bücher neu') : '',
+      aktualisiert ? aktualisiert + ' aktualisiert' : '',
+      (!neuBuch && !aktualisiert) ? 'Nichts zu tun – alles war schon da' : ''].filter(Boolean).join(', ') + '.', 3600);
   };
 }
 /* ============================================================
@@ -2931,57 +2991,44 @@ function beschreibungBearbeiten(b, neuMalen) {
 
 /* ---------- Seite Autor ---------- */
 function seiteAutor(b, root, neuMalen) {
-  const name = (b.autor || '').trim();
-  const lebt = lebensdaten(b.autorGeb, b.autorGest);
-  const weitere = name ? DB.buecher.filter(x => (x.autor || '').trim() === name && x.id !== b.id) : [];
-  root.innerHTML = `
-    <div class="section-head" style="padding:0">
-      <h2 class="serif" style="font-size:17px;font-weight:600">${esc(name || 'Ohne Autor')}</h2>
-      ${lebt ? `<span class="eyebrow num">${esc(lebt)}</span>` : ''}
-    </div>
-    ${b.autorBio
-      ? `<p class="desc" style="margin-top:10px">${esc(b.autorBio).replace(/\n/g, '<br>')}</p>`
-      : `<div class="empty" style="margin:12px 0 0"><strong>Noch keine Biographie</strong>Ein paar Sätze zum Leben – wer war das, und woraus kommt dieses Buch?</div>`}
-    <div style="margin-top:12px"><button class="btn btn-sm" data-bio>${ICON.edit} Biographie ${b.autorBio ? 'ändern' : 'schreiben'}</button></div>
-    ${weitere.length ? `
-      <div class="section-head" style="padding:0;margin:20px 0 9px"><h2>Weitere Werke in deinen Listen</h2><span class="eyebrow">${weitere.length}</span></div>
-      <div data-weitere></div>` : ''}`;
+  const liste = buchAutoren(b);
+  root.innerHTML = liste.length ? '' :
+    `<div class="empty" style="margin:0"><strong>Kein Autor eingetragen</strong>Trag ihn im Buch unter „Bearbeiten“ nach.</div>`;
 
-  $('[data-bio]', root).onclick = () => {
-    const s = blatt('Biographie', `
-      <div class="field">
-        <label>${esc(name || 'Autor')}</label>
-        <textarea data-t style="min-height:190px;font-family:'Literata',Georgia,serif;line-height:1.65">${esc(b.autorBio || '')}</textarea>
-        <span class="hint">Gilt für dieses Buch. Andere Bücher desselben Autors übernehmen den Text auf Wunsch.</span>
+  liste.forEach((a, i) => {
+    const lebt = lebensdaten(a.geb, a.gest);
+    const weitere = DB.buecher.filter(x => x.id !== b.id && buchAutoren(x).some(y => y.name === a.name));
+    const abschnitt = document.createElement('div');
+    abschnitt.style.marginBottom = '22px';
+    abschnitt.innerHTML = `
+      <div class="section-head" style="padding:0;${i ? 'border-top:1px solid var(--border);padding-top:16px;' : ''}">
+        <h2 class="serif" style="font-size:17px;font-weight:600">${esc(a.name)}</h2>
+        ${lebt ? `<span class="eyebrow num">${esc(lebt)}</span>` : ''}
       </div>
-      ${weitere.length ? `<div class="field" style="flex-direction:row;align-items:center;gap:9px">
-        <input type="checkbox" data-alle checked style="width:auto">
-        <label style="text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--text-2);font-weight:400">Auch für die ${weitere.length} weiteren Werke übernehmen</label>
+      ${a.bio
+        ? `<p class="desc" style="margin-top:10px">${esc(a.bio).replace(/\n/g, '<br>')}</p>`
+        : `<div class="empty" style="margin:12px 0 0"><strong>Noch keine Biographie</strong>Ein paar Sätze zum Leben – wer war das, und woraus kommt dieses Buch?</div>`}
+      ${a.einfluss.length ? `<div class="einfluss" style="margin-top:12px">
+        <div><div class="eg">Beeinflusst von</div><div class="er">${a.einfluss.map(n => `<span class="en">${esc(n)}</span>`).join('')}</div></div>
       </div>` : ''}
-      <button class="btn btn-primary btn-block" data-ok>Sichern</button>`);
-    $('[data-ok]', s).onclick = () => {
-      const text = $('[data-t]', s).value.trim();
-      const alle = $('[data-alle]', s) && $('[data-alle]', s).checked;
-      aendern(() => {
-        b.autorBio = text;
-        if (alle) weitere.forEach(x => { x.autorBio = text; });
-      });
-      layerSchliessen();
-      neuMalen();
-    };
-  };
+      <div style="margin-top:12px"><button class="btn btn-sm" data-bio>${ICON.edit} Biographie &amp; Einfluss</button></div>
+      ${weitere.length ? `<div class="section-head" style="padding:0;margin:18px 0 9px">
+        <h2>Weitere Werke in deinen Listen</h2><span class="eyebrow">${weitere.length}</span></div>
+        <div data-weitere></div>` : ''}`;
 
-  const w = $('[data-weitere]', root);
-  if (!w) return;
-  weitere.forEach(x => {
-    const r = document.createElement('button');
-    r.className = 'grouprow';
-    r.innerHTML = `<span class="grow">
-        <span class="gname serif">${esc(x.titel)}</span>
-        <span class="gmeta">${x.jahr != null ? esc(jahrText(x.jahr)) + ' · ' : ''}${STATUS[x.status]}</span>
-      </span><span class="chev">${ICON.chev}</span>`;
-    r.onclick = () => { layerSchliessen(); setTimeout(() => buchOeffnen(x.id), 80); };
-    w.appendChild(r);
+    $('[data-bio]', abschnitt).onclick = () => autorBearbeiten(a, neuMalen);
+    const w = $('[data-weitere]', abschnitt);
+    if (w) weitere.forEach(x => {
+      const r = document.createElement('button');
+      r.className = 'grouprow';
+      r.innerHTML = `<span class="grow">
+          <span class="gname serif">${esc(x.titel)}</span>
+          <span class="gmeta">${x.jahr != null ? esc(jahrText(x.jahr)) + ' · ' : ''}${STATUS[x.status]}</span>
+        </span><span class="chev">${ICON.chev}</span>`;
+      r.onclick = () => { layerSchliessen(); setTimeout(() => buchOeffnen(x.id), 80); };
+      w.appendChild(r);
+    });
+    root.appendChild(abschnitt);
   });
 }
 
@@ -3598,14 +3645,17 @@ function ersterSatz(text, max) {
 function autorenIndex(buecher) {
   const map = new Map();
   buecher.forEach(b => {
-    const name = (b.autor || '').trim() || 'Ohne Autor';
-    if (!map.has(name)) map.set(name, { name, buecher: [], geb: null, gest: null, bio: '', einfluss: [] });
-    const e = map.get(name);
-    e.buecher.push(b);
-    if (e.geb == null && b.autorGeb != null) e.geb = b.autorGeb;
-    if (e.gest == null && b.autorGest != null) e.gest = b.autorGest;
-    if (!e.bio && b.autorBio) e.bio = b.autorBio;
-    (b.autorEinfluss || []).forEach(x => { if (!e.einfluss.includes(x)) e.einfluss.push(x); });
+    const liste = buchAutoren(b);
+    (liste.length ? liste : [{ name: 'Ohne Autor', geb: null, gest: null, bio: '', einfluss: [] }]).forEach(a => {
+      const name = a.name || 'Ohne Autor';
+      if (!map.has(name)) map.set(name, { name, buecher: [], geb: null, gest: null, bio: '', einfluss: [] });
+      const e = map.get(name);
+      if (!e.buecher.includes(b)) e.buecher.push(b);
+      if (e.geb == null && a.geb != null) e.geb = a.geb;
+      if (e.gest == null && a.gest != null) e.gest = a.gest;
+      if (!e.bio && a.bio) e.bio = a.bio;
+      (a.einfluss || []).forEach(x => { if (!e.einfluss.includes(x)) e.einfluss.push(x); });
+    });
   });
   return map;
 }
@@ -3655,10 +3705,10 @@ function autorenMalen(root) {
     const bs = buecherIn(blk.id);
     if (!bs.length) return;
     const namen = [];
-    bs.forEach(b => {
-      const n = (b.autor || '').trim() || 'Ohne Autor';
+    bs.forEach(b => buchAutoren(b).forEach(a => {
+      const n = a.name || 'Ohne Autor';
       if (!namen.includes(n)) namen.push(n);
-    });
+    }));
     if (!namen.length) return;
     wrap.insertAdjacentHTML('beforeend',
       `<div class="blockkopf"><h3>${String(i + 1).padStart(2, '0')} · ${esc(blk.name)}</h3><span class="eyebrow">${pl(namen.length, 'Autor', 'Autoren')}</span></div>`);
@@ -3777,7 +3827,7 @@ function autorOeffnen(a, alle, inv) {
 }
 
 function autorBearbeiten(a, nachher) {
-  const betroffen = DB.buecher.filter(b => (b.autor || '').trim() === a.name);
+  const betroffen = DB.buecher.filter(b => buchAutoren(b).some(x => x.name === a.name));
   const s = blatt(a.name, `
     <div class="field">
       <label>Biographie</label>
@@ -3793,7 +3843,10 @@ function autorBearbeiten(a, nachher) {
   $('[data-ok]', s).onclick = () => {
     const bio = $('[data-bio]', s).value.trim();
     const ein = $('[data-ein]', s).value.split(',').map(x => x.trim()).filter(Boolean);
-    aendern(() => betroffen.forEach(b => { b.autorBio = bio; b.autorEinfluss = ein.slice(); }));
+    aendern(() => betroffen.forEach(b => {
+      b.autoren = buchAutoren(b).map(x => x.name === a.name ? Object.assign({}, x, { bio, einfluss: ein.slice() }) : x);
+      if (b.autoren[0] && b.autoren[0].name === a.name) { b.autorBio = bio; b.autorEinfluss = ein.slice(); }
+    }));
     layerSchliessen();
     if (nachher) nachher();
   };

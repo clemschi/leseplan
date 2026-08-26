@@ -2,7 +2,7 @@
   "format": "leseplan",
   "version": 2,
   "titel": "Leseplan – Grundkatalog",
-  "hinweis": "Seitenzahlen beziehen sich auf gaengige deutsche Ausgaben und sind mit seitenUnsicher=true markiert, wo die Recherche keinen eindeutigen Wert ergab. jahr ist das Jahr der Erstveroeffentlichung im Original. preis ist ein bei Thalia recherchierter Richtpreis der genannten Ausgabe in Euro und aendert sich laufend. schwierigkeit ist eine Einschaetzung von 1 (leicht) bis 5 (sehr schwer). autorBio ist eine kurze Biographie, autorEinfluss nennt, von wem der Autor beeinflusst wurde - wer auf wen wirkt, leitet die App daraus ab. Alles ist in der App frei aenderbar.",
+  "hinweis": "Seitenzahlen beziehen sich auf gaengige deutsche Ausgaben und sind mit seitenUnsicher=true markiert, wo die Recherche keinen eindeutigen Wert ergab. jahr ist das Jahr der Erstveroeffentlichung im Original. preis ist ein bei Thalia recherchierter Richtpreis der genannten Ausgabe in Euro und aendert sich laufend. schwierigkeit ist eine Einschaetzung von 1 (leicht) bis 5 (sehr schwer). autoren listet alle Autorinnen und Autoren eines Buches mit eigenen Lebensdaten, Biographie und Einfluessen; autor bleibt die Anzeigezeile. autorBio ist eine kurze Biographie, autorEinfluss nennt, von wem der Autor beeinflusst wurde - wer auf wen wirkt, leitet die App daraus ab. Alles ist in der App frei aenderbar.",
   "themen": [],
   "bloecke": [
     {
@@ -118,6 +118,20 @@
         "John Stuart Mill",
         "Henry Sidgwick",
         "R. M. Hare"
+      ],
+      "autoren": [
+        {
+          "name": "Peter Singer",
+          "geb": 1946,
+          "gest": null,
+          "bio": "Australischer Moralphilosoph, geboren 1946 in Melbourne als Kind jüdischer Flüchtlinge aus Wien; drei seiner Großeltern wurden im Holocaust ermordet. Er lehrte in Melbourne und ab 1999 in Princeton und argumentiert konsequent utilitaristisch: Was zählt, ist die Fähigkeit zu leiden. Mit „Animal Liberation\" (1975) gab er der Tierrechtsbewegung ihre philosophische Grundlage, mit „Effective Altruism\" der Frage, wie man am meisten Gutes tut. Seine Positionen zu Sterbehilfe und schwerstbehinderten Neugeborenen haben in Deutschland zu Vortragsabsagen und Protesten geführt.",
+          "einfluss": [
+            "Jeremy Bentham",
+            "John Stuart Mill",
+            "Henry Sidgwick",
+            "R. M. Hare"
+          ]
+        }
       ]
     },
     {
@@ -146,6 +160,19 @@
         "Peter Singer",
         "Franz Kafka",
         "Michael Pollan"
+      ],
+      "autoren": [
+        {
+          "name": "Jonathan Safran Foer",
+          "geb": 1977,
+          "gest": null,
+          "bio": "US-amerikanischer Schriftsteller, geboren 1977 in Washington, D.C., Enkel einer Holocaust-Überlebenden. Sein Debüt „Alles ist erleuchtet\" (2002) machte ihn mit Mitte zwanzig berühmt, es folgte „Extrem laut und unglaublich nah\". Seit „Tiere essen\" (2009) schreibt er auch essayistisch über Ernährung, Klima und die Kluft zwischen Wissen und Handeln. Er lehrt kreatives Schreiben an der New York University.",
+          "einfluss": [
+            "Peter Singer",
+            "Franz Kafka",
+            "Michael Pollan"
+          ]
+        }
       ]
     },
     {
@@ -174,6 +201,19 @@
         "Nicholas Georgescu-Roegen",
         "Ivan Illich",
         "E. F. Schumacher"
+      ],
+      "autoren": [
+        {
+          "name": "Niko Paech",
+          "geb": 1960,
+          "gest": null,
+          "bio": "Deutscher Volkswirt, geboren 1960, außerplanmäßiger Professor in Siegen, zuvor lange in Oldenburg. Er ist der bekannteste deutschsprachige Vertreter der Postwachstumsökonomie und bestreitet, dass sich Wirtschaftswachstum von Ressourcenverbrauch entkoppeln lässt. Sein Gegenentwurf setzt auf Suffizienz, Subsistenz, Regionalwirtschaft und eine halbierte Erwerbsarbeitszeit. Er lebt die Konsequenzen weitgehend selbst – kein Auto, kein Flugzeug.",
+          "einfluss": [
+            "Nicholas Georgescu-Roegen",
+            "Ivan Illich",
+            "E. F. Schumacher"
+          ]
+        }
       ]
     },
     {
@@ -202,6 +242,19 @@
         "Edward W. Said",
         "Benny Morris",
         "Noam Chomsky"
+      ],
+      "autoren": [
+        {
+          "name": "Ilan Pappé",
+          "geb": 1954,
+          "gest": null,
+          "bio": "Israelischer Historiker, geboren 1954 in Haifa als Sohn deutsch-jüdischer Flüchtlinge. Er gehört zu den „neuen Historikern\", die ab den 1980er Jahren die israelischen Staatsarchive zu 1948 auswerteten. Wegen seiner Unterstützung des akademischen Boykotts und seiner Thesen zur Vertreibung der Palästinenser wurde seine Stellung in Haifa unhaltbar; seit 2007 lehrt er in Exeter. Seine Arbeiten sind in der Forschung stark umstritten.",
+          "einfluss": [
+            "Edward W. Said",
+            "Benny Morris",
+            "Noam Chomsky"
+          ]
+        }
       ]
     },
     {
@@ -230,6 +283,19 @@
         "Karl Marx",
         "Wladimir Iljitsch Lenin",
         "José Martí"
+      ],
+      "autoren": [
+        {
+          "name": "Fidel Castro",
+          "geb": 1926,
+          "gest": 2016,
+          "bio": "Kubanischer Revolutionär und Staatschef, 1926 als Sohn eines Plantagenbesitzers geboren, Jurist. Nach dem gescheiterten Angriff auf die Moncada-Kaserne 1953 verurteilt und amnestiert, kehrte er 1956 mit der „Granma\" zurück und stürzte 1959 den Diktator Batista. Bis 2008 führte er Kuba durch Enteignungen, Alphabetisierungskampagne, Raketenkrise und Jahrzehnte des US-Embargos. Er starb 2016 in Havanna.",
+          "einfluss": [
+            "Karl Marx",
+            "Wladimir Iljitsch Lenin",
+            "José Martí"
+          ]
+        }
       ]
     },
     {
@@ -257,6 +323,18 @@
       "autorEinfluss": [
         "Reinhart Koselleck",
         "Miroslav Hroch"
+      ],
+      "autoren": [
+        {
+          "name": "Andreas Kappeler",
+          "geb": 1943,
+          "gest": null,
+          "bio": "Schweizer Osteuropahistoriker, geboren 1943 in Winterthur, bis 2011 Professor in Wien, davor Köln. Sein Lebensthema ist das Russische Reich als Vielvölkerstaat und die Geschichte der Ukraine als eigenständige, nicht als abgeleitete. Er ist Mitglied der Österreichischen und der Ukrainischen Akademie der Wissenschaften. Seine Überblicksdarstellungen gelten im deutschen Sprachraum als Standard.",
+          "einfluss": [
+            "Reinhart Koselleck",
+            "Miroslav Hroch"
+          ]
+        }
       ]
     },
     {
@@ -287,6 +365,21 @@
         "Hannah Arendt",
         "Victor Klemperer",
         "W. E. B. Du Bois"
+      ],
+      "autoren": [
+        {
+          "name": "Jason Stanley",
+          "geb": 1969,
+          "gest": null,
+          "bio": "US-amerikanischer Philosoph, geboren 1969, Professor in Yale. Beide Elternteile flohen als Kinder vor den Nationalsozialisten, der Vater aus Berlin, die Mutter aus Polen – dieser Hintergrund prägt seine Arbeit über Propaganda und die Sprache autoritärer Politik. Nach „How Propaganda Works\" folgte „Wie Faschismus funktioniert\", das die Mechanismen als Handwerk beschreibt statt als Epoche. 2025 verließ er die USA aus Protest gegen die politische Lage und ging nach Toronto.",
+          "einfluss": [
+            "Umberto Eco",
+            "Frantz Fanon",
+            "Hannah Arendt",
+            "Victor Klemperer",
+            "W. E. B. Du Bois"
+          ]
+        }
       ]
     },
     {
@@ -316,6 +409,20 @@
         "John Maynard Keynes",
         "Thomas Piketty",
         "Antonio Gramsci"
+      ],
+      "autoren": [
+        {
+          "name": "Paul Mason",
+          "geb": 1960,
+          "gest": null,
+          "bio": "Britischer Journalist und Autor, geboren 1960 in Leigh als Sohn eines Bergmanns. Er war Wirtschaftsredakteur bei BBC Newsnight und Channel 4 News und berichtete von der Finanzkrise, aus Griechenland und aus Ägypten. Mit „Postkapitalismus\" wurde er zum Stichwortgeber der britischen Linken; er schreibt für den Guardian und ist Labour-Mitglied. Seine Bücher verbinden Reportage, Wirtschaftsgeschichte und politische Strategie.",
+          "einfluss": [
+            "Karl Marx",
+            "John Maynard Keynes",
+            "Thomas Piketty",
+            "Antonio Gramsci"
+          ]
+        }
       ]
     },
     {
@@ -345,6 +452,20 @@
         "Thomas von Aquin",
         "Roland Barthes",
         "Jorge Luis Borges"
+      ],
+      "autoren": [
+        {
+          "name": "Umberto Eco",
+          "geb": 1932,
+          "gest": 2016,
+          "bio": "Italienischer Semiotiker, Mediävist und Romancier, 1932 in Alessandria geboren, aufgewachsen unter dem Faschismus – als Junge gewann er einen Preis für einen Aufsatz zum Lob Mussolinis, was er später als Lehrstück über Propaganda erzählte. Er lehrte Jahrzehnte in Bologna und schrieb über Zeichentheorie und die Rolle des Lesers. 1980 machte ihn „Der Name der Rose\" weltberühmt. Er starb 2016 in Mailand.",
+          "einfluss": [
+            "Charles S. Peirce",
+            "Thomas von Aquin",
+            "Roland Barthes",
+            "Jorge Luis Borges"
+          ]
+        }
       ]
     },
     {
@@ -374,6 +495,20 @@
         "Friedrich Schiller",
         "Charles Dickens",
         "Honoré de Balzac"
+      ],
+      "autoren": [
+        {
+          "name": "Fjodor Dostojewski",
+          "geb": 1821,
+          "gest": 1881,
+          "bio": "Russischer Romancier, 1821 in Moskau geboren, Sohn eines Armenarztes. 1849 wegen Zugehörigkeit zu einem sozialistischen Zirkel zum Tode verurteilt, erst vor dem Erschießungskommando begnadigt – es folgten vier Jahre Zwangsarbeit in Sibirien. Epilepsie, Spielsucht und Schulden bestimmten sein Leben, in dem die großen Romane unter Termindruck entstanden. Er starb 1881 in Petersburg als gefeierter Autor.",
+          "einfluss": [
+            "Nikolai Gogol",
+            "Friedrich Schiller",
+            "Charles Dickens",
+            "Honoré de Balzac"
+          ]
+        }
       ]
     },
     {
@@ -403,6 +538,20 @@
         "Friedrich Schiller",
         "Charles Dickens",
         "Honoré de Balzac"
+      ],
+      "autoren": [
+        {
+          "name": "Fjodor Dostojewski",
+          "geb": 1821,
+          "gest": 1881,
+          "bio": "Russischer Romancier, 1821 in Moskau geboren, Sohn eines Armenarztes. 1849 wegen Zugehörigkeit zu einem sozialistischen Zirkel zum Tode verurteilt, erst vor dem Erschießungskommando begnadigt – es folgten vier Jahre Zwangsarbeit in Sibirien. Epilepsie, Spielsucht und Schulden bestimmten sein Leben, in dem die großen Romane unter Termindruck entstanden. Er starb 1881 in Petersburg als gefeierter Autor.",
+          "einfluss": [
+            "Nikolai Gogol",
+            "Friedrich Schiller",
+            "Charles Dickens",
+            "Honoré de Balzac"
+          ]
+        }
       ]
     },
     {
@@ -432,6 +581,20 @@
         "Friedrich Schiller",
         "Charles Dickens",
         "Honoré de Balzac"
+      ],
+      "autoren": [
+        {
+          "name": "Fjodor Dostojewski",
+          "geb": 1821,
+          "gest": 1881,
+          "bio": "Russischer Romancier, 1821 in Moskau geboren, Sohn eines Armenarztes. 1849 wegen Zugehörigkeit zu einem sozialistischen Zirkel zum Tode verurteilt, erst vor dem Erschießungskommando begnadigt – es folgten vier Jahre Zwangsarbeit in Sibirien. Epilepsie, Spielsucht und Schulden bestimmten sein Leben, in dem die großen Romane unter Termindruck entstanden. Er starb 1881 in Petersburg als gefeierter Autor.",
+          "einfluss": [
+            "Nikolai Gogol",
+            "Friedrich Schiller",
+            "Charles Dickens",
+            "Honoré de Balzac"
+          ]
+        }
       ]
     },
     {
@@ -462,6 +625,21 @@
         "Friedrich Nietzsche",
         "Hugo von Hofmannsthal",
         "Heinrich von Kleist"
+      ],
+      "autoren": [
+        {
+          "name": "Franz Kafka",
+          "geb": 1883,
+          "gest": 1924,
+          "bio": "Deutschsprachiger Prager Schriftsteller, 1883 als Sohn eines jüdischen Kaufmanns geboren, promovierter Jurist und Beamter einer Arbeiter-Unfallversicherung. Geschrieben hat er nachts, veröffentlicht zu Lebzeiten wenig, das Verhältnis zum Vater und drei gelöste Verlobungen zogen sich durch sein Leben. 1924 starb er mit vierzig an Kehlkopftuberkulose. Sein Freund Max Brod missachtete die Anweisung, die Manuskripte zu verbrennen – dem verdanken wir die Romane.",
+          "einfluss": [
+            "Fjodor Dostojewski",
+            "Søren Kierkegaard",
+            "Friedrich Nietzsche",
+            "Hugo von Hofmannsthal",
+            "Heinrich von Kleist"
+          ]
+        }
       ]
     },
     {
@@ -492,6 +670,21 @@
         "Friedrich Nietzsche",
         "Hugo von Hofmannsthal",
         "Heinrich von Kleist"
+      ],
+      "autoren": [
+        {
+          "name": "Franz Kafka",
+          "geb": 1883,
+          "gest": 1924,
+          "bio": "Deutschsprachiger Prager Schriftsteller, 1883 als Sohn eines jüdischen Kaufmanns geboren, promovierter Jurist und Beamter einer Arbeiter-Unfallversicherung. Geschrieben hat er nachts, veröffentlicht zu Lebzeiten wenig, das Verhältnis zum Vater und drei gelöste Verlobungen zogen sich durch sein Leben. 1924 starb er mit vierzig an Kehlkopftuberkulose. Sein Freund Max Brod missachtete die Anweisung, die Manuskripte zu verbrennen – dem verdanken wir die Romane.",
+          "einfluss": [
+            "Fjodor Dostojewski",
+            "Søren Kierkegaard",
+            "Friedrich Nietzsche",
+            "Hugo von Hofmannsthal",
+            "Heinrich von Kleist"
+          ]
+        }
       ]
     },
     {
@@ -522,6 +715,21 @@
         "Friedrich Nietzsche",
         "Hugo von Hofmannsthal",
         "Heinrich von Kleist"
+      ],
+      "autoren": [
+        {
+          "name": "Franz Kafka",
+          "geb": 1883,
+          "gest": 1924,
+          "bio": "Deutschsprachiger Prager Schriftsteller, 1883 als Sohn eines jüdischen Kaufmanns geboren, promovierter Jurist und Beamter einer Arbeiter-Unfallversicherung. Geschrieben hat er nachts, veröffentlicht zu Lebzeiten wenig, das Verhältnis zum Vater und drei gelöste Verlobungen zogen sich durch sein Leben. 1924 starb er mit vierzig an Kehlkopftuberkulose. Sein Freund Max Brod missachtete die Anweisung, die Manuskripte zu verbrennen – dem verdanken wir die Romane.",
+          "einfluss": [
+            "Fjodor Dostojewski",
+            "Søren Kierkegaard",
+            "Friedrich Nietzsche",
+            "Hugo von Hofmannsthal",
+            "Heinrich von Kleist"
+          ]
+        }
       ]
     },
     {
@@ -550,6 +758,19 @@
         "Friedrich Nietzsche",
         "Stefan George",
         "Ernst Mach"
+      ],
+      "autoren": [
+        {
+          "name": "Hugo von Hofmannsthal",
+          "geb": 1874,
+          "gest": 1929,
+          "bio": "Österreichischer Dichter, 1874 in Wien geboren, ein Wunderkind, das mit sechzehn unter Pseudonym Verse veröffentlichte, die Stefan George elektrisierten. Die im Chandos-Brief beschriebene Sprachkrise beendete das lyrische Werk; danach schrieb er Dramen, Komödien und die Libretti für Richard Strauss. 1920 gründete er mit Max Reinhardt die Salzburger Festspiele. Er starb 1929, zwei Tage nach dem Suizid seines Sohnes.",
+          "einfluss": [
+            "Friedrich Nietzsche",
+            "Stefan George",
+            "Ernst Mach"
+          ]
+        }
       ]
     },
     {
@@ -578,6 +799,19 @@
         "Friedrich Nietzsche",
         "Stefan George",
         "Ernst Mach"
+      ],
+      "autoren": [
+        {
+          "name": "Hugo von Hofmannsthal",
+          "geb": 1874,
+          "gest": 1929,
+          "bio": "Österreichischer Dichter, 1874 in Wien geboren, ein Wunderkind, das mit sechzehn unter Pseudonym Verse veröffentlichte, die Stefan George elektrisierten. Die im Chandos-Brief beschriebene Sprachkrise beendete das lyrische Werk; danach schrieb er Dramen, Komödien und die Libretti für Richard Strauss. 1920 gründete er mit Max Reinhardt die Salzburger Festspiele. Er starb 1929, zwei Tage nach dem Suizid seines Sohnes.",
+          "einfluss": [
+            "Friedrich Nietzsche",
+            "Stefan George",
+            "Ernst Mach"
+          ]
+        }
       ]
     },
     {
@@ -606,6 +840,19 @@
         "Friedrich Nietzsche",
         "Stefan George",
         "Ernst Mach"
+      ],
+      "autoren": [
+        {
+          "name": "Hugo von Hofmannsthal",
+          "geb": 1874,
+          "gest": 1929,
+          "bio": "Österreichischer Dichter, 1874 in Wien geboren, ein Wunderkind, das mit sechzehn unter Pseudonym Verse veröffentlichte, die Stefan George elektrisierten. Die im Chandos-Brief beschriebene Sprachkrise beendete das lyrische Werk; danach schrieb er Dramen, Komödien und die Libretti für Richard Strauss. 1920 gründete er mit Max Reinhardt die Salzburger Festspiele. Er starb 1929, zwei Tage nach dem Suizid seines Sohnes.",
+          "einfluss": [
+            "Friedrich Nietzsche",
+            "Stefan George",
+            "Ernst Mach"
+          ]
+        }
       ]
     },
     {
@@ -634,6 +881,19 @@
         "Georg Wilhelm Friedrich Hegel",
         "Sokrates",
         "Johann Georg Hamann"
+      ],
+      "autoren": [
+        {
+          "name": "Søren Kierkegaard",
+          "geb": 1813,
+          "gest": 1855,
+          "bio": "Dänischer Philosoph und Theologe, 1813 in Kopenhagen geboren, geprägt von einem schwermütigen, streng frommen Vater. Die gelöste Verlobung mit Regine Olsen wurde zum Motiv seines Werks, das er größtenteils unter Pseudonymen veröffentlichte, um Positionen gegeneinander sprechen zu lassen. Am Ende griff er die dänische Staatskirche offen an. Er starb 1855 mit 42 Jahren, kaum verstanden; erst das 20. Jahrhundert machte ihn zum Ahnherrn der Existenzphilosophie.",
+          "einfluss": [
+            "Georg Wilhelm Friedrich Hegel",
+            "Sokrates",
+            "Johann Georg Hamann"
+          ]
+        }
       ]
     },
     {
@@ -662,6 +922,19 @@
         "Immanuel Kant",
         "Platon",
         "Upanishaden"
+      ],
+      "autoren": [
+        {
+          "name": "Arthur Schopenhauer",
+          "geb": 1788,
+          "gest": 1860,
+          "bio": "Deutscher Philosoph, 1788 in Danzig geboren, Sohn eines Kaufmanns und der Schriftstellerin Johanna Schopenhauer. Sein Hauptwerk erschien 1819 und blieb fast unbeachtet; seine Berliner Vorlesungen legte er trotzig auf Hegels Stunde, der Saal blieb leer. Er lebte vom Erbe, zuletzt zurückgezogen in Frankfurt am Main mit seinem Pudel. Erst in den 1850er Jahren kam der Ruhm, der Wagner, Nietzsche, Freud und Thomas Mann prägte.",
+          "einfluss": [
+            "Immanuel Kant",
+            "Platon",
+            "Upanishaden"
+          ]
+        }
       ]
     },
     {
@@ -692,6 +965,21 @@
         "Richard Wagner",
         "Heraklit",
         "Ralph Waldo Emerson"
+      ],
+      "autoren": [
+        {
+          "name": "Friedrich Nietzsche",
+          "geb": 1844,
+          "gest": 1900,
+          "bio": "Deutscher Philosoph und klassischer Philologe, 1844 in Röcken geboren, Sohn eines Pfarrers. Mit vierundzwanzig ohne Promotion auf einen Basler Lehrstuhl berufen, gab er ihn 1879 krankheitshalber auf und lebte danach als Reisender zwischen Sils-Maria, Nizza und Turin. Dort brach er Anfang 1889 zusammen und blieb bis zu seinem Tod 1900 geistig umnachtet. Seine Schwester Elisabeth verwaltete und verfälschte den Nachlass und lieferte ihn den Nationalsozialisten aus.",
+          "einfluss": [
+            "Arthur Schopenhauer",
+            "Fjodor Dostojewski",
+            "Richard Wagner",
+            "Heraklit",
+            "Ralph Waldo Emerson"
+          ]
+        }
       ]
     },
     {
@@ -720,6 +1008,19 @@
         "Franz Brentano",
         "Immanuel Kant",
         "Bernard Bolzano"
+      ],
+      "autoren": [
+        {
+          "name": "Edmund Husserl",
+          "geb": 1859,
+          "gest": 1938,
+          "bio": "Begründer der Phänomenologie, 1859 in Proßnitz in Mähren geboren, zunächst Mathematiker und Schüler von Weierstraß und Brentano. In Göttingen und Freiburg entwickelte er die Methode, das Bewusstsein streng beschreibend zu untersuchen; Heidegger war sein Assistent und Nachfolger. Als Jude wurde er ab 1933 von der Universität ausgeschlossen. Er starb 1938; sein Nachlass wurde von einem belgischen Franziskaner in einer waghalsigen Aktion nach Löwen gerettet.",
+          "einfluss": [
+            "Franz Brentano",
+            "Immanuel Kant",
+            "Bernard Bolzano"
+          ]
+        }
       ]
     },
     {
@@ -752,6 +1053,23 @@
         "Platon",
         "Aristoteles",
         "Wilhelm Dilthey"
+      ],
+      "autoren": [
+        {
+          "name": "Martin Heidegger",
+          "geb": 1889,
+          "gest": 1976,
+          "bio": "Deutscher Philosoph, 1889 in Meßkirch geboren, Sohn eines Mesners, zunächst für das Priesteramt bestimmt. Als Assistent Husserls verband er die Phänomenologie mit der Frage nach dem Sein; „Sein und Zeit\" machte ihn 1927 schlagartig berühmt. 1933 wurde er Rektor in Freiburg, trat der NSDAP bei und hielt Reden für das Regime – die „Schwarzen Hefte\" zeigen antisemitische Denkfiguren bis in sein Werk hinein. Er starb 1976 in Freiburg.",
+          "einfluss": [
+            "Edmund Husserl",
+            "Søren Kierkegaard",
+            "Friedrich Nietzsche",
+            "Max Scheler",
+            "Platon",
+            "Aristoteles",
+            "Wilhelm Dilthey"
+          ]
+        }
       ]
     },
     {
@@ -781,6 +1099,20 @@
         "Immanuel Kant",
         "Friedrich Nietzsche",
         "Henri Bergson"
+      ],
+      "autoren": [
+        {
+          "name": "Max Scheler",
+          "geb": 1874,
+          "gest": 1928,
+          "bio": "Deutscher Philosoph, 1874 in München geboren, einer der wirkungsvollsten Phänomenologen der ersten Generation. Er entwickelte eine materiale Wertethik gegen Kants Formalismus und begründete die philosophische Anthropologie mit; Heidegger nannte ihn die stärkste philosophische Kraft seiner Zeit. Sein Leben war von Skandalen, Konversionen und Lehrstuhlwechseln bewegt. 1928 starb er mit 53 kurz nach seiner Berufung nach Frankfurt.",
+          "einfluss": [
+            "Edmund Husserl",
+            "Immanuel Kant",
+            "Friedrich Nietzsche",
+            "Henri Bergson"
+          ]
+        }
       ]
     },
     {
@@ -816,6 +1148,26 @@
         "Albert Camus",
         "Maurice Merleau-Ponty",
         "Simone de Beauvoir"
+      ],
+      "autoren": [
+        {
+          "name": "Jean-Paul Sartre",
+          "geb": 1905,
+          "gest": 1980,
+          "bio": "Französischer Philosoph, Romancier und Dramatiker, 1905 in Paris geboren, Absolvent der École normale supérieure. Mit Simone de Beauvoir verband ihn eine lebenslange, offene Partnerschaft. Nach Kriegsgefangenschaft und Résistance wurde er mit „Das Sein und das Nichts\" und der Zeitschrift „Les Temps Modernes\" zur zentralen Figur des Existenzialismus, später zum politischen Aktivisten an der Seite der Maoisten. 1964 lehnte er den Nobelpreis ab; 1980 folgten fünfzigtausend Menschen seinem Sarg.",
+          "einfluss": [
+            "Edmund Husserl",
+            "Martin Heidegger",
+            "Georg Wilhelm Friedrich Hegel",
+            "Karl Marx",
+            "Søren Kierkegaard",
+            "Friedrich Nietzsche",
+            "Fjodor Dostojewski",
+            "Albert Camus",
+            "Maurice Merleau-Ponty",
+            "Simone de Beauvoir"
+          ]
+        }
       ]
     },
     {
@@ -851,6 +1203,26 @@
         "Albert Camus",
         "Maurice Merleau-Ponty",
         "Simone de Beauvoir"
+      ],
+      "autoren": [
+        {
+          "name": "Jean-Paul Sartre",
+          "geb": 1905,
+          "gest": 1980,
+          "bio": "Französischer Philosoph, Romancier und Dramatiker, 1905 in Paris geboren, Absolvent der École normale supérieure. Mit Simone de Beauvoir verband ihn eine lebenslange, offene Partnerschaft. Nach Kriegsgefangenschaft und Résistance wurde er mit „Das Sein und das Nichts\" und der Zeitschrift „Les Temps Modernes\" zur zentralen Figur des Existenzialismus, später zum politischen Aktivisten an der Seite der Maoisten. 1964 lehnte er den Nobelpreis ab; 1980 folgten fünfzigtausend Menschen seinem Sarg.",
+          "einfluss": [
+            "Edmund Husserl",
+            "Martin Heidegger",
+            "Georg Wilhelm Friedrich Hegel",
+            "Karl Marx",
+            "Søren Kierkegaard",
+            "Friedrich Nietzsche",
+            "Fjodor Dostojewski",
+            "Albert Camus",
+            "Maurice Merleau-Ponty",
+            "Simone de Beauvoir"
+          ]
+        }
       ]
     },
     {
@@ -886,6 +1258,26 @@
         "Albert Camus",
         "Maurice Merleau-Ponty",
         "Simone de Beauvoir"
+      ],
+      "autoren": [
+        {
+          "name": "Jean-Paul Sartre",
+          "geb": 1905,
+          "gest": 1980,
+          "bio": "Französischer Philosoph, Romancier und Dramatiker, 1905 in Paris geboren, Absolvent der École normale supérieure. Mit Simone de Beauvoir verband ihn eine lebenslange, offene Partnerschaft. Nach Kriegsgefangenschaft und Résistance wurde er mit „Das Sein und das Nichts\" und der Zeitschrift „Les Temps Modernes\" zur zentralen Figur des Existenzialismus, später zum politischen Aktivisten an der Seite der Maoisten. 1964 lehnte er den Nobelpreis ab; 1980 folgten fünfzigtausend Menschen seinem Sarg.",
+          "einfluss": [
+            "Edmund Husserl",
+            "Martin Heidegger",
+            "Georg Wilhelm Friedrich Hegel",
+            "Karl Marx",
+            "Søren Kierkegaard",
+            "Friedrich Nietzsche",
+            "Fjodor Dostojewski",
+            "Albert Camus",
+            "Maurice Merleau-Ponty",
+            "Simone de Beauvoir"
+          ]
+        }
       ]
     },
     {
@@ -917,6 +1309,22 @@
         "Franz Kafka",
         "Jean-Paul Sartre",
         "Plotin"
+      ],
+      "autoren": [
+        {
+          "name": "Albert Camus",
+          "geb": 1913,
+          "gest": 1960,
+          "bio": "Französisch-algerischer Schriftsteller, 1913 in Mondovi in Algerien geboren, der Vater fiel im Ersten Weltkrieg, die Mutter war Putzfrau und Analphabetin. Tuberkulose beendete seine Fußballkarriere und das Studium; im Krieg leitete er die Untergrundzeitung „Combat\". 1957 erhielt er mit 44 Jahren den Nobelpreis, zwei Jahre nach dem Bruch mit Sartre über die Gewaltfrage. 1960 starb er bei einem Autounfall, das Manuskript des „Ersten Menschen\" im Wagen.",
+          "einfluss": [
+            "Friedrich Nietzsche",
+            "Fjodor Dostojewski",
+            "Søren Kierkegaard",
+            "Franz Kafka",
+            "Jean-Paul Sartre",
+            "Plotin"
+          ]
+        }
       ]
     },
     {
@@ -948,6 +1356,22 @@
         "Franz Kafka",
         "Jean-Paul Sartre",
         "Plotin"
+      ],
+      "autoren": [
+        {
+          "name": "Albert Camus",
+          "geb": 1913,
+          "gest": 1960,
+          "bio": "Französisch-algerischer Schriftsteller, 1913 in Mondovi in Algerien geboren, der Vater fiel im Ersten Weltkrieg, die Mutter war Putzfrau und Analphabetin. Tuberkulose beendete seine Fußballkarriere und das Studium; im Krieg leitete er die Untergrundzeitung „Combat\". 1957 erhielt er mit 44 Jahren den Nobelpreis, zwei Jahre nach dem Bruch mit Sartre über die Gewaltfrage. 1960 starb er bei einem Autounfall, das Manuskript des „Ersten Menschen\" im Wagen.",
+          "einfluss": [
+            "Friedrich Nietzsche",
+            "Fjodor Dostojewski",
+            "Søren Kierkegaard",
+            "Franz Kafka",
+            "Jean-Paul Sartre",
+            "Plotin"
+          ]
+        }
       ]
     },
     {
@@ -979,6 +1403,22 @@
         "Franz Kafka",
         "Jean-Paul Sartre",
         "Plotin"
+      ],
+      "autoren": [
+        {
+          "name": "Albert Camus",
+          "geb": 1913,
+          "gest": 1960,
+          "bio": "Französisch-algerischer Schriftsteller, 1913 in Mondovi in Algerien geboren, der Vater fiel im Ersten Weltkrieg, die Mutter war Putzfrau und Analphabetin. Tuberkulose beendete seine Fußballkarriere und das Studium; im Krieg leitete er die Untergrundzeitung „Combat\". 1957 erhielt er mit 44 Jahren den Nobelpreis, zwei Jahre nach dem Bruch mit Sartre über die Gewaltfrage. 1960 starb er bei einem Autounfall, das Manuskript des „Ersten Menschen\" im Wagen.",
+          "einfluss": [
+            "Friedrich Nietzsche",
+            "Fjodor Dostojewski",
+            "Søren Kierkegaard",
+            "Franz Kafka",
+            "Jean-Paul Sartre",
+            "Plotin"
+          ]
+        }
       ]
     },
     {
@@ -1011,6 +1451,23 @@
         "Karl Marx",
         "Jean-Paul Sartre",
         "Ferdinand de Saussure"
+      ],
+      "autoren": [
+        {
+          "name": "Maurice Merleau-Ponty",
+          "geb": 1908,
+          "gest": 1961,
+          "bio": "Französischer Philosoph, 1908 in Rochefort geboren, Mitschüler Sartres an der École normale supérieure. Er stellte die Phänomenologie vom Bewusstsein auf den Leib um und stützte sich dabei auf Neurologie und Gestaltpsychologie. Ab 1952 lehrte er als jüngster Professor am Collège de France; mit Sartre zerstritt er sich über die Haltung zur Sowjetunion und verließ „Les Temps Modernes\". 1961 starb er mit 53 plötzlich am Schreibtisch.",
+          "einfluss": [
+            "Edmund Husserl",
+            "Martin Heidegger",
+            "Max Scheler",
+            "Georg Wilhelm Friedrich Hegel",
+            "Karl Marx",
+            "Jean-Paul Sartre",
+            "Ferdinand de Saussure"
+          ]
+        }
       ]
     },
     {
@@ -1043,6 +1500,23 @@
         "Karl Marx",
         "Jean-Paul Sartre",
         "Ferdinand de Saussure"
+      ],
+      "autoren": [
+        {
+          "name": "Maurice Merleau-Ponty",
+          "geb": 1908,
+          "gest": 1961,
+          "bio": "Französischer Philosoph, 1908 in Rochefort geboren, Mitschüler Sartres an der École normale supérieure. Er stellte die Phänomenologie vom Bewusstsein auf den Leib um und stützte sich dabei auf Neurologie und Gestaltpsychologie. Ab 1952 lehrte er als jüngster Professor am Collège de France; mit Sartre zerstritt er sich über die Haltung zur Sowjetunion und verließ „Les Temps Modernes\". 1961 starb er mit 53 plötzlich am Schreibtisch.",
+          "einfluss": [
+            "Edmund Husserl",
+            "Martin Heidegger",
+            "Max Scheler",
+            "Georg Wilhelm Friedrich Hegel",
+            "Karl Marx",
+            "Jean-Paul Sartre",
+            "Ferdinand de Saussure"
+          ]
+        }
       ]
     },
     {
@@ -1075,6 +1549,23 @@
         "Karl Marx",
         "Jean-Paul Sartre",
         "Ferdinand de Saussure"
+      ],
+      "autoren": [
+        {
+          "name": "Maurice Merleau-Ponty",
+          "geb": 1908,
+          "gest": 1961,
+          "bio": "Französischer Philosoph, 1908 in Rochefort geboren, Mitschüler Sartres an der École normale supérieure. Er stellte die Phänomenologie vom Bewusstsein auf den Leib um und stützte sich dabei auf Neurologie und Gestaltpsychologie. Ab 1952 lehrte er als jüngster Professor am Collège de France; mit Sartre zerstritt er sich über die Haltung zur Sowjetunion und verließ „Les Temps Modernes\". 1961 starb er mit 53 plötzlich am Schreibtisch.",
+          "einfluss": [
+            "Edmund Husserl",
+            "Martin Heidegger",
+            "Max Scheler",
+            "Georg Wilhelm Friedrich Hegel",
+            "Karl Marx",
+            "Jean-Paul Sartre",
+            "Ferdinand de Saussure"
+          ]
+        }
       ]
     },
     {
@@ -1104,6 +1595,20 @@
         "Parmenides",
         "Pythagoras",
         "Heraklit"
+      ],
+      "autoren": [
+        {
+          "name": "Platon",
+          "geb": -428,
+          "gest": -348,
+          "bio": "Griechischer Philosoph, um 428 v. Chr. in eine vornehme athenische Familie geboren. Die Hinrichtung seines Lehrers Sokrates 399 v. Chr. prägte sein Denken und seine Skepsis gegenüber der Demokratie. Seine Reisen nach Syrakus, wo er den Tyrannen zum Philosophen erziehen wollte, endeten im Fiasko – einmal wurde er als Sklave verkauft. Die von ihm gegründete Akademie bestand fast neunhundert Jahre; er starb um 348 v. Chr.",
+          "einfluss": [
+            "Sokrates",
+            "Parmenides",
+            "Pythagoras",
+            "Heraklit"
+          ]
+        }
       ]
     },
     {
@@ -1133,6 +1638,20 @@
         "Platon",
         "Gottfried Wilhelm Leibniz",
         "Jean-Jacques Rousseau"
+      ],
+      "autoren": [
+        {
+          "name": "Immanuel Kant",
+          "geb": 1724,
+          "gest": 1804,
+          "bio": "Deutscher Philosoph, 1724 in Königsberg geboren, Sohn eines Riemers, aufgewachsen im Pietismus. Er verließ seine Heimatstadt nie und lehrte dort erst als Privatdozent, ab 1770 als Professor. Nach fast zwölf Jahren Schweigen erschien 1781 die „Kritik der reinen Vernunft\" und mit ihr die Wende, die das Denken teilt. Wegen seiner Religionsschrift geriet er mit der preußischen Zensur aneinander; er starb 1804.",
+          "einfluss": [
+            "David Hume",
+            "Platon",
+            "Gottfried Wilhelm Leibniz",
+            "Jean-Jacques Rousseau"
+          ]
+        }
       ]
     },
     {
@@ -1163,6 +1682,21 @@
         "Aristoteles",
         "Baruch de Spinoza",
         "Friedrich Schelling"
+      ],
+      "autoren": [
+        {
+          "name": "Georg Wilhelm Friedrich Hegel",
+          "geb": 1770,
+          "gest": 1831,
+          "bio": "Deutscher Philosoph, 1770 in Stuttgart geboren, im Tübinger Stift Zimmergenosse von Hölderlin und Schelling. Die „Phänomenologie des Geistes\" beendete er 1806 in Jena, während Napoleon die Stadt einnahm – „die Weltseele zu Pferde\". Nach Jahren als Zeitungsredakteur und Gymnasialdirektor wurde er in Berlin zum wirkmächtigsten Philosophen Preußens. 1831 starb er, vermutlich an der Cholera; aus dem Streit seiner Schüler ging der junge Marx hervor.",
+          "einfluss": [
+            "Immanuel Kant",
+            "Platon",
+            "Aristoteles",
+            "Baruch de Spinoza",
+            "Friedrich Schelling"
+          ]
+        }
       ]
     },
     {
@@ -1193,6 +1727,21 @@
         "Adam Smith",
         "David Ricardo",
         "Friedrich Engels"
+      ],
+      "autoren": [
+        {
+          "name": "Karl Marx",
+          "geb": 1818,
+          "gest": 1883,
+          "bio": "Deutscher Philosoph, Ökonom und Revolutionär, 1818 in Trier geboren, Sohn eines zum Protestantismus konvertierten jüdischen Anwalts. Als Redakteur ausgewiesen, lebte er im Exil in Paris, Brüssel und ab 1849 in London, oft bitterarm; drei seiner Kinder starben früh. Im Lesesaal des British Museum entstand „Das Kapital\", finanziert durch Engels. Er starb 1883; an seinem Grab standen elf Menschen.",
+          "einfluss": [
+            "Georg Wilhelm Friedrich Hegel",
+            "Ludwig Feuerbach",
+            "Adam Smith",
+            "David Ricardo",
+            "Friedrich Engels"
+          ]
+        }
       ]
     },
     {
@@ -1223,6 +1772,21 @@
         "Adam Smith",
         "David Ricardo",
         "Friedrich Engels"
+      ],
+      "autoren": [
+        {
+          "name": "Karl Marx",
+          "geb": 1818,
+          "gest": 1883,
+          "bio": "Deutscher Philosoph, Ökonom und Revolutionär, 1818 in Trier geboren, Sohn eines zum Protestantismus konvertierten jüdischen Anwalts. Als Redakteur ausgewiesen, lebte er im Exil in Paris, Brüssel und ab 1849 in London, oft bitterarm; drei seiner Kinder starben früh. Im Lesesaal des British Museum entstand „Das Kapital\", finanziert durch Engels. Er starb 1883; an seinem Grab standen elf Menschen.",
+          "einfluss": [
+            "Georg Wilhelm Friedrich Hegel",
+            "Ludwig Feuerbach",
+            "Adam Smith",
+            "David Ricardo",
+            "Friedrich Engels"
+          ]
+        }
       ]
     },
     {
@@ -1253,6 +1817,21 @@
         "Adam Smith",
         "David Ricardo",
         "Friedrich Engels"
+      ],
+      "autoren": [
+        {
+          "name": "Karl Marx",
+          "geb": 1818,
+          "gest": 1883,
+          "bio": "Deutscher Philosoph, Ökonom und Revolutionär, 1818 in Trier geboren, Sohn eines zum Protestantismus konvertierten jüdischen Anwalts. Als Redakteur ausgewiesen, lebte er im Exil in Paris, Brüssel und ab 1849 in London, oft bitterarm; drei seiner Kinder starben früh. Im Lesesaal des British Museum entstand „Das Kapital\", finanziert durch Engels. Er starb 1883; an seinem Grab standen elf Menschen.",
+          "einfluss": [
+            "Georg Wilhelm Friedrich Hegel",
+            "Ludwig Feuerbach",
+            "Adam Smith",
+            "David Ricardo",
+            "Friedrich Engels"
+          ]
+        }
       ]
     },
     {
@@ -1281,6 +1860,19 @@
         "Georg Wilhelm Friedrich Hegel",
         "Karl Marx",
         "Lewis Henry Morgan"
+      ],
+      "autoren": [
+        {
+          "name": "Friedrich Engels",
+          "geb": 1820,
+          "gest": 1895,
+          "bio": "Deutscher Fabrikantensohn, Revolutionär und Marx' lebenslanger Mitstreiter, 1820 in Barmen geboren. In Manchester führte er die väterliche Baumwollspinnerei und finanzierte davon jahrzehntelang die Familie Marx – während er die Verhältnisse in denselben Fabriken anklagte. Er kämpfte 1849 mit der Waffe im badischen Aufstand. Nach Marx' Tod gab er die Bände 2 und 3 des „Kapital\" aus dem Nachlass heraus; er starb 1895.",
+          "einfluss": [
+            "Georg Wilhelm Friedrich Hegel",
+            "Karl Marx",
+            "Lewis Henry Morgan"
+          ]
+        }
       ]
     },
     {
@@ -1309,6 +1901,19 @@
         "Georg Wilhelm Friedrich Hegel",
         "Karl Marx",
         "Lewis Henry Morgan"
+      ],
+      "autoren": [
+        {
+          "name": "Friedrich Engels",
+          "geb": 1820,
+          "gest": 1895,
+          "bio": "Deutscher Fabrikantensohn, Revolutionär und Marx' lebenslanger Mitstreiter, 1820 in Barmen geboren. In Manchester führte er die väterliche Baumwollspinnerei und finanzierte davon jahrzehntelang die Familie Marx – während er die Verhältnisse in denselben Fabriken anklagte. Er kämpfte 1849 mit der Waffe im badischen Aufstand. Nach Marx' Tod gab er die Bände 2 und 3 des „Kapital\" aus dem Nachlass heraus; er starb 1895.",
+          "einfluss": [
+            "Georg Wilhelm Friedrich Hegel",
+            "Karl Marx",
+            "Lewis Henry Morgan"
+          ]
+        }
       ]
     },
     {
@@ -1337,6 +1942,19 @@
         "Georg Wilhelm Friedrich Hegel",
         "Karl Marx",
         "Lewis Henry Morgan"
+      ],
+      "autoren": [
+        {
+          "name": "Friedrich Engels",
+          "geb": 1820,
+          "gest": 1895,
+          "bio": "Deutscher Fabrikantensohn, Revolutionär und Marx' lebenslanger Mitstreiter, 1820 in Barmen geboren. In Manchester führte er die väterliche Baumwollspinnerei und finanzierte davon jahrzehntelang die Familie Marx – während er die Verhältnisse in denselben Fabriken anklagte. Er kämpfte 1849 mit der Waffe im badischen Aufstand. Nach Marx' Tod gab er die Bände 2 und 3 des „Kapital\" aus dem Nachlass heraus; er starb 1895.",
+          "einfluss": [
+            "Georg Wilhelm Friedrich Hegel",
+            "Karl Marx",
+            "Lewis Henry Morgan"
+          ]
+        }
       ]
     },
     {
@@ -1367,6 +1985,21 @@
         "Georg Wilhelm Friedrich Hegel",
         "Nikolai Tschernyschewski",
         "Georgi Plechanow"
+      ],
+      "autoren": [
+        {
+          "name": "Wladimir Iljitsch Lenin",
+          "geb": 1870,
+          "gest": 1924,
+          "bio": "Russischer Revolutionär und Staatsgründer, 1870 als Wladimir Uljanow in Simbirsk geboren. Die Hinrichtung seines älteren Bruders wegen eines Attentatsplans 1887 prägte seinen Weg; es folgten Verbannung nach Sibirien und lange Jahre im Schweizer Exil. 1917 brachte ihn ein deutscher Zug nach Petrograd, wenige Monate später führte er die Oktoberrevolution an. Nach mehreren Schlaganfällen starb er 1924, sein Testament mit der Warnung vor Stalin wurde unterdrückt.",
+          "einfluss": [
+            "Karl Marx",
+            "Friedrich Engels",
+            "Georg Wilhelm Friedrich Hegel",
+            "Nikolai Tschernyschewski",
+            "Georgi Plechanow"
+          ]
+        }
       ]
     },
     {
@@ -1397,6 +2030,21 @@
         "Georg Wilhelm Friedrich Hegel",
         "Nikolai Tschernyschewski",
         "Georgi Plechanow"
+      ],
+      "autoren": [
+        {
+          "name": "Wladimir Iljitsch Lenin",
+          "geb": 1870,
+          "gest": 1924,
+          "bio": "Russischer Revolutionär und Staatsgründer, 1870 als Wladimir Uljanow in Simbirsk geboren. Die Hinrichtung seines älteren Bruders wegen eines Attentatsplans 1887 prägte seinen Weg; es folgten Verbannung nach Sibirien und lange Jahre im Schweizer Exil. 1917 brachte ihn ein deutscher Zug nach Petrograd, wenige Monate später führte er die Oktoberrevolution an. Nach mehreren Schlaganfällen starb er 1924, sein Testament mit der Warnung vor Stalin wurde unterdrückt.",
+          "einfluss": [
+            "Karl Marx",
+            "Friedrich Engels",
+            "Georg Wilhelm Friedrich Hegel",
+            "Nikolai Tschernyschewski",
+            "Georgi Plechanow"
+          ]
+        }
       ]
     },
     {
@@ -1427,6 +2075,21 @@
         "Georg Wilhelm Friedrich Hegel",
         "Nikolai Tschernyschewski",
         "Georgi Plechanow"
+      ],
+      "autoren": [
+        {
+          "name": "Wladimir Iljitsch Lenin",
+          "geb": 1870,
+          "gest": 1924,
+          "bio": "Russischer Revolutionär und Staatsgründer, 1870 als Wladimir Uljanow in Simbirsk geboren. Die Hinrichtung seines älteren Bruders wegen eines Attentatsplans 1887 prägte seinen Weg; es folgten Verbannung nach Sibirien und lange Jahre im Schweizer Exil. 1917 brachte ihn ein deutscher Zug nach Petrograd, wenige Monate später führte er die Oktoberrevolution an. Nach mehreren Schlaganfällen starb er 1924, sein Testament mit der Warnung vor Stalin wurde unterdrückt.",
+          "einfluss": [
+            "Karl Marx",
+            "Friedrich Engels",
+            "Georg Wilhelm Friedrich Hegel",
+            "Nikolai Tschernyschewski",
+            "Georgi Plechanow"
+          ]
+        }
       ]
     },
     {
@@ -1450,9 +2113,44 @@
       "besitz": "fehlt",
       "einkauf": false,
       "schwierigkeit": 1,
-      "autorBio": "Die Graphic Novel stammt von der Wirtschaftsjournalistin Claire Alet und dem Zeichner Benjamin Adam, in Zusammenarbeit mit Thomas Piketty. Piketty, geboren 1971 bei Paris, hat aus Steuer- und Erbschaftsakten zweier Jahrhunderte die World Inequality Database aufgebaut und mit „Das Kapital im 21. Jahrhundert\" die Ungleichheitsforschung populär gemacht. Alet und Adam übersetzen seine Kurven in die Geschichte einer Familie über acht Generationen.",
+      "autorBio": "Französischer Ökonom, geboren 1971 bei Paris, promovierte mit zweiundzwanzig und lehrte kurz am MIT, bevor er nach Frankreich zurückkehrte. Er baute die Datenbank auf, aus der die World Inequality Database wurde: Steuer- und Erbschaftsakten über zwei Jahrhunderte statt Modellannahmen. „Das Kapital im 21. Jahrhundert\" (2013) wurde zum meistdiskutierten Wirtschaftsbuch seiner Generation. Er lehrt an der EHESS und der Paris School of Economics.",
       "autorEinfluss": [
-        "Thomas Piketty"
+        "Karl Marx",
+        "Simon Kuznets",
+        "Anthony Atkinson",
+        "Fernand Braudel"
+      ],
+      "autoren": [
+        {
+          "name": "Thomas Piketty",
+          "geb": 1971,
+          "gest": null,
+          "bio": "Französischer Ökonom, geboren 1971 bei Paris, promovierte mit zweiundzwanzig und lehrte kurz am MIT, bevor er nach Frankreich zurückkehrte. Er baute die Datenbank auf, aus der die World Inequality Database wurde: Steuer- und Erbschaftsakten über zwei Jahrhunderte statt Modellannahmen. „Das Kapital im 21. Jahrhundert\" (2013) wurde zum meistdiskutierten Wirtschaftsbuch seiner Generation. Er lehrt an der EHESS und der Paris School of Economics.",
+          "einfluss": [
+            "Karl Marx",
+            "Simon Kuznets",
+            "Anthony Atkinson",
+            "Fernand Braudel"
+          ]
+        },
+        {
+          "name": "Claire Alet",
+          "geb": null,
+          "gest": null,
+          "bio": "Französische Wirtschaftsjournalistin, lange bei „Alternatives Économiques“. Sie schrieb das Szenario der Graphic Novel zu Pikettys „Kapital und Ideologie“ und übersetzte dessen Kurven in die Geschichte einer Familie über acht Generationen.",
+          "einfluss": [
+            "Thomas Piketty"
+          ]
+        },
+        {
+          "name": "Benjamin Adam",
+          "geb": null,
+          "gest": null,
+          "bio": "Französischer Comiczeichner und Illustrator, bekannt für Alben wie „Soon“ und „Joseph“. Für die Graphic Novel nach Piketty zeichnete er zweihundert Jahre Ungleichheit als Familiengeschichte, mit Diagrammen und Karten mitten in der Handlung.",
+          "einfluss": [
+            "Claire Alet"
+          ]
+        }
       ]
     },
     {
@@ -1482,6 +2180,20 @@
         "Simon Kuznets",
         "Anthony Atkinson",
         "Fernand Braudel"
+      ],
+      "autoren": [
+        {
+          "name": "Thomas Piketty",
+          "geb": 1971,
+          "gest": null,
+          "bio": "Französischer Ökonom, geboren 1971 bei Paris, promovierte mit zweiundzwanzig und lehrte kurz am MIT, bevor er nach Frankreich zurückkehrte. Er baute die Datenbank auf, aus der die World Inequality Database wurde: Steuer- und Erbschaftsakten über zwei Jahrhunderte statt Modellannahmen. „Das Kapital im 21. Jahrhundert\" (2013) wurde zum meistdiskutierten Wirtschaftsbuch seiner Generation. Er lehrt an der EHESS und der Paris School of Economics.",
+          "einfluss": [
+            "Karl Marx",
+            "Simon Kuznets",
+            "Anthony Atkinson",
+            "Fernand Braudel"
+          ]
+        }
       ]
     },
     {
@@ -1511,6 +2223,20 @@
         "Simon Kuznets",
         "Anthony Atkinson",
         "Fernand Braudel"
+      ],
+      "autoren": [
+        {
+          "name": "Thomas Piketty",
+          "geb": 1971,
+          "gest": null,
+          "bio": "Französischer Ökonom, geboren 1971 bei Paris, promovierte mit zweiundzwanzig und lehrte kurz am MIT, bevor er nach Frankreich zurückkehrte. Er baute die Datenbank auf, aus der die World Inequality Database wurde: Steuer- und Erbschaftsakten über zwei Jahrhunderte statt Modellannahmen. „Das Kapital im 21. Jahrhundert\" (2013) wurde zum meistdiskutierten Wirtschaftsbuch seiner Generation. Er lehrt an der EHESS und der Paris School of Economics.",
+          "einfluss": [
+            "Karl Marx",
+            "Simon Kuznets",
+            "Anthony Atkinson",
+            "Fernand Braudel"
+          ]
+        }
       ]
     },
     {
@@ -1539,6 +2265,19 @@
         "John Maynard Keynes",
         "Daniel Kahneman",
         "George A. Akerlof"
+      ],
+      "autoren": [
+        {
+          "name": "Robert J. Shiller",
+          "geb": 1946,
+          "gest": null,
+          "bio": "US-amerikanischer Ökonom, geboren 1946 in Detroit, Professor in Yale. Er wies empirisch nach, dass Aktienkurse weit stärker schwanken, als es Dividendenerwartungen rechtfertigen – ein Schlag gegen die Markteffizienzhypothese. Der von ihm mitentwickelte Case-Shiller-Index machte den US-Immobilienmarkt messbar; er warnte vor der Dotcom- wie vor der Immobilienblase. 2013 erhielt er den Wirtschaftsnobelpreis, geteilt ausgerechnet mit Eugene Fama.",
+          "einfluss": [
+            "John Maynard Keynes",
+            "Daniel Kahneman",
+            "George A. Akerlof"
+          ]
+        }
       ]
     },
     {
@@ -1562,11 +2301,34 @@
       "besitz": "fehlt",
       "einkauf": false,
       "schwierigkeit": 2,
-      "autorBio": "George Akerlof, geboren 1940, erhielt 2001 den Nobelpreis für seine Analyse von Märkten mit ungleicher Information – berühmt sein Aufsatz über den Gebrauchtwagenmarkt. Robert Shiller, geboren 1946, Yale-Ökonom und Nobelpreisträger von 2013, erforscht Spekulationsblasen und die Psychologie der Märkte. Gemeinsam holten sie Keynes' „animal spirits\" zurück in die Makroökonomie.",
+      "autorBio": "US-amerikanischer Ökonom, geboren 1946 in Detroit, Professor in Yale. Er wies empirisch nach, dass Aktienkurse weit stärker schwanken, als es Dividendenerwartungen rechtfertigen – ein Schlag gegen die Markteffizienzhypothese. Der von ihm mitentwickelte Case-Shiller-Index machte den US-Immobilienmarkt messbar; er warnte vor der Dotcom- wie vor der Immobilienblase. 2013 erhielt er den Wirtschaftsnobelpreis, geteilt ausgerechnet mit Eugene Fama.",
       "autorEinfluss": [
         "John Maynard Keynes",
         "Daniel Kahneman",
-        "Robert J. Shiller"
+        "George A. Akerlof"
+      ],
+      "autoren": [
+        {
+          "name": "Robert J. Shiller",
+          "geb": 1946,
+          "gest": null,
+          "bio": "US-amerikanischer Ökonom, geboren 1946 in Detroit, Professor in Yale. Er wies empirisch nach, dass Aktienkurse weit stärker schwanken, als es Dividendenerwartungen rechtfertigen – ein Schlag gegen die Markteffizienzhypothese. Der von ihm mitentwickelte Case-Shiller-Index machte den US-Immobilienmarkt messbar; er warnte vor der Dotcom- wie vor der Immobilienblase. 2013 erhielt er den Wirtschaftsnobelpreis, geteilt ausgerechnet mit Eugene Fama.",
+          "einfluss": [
+            "John Maynard Keynes",
+            "Daniel Kahneman",
+            "George A. Akerlof"
+          ]
+        },
+        {
+          "name": "George A. Akerlof",
+          "geb": 1940,
+          "gest": null,
+          "bio": "US-amerikanischer Ökonom, geboren 1940 in New Haven, Professor in Berkeley und Georgetown. Sein Aufsatz „The Market for Lemons“ über den Gebrauchtwagenmarkt zeigte, wie ungleich verteilte Information ganze Märkte zerstören kann – 2001 brachte ihm das den Wirtschaftsnobelpreis. Er ist mit der früheren US-Finanzministerin und Fed-Chefin Janet Yellen verheiratet, mit der er auch gemeinsam publiziert hat.",
+          "einfluss": [
+            "John Maynard Keynes",
+            "Herbert A. Simon"
+          ]
+        }
       ]
     },
     {
@@ -1595,6 +2357,19 @@
         "John Maynard Keynes",
         "Daniel Kahneman",
         "George A. Akerlof"
+      ],
+      "autoren": [
+        {
+          "name": "Robert J. Shiller",
+          "geb": 1946,
+          "gest": null,
+          "bio": "US-amerikanischer Ökonom, geboren 1946 in Detroit, Professor in Yale. Er wies empirisch nach, dass Aktienkurse weit stärker schwanken, als es Dividendenerwartungen rechtfertigen – ein Schlag gegen die Markteffizienzhypothese. Der von ihm mitentwickelte Case-Shiller-Index machte den US-Immobilienmarkt messbar; er warnte vor der Dotcom- wie vor der Immobilienblase. 2013 erhielt er den Wirtschaftsnobelpreis, geteilt ausgerechnet mit Eugene Fama.",
+          "einfluss": [
+            "John Maynard Keynes",
+            "Daniel Kahneman",
+            "George A. Akerlof"
+          ]
+        }
       ]
     },
     {
@@ -1623,6 +2398,19 @@
         "Amos Tversky",
         "Herbert A. Simon",
         "Kurt Lewin"
+      ],
+      "autoren": [
+        {
+          "name": "Daniel Kahneman",
+          "geb": 1934,
+          "gest": 2024,
+          "bio": "Israelisch-amerikanischer Psychologe, 1934 in Tel Aviv geboren, aufgewachsen im besetzten Frankreich, wo die Familie versteckt überlebte – der Vater starb 1944. In der israelischen Armee entwickelte er Auswahlverfahren, danach begann mit Amos Tversky die Zusammenarbeit, die Urteilsfehler zum Forschungsgegenstand machte. 2002 erhielt er als Psychologe den Wirtschaftsnobelpreis; Tversky war 1996 gestorben. Er starb 2024 mit neunzig Jahren durch begleiteten Suizid in der Schweiz.",
+          "einfluss": [
+            "Amos Tversky",
+            "Herbert A. Simon",
+            "Kurt Lewin"
+          ]
+        }
       ]
     },
     {
@@ -1646,11 +2434,45 @@
       "besitz": "fehlt",
       "einkauf": false,
       "schwierigkeit": 3,
-      "autorBio": "Daniel Kahneman (1934–2024), Psychologe und Wirtschaftsnobelpreisträger, erforschte mit Amos Tversky die systematischen Fehler des Urteilens. Olivier Sibony, geboren 1965, war lange Berater bei McKinsey und lehrt Strategie an der HEC Paris. Cass Sunstein, geboren 1954, ist Jurist in Harvard, Mitautor von „Nudge\" und war unter Obama für Regulierungsfragen zuständig.",
+      "autorBio": "Israelisch-amerikanischer Psychologe, 1934 in Tel Aviv geboren, aufgewachsen im besetzten Frankreich, wo die Familie versteckt überlebte – der Vater starb 1944. In der israelischen Armee entwickelte er Auswahlverfahren, danach begann mit Amos Tversky die Zusammenarbeit, die Urteilsfehler zum Forschungsgegenstand machte. 2002 erhielt er als Psychologe den Wirtschaftsnobelpreis; Tversky war 1996 gestorben. Er starb 2024 mit neunzig Jahren durch begleiteten Suizid in der Schweiz.",
       "autorEinfluss": [
-        "Daniel Kahneman",
         "Amos Tversky",
-        "Herbert A. Simon"
+        "Herbert A. Simon",
+        "Kurt Lewin"
+      ],
+      "autoren": [
+        {
+          "name": "Daniel Kahneman",
+          "geb": 1934,
+          "gest": 2024,
+          "bio": "Israelisch-amerikanischer Psychologe, 1934 in Tel Aviv geboren, aufgewachsen im besetzten Frankreich, wo die Familie versteckt überlebte – der Vater starb 1944. In der israelischen Armee entwickelte er Auswahlverfahren, danach begann mit Amos Tversky die Zusammenarbeit, die Urteilsfehler zum Forschungsgegenstand machte. 2002 erhielt er als Psychologe den Wirtschaftsnobelpreis; Tversky war 1996 gestorben. Er starb 2024 mit neunzig Jahren durch begleiteten Suizid in der Schweiz.",
+          "einfluss": [
+            "Amos Tversky",
+            "Herbert A. Simon",
+            "Kurt Lewin"
+          ]
+        },
+        {
+          "name": "Olivier Sibony",
+          "geb": 1965,
+          "gest": null,
+          "bio": "Französischer Wirtschaftswissenschaftler, geboren 1965, fünfundzwanzig Jahre lang Berater bei McKinsey, davon lange als Senior Partner in Paris und New York. Heute lehrt er Strategie und Entscheidungsfindung an der HEC Paris und schreibt über die Frage, wie Organisationen ihre eigenen Denkfehler einbauen.",
+          "einfluss": [
+            "Daniel Kahneman",
+            "Amos Tversky"
+          ]
+        },
+        {
+          "name": "Cass R. Sunstein",
+          "geb": 1954,
+          "gest": null,
+          "bio": "US-amerikanischer Jurist, geboren 1954, Professor in Harvard, zuvor lange in Chicago. Mit Richard Thaler schrieb er „Nudge“ und prägte den „libertären Paternalismus“: Entscheidungen so vorstrukturieren, dass die bessere Wahl leichter fällt, ohne eine zu verbieten. Unter Obama leitete er die Regulierungsbehörde OIRA und setzte diese Ideen in Verwaltungspraxis um.",
+          "einfluss": [
+            "Daniel Kahneman",
+            "Amos Tversky",
+            "Richard Thaler"
+          ]
+        }
       ]
     },
     {
@@ -1674,10 +2496,44 @@
       "besitz": "fehlt",
       "einkauf": false,
       "schwierigkeit": 5,
-      "autorBio": "Die Herausgeber sind die Gründerfiguren der Heuristiken-Forschung. Daniel Kahneman (1934–2024) und Amos Tversky (1937–1996) arbeiteten ab 1969 in Jerusalem so eng zusammen, dass sie ihre Aufsätze per Münzwurf zeichneten; Tversky starb, bevor der gemeinsame Nobelpreis möglich wurde. Paul Slovic, geboren 1938, erforscht in Oregon die Wahrnehmung von Risiken und die psychische Betäubung gegenüber großen Opferzahlen.",
+      "autorBio": "Israelisch-amerikanischer Psychologe, 1934 in Tel Aviv geboren, aufgewachsen im besetzten Frankreich, wo die Familie versteckt überlebte – der Vater starb 1944. In der israelischen Armee entwickelte er Auswahlverfahren, danach begann mit Amos Tversky die Zusammenarbeit, die Urteilsfehler zum Forschungsgegenstand machte. 2002 erhielt er als Psychologe den Wirtschaftsnobelpreis; Tversky war 1996 gestorben. Er starb 2024 mit neunzig Jahren durch begleiteten Suizid in der Schweiz.",
       "autorEinfluss": [
-        "Daniel Kahneman",
-        "Herbert A. Simon"
+        "Amos Tversky",
+        "Herbert A. Simon",
+        "Kurt Lewin"
+      ],
+      "autoren": [
+        {
+          "name": "Daniel Kahneman",
+          "geb": 1934,
+          "gest": 2024,
+          "bio": "Israelisch-amerikanischer Psychologe, 1934 in Tel Aviv geboren, aufgewachsen im besetzten Frankreich, wo die Familie versteckt überlebte – der Vater starb 1944. In der israelischen Armee entwickelte er Auswahlverfahren, danach begann mit Amos Tversky die Zusammenarbeit, die Urteilsfehler zum Forschungsgegenstand machte. 2002 erhielt er als Psychologe den Wirtschaftsnobelpreis; Tversky war 1996 gestorben. Er starb 2024 mit neunzig Jahren durch begleiteten Suizid in der Schweiz.",
+          "einfluss": [
+            "Amos Tversky",
+            "Herbert A. Simon",
+            "Kurt Lewin"
+          ]
+        },
+        {
+          "name": "Paul Slovic",
+          "geb": 1938,
+          "gest": null,
+          "bio": "US-amerikanischer Psychologe, geboren 1938, Professor in Oregon und Mitgründer von Decision Research. Er erforscht, wie Menschen Risiken wahrnehmen – warum ein Flugzeugabsturz mehr Angst macht als der Straßenverkehr – und beschrieb die „psychische Betäubung“: Mitgefühl wächst nicht mit der Zahl der Opfer, sondern nimmt ab.",
+          "einfluss": [
+            "Herbert A. Simon",
+            "Ward Edwards"
+          ]
+        },
+        {
+          "name": "Amos Tversky",
+          "geb": 1937,
+          "gest": 1996,
+          "bio": "Israelischer Kognitionspsychologe, 1937 in Haifa geboren, Fallschirmjäger und ausgezeichneter Soldat, später Professor in Jerusalem und Stanford. Ab 1969 arbeitete er mit Daniel Kahneman so eng zusammen, dass sie die Reihenfolge ihrer Namen per Münzwurf entschieden; gemeinsam begründeten sie die Erforschung systematischer Urteilsfehler und die Prospect Theory. Er starb 1996 mit 59 Jahren an Krebs – sechs Jahre vor dem Nobelpreis, den Kahneman ausdrücklich als gemeinsamen bezeichnete.",
+          "einfluss": [
+            "Herbert A. Simon",
+            "Ward Edwards"
+          ]
+        }
       ]
     },
     {
@@ -1709,6 +2565,22 @@
         "Georg Wilhelm Friedrich Hegel",
         "Karl Marx",
         "Georges Canguilhem"
+      ],
+      "autoren": [
+        {
+          "name": "Michel Foucault",
+          "geb": 1926,
+          "gest": 1984,
+          "bio": "Französischer Philosoph und Historiker, 1926 in Poitiers als Sohn eines Chirurgen geboren. Nach Jahren in Uppsala, Warschau und Hamburg lehrte er ab 1970 am Collège de France auf einem Lehrstuhl für „Geschichte der Denksysteme\". Seine Untersuchungen zu Wahnsinn, Klinik, Gefängnis und Sexualität lasen Wissen und Macht als ein Verhältnis. Er engagierte sich für Gefangene und starb 1984 als einer der ersten prominenten AIDS-Toten Frankreichs.",
+          "einfluss": [
+            "Friedrich Nietzsche",
+            "Martin Heidegger",
+            "Maurice Merleau-Ponty",
+            "Georg Wilhelm Friedrich Hegel",
+            "Karl Marx",
+            "Georges Canguilhem"
+          ]
+        }
       ]
     },
     {
@@ -1738,6 +2610,20 @@
         "Frantz Fanon",
         "Antonio Gramsci",
         "Erich Auerbach"
+      ],
+      "autoren": [
+        {
+          "name": "Edward W. Said",
+          "geb": 1935,
+          "gest": 2003,
+          "bio": "Palästinensisch-amerikanischer Literaturwissenschaftler, 1935 in Jerusalem geboren, aufgewachsen in Kairo, ausgebildet in den USA. Ab 1963 lehrte er Vergleichende Literaturwissenschaft an der Columbia University. Mit „Orientalismus\" (1978) begründete er die postkoloniale Theorie; zugleich war er Mitglied des Palästinensischen Nationalrats, brach aber mit Arafat über Oslo. Als exzellenter Pianist gründete er mit Daniel Barenboim das West-Eastern Divan Orchestra; er starb 2003 an Leukämie.",
+          "einfluss": [
+            "Michel Foucault",
+            "Frantz Fanon",
+            "Antonio Gramsci",
+            "Erich Auerbach"
+          ]
+        }
       ]
     },
     {
@@ -1769,6 +2655,22 @@
         "Karl Marx",
         "Sigmund Freud",
         "Aimé Césaire"
+      ],
+      "autoren": [
+        {
+          "name": "Frantz Fanon",
+          "geb": 1925,
+          "gest": 1961,
+          "bio": "Psychiater und Theoretiker der Entkolonialisierung, 1925 auf Martinique geboren. Als Achtzehnjähriger schloss er sich den Freien Französischen Streitkräften an und erlebte den Rassismus der eigenen Armee. Als Chefarzt einer psychiatrischen Klinik in Algerien behandelte er Folteropfer und Folterer, trat zurück und schloss sich der FLN an. Er starb 1961 mit 36 Jahren an Leukämie, kurz nachdem er „Die Verdammten dieser Erde\" diktiert hatte.",
+          "einfluss": [
+            "Jean-Paul Sartre",
+            "Maurice Merleau-Ponty",
+            "Georg Wilhelm Friedrich Hegel",
+            "Karl Marx",
+            "Sigmund Freud",
+            "Aimé Césaire"
+          ]
+        }
       ]
     },
     {
@@ -1796,6 +2698,18 @@
       "autorEinfluss": [
         "Gamal Abdel Nasser",
         "Mao Zedong"
+      ],
+      "autoren": [
+        {
+          "name": "Muammar al-Gaddafi",
+          "geb": 1942,
+          "gest": 2011,
+          "bio": "Libyscher Offizier und Machthaber, 1942 in einem Beduinenzelt bei Sirte geboren. 1969 stürzte er als 27-jähriger Hauptmann die Monarchie und regierte Libyen 42 Jahre lang – ohne formales Staatsamt, gestützt auf Öl, Revolutionskomitees und seine „Dritte Universaltheorie\". Er unterstützte Terrorgruppen, kehrte nach 2003 in die internationale Diplomatie zurück und wurde 2011 im Bürgerkrieg von Aufständischen getötet.",
+          "einfluss": [
+            "Gamal Abdel Nasser",
+            "Mao Zedong"
+          ]
+        }
       ]
     },
     {
@@ -1824,6 +2738,19 @@
         "Karl Marx",
         "Wladimir Iljitsch Lenin",
         "Josef Stalin"
+      ],
+      "autoren": [
+        {
+          "name": "Mao Zedong",
+          "geb": 1893,
+          "gest": 1976,
+          "bio": "Chinesischer Revolutionär und Staatsgründer, 1893 in Hunan als Bauernsohn geboren. Er baute die Rote Armee auf dem Land auf, überstand den Langen Marsch und rief 1949 die Volksrepublik aus. Der „Große Sprung nach vorn\" führte in eine Hungersnot mit Dutzenden Millionen Toten, die Kulturrevolution ab 1966 in ein Jahrzehnt der Verfolgung. Er starb 1976; die Partei bilanzierte sein Wirken später als „zu 70 Prozent richtig\".",
+          "einfluss": [
+            "Karl Marx",
+            "Wladimir Iljitsch Lenin",
+            "Josef Stalin"
+          ]
+        }
       ]
     },
     {
@@ -1853,6 +2780,20 @@
         "Josef Stalin",
         "Mao Zedong",
         "Karl Marx"
+      ],
+      "autoren": [
+        {
+          "name": "Kim Il-sung",
+          "geb": 1912,
+          "gest": 1994,
+          "bio": "Gründer und lebenslanger Herrscher Nordkoreas, 1912 bei Pjöngjang geboren, aufgewachsen in der Mandschurei. Er kämpfte in einer kommunistischen Partisaneneinheit gegen die japanische Besatzung und kehrte 1945 im Gefolge der Roten Armee zurück. 1950 löste er mit dem Angriff auf den Süden den Koreakrieg aus. Bis zu seinem Tod 1994 baute er die Chuch'e-Ideologie und einen beispiellosen Personenkult auf; die Verfassung führt ihn bis heute als „ewigen Präsidenten\".",
+          "einfluss": [
+            "Wladimir Iljitsch Lenin",
+            "Josef Stalin",
+            "Mao Zedong",
+            "Karl Marx"
+          ]
+        }
       ]
     },
     {
@@ -1884,6 +2825,22 @@
         "Simone de Beauvoir",
         "Herbert Marcuse",
         "Theodor W. Adorno"
+      ],
+      "autoren": [
+        {
+          "name": "Angela Y. Davis",
+          "geb": 1944,
+          "gest": null,
+          "bio": "US-amerikanische Philosophin und Aktivistin, 1944 im segregierten Birmingham, Alabama, geboren – in einem Viertel, das wegen der Anschläge „Dynamite Hill\" hieß. Sie studierte bei Herbert Marcuse und in Frankfurt bei Adorno, trat der Kommunistischen Partei und den Black Panthers nahe. 1970 stand sie auf der Fahndungsliste des FBI und wurde in einem weltweit beachteten Prozess freigesprochen. Sie lehrte in Santa Cruz und arbeitet seither für die Abschaffung des Gefängnissystems.",
+          "einfluss": [
+            "Karl Marx",
+            "Friedrich Engels",
+            "Frantz Fanon",
+            "Simone de Beauvoir",
+            "Herbert Marcuse",
+            "Theodor W. Adorno"
+          ]
+        }
       ]
     },
     {
@@ -1914,6 +2871,21 @@
         "Michel Foucault",
         "Angela Y. Davis",
         "Mariarosa Dalla Costa"
+      ],
+      "autoren": [
+        {
+          "name": "Silvia Federici",
+          "geb": 1942,
+          "gest": null,
+          "bio": "Italienisch-amerikanische Philosophin und Aktivistin, 1942 in Parma geboren, seit 1967 in den USA. Sie gehörte 1972 zu den Gründerinnen der Kampagne „Wages for Housework\", die unbezahlte Reproduktionsarbeit als Grundlage des Kapitalismus sichtbar machte. Jahre in Nigeria prägten ihren Blick auf Strukturanpassung und Enteignung. Sie lehrte an der Hofstra University; „Caliban und die Hexe\" wurde ihr einflussreichstes Buch.",
+          "einfluss": [
+            "Karl Marx",
+            "Friedrich Engels",
+            "Michel Foucault",
+            "Angela Y. Davis",
+            "Mariarosa Dalla Costa"
+          ]
+        }
       ]
     },
     {
@@ -1946,6 +2918,23 @@
         "Maurice Merleau-Ponty",
         "Karl Marx",
         "Friedrich Engels"
+      ],
+      "autoren": [
+        {
+          "name": "Simone de Beauvoir",
+          "geb": 1908,
+          "gest": 1986,
+          "bio": "Französische Philosophin und Schriftstellerin, 1908 in Paris in großbürgerlichem Haus geboren. In der Agrégation 1929 wurde sie als jüngste Kandidatin Zweite hinter Sartre, mit dem sie eine lebenslange offene Beziehung führte. Nach Jahren als Lehrerin machte „Das andere Geschlecht\" (1949) sie zur Begründerin des modernen Feminismus – das Buch stand auf dem Index der katholischen Kirche. 1954 erhielt sie den Prix Goncourt; sie starb 1986 und liegt neben Sartre.",
+          "einfluss": [
+            "Jean-Paul Sartre",
+            "Georg Wilhelm Friedrich Hegel",
+            "Edmund Husserl",
+            "Martin Heidegger",
+            "Maurice Merleau-Ponty",
+            "Karl Marx",
+            "Friedrich Engels"
+          ]
+        }
       ]
     },
     {
@@ -1974,6 +2963,19 @@
         "David Hume",
         "François Quesnay",
         "Francis Hutcheson"
+      ],
+      "autoren": [
+        {
+          "name": "Adam Smith",
+          "geb": 1723,
+          "gest": 1790,
+          "bio": "Schottischer Moralphilosoph, 1723 in Kirkcaldy geboren, Sohn eines Zollbeamten, aufgewachsen ohne Vater. Er lehrte in Glasgow Moralphilosophie und veröffentlichte 1759 die „Theorie der ethischen Gefühle\", in der Mitgefühl die Grundlage der Moral bildet. Nach einer Reise als Hauslehrer durch Frankreich, wo er die Physiokraten traf, arbeitete er zehn Jahre am „Wohlstand der Nationen\" (1776). Ausgerechnet er wurde danach Zollkommissar; er starb 1790.",
+          "einfluss": [
+            "David Hume",
+            "François Quesnay",
+            "Francis Hutcheson"
+          ]
+        }
       ]
     },
     {
@@ -2002,6 +3004,19 @@
         "Adam Smith",
         "Alfred Marshall",
         "Thomas Robert Malthus"
+      ],
+      "autoren": [
+        {
+          "name": "John Maynard Keynes",
+          "geb": 1883,
+          "gest": 1946,
+          "bio": "Britischer Ökonom, 1883 in Cambridge geboren, Sohn eines Ökonomen. Als Vertreter des Schatzamts verließ er 1919 die Versailler Verhandlungen aus Protest und sagte in „Die wirtschaftlichen Folgen des Friedens\" die Katastrophe voraus. Er gehörte zur Bloomsbury Group, spekulierte erfolgreich an der Börse und sanierte damit sein College. Seine „Allgemeine Theorie\" (1936) begründete die Makroökonomie; 1944 prägte er die Konferenz von Bretton Woods und starb zwei Jahre später.",
+          "einfluss": [
+            "Adam Smith",
+            "Alfred Marshall",
+            "Thomas Robert Malthus"
+          ]
+        }
       ]
     },
     {
@@ -2032,6 +3047,21 @@
         "Adam Smith",
         "John Maynard Keynes",
         "David Hume"
+      ],
+      "autoren": [
+        {
+          "name": "Friedrich August von Hayek",
+          "geb": 1899,
+          "gest": 1992,
+          "bio": "Österreichisch-britischer Ökonom, 1899 in Wien geboren, Schüler von Ludwig von Mises. Ab 1931 lehrte er an der London School of Economics, wo er sich lange Duelle mit Keynes lieferte, später in Chicago und Freiburg. „Der Weg zur Knechtschaft\" (1944) machte ihn im angelsächsischen Raum zur politischen Figur, was ihm selbst nicht immer behagte. 1947 gründete er die Mont Pèlerin Society, 1974 erhielt er den Wirtschaftsnobelpreis; er starb 1992.",
+          "einfluss": [
+            "Ludwig von Mises",
+            "Carl Menger",
+            "Adam Smith",
+            "John Maynard Keynes",
+            "David Hume"
+          ]
+        }
       ]
     }
   ],
