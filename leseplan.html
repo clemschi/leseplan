@@ -1719,6 +1719,9 @@ function suKornKachel() {
    Der Bauch sitzt bei 0,70 und der Rand zieht sich wieder ein – das
    unterscheidet geblasenes Glas vom bloßen Trichter. */
 const SU_PROFIL = [[0, 0], [0.15, 0.45], [0.40, 0.855], [0.70, 1], [0.88, 0.985], [1, 0.895]];
+/* Hals und Bauch als Anteil der Gesamthöhe – die Volumentabelle unten muss
+   mit derselben Form rechnen wie die Zeichnung. */
+const SU_HALS = 0.0165, SU_BAUCH = 0.252;
 function suProfil(u, hals, bauch) {
   u = clamp(u, 0, 1);
   let i = 0;
@@ -1729,11 +1732,39 @@ function suProfil(u, hals, bauch) {
   return hals + (bauch - hals) * (a[1] + (b[1] - a[1]) * s);
 }
 
+/* Wie viel Sand fasst eine Kammer bis zur Höhe u? Das Integral über die
+   Querschnittsfläche, einmal berechnet und normiert auf 1. */
+const SU_STUFEN = 400;
+let suVolTab = null;
+function suVolumen() {
+  if (suVolTab) return suVolTab;
+  const t = new Float64Array(SU_STUFEN + 1);
+  let summe = 0;
+  for (let i = 1; i <= SU_STUFEN; i++) {
+    const r = suProfil(i / SU_STUFEN, SU_HALS / SU_BAUCH, 1);
+    summe += r * r;
+    t[i] = summe;
+  }
+  for (let i = 0; i <= SU_STUFEN; i++) t[i] /= summe;
+  suVolTab = t;
+  return t;
+}
+/* Auf welcher Höhe steht die Oberfläche, wenn noch dieser Anteil da ist? */
+function suHoeheZuMenge(menge) {
+  const t = suVolumen();
+  const v = clamp(menge, 0, 1);
+  let lo = 0, hi = SU_STUFEN;
+  while (lo < hi) { const m = (lo + hi) >> 1; if (t[m] < v) lo = m + 1; else hi = m; }
+  if (!lo) return 0;
+  const a = t[lo - 1], b = t[lo];
+  return (lo - 1 + (b > a ? (v - a) / (b - a) : 0)) / SU_STUFEN;
+}
+
 function sanduhrZeichnen(ctx, B, H, anteil, sek, minuten, rgb, muster) {
   ctx.clearRect(0, 0, B, H);
   const cx = B / 2, cy = H / 2;
   const hg = Math.min(H * 0.95, B * 1.46);
-  const bauch = hg * 0.252, hals = hg * 0.0165;
+  const bauch = hg * SU_BAUCH, hals = hg * SU_HALS;
   const kh = hg * 0.047, kb = bauch * 1.30;      /* halbe Kappenhöhe und -breite */
   const oben = cy - hg / 2, unten = cy + hg / 2;
   const glasOben = oben + kh * 1.55, glasUnten = unten - kh * 1.55;
@@ -1835,8 +1866,14 @@ function sanduhrZeichnen(ctx, B, H, anteil, sek, minuten, rgb, muster) {
     return g;
   };
 
+  /* Durch den Hals fällt je Sekunde dieselbe Menge, nicht dieselbe Höhe.
+     Weil der Bauch weit und der Hals eng ist, sinkt die Oberfläche zuerst
+     kaum und stürzt zum Schluss – und beide Kammern stehen spiegelbildlich,
+     was oben fehlt, liegt unten. */
+  const uRest = suHoeheZuMenge(1 - anteil);
+
   /* --- Sand in der oberen Kammer --- */
-  const flaeche = glasOben + (cy - glasOben) * anteil;
+  const flaeche = cy - halbH * uRest;
   const rF = breiteBei(flaeche);
   if (anteil < 0.999) {
     /* Körper: streng auf den Sandbereich begrenzt */
@@ -1882,9 +1919,12 @@ function sanduhrZeichnen(ctx, B, H, anteil, sek, minuten, rgb, muster) {
   }
 
   /* --- Haufen in der unteren Kammer --- */
-  const spiegel = glasUnten - (glasUnten - cy) * anteil;
+  const spiegel = cy + halbH * uRest;
   const rS = breiteBei(spiegel);
-  const kegelR = Math.min(rS * 0.72, bauch * 0.52);
+  /* Der Kegel wächst am Anfang ein und verschwindet, wenn die Kammer voll
+     ist – sonst ragte er in den Hals. Sein Winkel ist der Schüttwinkel. */
+  const kegelSkala = Math.min(1, anteil * 6, (spiegel - cy) / (halbH * 0.26));
+  const kegelR = Math.min(rS * 0.72, bauch * 0.52) * clamp(kegelSkala, 0, 1);
   const kegelH = kegelR * 0.62;
   if (anteil > 0.001) {
     /* Ein einziger Körper aus Spiegelfläche und Kuppe – so bekommt nur
@@ -1952,10 +1992,12 @@ function sanduhrZeichnen(ctx, B, H, anteil, sek, minuten, rgb, muster) {
 
   /* --- Rieselnder Sand --- */
   const flott = clamp(1 - (minuten - 1) / 44, 0, 1);
-  if (anteil > 0.0005 && anteil < 0.9995) {
-    const zielY = spiegel - kegelH * 0.88;
+  const zielY = spiegel - kegelH * 0.88;
+  const weg = zielY - cy;
+  /* Kein Strahl mehr, sobald der Haufen den Hals erreicht – sonst stapeln
+     sich alle Körner auf der geschrumpften Fallstrecke zu einem Balken. */
+  if (anteil > 0.0005 && anteil < 0.9995 && weg > hals * 2.5) {
     const strahl = hals * (0.30 + 0.55 * flott);
-    const weg = Math.max(1, zielY - cy);
     /* Ein echter Sandstrahl steht nie still – er pendelt leicht. */
     const pendel = y => Math.sin(sek * 1.9 + (y - cy) * 0.035) * strahl * 0.5 * ((y - cy) / weg);
     ctx.save();
@@ -1992,7 +2034,9 @@ function sanduhrZeichnen(ctx, B, H, anteil, sek, minuten, rgb, muster) {
 
     /* Einzelne Körner mit Bewegungsunschärfe */
     const fallZeit = 0.12 + 1.55 * (1 - flott);
-    const koerner = Math.round(6 + 34 * flott);
+    /* Weniger Körner, wenn die Strecke kurz ist – sonst drängen sie sich. */
+    const gedraenge = clamp(weg / (halbH * 0.55), 0.25, 1);
+    const koerner = Math.max(3, Math.round((7 + 45 * flott) * gedraenge));
     for (let i = 0; i < koerner; i++) {
       const z = suStreu(i), z2 = suStreu(i + 500);
       /* Nicht alle gleich schnell – sonst wirkt es wie eine Perlenkette. */
@@ -2002,7 +2046,7 @@ function sanduhrZeichnen(ctx, B, H, anteil, sek, minuten, rgb, muster) {
          die wenigen Koerner langer Timer zu einer Perlenschnur auf. */
       const spreiz = hals * (0.55 + 0.85 * flott);
       const x = cx + pendel(y) + (z - 0.5) * spreiz * (1.1 + ph * 3.2);
-      const r = hals * (0.22 + z * 0.26) * (1.3 - 0.4 * flott);
+      const r = hals * (0.15 + z * 0.19) * (1.35 - 0.4 * flott);
       const streck = 1.5 + 2.6 * flott * (0.4 + ph);
       ctx.beginPath();
       ctx.ellipse(x, y, r, r * streck, 0, 0, Math.PI * 2);
@@ -4592,17 +4636,21 @@ function netzOeffnen() {
       const y1 = y(k.von), y2 = y(k.auf);
       if (y1 < 0 || y2 < 0) return;
       const aktiv = gewaehlt && (k.von === gewaehlt || k.auf === gewaehlt);
+      /* Dieselben Farben wie die Namenschips darunter: was auf den Gewählten
+         wirkt, im Akzent – was von ihm ausgeht, in der Gegenfarbe. */
+      const farbe = !aktiv ? 'var(--border-strong)'
+        : (k.von === gewaehlt ? 'var(--wirkt)' : 'var(--accent)');
       const bauch = Math.min(GUT - 8, 14 + Math.abs(y2 - y1) * 0.32);
       const pfad = document.createElementNS(svgNS, 'path');
       pfad.setAttribute('d', `M 2 ${y1} Q ${bauch} ${(y1 + y2) / 2} 2 ${y2}`);
       pfad.setAttribute('fill', 'none');
-      pfad.setAttribute('stroke', aktiv ? 'var(--accent)' : 'var(--border-strong)');
+      pfad.setAttribute('stroke', farbe);
       pfad.setAttribute('stroke-width', aktiv ? 1.8 : 1);
       pfad.setAttribute('opacity', gewaehlt ? (aktiv ? 1 : 0.12) : 0.5);
       svg.appendChild(pfad);
       const punkt = document.createElementNS(svgNS, 'circle');
       punkt.setAttribute('cx', 2); punkt.setAttribute('cy', y2); punkt.setAttribute('r', aktiv ? 3 : 2);
-      punkt.setAttribute('fill', aktiv ? 'var(--accent)' : 'var(--border-strong)');
+      punkt.setAttribute('fill', farbe);
       punkt.setAttribute('opacity', gewaehlt ? (aktiv ? 1 : 0.12) : 0.6);
       svg.appendChild(punkt);
     });
