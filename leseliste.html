@@ -392,14 +392,18 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .akk .ab{padding:11px 12px 13px;font-family:"Literata",Georgia,serif;font-size:13.5px;line-height:1.7;
   color:var(--text-2);border-top:1px solid var(--border);}
 .akk[open] > summary .chev{transform:rotate(90deg);}
-/* Zeile mit zweitem Feld zum Wischen (Autoren) */
-.zweifach{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
-  width:100%;min-width:0;flex:1;}
-.zweifach::-webkit-scrollbar{display:none;}
-.zweifach > span{flex:0 0 100%;width:100%;scroll-snap-align:start;min-width:0;display:block;}
-.zweifach .kurzinfo{font-family:"Literata",Georgia,serif;font-size:12.5px;line-height:1.5;color:var(--text-2);}
-.zweifach .kurzinfo b{display:block;font-family:"IBM Plex Sans",sans-serif;font-size:10px;
-  letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);margin-bottom:3px;font-weight:600;}
+/* Autorenzeile: wie die Buchzeile zwei Felder breit, per Wisch */
+.arow{display:flex;width:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;}
+.arow::-webkit-scrollbar{display:none;}
+.apane{flex:0 0 100%;width:100%;scroll-snap-align:start;min-width:0;
+  display:flex;align-items:center;gap:10px;padding:10px 12px;min-height:56px;text-align:left;}
+.apane .ai{flex:1;min-width:0;}
+.apane .an{font-family:"Literata",Georgia,serif;font-size:14px;line-height:1.3;display:block;}
+.apane .am{font-size:11px;color:var(--text-3);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;}
+.apane .kt{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);font-weight:600;display:block;}
+.apane .kx{font-family:"Literata",Georgia,serif;font-size:12.5px;line-height:1.45;color:var(--text-2);
+  margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 
 /* Einflusslinien */
 .einfluss{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
@@ -1909,7 +1913,7 @@ function tabVerschieben(d) {
 }
 (function wischNavigation() {
   let x0 = null, y0 = null, zeit = 0, gesperrt = false;
-  const tabu = '.book,.block,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,.nowbar,input,textarea,select,.sheet,.akk';
+  const tabu = '.book,.arow,.block,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,.nowbar,input,textarea,select,.sheet,.akk';
   document.addEventListener('touchstart', e => {
     if (e.touches.length !== 1 || window.__zieht) { x0 = null; return; }
     const t = e.touches[0];
@@ -3660,7 +3664,7 @@ function autorenMalen(root) {
       `<div class="blockkopf"><h3>${String(i + 1).padStart(2, '0')} · ${esc(blk.name)}</h3><span class="eyebrow">${pl(namen.length, 'Autor', 'Autoren')}</span></div>`);
     namen.forEach(n => {
       gezeigt.add(n);
-      wrap.appendChild(autorKarte(alle.get(n), alle, inv, bs));
+      wrap.appendChild(autorZeile(alle.get(n), alle, inv, bs));
     });
   });
 
@@ -3668,93 +3672,108 @@ function autorenMalen(root) {
   const rest = Array.from(alle.values()).filter(a => !gezeigt.has(a.name));
   if (rest.length) {
     wrap.insertAdjacentHTML('beforeend', `<div class="blockkopf"><h3>Ohne Block</h3><span class="eyebrow">${rest.length}</span></div>`);
-    rest.forEach(a => wrap.appendChild(autorKarte(a, alle, inv, null)));
+    rest.forEach(a => wrap.appendChild(autorZeile(a, alle, inv, null)));
   }
 }
 
-function autorKarte(a, alle, inv, nurAusBlock) {
+function autorZeile(a, alle, inv, nurAusBlock) {
   if (!a) return document.createElement('div');
   const lebt = lebensdaten(a.geb, a.gest);
   const werke = nurAusBlock ? a.buecher.filter(b => nurAusBlock.includes(b)) : a.buecher;
-  const beeinflusstVon = a.einfluss;
-  const beeinflusste = inv.get(a.name) || [];
-  const kurz = ersterSatz(a.bio, 150);
+  const wirkt = (inv.get(a.name) || []).length;
+  const kurz = ersterSatz(a.bio, 160);
 
-  const chip = (n, klickbar) => `<span class="en${klickbar ? ' link' : ''}"${klickbar ? ` data-spring="${esc(n)}"` : ''}>${esc(n)}</span>`;
-
-  const d = document.createElement('details');
-  d.className = 'akk';
-  d.innerHTML = `
-    <summary>
-      <span class="zweifach">
-        <span>
-          <span class="at">${esc(a.name)}</span>
-          <span class="am">
-            ${lebt ? `<span class="num">${esc(lebt)}</span>` : ''}
-            <span>${pl(werke.length, 'Werk', 'Werke')}</span>
-            <span>${werke.filter(b => b.status === 'gelesen').length} gelesen</span>
-            ${beeinflusste.length ? `<span style="color:var(--accent)">wirkt auf ${beeinflusste.length}</span>` : ''}
-          </span>
+  const node = document.createElement('div');
+  node.className = 'arow';
+  node.innerHTML = `
+    <button class="apane" data-auf>
+      <span class="ai">
+        <span class="an">${esc(a.name)}</span>
+        <span class="am">
+          ${lebt ? `<span class="num">${esc(lebt)}</span>` : ''}
+          <span>${pl(werke.length, 'Werk', 'Werke')}</span>
+          <span>${werke.filter(b => b.status === 'gelesen').length} gelesen</span>
+          ${wirkt ? `<span style="color:var(--accent)">wirkt auf ${wirkt}</span>` : ''}
         </span>
-        <span class="kurzinfo"><b>In Kürze</b>${kurz ? esc(kurz) : '<em style="color:var(--text-3)">Noch keine Biographie.</em>'}</span>
       </span>
       <span class="chev">${ICON.chev}</span>
-    </summary>
-    <div class="ab">
-      ${a.bio ? esc(a.bio).replace(/\n/g, '<br>') : '<em style="color:var(--text-3)">Noch keine Biographie hinterlegt.</em>'}
-      <div class="einfluss">
-        <div>
-          <div class="eg">Beeinflusst von</div>
-          <div class="er">${beeinflusstVon.length
-      ? beeinflusstVon.map(n => chip(n, !!autorAufloesen(alle, n))).join('')
-      : '<span class="en" style="opacity:.6">nichts eingetragen</span>'}</div>
-        </div>
-        <div>
-          <div class="eg">Wirkt auf</div>
-          <div class="er">${beeinflusste.length
-      ? beeinflusste.map(n => chip(n, true)).join('')
-      : '<span class="en" style="opacity:.6">niemanden in dieser Liste</span>'}</div>
-        </div>
-      </div>
-      <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px" data-werke></div>
-      <div class="btn-row" style="margin-top:12px">
-        <button class="btn btn-sm" data-bio>${ICON.edit} Biographie &amp; Einfluss</button>
-      </div>
+    </button>
+    <div class="apane">
+      <span class="ai">
+        <span class="kt">In Kürze</span>
+        <span class="kx">${kurz ? esc(kurz) : '<em style="color:var(--text-3)">Noch keine Biographie.</em>'}</span>
+      </span>
     </div>`;
-
-  const w = $('[data-werke]', d);
-  werke.forEach(b => {
-    const btn = document.createElement('button');
-    btn.className = 'chip';
-    btn.style.cssText = 'justify-content:flex-start;text-align:left;white-space:normal';
-    btn.innerHTML = `${esc(b.titel)}${b.jahr != null ? ' <span class="num" style="color:var(--text-3)">' + esc(jahrText(b.jahr)) + '</span>' : ''}`;
-    btn.onclick = () => buchOeffnen(b.id);
-    w.appendChild(btn);
-  });
-  $$('[data-spring]', d).forEach(x => x.onclick = () => {
-    const ziel = autorAufloesen(alle, x.dataset.spring);
-    if (ziel) autorOeffnen(alle.get(ziel), alle, inv);
-  });
-  $('[data-bio]', d).onclick = () => autorBearbeiten(a, () => viewMalen());
-  return d;
+  $('[data-auf]', node).onclick = () => autorOeffnen(a, alle, inv);
+  return node;
 }
 
-/* Ein Autor als eigene Ansicht – beim Springen zwischen Einflüssen. */
+/* Ein Autor als eigene Ansicht: Biographie, Einflüsse, Werke. */
 function autorOeffnen(a, alle, inv) {
   const node = document.createElement('div');
   node.className = 'overlay';
   node.innerHTML = `
     <div class="ovl-head">
       <button class="icon-btn" data-back>${ICON.back}</button>
-      <div class="grow"><div class="ovl-title serif">${esc(a.name)}</div>
-        <div class="ovl-sub">${esc(lebensdaten(a.geb, a.gest) || pl(a.buecher.length, 'Werk', 'Werke'))}</div></div>
+      <div class="grow"><div class="ovl-title serif" data-t></div><div class="ovl-sub" data-s></div></div>
+      <button class="icon-btn" data-bio aria-label="Bearbeiten">${ICON.edit}</button>
     </div>
-    <div class="ovl-body" style="padding:12px 14px 40px" data-b></div>`;
-  const karte = autorKarte(a, alle, inv, null);
-  karte.open = true;
-  $('[data-b]', node).appendChild(karte);
+    <div class="ovl-body" style="padding:14px 14px 40px" data-b></div>`;
+
+  const malen = () => {
+    const frisch = autorenIndex(buecherAktiv());
+    const inv2 = einflussAufIndex(frisch);
+    const akt = frisch.get(a.name) || a;
+    $('[data-t]', node).textContent = akt.name;
+    $('[data-s]', node).textContent = [lebensdaten(akt.geb, akt.gest), pl(akt.buecher.length, 'Werk', 'Werke')].filter(Boolean).join(' · ');
+
+    const von = akt.einfluss;
+    const auf = inv2.get(akt.name) || [];
+    const chip = (n, klickbar) => `<span class="en${klickbar ? ' link' : ''}"${klickbar ? ` data-spring="${esc(n)}"` : ''}>${esc(n)}</span>`;
+
+    const b = $('[data-b]', node);
+    b.innerHTML = `
+      ${akt.bio
+        ? `<p class="desc">${esc(akt.bio).replace(/\n/g, '<br>')}</p>`
+        : `<div class="empty" style="margin:0"><strong>Noch keine Biographie</strong>Ein paar Sätze zum Leben – wer war das, und woraus kommt dieses Buch?</div>`}
+      <div class="einfluss" style="margin-top:16px">
+        <div>
+          <div class="eg">Beeinflusst von</div>
+          <div class="er">${von.length
+        ? von.map(n => chip(n, !!autorAufloesen(frisch, n))).join('')
+        : '<span class="en" style="opacity:.6">nichts eingetragen</span>'}</div>
+        </div>
+        <div>
+          <div class="eg">Wirkt auf</div>
+          <div class="er">${auf.length
+        ? auf.map(n => chip(n, true)).join('')
+        : '<span class="en" style="opacity:.6">niemanden in dieser Liste</span>'}</div>
+        </div>
+      </div>
+      <div class="section-head" style="margin:20px 0 9px"><h2>Werke in deinen Listen</h2><span class="eyebrow">${akt.buecher.length}</span></div>
+      <div data-werke></div>`;
+
+    const w = $('[data-werke]', b);
+    akt.buecher.forEach(x => {
+      const r = document.createElement('button');
+      r.className = 'grouprow';
+      r.innerHTML = `<span class="grow">
+          <span class="gname serif">${esc(x.titel)}</span>
+          <span class="gmeta">${x.jahr != null ? esc(jahrText(x.jahr)) + ' · ' : ''}${STATUS[x.status]}${x.seiten ? ' · ' + x.seiten + ' S.' : ''}</span>
+        </span><span class="chev">${ICON.chev}</span>`;
+      r.onclick = () => buchOeffnen(x.id);
+      w.appendChild(r);
+    });
+    $$('[data-spring]', b).forEach(x => x.onclick = () => {
+      const ziel = autorAufloesen(frisch, x.dataset.spring);
+      if (ziel) autorOeffnen(frisch.get(ziel), frisch, inv2);
+    });
+  };
+
   $('[data-back]', node).onclick = () => layerSchliessen();
+  $('[data-bio]', node).onclick = () => autorBearbeiten(a, () => { malen(); viewMalen(); });
   layerOeffnen(node, () => viewMalen());
+  malen();
 }
 
 function autorBearbeiten(a, nachher) {
