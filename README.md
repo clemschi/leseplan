@@ -87,8 +87,11 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
   das verbietet) oder aus der Galerie; sie werden auf 1600 px Kantenlänge
   verkleinert, rund 300 KB je Bild.
 - **Übersicht** – nicht in der Tableiste, sondern hinter dem Fortschritt in der
-  Kopfzeile: antippen, oder von der Kopfzeile nach unten ziehen – dabei folgt sie dem
-  Finger, und beim Loslassen entscheidet die Strecke, ob sie liegen bleibt. Vier Rubriken: *Zahlen*
+  Kopfzeile: antippen, oder von der Kopfzeile nach unten ziehen. Sie kommt wie ein
+  Vorhang herunter: die Kante liegt genau unter der Fingerkuppe, ein kurzer Weg oder
+  ein Schwung genügt, sonst zieht sie sich wieder zurück. Wegschieben lässt sie sich
+  von unten nach oben – an der Kopfzeile oder am Ende der Liste, damit das Blättern
+  darin unangetastet bleibt. Vier Rubriken: *Zahlen*
   (Kennzahlen und Graphen, jeder als Tabelle aufklappbar), *Zusammenfassungen* (je Block
   jedes Buch zum Auf- und Zuklappen), *Autoren* und *Tage* (Tagesziel, Seiten pro Tag,
   Protokoll jedes Lesetags).
@@ -162,8 +165,11 @@ Vorrat an Werken zu einer fertigen leseliste:
 
 Es wird nichts in die leseliste geschrieben, bevor du am Ende *leseliste anlegen*
 drückst. Der Durchgang selbst wird aber gemerkt: Vorrat, Stelle im Stapel, Gemerktes und
-die begonnenen Blöcke. Beim nächsten Öffnen geht es weiter, wo du aufgehört hast. Nach
-dem Anlegen bleibt der Vorrat samt Stelle stehen, das Gemerkte ist verbraucht.
+die begonnenen Blöcke. Beim nächsten Öffnen liegt genau die Karte wieder oben, bei der
+du aufgehört hast. Die **Diskette** in der Kopfzeile schreibt den Stand jederzeit sofort
+weg; beim Verlassen geschieht das ohnehin. Neben ihr stehen, wie überall, Hell/Dunkel
+und Vollbild. Nach dem Anlegen bleibt der Vorrat samt Stelle stehen, das Gemerkte ist
+verbraucht.
 
 ## Lesen und Einkaufen
 
@@ -184,7 +190,8 @@ sofort weggeschrieben, nicht erst beim nächsten Takt der Selbstsicherung.
 Ein Tipp auf **leseliste** oben links führt aus jeder Ansicht zurück auf die Liste;
 steht man schon dort, geht es nach oben. Das **×** rechts daneben führt zurück auf die
 Startseite mit allen Apps – vorher wird gesichert. Dasselbe tut ein Wisch nach rechts,
-wenn die Liste offen ist und keine Ebene darüber liegt.
+wenn die Liste offen ist und keine Ebene darüber liegt: die App schiebt sich am Finger
+zur Seite und gibt die Startseite frei; wer zu kurz zieht, schiebt sie wieder zurück.
 
 Unten stehen **Liste**, **Stöbern**, **Notizen** und **Mehr**; *Stöbern* öffnet dabei
 keine Ansicht, sondern die eigene Ebene.

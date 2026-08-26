@@ -287,7 +287,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 }
 @keyframes slideIn{from{transform:translateX(18px);opacity:.4}to{transform:none;opacity:1}}
 /* Am Finger hängend: keine eigene Animation, die Lage bestimmt der Zug. */
-.overlay.zieht{animation:none;will-change:transform;}
+.overlay.zieht{animation:none;will-change:transform,clip-path;}
 .sheet-scrim{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:70;
   background:var(--scrim);display:flex;align-items:flex-end;justify-content:center;animation:fade .18s ease;}
 @keyframes fade{from{opacity:0}to{opacity:1}}
@@ -308,7 +308,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .ovl-head .grow{flex:1;min-width:0;}
 .ovl-title{font-family:"Literata",Georgia,serif;font-size:15px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ovl-sub{font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ovl-body{flex:1;overflow-y:auto;}
+.ovl-body{flex:1;overflow-y:auto;overscroll-behavior:contain;}
 /* Hell/Dunkel und Vollbild sind überall erreichbar – auch dort, wo die
    Kopfzeile der App verdeckt liegt. */
 .gknoepfe{display:flex;gap:2px;flex:0 0 auto;}
@@ -531,6 +531,21 @@ body.voll .cam{padding-top:14px;}
 .splash .leiste .icon-btn{background:none;border:0;color:var(--text-3);width:34px;height:34px;}
 .splash .leiste .mehr{background:none;border:0;color:var(--text-3);font:inherit;font-size:11.5px;
   padding:9px 8px;cursor:pointer;opacity:.75;}
+/* Der Grund, der beim Ziehen nach rechts hinter der App zum Vorschein kommt:
+   derselbe Homescreen, nur ohne Bedienung – angefasst wird er erst, wenn der
+   Zug durchgeht. */
+.heimgrund{z-index:1;pointer-events:none;}
+.heimgrund .apps{animation:none;}
+/* Ein Schattenstreifen genau vor der Kante der App, damit sie über dem
+   Homescreen liegt statt daneben. */
+.heimgrund::after{content:'';position:fixed;top:0;bottom:0;left:0;width:26px;
+  transform:translateX(calc(var(--heimzug,0px) - 26px));
+  background:linear-gradient(to right,rgba(0,0,0,0),rgba(0,0,0,.4));}
+body.heimzug .topbar,body.heimzug #view,body.heimzug .nowbar,body.heimzug .tabbar{
+  transform:translateX(var(--heimzug,0px));will-change:transform;}
+body.heimzug.federt .topbar,body.heimzug.federt #view,body.heimzug.federt .nowbar,
+body.heimzug.federt .tabbar{transition:transform .26s cubic-bezier(.2,.8,.3,1);}
+body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
 
 .toast{
   position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom));transform:translateX(-50%);
@@ -555,8 +570,10 @@ body.voll .cam{padding-top:14px;}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sto-kopf .u{font-size:11.5px;color:var(--text-3);margin-top:1px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sto-zaehler{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--good);
-  background:var(--good-soft);border-radius:99px;padding:5px 12px;font-variant-numeric:tabular-nums;
+.sto-kopf .icon-btn.sto-sichern{width:32px;height:32px;background:none;border:0;color:var(--text-3);}
+.sto-kopf .icon-btn.sto-sichern svg{width:16px;height:16px;}
+.sto-zaehler{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--good);
+  background:var(--good-soft);border-radius:99px;padding:5px 9px;font-variant-numeric:tabular-nums;
   flex:0 0 auto;border:1px solid color-mix(in srgb,var(--good) 30%,transparent);}
 .sto-zaehler svg{width:13px;height:13px;}
 .sto-zaehler.puls{animation:stoPuls .5s cubic-bezier(.2,.8,.3,1);}
@@ -1750,36 +1767,26 @@ async function boot() {
   $('#btnUebersicht').onclick = () => uebersichtOeffnen();
   $('#btnRaus').innerHTML = ICON.x;
   $('#btnRaus').onclick = zumStartbildschirm;
-  /* Die Übersicht wird von der Kopfzeile heruntergezogen und folgt dabei dem
-     Finger. Erst beim Loslassen entscheidet sich, ob sie liegen bleibt. */
+  /* Die Übersicht wird von der Kopfzeile heruntergezogen wie ein Vorhang:
+     die Kante, an der sie aufhört, liegt genau unter der Fingerkuppe. Erst
+     beim Loslassen entscheidet sich, ob sie liegen bleibt – die Schwelle ist
+     kurz, ein Schwung nach unten genügt auch. */
   (() => {
     const kopf = $('.topbar');
-    let y0 = null, x0 = 0, node = null, weg = 1, offen = false;
+    let y0 = null, x0 = 0, node = null, ab = 0, hoehe = 1, offen = false;
+    let letztY = 0, letztT = 0, tempo = 0;
 
-    const setzen = (f) => {
-      node.style.transform = 'translateY(' + (-100 + f * 100) + '%)';
-      node.style.opacity = String(0.4 + f * 0.6);
-    };
-    const beenden = (behalten) => {
-      const el = node;
-      node = null;
-      el.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1),opacity .2s ease';
-      if (behalten) {
-        el.style.transform = 'translateY(0)';
-        el.style.opacity = '1';
-        setTimeout(() => { if (el.isConnected) el.classList.remove('zieht'); }, 280);
-      } else {
-        el.style.transform = 'translateY(-100%)';
-        el.style.opacity = '0';
-        setTimeout(() => layerSchliessen(), 240);
-      }
+    const fertig = () => {
+      window.__zieht = false;
+      y0 = null; node = null;
     };
 
     kopf.addEventListener('touchstart', e => {
       if (e.touches.length !== 1 || Layers.length || window.__zieht) { y0 = null; return; }
       y0 = e.touches[0].clientY; x0 = e.touches[0].clientX;
-      node = null; offen = false;
-      weg = Math.max(160, window.innerHeight * 0.3);
+      node = null; offen = false; ab = 0;
+      hoehe = window.innerHeight || 640;
+      letztY = y0; letztT = Date.now(); tempo = 0;
     }, { passive: true });
 
     kopf.addEventListener('touchmove', e => {
@@ -1788,21 +1795,30 @@ async function boot() {
       if (!node) {
         /* Erst ab einer klaren Abwärtsbewegung übernehmen. */
         if (dx > 14 && dx > Math.abs(dy)) { y0 = null; return; }
-        if (dy < 12) return;
+        if (dy < 10) return;
         node = uebersichtOeffnen(true);
         if (!node) { y0 = null; return; }
-        setzen(0);
+        window.__zieht = true;
+        ab = dy;
+        hoehe = vorhangSetzen(node, 0);
       }
       e.preventDefault();
-      const f = clamp(dy / weg, 0, 1);
-      offen = f > 0.42;
-      setzen(f);
+      const jetzt = Date.now();
+      if (jetzt > letztT) {
+        tempo = (t.clientY - letztY) / (jetzt - letztT);
+        letztY = t.clientY; letztT = jetzt;
+      }
+      const y = dy - ab;
+      offen = y > vorhangSchwelle(hoehe) || tempo > 0.45;
+      vorhangSetzen(node, y);
     }, { passive: false });
 
     const los = () => {
       if (y0 == null) return;
-      y0 = null;
-      if (node) beenden(offen);
+      const el = node;
+      if (!el) { fertig(); return; }
+      vorhangLoesen(el, offen, () => { if (!offen) layerSchliessen(); });
+      fertig();
     };
     kopf.addEventListener('touchend', los, { passive: true });
     kopf.addEventListener('touchcancel', los, { passive: true });
@@ -2339,6 +2355,97 @@ function tabVerschieben(d) {
   const j = clamp(i + d, 0, ANSICHTEN.length - 1);
   if (j !== i) tabWechseln(ANSICHTEN[j]);
 }
+/* ===== Zum Startbildschirm ziehen =====
+   Von links nach rechts: die Flächen der App wandern am Finger mit und geben
+   den Homescreen dahinter frei – 1:1 wie die Karten beim Stöbern, mit kurzer
+   Schwelle und Schwung. Erst wenn der Zug durchgeht, wird wirklich
+   umgeschaltet. */
+(function heimZiehen() {
+  const tabu = '.book,.arow,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,'
+    + '.nowbar,.zsRahmen,.netz,.sto,input,textarea,select,.sheet,.akk';
+  let x0 = null, y0 = 0, zieht = false, ab = 0, raus = false, grund = null;
+  let letztX = 0, letztT = 0, tempo = 0;
+
+  const breite = () => window.innerWidth || 360;
+  const schwelle = () => Math.max(80, breite() * 0.3);
+
+  const grundBauen = () => {
+    grund = document.createElement('div');
+    grund.className = 'splash heimgrund';
+    grund.setAttribute('aria-hidden', 'true');
+    grund.innerHTML = '<div class="apps">'
+      + '<span class="app ist">leseliste</span>'
+      + '<span class="app aus">kalender</span></div>';
+    grund.style.opacity = '0';
+    document.body.appendChild(grund);
+    document.body.classList.add('heimzug');
+  };
+
+  const setzen = (dx) => {
+    const f = clamp(dx / breite(), 0, 1);
+    document.body.style.setProperty('--heimzug', dx.toFixed(1) + 'px');
+    if (grund) grund.style.opacity = clamp(0.2 + f * 2, 0, 1).toFixed(3);
+  };
+
+  const aufraeumen = () => {
+    document.body.classList.remove('heimzug', 'federt');
+    document.body.style.removeProperty('--heimzug');
+    if (grund && grund.isConnected) grund.remove();
+    grund = null;
+    window.__zieht = false;
+    x0 = null; zieht = false;
+  };
+
+  const los = () => {
+    if (x0 == null) return;
+    if (!zieht) { x0 = null; window.__zieht = false; return; }
+    x0 = null;
+    document.body.classList.add('federt');
+    if (raus) {
+      setzen(breite());
+      setTimeout(() => { aufraeumen(); zumStartbildschirm(); }, 250);
+    } else {
+      setzen(0);
+      if (grund) grund.style.opacity = '0';
+      setTimeout(aufraeumen, 270);
+    }
+  };
+
+  document.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1 || window.__zieht || zieht) { x0 = null; return; }
+    if (Layers.length || $('#app').hidden || aktiverTab !== ANSICHTEN[0]) { x0 = null; return; }
+    if (e.target.closest && e.target.closest(tabu)) { x0 = null; return; }
+    const t = e.touches[0];
+    x0 = t.clientX; y0 = t.clientY; raus = false;
+    letztX = x0; letztT = Date.now(); tempo = 0;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (x0 == null) return;
+    const t = e.touches[0], dx = t.clientX - x0, dy = Math.abs(t.clientY - y0);
+    if (!zieht) {
+      if (window.__zieht) { x0 = null; return; }
+      if (dx < -8 || dy > 18) { x0 = null; return; }
+      if (dx < 14) return;
+      zieht = true; ab = dx; window.__zieht = true;
+      grundBauen();
+      setzen(0);
+    }
+    e.preventDefault();
+    const jetzt = Date.now();
+    if (jetzt > letztT) {
+      tempo = (t.clientX - letztX) / (jetzt - letztT);
+      letztX = t.clientX; letztT = jetzt;
+    }
+    const x = Math.max(0, dx - ab);
+    raus = x > schwelle() || tempo > 0.5;
+    setzen(x);
+  }, { passive: false });
+
+  document.addEventListener('touchend', los, { passive: true });
+  document.addEventListener('touchcancel', los, { passive: true });
+})();
+
 (function wischNavigation() {
   let x0 = null, y0 = null, zeit = 0, gesperrt = false;
   /* .block steht bewusst nicht hier: dort gibt es nur langes Drücken zum
@@ -4033,6 +4140,97 @@ function monatsListe(von, bis) {
 let uebersichtAllePlaene = false;
 let uebersichtUnter = 'zahlen';
 
+/* ===== Vorhang: eine Ebene am Finger auf- und zuziehen =====
+   Vorbild ist der Kartenstapel beim Stöbern: die Fläche folgt der Hand 1:1,
+   eine kurze Schwelle oder ein Schwung entscheidet beim Loslassen. Statt zu
+   verschieben wird hier von oben aufgedeckt – die Kante liegt unter der
+   Fingerkuppe, der Inhalt bleibt an seinem Platz. */
+function vorhangSchwelle(hoehe) { return Math.max(96, (hoehe || 640) * 0.14); }
+
+function vorhangSetzen(el, y) {
+  const h = el.clientHeight || window.innerHeight || 640;
+  const k = clamp(y, 0, h);
+  const f = k / h;
+  el.style.transition = 'none';
+  /* Undurchsichtig wie ein Tuch – nur die Kante wirft einen Schatten auf das,
+     was noch darunter liegt. */
+  el.style.clipPath = 'inset(0px 0px ' + (h - k).toFixed(1) + 'px 0px)';
+  el.style.transform = 'translateY(' + (-(1 - f) * 6).toFixed(1) + 'px)';
+  el.style.filter = 'drop-shadow(0 7px 16px rgba(0,0,0,.42))';
+  el.style.opacity = '1';
+  return h;
+}
+
+function vorhangLoesen(el, auf, fertig) {
+  const h = el.clientHeight || window.innerHeight || 640;
+  el.style.transition = 'clip-path .26s cubic-bezier(.2,.8,.3,1),'
+    + 'transform .26s cubic-bezier(.2,.8,.3,1),opacity .2s ease';
+  el.style.clipPath = auf ? 'inset(0px 0px 0px 0px)' : 'inset(0px 0px ' + h + 'px 0px)';
+  el.style.transform = auf ? 'translateY(0px)' : 'translateY(-6px)';
+  setTimeout(() => {
+    if (auf && el.isConnected) {
+      el.style.transition = ''; el.style.clipPath = '';
+      el.style.transform = ''; el.style.opacity = ''; el.style.filter = '';
+      el.classList.remove('zieht');
+    }
+    if (fertig) fertig();
+  }, auf ? 280 : 240);
+}
+
+/* Zurückschieben von unten nach oben. Damit das Blättern in der Liste heil
+   bleibt, beginnt der Zug an der Kopfzeile oder dort, wo nichts mehr zu
+   scrollen ist. */
+function vorhangHochBinden(node, koerper) {
+  let y0 = null, x0 = 0, zieht = false, ab = 0, hoehe = 1, zu = false;
+  let letztY = 0, letztT = 0, tempo = 0;
+
+  const darf = (ziel) => {
+    if (ziel && ziel.closest && ziel.closest('.ovl-head')) return true;
+    if (!koerper) return true;
+    const rest = koerper.scrollHeight - koerper.clientHeight;
+    return rest <= 4 || koerper.scrollTop >= rest - 4;
+  };
+  const fertig = () => { window.__zieht = false; y0 = null; zieht = false; };
+
+  node.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1 || window.__zieht || !darf(e.target)) { y0 = null; return; }
+    y0 = e.touches[0].clientY; x0 = e.touches[0].clientX;
+    zieht = false; zu = false;
+    hoehe = node.clientHeight || window.innerHeight || 640;
+    letztY = y0; letztT = Date.now(); tempo = 0;
+  }, { passive: true });
+
+  node.addEventListener('touchmove', e => {
+    if (y0 == null) return;
+    const t = e.touches[0], dy = t.clientY - y0, dx = Math.abs(t.clientX - x0);
+    if (!zieht) {
+      if (dy > 6 || (dx > 14 && dx > Math.abs(dy))) { y0 = null; return; }
+      if (dy > -10) return;
+      zieht = true; ab = dy; window.__zieht = true;
+      node.classList.add('zieht');
+    }
+    e.preventDefault();
+    const jetzt = Date.now();
+    if (jetzt > letztT) {
+      tempo = (t.clientY - letztY) / (jetzt - letztT);
+      letztY = t.clientY; letztT = jetzt;
+    }
+    const y = hoehe + (dy - ab);
+    zu = (hoehe - y) > vorhangSchwelle(hoehe) || tempo < -0.45;
+    vorhangSetzen(node, y);
+  }, { passive: false });
+
+  const los = () => {
+    if (y0 == null) return;
+    if (!zieht) { fertig(); return; }
+    const schliessen = zu;
+    vorhangLoesen(node, !schliessen, () => { if (schliessen) layerSchliessen(); });
+    fertig();
+  };
+  node.addEventListener('touchend', los, { passive: true });
+  node.addEventListener('touchcancel', los, { passive: true });
+}
+
 /* Die Übersicht liegt nicht mehr in der Tableiste, sondern hinter dem
    Fortschritt im Kopf – antippen oder von dort nach unten ziehen. */
 function uebersichtOeffnen(gezogen) {
@@ -4055,6 +4253,8 @@ function uebersichtOeffnen(gezogen) {
     uebersichtMalen(body, malen);
   };
   $('[data-back]', node).onclick = () => layerSchliessen();
+  /* Wieder wegschieben: von unten nach oben, derselbe Vorhang rückwärts. */
+  vorhangHochBinden(node, body);
   layerOeffnen(node, () => { ueOffen = null; });
   ueOffen = malen;
   malen();
@@ -5820,6 +6020,7 @@ function stoebernOeffnen() {
       <button class="icon-btn" data-back>${ICON.back}</button>
       <div class="grow"><div class="t" data-t>Stöbern</div><div class="u" data-u></div></div>
       <span class="sto-zaehler" data-zaehler hidden>${ICON.herz}<span data-zahl>0</span></span>
+      <button class="icon-btn sto-sichern" data-sichern title="Stand sichern" aria-label="Stand sichern">${ICON.save}</button>
     </div>
     <div class="sto-fort"><i data-fort style="width:0%"></i></div>
     <div class="sto-inhalt" style="flex:1;min-height:0;display:flex;flex-direction:column" data-inhalt></div>`;
@@ -6392,6 +6593,14 @@ function stoebernOeffnen() {
     else schrittBloecke();
     zaehlerAuffrischen(false);
     merken();
+  };
+
+  /* Der Knopf mit der Diskette schreibt den Stand sofort weg – sichtbar,
+     damit man sich beim Weggehen darauf verlassen kann. */
+  $('[data-sichern]', node).onclick = async () => {
+    merken();
+    try { await Store.sichern(true); toast('Stand gesichert.'); }
+    catch (e) { console.warn(e); toast('Konnte nicht sichern.', 3500); }
   };
 
   /* Der Pfeil oben führt einen Schritt zurück, aus dem ersten heraus. */
