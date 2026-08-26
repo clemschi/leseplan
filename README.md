@@ -83,7 +83,8 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
   das verbietet) oder aus der Galerie; sie werden auf 1600 px Kantenlänge
   verkleinert, rund 300 KB je Bild.
 - **Übersicht** – nicht in der Tableiste, sondern hinter dem Fortschritt in der
-  Kopfzeile: antippen oder von dort nach unten ziehen. Vier Rubriken: *Zahlen*
+  Kopfzeile: antippen, oder von der Kopfzeile nach unten ziehen – dabei folgt sie dem
+  Finger, und beim Loslassen entscheidet die Strecke, ob sie liegen bleibt. Vier Rubriken: *Zahlen*
   (Kennzahlen und Graphen, jeder als Tabelle aufklappbar), *Zusammenfassungen* (je Block
   jedes Buch zum Auf- und Zuklappen), *Autoren* und *Tage* (Tagesziel, Seiten pro Tag,
   Protokoll jedes Lesetags).
@@ -174,7 +175,9 @@ einzutragen, fragt die App nach – die gelesene Zeit soll nicht stillschweigend
 sofort weggeschrieben, nicht erst beim nächsten Takt der Selbstsicherung.
 
 Ein Tipp auf **leseliste** oben links führt aus jeder Ansicht zurück auf die Liste;
-steht man schon dort, geht es nach oben.
+steht man schon dort, geht es nach oben. Das **×** rechts daneben führt zurück auf die
+Startseite mit allen Apps – vorher wird gesichert. Dasselbe tut ein Wisch nach rechts,
+wenn die Liste offen ist und keine Ebene darüber liegt.
 
 Unten stehen **Liste**, **Stöbern**, **Notizen** und **Mehr**; *Stöbern* öffnet dabei
 keine Ansicht, sondern die eigene Ebene.
