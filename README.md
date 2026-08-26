@@ -82,10 +82,13 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
   wurde; wer auf wen wirkt, leitet die App daraus ab und verlinkt es. Zwei Ansichten
   dazu: **Vernetzung** (alle Einflusslinien, nach Geburtsjahr gereiht, ein Tipp
   zeigt nur die eines Autors; wer ohne Linie zu den anderen dasteht, wird eigens
-  aufgeführt, samt Einfluss in reinem Text) und **Zeitstrahl** (Lebenszeit als Balken, jedes Buch
-  als Punkt im Jahr seiner Erstveröffentlichung). Die Skala des Zeitstrahls wird aus
-  den Daten gebaut: belegte Zeitspannen bekommen Platz, leere Jahrhunderte werden
-  schraffiert zusammengezogen – so steht Platon auf derselben Achse wie Piketty.
+  aufgeführt, samt Einfluss in reinem Text) und **Zeitstrahl** (Lebenszeit als Balken,
+  jedes Buch als Punkt im Jahr seiner Erstveröffentlichung). Die Skala des Zeitstrahls
+  wird aus den Daten gebaut: belegte Zeitspannen bekommen Platz, leere Jahrhunderte
+  werden schraffiert zusammengezogen – so steht Platon auf derselben Achse wie
+  Piketty. Die Jahreszahlen stehen in Zwanzigerschritten und bleiben beim Blättern
+  oben stehen; ein Tipp auf einen Namen hebt ihn samt seiner Einflüsse hervor und
+  zeigt darunter denselben Steckbrief wie die Vernetzung.
 - **Notizen** – buchübergreifend, umschaltbar zwischen Themenfeldern, Arten, allen
   Notizen und der Galerie aller Fotos.
 - **Suche** – über Titel, Autoren, Beschreibungen, Notizen und Themen.
@@ -93,15 +96,23 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
 ## Mit KI
 
 Unter *Mehr → Mit KI* stehen zwei Prompt-Generatoren. Beide erzeugen einen Text zum
-Kopieren, der in Claude eingefügt wird; die Antwort ist reines JSON im Ergänzen-Format
-– als Datei sichern und unter *Daten aus Datei laden → Ergänzen* einspielen.
+Kopieren, der in Claude eingefügt wird. Der Prompt verlangt die Antwort als
+**herunterladbare `leseliste.json`**, nicht als Nachricht im Chat – die Datei wird
+unter *Daten aus Datei laden → Ergänzen* eingespielt.
 
 - **Leseliste erstellen lassen** – Forschungsfrage, These oder Thema eintragen,
-  gewünschte Buchzahl und Name der neuen leseliste dazu; die Antwort liefert eine
-  vollständige neue leseliste in Blöcken.
+  gewünschte Zahl der Werke und Name der neuen leseliste dazu; die Antwort liefert eine
+  vollständige neue leseliste in Blöcken. Erreichbar auch beim ersten Start: auf dem
+  Startbildschirm, in der Einführung und in der noch leeren Listenansicht.
 - **Aktuelle Liste bewerten lassen** – schickt die aktuelle leseliste (Blöcke, Titel,
-  Autoren, Jahr, Kurzfassung) mit; die Antwort benennt Lücken und schlägt zusätzliche,
-  real existierende Bücher vor, einsortiert in bestehende oder neue Blöcke.
+  Autoren, Jahr, Kurzfassung) mit; die Beurteilung kommt in den Chat, die Vorschläge in
+  die Datei, einsortiert in bestehende oder neue Blöcke.
+
+Beide Prompts nehmen auf Wunsch **Fachartikel** mit auf – peer-reviewed und viel
+zitiert, wie über Google Scholar auffindbar. Bei Büchern werden deutsche Ausgaben
+bevorzugt, einschlägige englische aber ausdrücklich mitgenommen; bei Artikeln zählt
+allein die Qualität, nicht die Sprache. Artikel tragen Zeitschrift, Seiten und DOI im
+Feld *Ausgabe* und landen nicht auf der Einkaufsliste.
 
 ## Lesen und Einkaufen
 
@@ -109,6 +120,9 @@ Kopieren, der in Claude eingefügt wird; die Antwort ist reines JSON im Ergänze
 Buch und Uhr; läuft keine, startet sie das aktuelle Buch. Gibt es kein oder mehr als
 ein angefangenes Buch, wird gewählt. Starten geht auch im Buch und über langes Drücken
 auf eine Zeile der Liste – dort finden sich außerdem *nach oben* und *nach unten*.
+
+Ein Tipp auf **leseliste** oben links führt aus jeder Ansicht zurück auf die Liste;
+steht man schon dort, geht es nach oben.
 
 Wischen führt durch die App: nach links zur nächsten Ansicht, nach rechts zurück
 beziehungsweise aus einer geöffneten Ansicht heraus. Blätter von unten lassen sich

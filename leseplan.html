@@ -83,7 +83,9 @@ p{margin:0;}
 }
 .topbar-inner{padding:12px 16px 10px;display:flex;flex-direction:column;gap:9px;}
 .topbar-row{display:flex;align-items:center;gap:10px;}
-.brand{display:flex;align-items:baseline;gap:9px;min-width:0;flex:1;}
+.brand{display:flex;align-items:baseline;gap:9px;min-width:0;flex:1;text-align:left;
+  background:none;border:0;padding:0;color:inherit;cursor:pointer;}
+.brand:active h1{opacity:.55;}
 .brand h1{font-family:"Literata",Georgia,serif;font-size:17.5px;letter-spacing:-.01em;}
 .brand .sub{font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .icon-btn{
@@ -187,6 +189,12 @@ main{padding:18px 0 0;}
 
 .field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
 .field > label{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);font-weight:600;}
+/* Zeile mit Radio oder Haken: hier steht Fließtext, keine Feldüberschrift. */
+.field > label.optzeile{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.5;
+  letter-spacing:0;text-transform:none;color:var(--text-2);font-weight:400;margin-bottom:8px;}
+.field > label.optzeile:last-child{margin-bottom:0;}
+.field > label.optzeile input{width:auto;margin-top:3px;flex:0 0 auto;}
+.field > label.optzeile strong{color:var(--text);font-weight:600;}
 .field .hint{font-size:11.5px;color:var(--text-3);}
 input[type=text],input[type=number],input[type=date],input[type=time],textarea,select{
   width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
@@ -415,16 +423,29 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .netzsvg{position:absolute;top:0;right:0;height:100%;pointer-events:none;z-index:1;}
 
 /* Zeitstrahl */
-.zsRahmen{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface);}
+/* Eigener Scrollkasten: nur so bleibt die Jahreszahlzeile beim Blättern oben stehen. */
+.zsRahmen{overflow:auto;max-height:min(58vh,520px);overscroll-behavior:contain;
+  border:1px solid var(--border);border-radius:12px;background:var(--surface);}
 .zsInner{position:relative;}
-.zsAchse{position:sticky;top:0;height:24px;background:var(--surface);border-bottom:1px solid var(--border);z-index:2;}
+.zsAchse{position:sticky;top:0;height:24px;background:var(--surface);border-bottom:1px solid var(--border);z-index:4;}
 .zsAchse span{position:absolute;top:5px;font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:var(--text-3);transform:translateX(-50%);}
+.zsAchse span.links{transform:none;}
 .zsGitter{position:absolute;top:24px;bottom:0;width:1px;background:var(--grid);}
-.zsZeile{position:relative;height:26px;}
+.zsZeile{position:relative;height:26px;transition:opacity .12s ease;}
+.zsZeile.alt{background:color-mix(in srgb,var(--text-3) 6%,transparent);}
 .zsBalken{position:absolute;top:6px;height:14px;border-radius:7px;background:color-mix(in srgb,var(--accent) 26%,transparent);
   border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);}
 .zsName{position:absolute;top:6px;font-size:10.5px;line-height:14px;padding:0 7px;white-space:nowrap;
-  color:var(--text);text-shadow:0 0 4px var(--surface),0 0 3px var(--surface);pointer-events:none;}
+  color:var(--text);text-shadow:0 0 4px var(--surface),0 0 3px var(--surface);cursor:pointer;z-index:2;
+  background:none;border:0;font-family:inherit;}
+/* Ausgewählter Autor, seine Nachbarn im Einflussnetz, alle übrigen */
+.zsZeile.aktiv{background:var(--accent-soft);}
+.zsZeile.aktiv .zsBalken{background:color-mix(in srgb,var(--accent) 55%,transparent);
+  border-color:var(--accent);}
+.zsZeile.aktiv .zsName{color:var(--accent);font-weight:600;}
+.zsZeile.verbunden .zsBalken{background:color-mix(in srgb,var(--accent) 40%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 70%,transparent);}
+.zsZeile.blass{opacity:.28;}
 .zsPunkt{position:absolute;top:8px;width:11px;height:11px;border-radius:50%;background:var(--accent);
   border:2px solid var(--surface);transform:translateX(-50%);cursor:pointer;z-index:3;}
 .zsPunkt.gelesen{background:var(--good);}
@@ -524,9 +545,9 @@ body.voll .cam{padding-top:14px;}
   <header class="topbar">
     <div class="topbar-inner shell">
       <div class="topbar-row">
-        <div class="brand">
+        <button class="brand" id="btnHeim" title="Zur Liste" aria-label="Zur Liste">
           <h1>leseliste</h1>
-        </div>
+        </button>
         <button class="savechip" id="saveChip" data-state="clean" title="Jetzt sichern"><span class="dot"></span><span id="saveText">gesichert</span></button>
         <button class="icon-btn" id="btnSuche" title="Suchen" aria-label="Suchen"></button>
         <button class="icon-btn" id="btnTheme" title="Hell oder dunkel" aria-label="Hell oder dunkel umschalten"></button>
@@ -1122,6 +1143,7 @@ function setupZeigen(nurWechsel) {
 
       <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
         ${dateiDa ? '<button class="btn btn-sm" data-act="import">Daten aus Datei laden</button>' : ''}
+        ${nurWechsel ? '' : '<button class="btn btn-sm" data-act="ki">Liste von KI zusammenstellen</button>'}
         ${nurWechsel ? '<button class="btn btn-sm btn-ghost" data-act="abbrechen">Abbrechen</button>' : ''}
         <button class="btn btn-sm btn-ghost" data-act="theme">Hell/Dunkel</button>
         ${vollbildGeht() ? `<button class="btn btn-sm btn-ghost" data-act="voll">${ICON.voll} Vollbild</button>` : ''}
@@ -1138,6 +1160,7 @@ function setupZeigen(nurWechsel) {
     if (act === 'voll') { vollbildUmschalten(); return; }
     if (act === 'abbrechen') { s.hidden = true; $('#app').hidden = false; return; }
     if (act === 'import') { importDialog(!nurWechsel); return; }
+    if (act === 'ki') { kiErstellenOeffnen(); return; }
 
     if (act === 'geraet') {
       Store.modus = 'geraet'; Store.handle = null;
@@ -1370,7 +1393,10 @@ function einfuehrungZeigen() {
         ${DB.lesepleane.length ? 'Vorhanden: <strong>' + esc(plaeneSortiert().map(x => x.name).join(', ')) + '</strong>.' : ''}`,
       feld: `<div class="field"><label>Name</label><input type="text" data-name placeholder="z.B. Lesestart"></div>
              <p class="hinweis" style="padding:0 0 4px">Oder lade die fertige Liste als Datei – dann sind Blöcke und Bücher gleich mit dabei.</p>
-             <button class="btn btn-block" data-import>Fertige Liste aus Datei laden</button>`,
+             <button class="btn btn-block" data-import>Fertige Liste aus Datei laden</button>
+             <p class="hinweis" style="padding:10px 0 4px">Du hast noch keine Liste, aber eine Frage, eine These oder ein Thema?
+               Dann lass sie dir zusammenstellen: Die App baut den Prompt, Claude liefert eine Datei zurück, die du hier lädst.</p>
+             <button class="btn btn-block" data-ki>${ICON.tags} Von KI zusammenstellen lassen</button>`,
       vorWeiter: (body) => {
         const name = ($('[data-name]', body).value || '').trim();
         if (!name) return;
@@ -1439,6 +1465,8 @@ function einfuehrungZeigen() {
       </div>`;
     const imp = $('[data-import]', body);
     if (imp) imp.onclick = () => importDialog(false);
+    const ki = $('[data-ki]', body);
+    if (ki) ki.onclick = () => kiErstellenOeffnen();
     const zur = $('[data-zurueck]', body);
     if (zur) zur.onclick = () => { schritt--; malen(); };
     $('[data-weiter]', body).onclick = () => {
@@ -1474,6 +1502,12 @@ async function boot() {
   vollbildKnopfMalen();
   $('#btnVoll').onclick = vollbildUmschalten;
   $('#btnTheme').onclick = () => { themeUmschalten(); viewMalen(); };
+  /* Der Name oben links führt zurück auf die Liste; steht man schon dort,
+     geht es nach oben. */
+  $('#btnHeim').onclick = () => {
+    if (aktiverTab !== 'plan') tabWechseln('plan');
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   $('#saveChip').onclick = () => Store.alsDateiSichern(false);
 
   let meta = null;
@@ -2001,14 +2035,17 @@ function planMalen(root) {
     root.innerHTML = `
       <div class="empty">
         <strong>Noch keine leseliste</strong>
-        Eine leseliste fasst mehrere Blöcke zusammen. Lege eine an – oder lade eine fertige Liste als Datei.
-        <div class="btn-row" style="justify-content:center;margin-top:16px">
+        Eine leseliste fasst mehrere Blöcke zusammen. Lege eine an, lade eine fertige Liste als Datei –
+        oder lass dir zu einer Frage, einer These oder einem Thema eine zusammenstellen.
+        <div class="btn-row" style="justify-content:center;margin-top:16px;flex-wrap:wrap">
           <button class="btn btn-primary" data-neu-plan>${ICON.plus} leseliste anlegen</button>
           <button class="btn" data-import>Liste laden</button>
+          <button class="btn" data-ki>${ICON.tags} Von KI zusammenstellen</button>
         </div>
       </div>`;
     $('[data-neu-plan]', root).onclick = () => planBearbeiten(null);
     $('[data-import]', root).onclick = () => importDialog(false);
+    $('[data-ki]', root).onclick = () => kiErstellenOeffnen();
     return;
   }
 
@@ -3846,17 +3883,62 @@ function autorBearbeiten(a, nachher) {
   };
 }
 
+/* Der Steckbrief eines Autors: Einflüsse in beide Richtungen und seine Werke.
+   Vernetzung und Zeitstrahl zeigen denselben Kasten. */
+function autorSteckbriefMalen(name, alle, inv, info, aufloesen) {
+  const a = alle.get(name);
+  if (!a) { info.innerHTML = ''; return; }
+  const von = a.einfluss.filter(q => autorAufloesen(alle, q));
+  const auf = inv.get(name) || [];
+  const nurText = a.einfluss.filter(q => !autorAufloesen(alle, q));
+  const lebt = lebensdaten(a.geb, a.gest);
+  info.innerHTML = `
+    <div class="section-head"><h2>${esc(name)}</h2>
+      ${lebt ? `<span class="eyebrow num">${esc(lebt)}</span>` : ''}
+      <button class="btn btn-sm btn-ghost" data-weg>Auswahl lösen</button></div>
+    <div class="einfluss">
+      <div><div class="eg">Beeinflusst von</div><div class="er">${(von.length || nurText.length)
+      ? von.map(n => `<span class="en link" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
+      + nurText.map(n => `<span class="en">${esc(n)}</span>`).join('')
+      : '<span class="en" style="opacity:.6">niemandem hier</span>'}</div></div>
+      <div><div class="eg">Wirkt auf</div><div class="er">${auf.length
+      ? auf.map(n => `<span class="en link" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
+      : '<span class="en" style="opacity:.6">niemanden hier</span>'}</div></div>
+    </div>
+    <div class="section-head" style="margin:18px 0 9px"><h2>Werke in deinen Listen</h2><span class="eyebrow">${a.buecher.length}</span></div>
+    <div data-werke></div>`;
+  const weg = $('[data-weg]', info);
+  if (weg) weg.onclick = () => aufloesen();
+  const w = $('[data-werke]', info);
+  a.buecher.forEach(x => {
+    const r = document.createElement('button');
+    r.className = 'grouprow';
+    r.innerHTML = `<span class="grow">
+        <span class="gname serif">${esc(x.titel)}</span>
+        <span class="gmeta">${x.jahr != null ? esc(jahrText(x.jahr)) + ' · ' : ''}${STATUS[x.status]}${x.seiten ? ' · ' + x.seiten + ' S.' : ''}</span>
+      </span><span class="chev">${ICON.chev}</span>`;
+    r.onclick = () => buchOeffnen(x.id);
+    w.appendChild(r);
+  });
+}
+
+/* Alle Einflusslinien einer Autorenmenge, aufgelöst auf tatsächliche Namen. */
+function einflussKanten(alle) {
+  const kanten = [];
+  alle.forEach(a => a.einfluss.forEach(q => {
+    const von = autorAufloesen(alle, q);
+    if (von && von !== a.name) kanten.push({ von, auf: a.name });
+  }));
+  return kanten;
+}
+
 /* ---------- Vernetzung: wer wirkt auf wen ---------- */
 function netzOeffnen() {
   const alle = autorenIndex(buecherAktiv());
   const inv = einflussAufIndex(alle);
   const namen = Array.from(alle.values())
     .sort((a, b) => (a.geb == null ? 9999 : a.geb) - (b.geb == null ? 9999 : b.geb));
-  const kanten = [];
-  namen.forEach(a => a.einfluss.forEach(q => {
-    const von = autorAufloesen(alle, q);
-    if (von && von !== a.name) kanten.push({ von, auf: a.name });
-  }));
+  const kanten = einflussKanten(alle);
 
   let gewaehlt = null;
   const node = document.createElement('div');
@@ -3944,36 +4026,7 @@ function netzOeffnen() {
                <span class="chev">${ICON.chev}</span></button>`).join('')}</div>`
           : '');
     } else {
-      const a = alle.get(gewaehlt);
-      const von = a.einfluss.filter(q => autorAufloesen(alle, q));
-      const auf = inv.get(gewaehlt) || [];
-      const nurText = a.einfluss.filter(q => !autorAufloesen(alle, q));
-      info.innerHTML = `
-        <div class="section-head"><h2>${esc(gewaehlt)}</h2><button class="btn btn-sm btn-ghost" data-weg>Auswahl lösen</button></div>
-        <div class="einfluss">
-          <div><div class="eg">Beeinflusst von</div><div class="er">${(von.length || nurText.length)
-        ? von.map(n => `<span class="en link" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
-        + nurText.map(n => `<span class="en">${esc(n)}</span>`).join('')
-        : '<span class="en" style="opacity:.6">niemandem hier</span>'}</div></div>
-          <div><div class="eg">Wirkt auf</div><div class="er">${auf.length
-        ? auf.map(n => `<span class="en link" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
-        : '<span class="en" style="opacity:.6">niemanden hier</span>'}</div></div>
-        </div>
-        <div class="section-head" style="margin:18px 0 9px"><h2>Werke in deinen Listen</h2><span class="eyebrow">${a.buecher.length}</span></div>
-        <div data-werke></div>`;
-      const weg = $('[data-weg]', info);
-      if (weg) weg.onclick = () => { gewaehlt = null; malen(); };
-      const w = $('[data-werke]', info);
-      a.buecher.forEach(x => {
-        const r = document.createElement('button');
-        r.className = 'grouprow';
-        r.innerHTML = `<span class="grow">
-            <span class="gname serif">${esc(x.titel)}</span>
-            <span class="gmeta">${x.jahr != null ? esc(jahrText(x.jahr)) + ' · ' : ''}${STATUS[x.status]}${x.seiten ? ' · ' + x.seiten + ' S.' : ''}</span>
-          </span><span class="chev">${ICON.chev}</span>`;
-        r.onclick = () => buchOeffnen(x.id);
-        w.appendChild(r);
-      });
+      autorSteckbriefMalen(gewaehlt, alle, inv, info, () => { gewaehlt = null; malen(); });
     }
     /* Ein Name unten wählt oben aus und holt die Zeile ins Bild. */
     $$('[data-waehl]', info).forEach(x => x.onclick = () => {
@@ -4061,22 +4114,27 @@ function zeitstrahlOeffnen() {
       <p class="hinweis" style="padding:0 0 10px">
         Der Balken ist die Lebenszeit, jeder Punkt ein Buch im Jahr seiner Erstveröffentlichung –
         grün heißt gelesen. Wo Jahrhunderte ohne Einträge liegen, ist die Skala schraffiert
-        zusammengezogen. Seitlich wischen, Punkte antippen.
+        zusammengezogen. Seitlich wischen, Punkte antippen. Ein Tipp auf einen Namen hebt ihn
+        samt seiner Einflüsse hervor.
       </p>
       <div class="zsRahmen"><div class="zsInner" style="width:${breite}px" data-zs></div></div>
+      <div data-info style="margin-top:14px"></div>
       <div data-rest style="margin-top:14px"></div>
     </div>`;
 
-  /* Achse: je Abschnitt eigene Schritte, damit die Beschriftung passt */
+  /* Achse: der feinste Takt, bei dem die Zahlen noch nebeneinander passen –
+     bei der jetzigen Auflösung sind das Zwanzigerschritte. */
+  const ABSTAND = 52;
+  const schritt = [10, 20, 25, 50, 100, 200, 250, 500, 1000].find(x => x * PX >= ABSTAND) || 1000;
   let html = '<div class="zsAchse">';
   const striche = [];
   skala.teile.forEach(t => {
-    const spanne = t.bis - t.von;
-    const schritt = [10, 25, 50, 100, 250, 500, 1000].find(x => spanne / x <= 6) || 1000;
     const start = Math.ceil(t.von / schritt) * schritt;
     for (let j = start; j <= t.bis; j += schritt) {
-      html += `<span style="left:${skala.x(j)}px">${esc(jahrText(j).replace(' v. Chr.', ' v'))}</span>`;
-      striche.push(skala.x(j));
+      const x = skala.x(j);
+      /* Ganz am linken Rand würde die zentrierte Zahl halb abgeschnitten. */
+      html += `<span class="${x < 18 ? 'links' : ''}" style="left:${x < 18 ? 2 : x}px">${esc(jahrText(j).replace(' v. Chr.', ' v'))}</span>`;
+      striche.push(x);
     }
   });
   html += '</div>';
@@ -4086,9 +4144,9 @@ function zeitstrahlOeffnen() {
   liste.forEach((a, reihe) => {
     const ende = a.gest != null ? a.gest : jetzt;
     const l = skala.x(a.geb), b = Math.max(18, skala.x(ende) - l);
-    html += `<div class="zsZeile"${reihe % 2 ? ' style="background:color-mix(in srgb,var(--text-3) 6%,transparent)"' : ''}>
+    html += `<div class="zsZeile${reihe % 2 ? ' alt' : ''}" data-zeile="${esc(a.name)}">
       <div class="zsBalken" style="left:${l}px;width:${b}px"></div>
-      <div class="zsName" style="left:${l + 4}px">${esc(a.name)}</div>`;
+      <button class="zsName" data-autor="${esc(a.name)}" style="left:${l + 4}px">${esc(a.name)}</button>`;
     a.buecher.filter(x => x.jahr != null).forEach(b2 => {
       html += `<div class="zsPunkt${b2.status === 'gelesen' ? ' gelesen' : ''}" style="left:${skala.x(b2.jahr)}px"
         data-buch="${b2.id}" title="${esc(b2.titel)} (${esc(jahrText(b2.jahr))})"></div>`;
@@ -4103,6 +4161,41 @@ function zeitstrahlOeffnen() {
     if (b) toast(b.titel + ' · ' + jahrText(b.jahr) + ' · zweimal tippen öffnet das Buch');
   });
   $$('[data-buch]', inner).forEach(p => p.ondblclick = () => buchOeffnen(p.dataset.buch));
+
+  /* Ein Name im Strahl wählt den Autor: seine Zeile tritt hervor, die
+     Autoren am anderen Ende einer Einflusslinie bleiben mitbetont, der
+     Rest tritt zurück. Darunter derselbe Steckbrief wie in der Vernetzung. */
+  const inv = einflussAufIndex(alle);
+  const kanten = einflussKanten(alle);
+  const info = $('[data-info]', node);
+  let gewaehlt = null;
+
+  const markieren = () => {
+    $$('[data-zeile]', inner).forEach(z => {
+      const n = z.dataset.zeile;
+      const verbunden = !!gewaehlt && n !== gewaehlt &&
+        kanten.some(k => (k.von === gewaehlt && k.auf === n) || (k.auf === gewaehlt && k.von === n));
+      z.classList.toggle('aktiv', gewaehlt === n);
+      z.classList.toggle('verbunden', verbunden);
+      z.classList.toggle('blass', !!gewaehlt && n !== gewaehlt && !verbunden);
+    });
+    if (!gewaehlt) { info.innerHTML = ''; return; }
+    autorSteckbriefMalen(gewaehlt, alle, inv, info, () => { gewaehlt = null; markieren(); });
+    /* Aus dem Steckbrief heraus zum nächsten Autor springen. */
+    $$('[data-waehl]', info).forEach(x => x.onclick = () => {
+      const ziel = autorAufloesen(alle, x.dataset.waehl);
+      if (!ziel) return;
+      gewaehlt = ziel;
+      markieren();
+      const z = $(`[data-zeile="${CSS.escape(ziel)}"]`, inner);
+      if (z) z.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+  };
+
+  $$('[data-autor]', inner).forEach(n => n.onclick = () => {
+    gewaehlt = (gewaehlt === n.dataset.autor) ? null : n.dataset.autor;
+    markieren();
+  });
 
   if (ohne.length) {
     $('[data-rest]', node).innerHTML = `<div class="section-head"><h2>Ohne Lebensdaten</h2></div>
@@ -4802,8 +4895,16 @@ function einkaufslisteOeffnen() {
 /* ============================================================
    KI-Prompts: Leseliste erstellen oder bewerten lassen
    ============================================================ */
-function kiSchemaText(regeln) {
-  return `Antworte ausschließlich mit rohem JSON – kein Fließtext davor oder danach, kein Markdown-Codeblock. Aufbau:
+function kiSchemaText(regeln, mitArtikeln) {
+  return `## Wie du antwortest
+
+Lege das Ergebnis als **Datei zum Herunterladen** an, Dateiname \`leseliste.json\`, und gib mir diese Datei.
+Schreib den Inhalt nicht als Nachricht in den Chat und nicht in einen Code-Block – ich brauche eine Datei,
+die ich unverändert speichern kann. Nutze dafür dein Werkzeug zum Erstellen von Dateien. Im Chat genügt
+ein Satz, was drin ist. Die Datei selbst enthält reines JSON: kein Text davor oder danach, keine Kommentare,
+kein Markdown. Prüfe vor der Ausgabe, dass sie sich fehlerfrei mit \`JSON.parse\` lesen lässt.
+
+## Aufbau der Datei
 {
   "lesepleane": [{ "id": "p1", "name": "..." }],
   "bloecke": [{ "id": "b1", "planId": "p1", "name": "...", "ord": 0 }],
@@ -4819,17 +4920,32 @@ function kiSchemaText(regeln) {
     "seitenUnsicher": false,
     "ausgabe": "Verlag, ggf. Übersetzer:in einer gängigen deutschen Ausgabe",
     "beschreibung": "Ein Absatz: worum es geht und warum es in diese Liste gehört.",
-    "kurz": "Das Buch in höchstens 15 Wörtern.",
-    "schwierigkeit": 3
+    "kurz": "Das Werk in höchstens 15 Wörtern.",
+    "schwierigkeit": 3,
+    "besitz": "fehlt"
   }]
 }
-Regeln:
-- Nur real existierende, überprüfbare Bücher – nichts erfinden.
+
+## Regeln
+- Nur real existierende, überprüfbare Werke – nichts erfinden, keine erfundenen DOI oder Seitenzahlen.
 - "jahr" ist das Jahr der Erstveröffentlichung im Original; vor Christus als negative Zahl (z. B. -380 für 380 v. Chr.).
-- "seiten" bezieht sich auf eine gängige deutsche Ausgabe; bei Unsicherheit "seitenUnsicher": true setzen und trotzdem schätzen.
+- "seiten" ist der Umfang; bei Unsicherheit "seitenUnsicher": true setzen und trotzdem schätzen.
 - "schwierigkeit" von 1 (leicht) bis 5 (sehr anspruchsvoll).
 - Bei mehreren Autoren jede:n einzeln in "autoren" auflisten, mit je eigenen Lebensdaten, Biographie und Einfluss.
-- "id"-Werte müssen nur innerhalb dieser Antwort zueinander passen ("planId" verweist auf eine "id" aus "lesepleane", "blockId" auf eine "id" aus "bloecke").${regeln ? '\n' + regeln : ''}`;
+- "id"-Werte müssen nur innerhalb dieser Antwort zueinander passen ("planId" verweist auf eine "id" aus "lesepleane", "blockId" auf eine "id" aus "bloecke").
+
+## Sprache
+- Bei Büchern **vorzugsweise deutsche Ausgaben**: Titel und "ausgabe" dann auf Deutsch, "jahr" bleibt aber das Original-Erscheinungsjahr.
+- Englischsprachige Werke ausdrücklich mit aufnehmen, wenn sie einschlägig sind und es keine brauchbare Übersetzung gibt – dann Originaltitel verwenden.
+- Beschreibung, Kurzfassung und Biographien immer auf Deutsch.${mitArtikeln ? `
+
+## Fachartikel
+- Neben Büchern auch **wissenschaftliche Fachartikel** aufnehmen – etwa was über Google Scholar auffindbar ist.
+- Nur hohe Qualität: peer-reviewed, in angesehenen Fachzeitschriften, möglichst viel zitiert oder als Standardreferenz des Feldes anerkannt. Lieber wenige einschlägige als viele beliebige.
+- Bei Artikeln ist die Sprache gleichgültig – englische sind ausdrücklich erwünscht, entscheidend ist allein die Qualität.
+- "ausgabe" beginnt bei Artikeln mit \`Fachartikel · \` und nennt dann Zeitschrift, Jahrgang, Heft, Seiten und DOI, z. B.:
+  \`Fachartikel · Econometrica 47(2), S. 263–291, DOI: 10.2307/1914185\`
+- "seiten" ist bei Artikeln der Umfang in Seiten, "besitz" setzt du bei Artikeln auf \`"bibliothek"\` – dann landen sie nicht auf der Einkaufsliste.` : ''}${regeln ? '\n' + regeln : ''}`;
 }
 
 function kiPromptZeigen(prompt, dateiname) {
@@ -4853,18 +4969,12 @@ function kiErstellenOeffnen() {
   const s = blatt('Leseliste per KI erstellen', `
     <div class="field">
       <label>Was soll die Liste erschließen?</label>
-      <label style="display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;font-size:13px;color:var(--text-2)">
-        <input type="radio" name="kiart" value="forschungsfrage" checked style="width:auto;margin-top:3px">
-        <span><strong style="color:var(--text)">Forschungsfrage</strong></span>
-      </label>
-      <label style="display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;font-size:13px;color:var(--text-2)">
-        <input type="radio" name="kiart" value="these" style="width:auto;margin-top:3px">
-        <span><strong style="color:var(--text)">These</strong></span>
-      </label>
-      <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--text-2)">
-        <input type="radio" name="kiart" value="thema" style="width:auto;margin-top:3px">
-        <span><strong style="color:var(--text)">Thema</strong></span>
-      </label>
+      <label class="optzeile"><input type="radio" name="kiart" value="forschungsfrage" checked>
+        <span><strong>Forschungsfrage</strong> – eine offene Frage, die die Liste beantworten helfen soll</span></label>
+      <label class="optzeile"><input type="radio" name="kiart" value="these">
+        <span><strong>These</strong> – eine Behauptung, die von mehreren Seiten geprüft wird</span></label>
+      <label class="optzeile"><input type="radio" name="kiart" value="thema">
+        <span><strong>Thema</strong> – ein Feld, das im Überblick erschlossen wird</span></label>
     </div>
     <div class="field">
       <label data-artlabel>Forschungsfrage</label>
@@ -4875,8 +4985,13 @@ function kiErstellenOeffnen() {
       <input type="text" data-name placeholder="z. B. Wachstumskritik">
     </div>
     <div class="field">
-      <label>Wie viele Bücher ungefähr?</label>
+      <label>Wie viele Werke ungefähr?</label>
       <input type="number" data-anzahl value="16" min="4" max="60">
+    </div>
+    <div class="field">
+      <label class="optzeile"><input type="checkbox" data-artikel checked>
+        <span><strong>Auch Fachartikel</strong><br>Peer-reviewed und viel zitiert, wie über Google Scholar
+        auffindbar – bei Artikeln zählt allein die Qualität, nicht die Sprache.</span></label>
     </div>
     <button class="btn btn-primary btn-block" data-ok>Prompt erzeugen</button>`, { fokus: false });
 
@@ -4889,19 +5004,20 @@ function kiErstellenOeffnen() {
     const text = $('[data-text]', s).value.trim();
     if (!text) { toast('Bitte erst ' + artLabel[art].toLowerCase() + ' eintragen.'); return; }
     const anzahl = clamp(Math.round(num($('[data-anzahl]', s).value) || 16), 4, 60);
+    const artikel = $('[data-artikel]', s).checked;
     const name = $('[data-name]', s).value.trim() || (art === 'thema' ? text : artLabel[art]);
     const einleitung = {
       forschungsfrage: 'die folgender Forschungsfrage nachgeht',
       these: 'die folgende These von mehreren Seiten beleuchtet – auch mit Gegenpositionen, nicht nur zustimmender Literatur',
       thema: 'die folgendes Thema erschließt'
     }[art];
-    const prompt = `Ich nutze eine App für einen mehrjährigen Leseplan (leselisten aus Blöcken aus Büchern, mit Autor:innen-Biographien und deren Einflüssen). Stell mir eine neue leseliste zusammen, ${einleitung}:
+    const prompt = `Ich nutze eine App für einen mehrjährigen Leseplan (leselisten aus Blöcken aus Werken, mit Autor:innen-Biographien und deren Einflüssen). Stell mir eine neue leseliste zusammen, ${einleitung}:
 
 "${text}"
 
-Etwa ${anzahl} Bücher, sinnvoll in thematische Blöcke gegliedert (mehrere Bücher je Block). Wo das Thema kontrovers ist, nimm bewusst unterschiedliche Positionen und wo möglich Primärquellen auf, nicht nur Sekundärliteratur darüber. Die leseliste soll „${name}“ heißen.
+Etwa ${anzahl} Werke${artikel ? ' – Bücher und wissenschaftliche Fachartikel gemischt' : ' (nur Bücher)'}, sinnvoll in thematische Blöcke gegliedert (mehrere Werke je Block). Wo das Thema kontrovers ist, nimm bewusst unterschiedliche Positionen und wo möglich Primärquellen auf, nicht nur Sekundärliteratur darüber. Die leseliste soll „${name}“ heißen.
 
-${kiSchemaText()}`;
+${kiSchemaText('', artikel)}`;
     kiPromptZeigen(prompt, 'leseliste-prompt.txt');
   };
 }
@@ -4922,26 +5038,34 @@ function kiBewertenOeffnen() {
       <label>Worauf soll besonders geachtet werden? (optional)</label>
       <textarea data-zusatz style="min-height:70px" placeholder="z. B. mehr internationale Stimmen, mehr Gegenpositionen zu Block 3 …"></textarea>
     </div>
+    <div class="field">
+      <label class="optzeile"><input type="checkbox" data-artikel checked>
+        <span><strong>Auch Fachartikel</strong><br>Peer-reviewed und viel zitiert, wie über Google Scholar
+        auffindbar – bei Artikeln zählt allein die Qualität, nicht die Sprache.</span></label>
+    </div>
     <button class="btn btn-primary btn-block" data-ok>Prompt erzeugen</button>`, { fokus: false });
 
   $('[data-ok]', s).onclick = () => {
     const zusatz = $('[data-zusatz]', s).value.trim();
+    const artikel = $('[data-artikel]', s).checked;
     const listing = bloecke.map(bl =>
       `### ${bl.name}\n` + buecherIn(bl.id).map(b =>
         `- ${b.titel} — ${b.autor || 'ohne Autor'} (${jahrText(b.jahr)})${b.kurz ? ' — ' + b.kurz : ''}`
       ).join('\n')
     ).join('\n\n');
 
-    const prompt = `Ich nutze eine App für einen mehrjährigen Leseplan. Das ist meine aktuelle leseliste „${plan.name}“, ${pl(bloecke.length, 'Block', 'Blöcke')}, ${pl(buecher.length, 'Buch', 'Bücher')}:
+    const prompt = `Ich nutze eine App für einen mehrjährigen Leseplan. Das ist meine aktuelle leseliste „${plan.name}“, ${pl(bloecke.length, 'Block', 'Blöcke')}, ${pl(buecher.length, 'Werk', 'Werke')}:
 
 ${listing}
 
 Bitte:
 1. Beurteile diese Liste: Wo gibt es Lücken, Einseitigkeiten oder fehlende Gegenpositionen? Was fehlt, um das Thema bzw. die Themen ausgewogen abzudecken?${zusatz ? ' ' + zusatz : ''}
-2. Schlag mir zusätzliche, real existierende Bücher vor, die diese Lücken schließen – keine Titel, die schon oben stehen.
+2. Schlag mir zusätzliche, real existierende Werke vor, die diese Lücken schließen – keine Titel, die schon oben stehen.${artikel ? ' Bücher und wissenschaftliche Fachartikel gemischt: gerade wo die Liste bisher nur Monographien führt, ist der Forschungsstand in Aufsätzen oft aktueller.' : ''}
 3. Ordne jeden Vorschlag entweder einem der bestehenden Blöcke zu (dann exakt denselben Blocknamen wie oben verwenden) oder einem neuen, treffend benannten Block.
 
-${kiSchemaText('- "lesepleane" enthält genau einen Eintrag mit dem Namen exakt „' + plan.name + '“, damit die Vorschläge in diese leseliste einsortiert werden statt eine neue anzulegen.\n- Nur die vorgeschlagenen, neuen Bücher ausgeben – nicht die schon vorhandenen.')}`;
+Die Beurteilung aus Punkt 1 gehört in den Chat, die Vorschläge aus Punkt 2 und 3 in die Datei.
+
+${kiSchemaText('- "lesepleane" enthält genau einen Eintrag mit dem Namen exakt „' + plan.name + '“, damit die Vorschläge in diese leseliste einsortiert werden statt eine neue anzulegen.\n- Nur die vorgeschlagenen, neuen Werke ausgeben – nicht die schon vorhandenen.', artikel)}`;
     kiPromptZeigen(prompt, 'leseliste-ergaenzen-prompt.txt');
   };
 }
