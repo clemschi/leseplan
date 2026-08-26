@@ -79,7 +79,8 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
   *Autoren* und *Tage* (Tagesziel, Seiten pro Tag, Protokoll jedes Lesetags).
 - **Autoren** – nach Blöcken geordnet wie die Zusammenfassungen, jeder Eintrag zum
   Aufklappen; ein Wisch zeigt die Kurzinfo. Jeder Autor führt, von wem er beeinflusst
-  wurde; wer auf wen wirkt, leitet die App daraus ab und verlinkt es. Zwei Ansichten
+  wurde; wer auf wen wirkt, leitet die App daraus ab und verlinkt es – in eigener Farbe,
+  damit die beiden Richtungen auseinanderzuhalten sind. Zwei Ansichten
   dazu: **Vernetzung** (alle Einflusslinien, nach Geburtsjahr gereiht, ein Tipp
   zeigt nur die eines Autors; wer ohne Linie zu den anderen dasteht, wird eigens
   aufgeführt, samt Einfluss in reinem Text) und **Zeitstrahl** (Lebenszeit als Balken,
@@ -130,7 +131,11 @@ nach unten wegschieben. Langes Drücken auf einen **Block** verschiebt ihn nach 
 oder unten.
 
 Nach dem Start einer Lese-Sitzung fragt die App, ob und wie lange ein **Timer**
-laufen soll. Der Wecker meldet sich mit Ton und Vibration, solange die Seite geöffnet
+laufen soll. Steht er, tritt an die Stelle der Frage sofort eine **Sanduhr** auf reinem
+Schwarz – unabhängig davon, ob die App hell oder dunkel läuft. Der Sandstand folgt der
+echten Uhr, das Rieseln der eingestellten Dauer: eine Minute stürzt, fünfundvierzig
+tröpfeln. *Zur App* lässt die Sitzung weiterlaufen, die Uhrzeit in der Leiste holt die
+Sanduhr zurück. Der Wecker meldet sich mit Ton und Vibration, solange die Seite geöffnet
 ist; bei gesperrtem Bildschirm friert das System die Seite ein – dafür braucht es den
 Timer der Uhr-App. Die Rückfrage lässt sich unter *Mehr* abschalten.
 

@@ -143,7 +143,8 @@ p{margin:0;}
 .nowbar .grow{flex:1;min-width:0;}
 .nowbar .nt{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .nowbar .nm{font-size:10.5px;color:var(--text-3);margin-top:2px;display:block;}
-.nowbar .uhr{font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--accent);font-variant-numeric:tabular-nums;}
+.nowbar .uhr{font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--accent);font-variant-numeric:tabular-nums;
+  background:none;border:0;padding:0 2px;cursor:pointer;}
 main{padding-bottom:calc(var(--tabh, 58px) + 38px);}
 body.hat-nowbar main{padding-bottom:calc(var(--tabh, 58px) + 96px);}
 .toast{bottom:calc(var(--tabh, 58px) + 16px);}
@@ -420,6 +421,10 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .einfluss .en{font-size:11.5px;padding:3px 9px;border-radius:99px;background:var(--surface-2);
   border:1px solid var(--border);color:var(--text-2);}
 .einfluss .en.link{border-color:color-mix(in srgb,var(--accent) 45%,var(--border));color:var(--accent);}
+/* Die Gegenrichtung in eigener Farbe: wer herkommt, wohin es weitergeht. */
+.einfluss .wirkt .eg{color:var(--wirkt);}
+.einfluss .wirkt .en.link{border-color:color-mix(in srgb,var(--wirkt) 45%,var(--border));
+  color:var(--wirkt);background:color-mix(in srgb,var(--wirkt) 9%,var(--surface-2));}
 
 /* Vernetzung */
 .netz{position:relative;padding:0 0 20px;}
@@ -512,6 +517,22 @@ body.voll .cam{padding-top:14px;}
 .rowline .rm{font-size:11.5px;color:var(--text-3);margin-top:3px;display:block;line-height:1.45;}
 .list-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
 .timer-big{font-family:"IBM Plex Mono",monospace;font-size:40px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:center;padding:6px 0 2px;}
+
+/* Sanduhr: immer auf reinem Schwarz, unabhängig von hell oder dunkel. */
+.sanduhr{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:60;
+  background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:0;padding:16px;animation:fade .3s ease;}
+.sanduhr canvas{display:block;touch-action:none;}
+.sanduhr .suTitel{font-family:"Literata",Georgia,serif;font-size:14px;color:rgba(255,255,255,.62);
+  text-align:center;max-width:22em;margin-bottom:2px;}
+.sanduhr .suRest{font-family:"IBM Plex Mono",monospace;font-size:34px;font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;color:var(--accent);margin-top:10px;}
+.sanduhr .suSub{font-size:11.5px;color:rgba(255,255,255,.38);margin-top:4px;letter-spacing:.04em;}
+.sanduhr .suKnoepfe{display:flex;gap:10px;margin-top:26px;}
+.sanduhr .suKnoepfe button{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);
+  color:rgba(255,255,255,.85);border-radius:99px;padding:9px 18px;font-size:13px;font-family:inherit;cursor:pointer;}
+.sanduhr .suKnoepfe button.stop{border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent);}
+.sanduhr.aus .suRest{color:var(--good);}
 .searchbar{display:flex;gap:8px;padding:10px 14px 4px;}
 .searchbar input{flex:1;}
 
@@ -1236,6 +1257,12 @@ function themeAnwenden() {
   document.documentElement.setAttribute('data-app-theme', hell ? 'light' : 'dark');
   const a = akzentAktiv();
   document.documentElement.style.setProperty('--accent', hell ? a.light : a.dark);
+  /* „Wirkt auf“ steht in einer eigenen Farbe neben dem Akzent von „Beeinflusst
+     von“. Türkis hebt sich von den meisten Akzenten ab – nur bei Grün und
+     Türkis selbst weicht es auf Violett aus. */
+  const nahDran = a.id === 'gruen' || a.id === 'tuerkis';
+  document.documentElement.style.setProperty('--wirkt',
+    nahDran ? (hell ? '#5344b5' : '#9b8bf0') : (hell ? '#0c766c' : '#3fbfb2'));
   const b = $('#btnTheme');
   if (b) b.innerHTML = hell ? ICON.moon : ICON.sun;
 }
@@ -1566,7 +1593,11 @@ function zugriffFreigebenZeigen() {
 /* ============================================================
    Lese-Sitzungen: starten, beenden, laufende anzeigen
    ============================================================ */
-function sitzungStarten(buchId) {
+/* „ersetzen“ heisst: der Start kommt aus einer offenen Ebene – der Buchauswahl.
+   Die Kette Buchauswahl → Timer-Frage → Sanduhr bleibt dann eine einzige
+   Ebene mit einem einzigen Verlaufseintrag. Schliessen und im selben Zug
+   wieder Öffnen brächte den Verlauf durcheinander. */
+function sitzungStarten(buchId, ersetzen) {
   const b = buchById(buchId);
   if (!b) return;
   aendern(() => {
@@ -1574,12 +1605,15 @@ function sitzungStarten(buchId) {
     if (b.status === 'offen') b.status = 'lese';
   });
   viewMalen();
-  if (DB.einstellungen.timerFragen) timerFrageZeigen(b);
-  else toast('Sitzung läuft: ' + b.titel);
+  if (DB.einstellungen.timerFragen) timerFrageZeigen(b, ersetzen);
+  else {
+    if (ersetzen) layerSchliessen();
+    toast('Sitzung läuft: ' + b.titel);
+  }
 }
 
 /* Nach dem Start: Timer stellen – und wenn ja, wie lange? */
-function timerFrageZeigen(buch) {
+function timerFrageZeigen(buch, ersetzen) {
   const werte = [15, 25, 45, 60, 90];
   let wahl = DB.einstellungen.weckerMin || 45;
 
@@ -1599,7 +1633,7 @@ function timerFrageZeigen(buch) {
       <button class="btn" data-ohne style="flex:1">Ohne Timer</button>
     </div>
     <button class="btn btn-block btn-ghost btn-sm" style="margin-top:10px" data-nie>Nicht mehr fragen</button>`,
-    { fokus: false });
+    { fokus: false, ersetzen: ersetzen });
 
   const malen = () => {
     $('[data-w]', s).innerHTML = werte.map(v =>
@@ -1618,9 +1652,9 @@ function timerFrageZeigen(buch) {
         DB.einstellungen.timer.weckMin = min;
       }
     });
-    layerSchliessen();
     viewMalen();
-    toast('Wecker nach ' + min + ' Minuten.');
+    /* Die Timer-Frage weicht unmittelbar der Sanduhr. */
+    sanduhrOeffnen(true);
   };
 
   $('[data-ok]', s).onclick = stellen;
@@ -1634,6 +1668,298 @@ function timerFrageZeigen(buch) {
     layerSchliessen();
     toast('Wird nicht mehr gefragt. Unter „Mehr“ wieder einschaltbar.');
   };
+}
+
+/* ---------- Vollbild-Sanduhr ----------
+   Läuft auf reinem Schwarz, damit im Dunkeln nichts blendet. Gezeichnet wird
+   auf Canvas: der Sandstand folgt der echten Uhr, das Rieseln der Dauer –
+   eine Minute stürzt, fünfundvierzig tröpfeln. */
+const suHex = h => {
+  const s = h.replace('#', '');
+  const n = parseInt(s.length === 3 ? s.split('').map(c => c + c).join('') : s, 16);
+  return [n >> 16 & 255, n >> 8 & 255, n & 255];
+};
+const suRgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+const suHell = (c, f) => c.map(v => Math.round(v + (255 - v) * f));
+const suDunkel = (c, f) => c.map(v => Math.round(v * (1 - f)));
+/* Immer dieselbe Streuung je Korn, damit der Strahl nicht flackert. */
+const suStreu = i => { const f = Math.sin(i * 127.1 + 311.7) * 43758.5453; return f - Math.floor(f); };
+function suRundRect(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function sanduhrZeichnen(ctx, B, H, anteil, sek, minuten, rgb) {
+  ctx.clearRect(0, 0, B, H);
+  const cx = B / 2, cy = H / 2;
+  const hg = Math.min(H * 0.94, B * 1.32);
+  const bauch = hg * 0.30, hals = hg * 0.021, kappeH = hg * 0.034;
+  const oben = cy - hg / 2, unten = cy + hg / 2;
+  const glasOben = oben + kappeH * 2, glasUnten = unten - kappeH * 2;
+  const halbH = (glasUnten - glasOben) / 2;
+  /* Halbe Glasbreite: 0 am Hals, 1 am Rand. Der Exponent macht die Bauchung. */
+  const halb = u => hals + (bauch - hals) * Math.pow(clamp(u, 0, 1), 0.62);
+  const breiteBei = y => halb(Math.abs(y - cy) / halbH);
+
+  const kammer = nachOben => {
+    const N = 44, ri = nachOben ? -1 : 1;
+    ctx.beginPath();
+    for (let i = 0; i <= N; i++) {
+      const u = i / N, y = cy + ri * halbH * u;
+      i ? ctx.lineTo(cx - halb(u), y) : ctx.moveTo(cx - halb(u), y);
+    }
+    for (let i = N; i >= 0; i--) {
+      const u = i / N;
+      ctx.lineTo(cx + halb(u), cy + ri * halbH * u);
+    }
+    ctx.closePath();
+  };
+
+  /* Schein hinter dem Glas */
+  const schein = ctx.createRadialGradient(cx, cy, 0, cx, cy, hg * 0.66);
+  schein.addColorStop(0, suRgba(rgb, 0.14));
+  schein.addColorStop(1, suRgba(rgb, 0));
+  ctx.fillStyle = schein;
+  ctx.fillRect(0, 0, B, H);
+
+  /* Zwei Streben, gewölbt durch einen waagerechten Verlauf */
+  const strebeX = bauch * 1.09, strebeB = hg * 0.021;
+  [-1, 1].forEach(s => {
+    const x = cx + s * strebeX;
+    const g = ctx.createLinearGradient(x - strebeB, 0, x + strebeB, 0);
+    g.addColorStop(0, suRgba(suDunkel(rgb, 0.68), 1));
+    g.addColorStop(0.34, suRgba(suHell(rgb, 0.10), 1));
+    g.addColorStop(1, suRgba(suDunkel(rgb, 0.52), 1));
+    ctx.fillStyle = g;
+    suRundRect(ctx, x - strebeB, oben + kappeH, strebeB * 2, (unten - oben) - kappeH * 2, strebeB);
+    ctx.fill();
+  });
+
+  /* Glas */
+  const glasFuellung = () => {
+    const g = ctx.createLinearGradient(cx - bauch, 0, cx + bauch, 0);
+    g.addColorStop(0, 'rgba(255,255,255,.11)');
+    g.addColorStop(0.18, 'rgba(255,255,255,.03)');
+    g.addColorStop(0.44, 'rgba(255,255,255,.055)');
+    g.addColorStop(0.74, 'rgba(255,255,255,.015)');
+    g.addColorStop(1, 'rgba(255,255,255,.10)');
+    return g;
+  };
+  [true, false].forEach(o => { kammer(o); ctx.fillStyle = glasFuellung(); ctx.fill(); });
+
+  const sandVerlauf = () => {
+    const g = ctx.createLinearGradient(cx - bauch, 0, cx + bauch, 0);
+    g.addColorStop(0, suRgba(suDunkel(rgb, 0.52), 1));
+    g.addColorStop(0.26, suRgba(suHell(rgb, 0.16), 1));
+    g.addColorStop(0.58, suRgba(rgb, 1));
+    g.addColorStop(1, suRgba(suDunkel(rgb, 0.58), 1));
+    return g;
+  };
+
+  /* Oben: die Oberfläche sinkt zum Hals */
+  const flaeche = glasOben + (cy - glasOben) * anteil;
+  if (anteil < 0.999) {
+    ctx.save(); kammer(true); ctx.clip();
+    ctx.fillStyle = sandVerlauf();
+    ctx.fillRect(cx - bauch - 2, flaeche, bauch * 2 + 4, cy - flaeche + 2);
+    const rF = breiteBei(flaeche);
+    ctx.beginPath(); ctx.ellipse(cx, flaeche, rF, rF * 0.20, 0, 0, Math.PI * 2);
+    ctx.fillStyle = suRgba(suHell(rgb, 0.32), 1); ctx.fill();
+    /* Trichter, in den der Sand nachrutscht */
+    if (anteil > 0.015) {
+      const dr = Math.min(rF * 0.62, hals * 5.5);
+      ctx.beginPath(); ctx.ellipse(cx, flaeche + dr * 0.12, dr, dr * 0.30, 0, 0, Math.PI * 2);
+      ctx.fillStyle = suRgba(suDunkel(rgb, 0.46), 1); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx, flaeche + dr * 0.14, dr * 0.5, dr * 0.15, 0, 0, Math.PI * 2);
+      ctx.fillStyle = suRgba(suDunkel(rgb, 0.68), 1); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /* Unten: der Haufen wächst */
+  const hoehe = (glasUnten - cy) * anteil;
+  const spiegel = glasUnten - hoehe;
+  const rS = breiteBei(spiegel);
+  const kegelR = Math.min(rS, bauch * 0.62), kegelH = kegelR * 0.52;
+  if (anteil > 0.001) {
+    ctx.save(); kammer(false); ctx.clip();
+    ctx.fillStyle = sandVerlauf();
+    ctx.fillRect(cx - bauch - 2, spiegel, bauch * 2 + 4, glasUnten - spiegel + 2);
+    ctx.beginPath();
+    ctx.moveTo(cx - kegelR, spiegel);
+    ctx.quadraticCurveTo(cx, spiegel - kegelH * 1.55, cx + kegelR, spiegel);
+    ctx.ellipse(cx, spiegel, kegelR, kegelR * 0.20, 0, 0, Math.PI, false);
+    ctx.closePath();
+    ctx.fillStyle = sandVerlauf(); ctx.fill();
+    /* Lichtkante auf der Kuppe */
+    ctx.beginPath();
+    ctx.moveTo(cx - kegelR * 0.62, spiegel - kegelH * 0.30);
+    ctx.quadraticCurveTo(cx - kegelR * 0.12, spiegel - kegelH * 1.42, cx + kegelR * 0.20, spiegel - kegelH * 1.10);
+    ctx.strokeStyle = suRgba(suHell(rgb, 0.45), 0.5);
+    ctx.lineWidth = Math.max(1, hg * 0.006);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* Rieselnder Sand */
+  const flott = clamp(1 - (minuten - 1) / 44, 0, 1);
+  if (anteil > 0.0005 && anteil < 0.9995) {
+    const zielY = spiegel - kegelH * 0.92;
+    const strahl = hals * (0.30 + 0.55 * flott);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(cx - bauch, cy, bauch * 2, Math.max(0, zielY - cy));
+    ctx.clip();
+    /* Bei kurzer Dauer ein dichter Strahl, bei langer nur einzelne Körner. */
+    const dicht = 0.10 + 0.68 * flott;
+    const sg = ctx.createLinearGradient(cx - strahl, 0, cx + strahl, 0);
+    sg.addColorStop(0, suRgba(suDunkel(rgb, 0.4), dicht * 0.45));
+    sg.addColorStop(0.5, suRgba(suHell(rgb, 0.25), dicht));
+    sg.addColorStop(1, suRgba(suDunkel(rgb, 0.4), dicht * 0.45));
+    ctx.fillStyle = sg;
+    ctx.fillRect(cx - strahl, cy, strahl * 2, Math.max(0, zielY - cy));
+    /* Eine Minute stürzt in einem Achtel der Zeit, fünfundvierzig tröpfeln. */
+    const fallZeit = 0.12 + 1.55 * (1 - flott);
+    const koerner = Math.round(5 + 30 * flott);
+    for (let i = 0; i < koerner; i++) {
+      const ph = ((sek / fallZeit) + i / koerner) % 1;
+      const y = cy + (zielY - cy) * ph;
+      const z = suStreu(i);
+      const x = cx + (z - 0.5) * strahl * (1.2 + ph * 2.8);
+      const r = hals * (0.30 + z * 0.30) * (1.25 - 0.35 * flott);
+      ctx.beginPath(); ctx.ellipse(x, y, r, r * 1.4, 0, 0, Math.PI * 2);
+      ctx.fillStyle = suRgba(suHell(rgb, 0.10 + z * 0.34), 0.9);
+      ctx.fill();
+    }
+    ctx.restore();
+    /* Glanz am Hals */
+    const hg2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, hals * 4);
+    hg2.addColorStop(0, suRgba(suHell(rgb, 0.5), 0.5));
+    hg2.addColorStop(1, suRgba(rgb, 0));
+    ctx.fillStyle = hg2;
+    ctx.fillRect(cx - hals * 4, cy - hals * 4, hals * 8, hals * 8);
+  }
+
+  /* Glanz und Kanten auf dem Glas */
+  [true, false].forEach(o => {
+    ctx.save(); kammer(o); ctx.clip();
+    const g = ctx.createLinearGradient(cx - bauch * 0.74, 0, cx - bauch * 0.26, 0);
+    g.addColorStop(0, 'rgba(255,255,255,0)');
+    g.addColorStop(0.5, 'rgba(255,255,255,.16)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(cx - bauch, o ? glasOben : cy, bauch, halbH);
+    ctx.restore();
+    kammer(o);
+    ctx.strokeStyle = 'rgba(255,255,255,.21)';
+    ctx.lineWidth = Math.max(1, hg * 0.0042);
+    ctx.stroke();
+  });
+  /* Randellipsen geben dem Glas Tiefe */
+  [glasOben, glasUnten].forEach(y => {
+    ctx.beginPath(); ctx.ellipse(cx, y, bauch, bauch * 0.19, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,.20)';
+    ctx.lineWidth = Math.max(1, hg * 0.0035);
+    ctx.stroke();
+  });
+
+  /* Kappen oben und unten */
+  const kappe = mitte => {
+    const kb = bauch * 1.18;
+    const g = ctx.createLinearGradient(0, mitte - kappeH * 2, 0, mitte + kappeH * 2);
+    g.addColorStop(0, suRgba(suHell(rgb, 0.34), 1));
+    g.addColorStop(0.48, suRgba(rgb, 1));
+    g.addColorStop(1, suRgba(suDunkel(rgb, 0.55), 1));
+    ctx.fillStyle = g;
+    suRundRect(ctx, cx - kb, mitte - kappeH * 2, kb * 2, kappeH * 4, kappeH * 1.5);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx, mitte - kappeH * 1.15, kb * 0.97, kb * 0.15, 0, 0, Math.PI * 2);
+    ctx.fillStyle = suRgba(suHell(rgb, 0.44), 1);
+    ctx.fill();
+  };
+  kappe(oben + kappeH * 2);
+  kappe(unten - kappeH * 2);
+}
+
+function sanduhrOeffnen(ersetzen) {
+  const t = laufenderTimer();
+  if (!t) { toast('Es läuft keine Sitzung.'); return; }
+  if (!(+t.weckMin || +DB.einstellungen.weckerMin)) { toast('Dafür braucht es einen Timer.'); return; }
+  const buch = buchById(t.buchId);
+
+  const node = document.createElement('div');
+  node.className = 'sanduhr';
+  /* Auf Schwarz gilt immer die dunkle Akzentfassung – die helle wäre hier
+     zu dunkel für Restzeit und Knopf. */
+  node.style.setProperty('--accent', akzentAktiv().dark);
+  node.innerHTML = `
+    <div class="suTitel">${esc(buch ? buch.titel : 'Lese-Sitzung')}</div>
+    <canvas data-c></canvas>
+    <div class="suRest" data-rest>–</div>
+    <div class="suSub" data-sub></div>
+    <div class="suKnoepfe">
+      <button data-zu>Zur App</button>
+      <button class="stop" data-stop>Sitzung beenden</button>
+    </div>`;
+
+  const cv = $('[data-c]', node);
+  const ctx = cv.getContext('2d');
+  const rgb = suHex(akzentAktiv().dark);
+  let laeuft = true, raf = 0, B = 0, Hc = 0;
+
+  const messen = () => {
+    B = Math.max(120, Math.min(node.clientWidth - 32, 320));
+    Hc = Math.max(160, Math.min(node.clientHeight * 0.5, 400));
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    cv.style.width = B + 'px';
+    cv.style.height = Hc + 'px';
+    cv.width = Math.round(B * dpr);
+    cv.height = Math.round(Hc * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+
+  const uhrText = s => {
+    const teile = s >= 3600
+      ? [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60]
+      : [Math.floor(s / 60), s % 60];
+    return teile.map(x => String(x).padStart(2, '0')).join(':');
+  };
+
+  const bild = () => {
+    if (!laeuft) return;
+    /* Die Dauer wird jedes Bild neu gelesen: „Noch einmal 20 Minuten“
+       verlängert den Timer, und das Glas füllt sich sichtbar nach. */
+    const min = +t.weckMin || +DB.einstellungen.weckerMin || 45;
+    const sek = (Date.now() - t.startTs) / 1000;
+    const ganz = min * 60;
+    sanduhrZeichnen(ctx, B, Hc, clamp(sek / ganz, 0, 1), sek, min, rgb);
+    const rest = Math.ceil(ganz - sek);
+    node.classList.toggle('aus', rest <= 0);
+    $('[data-rest]', node).textContent = rest > 0 ? uhrText(rest) : uhrText(Math.floor(sek));
+    $('[data-sub]', node).textContent = rest > 0
+      ? 'von ' + pl(min, 'Minute', 'Minuten')
+      : 'Zeit um – die Stoppuhr läuft weiter';
+    raf = requestAnimationFrame(bild);
+  };
+
+  $('[data-zu]', node).onclick = () => layerSchliessen();
+  $('[data-stop]', node).onclick = () => { layerSchliessen(); setTimeout(sitzungBeenden, 80); };
+  /* Erst einhängen, dann messen – ausserhalb des Dokuments ist alles 0 breit. */
+  (ersetzen === true ? layerErsetzen : layerOeffnen)(node, () => {
+    laeuft = false;
+    cancelAnimationFrame(raf);
+    window.removeEventListener('resize', messen);
+  });
+  messen();
+  bild();
+  window.addEventListener('resize', messen);
 }
 
 function sitzungBeenden() {
@@ -1683,7 +2009,7 @@ function buchWaehlenFuerSitzung() {
           <span class="rn serif">${esc(b.titel)}</span>
           <span class="rm">${esc(b.autor)}${b.status === 'lese' ? ' · lese ich' : ''}</span>
         </span><span class="chev">${ICON.chev}</span>`;
-      r.onclick = () => { layerSchliessen(); sitzungStarten(b.id); };
+      r.onclick = () => sitzungStarten(b.id, true);
       l.appendChild(r);
     });
   };
@@ -1815,7 +2141,7 @@ function nowbarMalen() {
         <span class="nt serif">${esc(b ? b.titel : 'Sitzung')}</span>
         <span class="nm">Sitzung läuft</span>
       </span>
-      <span class="uhr" data-uhr>00:00</span>
+      <button class="uhr" data-uhr title="Sanduhr">00:00</button>
       <button class="btn btn-sm" data-wecker title="Lese-Wecker">${DB.einstellungen.weckerMin ? DB.einstellungen.weckerMin + '′' : '⏰'}</button>
       <button class="btn btn-sm" data-stop>Beenden</button>`;
     const malen = () => {
@@ -1835,6 +2161,7 @@ function nowbarMalen() {
     malen();
     nowTick = setInterval(malen, 1000);
     $('[data-stop]', inner).onclick = sitzungBeenden;
+    $('[data-uhr]', inner).onclick = () => sanduhrOeffnen();
     $('[data-wecker]', inner).onclick = () => timerFrageZeigen(b);
     if (b) $('.grow', inner).onclick = () => buchOeffnen(b.id);
   } else {
@@ -1862,25 +2189,37 @@ function layerOeffnen(node, onClose) {
   try { history.pushState({ layer: Layers.length }, ''); } catch (e) { }
   return node;
 }
-/* Wie viele history.back() schon angestoßen, aber noch nicht angekommen sind.
-   Ohne diese Buchführung springt ein Sammelschließen zu weit zurück und
-   verlässt die Seite. */
+/* Wie viele Verlaufssprünge angestoßen, aber noch nicht angekommen sind.
+   Jeder Aufruf von back() oder go() meldet genau ein popstate; solange eines
+   aussteht, stammt es von uns und nicht von der Zurück-Taste. */
 let zurueckOffen = 0;
 function layerSchliessen() {
   if (!Layers.length) return;
+  /* Sofort aus dem DOM: sonst schließt das später eintreffende popstate eine
+     Ebene, die inzwischen darüber geöffnet wurde – etwa wenn aus der
+     Buchauswahl heraus gleich die Timer-Frage aufgeht. */
+  layerPop();
   zurueckOffen++;
-  try { history.back(); } catch (e) { zurueckOffen--; layerPop(); }
+  try { history.back(); } catch (e) { zurueckOffen--; }
 }
-/* Alle offenen Ebenen auf einmal zu. history.back() wirkt erst später,
-   deshalb wird hier direkt aufgeräumt und der Verlauf danach zurückgespult. */
+/* Alle offenen Ebenen auf einmal zu; der Verlauf wird danach zurückgespult. */
 function alleLayerSchliessen() {
   const n = Layers.length;
   if (!n) return;
   Layers.slice().reverse().forEach(l => { l.node.remove(); if (l.onClose) l.onClose(); });
   Layers.length = 0;
-  const schritte = n - zurueckOffen;
-  zurueckOffen = 0;
-  if (schritte > 0) { try { history.go(-schritte); } catch (e) { } }
+  zurueckOffen++;
+  try { history.go(-n); } catch (e) { zurueckOffen--; }
+}
+/* Die oberste Ebene gegen eine andere tauschen, ohne den Verlauf anzufassen.
+   Schliessen und gleich wieder Öffnen ginge schief: das nachlaufende popstate
+   des back() räumt sonst die eben erst geöffnete Ebene wieder weg. */
+function layerErsetzen(node, onClose) {
+  const alt = Layers.pop();
+  if (alt) { alt.node.remove(); if (alt.onClose) alt.onClose(); }
+  Layers.push({ node, onClose });
+  $('#layers').appendChild(node);
+  return node;
 }
 function layerPop() {
   const l = Layers.pop();
@@ -1889,8 +2228,8 @@ function layerPop() {
   if (l.onClose) l.onClose();
 }
 window.addEventListener('popstate', () => {
-  if (zurueckOffen > 0) zurueckOffen--;
-  if (Layers.length) layerPop();
+  if (zurueckOffen > 0) { zurueckOffen--; return; }
+  layerPop();
 });
 
 function blatt(titel, inhalt, opts) {
@@ -1905,7 +2244,7 @@ function blatt(titel, inhalt, opts) {
   const body = $('[data-body]', scrim);
   if (typeof inhalt === 'string') body.innerHTML = inhalt; else body.appendChild(inhalt);
   scrim.addEventListener('click', e => { if (e.target === scrim) layerSchliessen(); });
-  layerOeffnen(scrim, opts.onClose);
+  (opts.ersetzen ? layerErsetzen : layerOeffnen)(scrim, opts.onClose);
   const erstes = $('input,textarea,select', body);
   if (erstes && opts.fokus !== false) setTimeout(() => erstes.focus(), 80);
   ziehenZumSchliessen($('.sheet', scrim));
@@ -3784,7 +4123,7 @@ function autorZeile(a, alle, inv, nurAusBlock) {
           ${lebt ? `<span class="num">${esc(lebt)}</span>` : ''}
           <span>${pl(werke.length, 'Werk', 'Werke')}</span>
           <span>${werke.filter(b => b.status === 'gelesen').length} gelesen</span>
-          ${wirkt ? `<span style="color:var(--accent)">wirkt auf ${wirkt}</span>` : ''}
+          ${wirkt ? `<span style="color:var(--wirkt)">wirkt auf ${wirkt}</span>` : ''}
         </span>
       </span>
       <span class="chev">${ICON.chev}</span>
@@ -3834,7 +4173,7 @@ function autorOeffnen(a, alle, inv) {
         ? von.map(n => chip(n, !!autorAufloesen(frisch, n))).join('')
         : '<span class="en" style="opacity:.6">nichts eingetragen</span>'}</div>
         </div>
-        <div>
+        <div class="wirkt">
           <div class="eg">Wirkt auf</div>
           <div class="er">${auf.length
         ? auf.map(n => chip(n, true)).join('')
@@ -3911,7 +4250,7 @@ function autorSteckbriefMalen(name, alle, inv, info, aufloesen) {
       ? von.map(n => `<span class="en link" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
       + nurText.map(n => `<span class="en">${esc(n)}</span>`).join('')
       : '<span class="en" style="opacity:.6">niemandem hier</span>'}</div></div>
-      <div><div class="eg">Wirkt auf</div><div class="er">${auf.length
+      <div class="wirkt"><div class="eg">Wirkt auf</div><div class="er">${auf.length
       ? auf.map(n => `<span class="en link" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
       : '<span class="en" style="opacity:.6">niemanden hier</span>'}</div></div>
     </div>
