@@ -166,9 +166,10 @@ Vorrat an Werken zu einer fertigen leseliste:
 Es wird nichts in die leseliste geschrieben, bevor du am Ende *leseliste anlegen*
 drückst. Der Durchgang selbst wird aber gemerkt: Vorrat, Stelle im Stapel, Gemerktes und
 die begonnenen Blöcke. Beim nächsten Öffnen liegt genau die Karte wieder oben, bei der
-du aufgehört hast. Die **Diskette** in der Kopfzeile schreibt den Stand jederzeit sofort
-weg; beim Verlassen geschieht das ohnehin. Neben ihr stehen, wie überall, Hell/Dunkel
-und Vollbild. Nach dem Anlegen bleibt der Vorrat samt Stelle stehen, das Gemerkte ist
+du aufgehört hast – auch wenn du über *Themen* und *Laden* hinausgegangen bist und auch
+nach einem Neustart der App. In der Kopfzeile steht dafür derselbe Speicher-Chip wie in
+der Liste: er zeigt *offen*, solange etwas ungeschrieben ist, und *gerade eben*, sobald
+es liegt. Nach dem Anlegen bleibt der Vorrat samt Stelle stehen, das Gemerkte ist
 verbraucht.
 
 ## Lesen und Einkaufen

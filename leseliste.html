@@ -327,6 +327,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
    Kopfzeile der App verdeckt liegt. */
 .gknoepfe{display:flex;gap:2px;flex:0 0 auto;}
 .gknoepfe .icon-btn{width:32px;height:32px;background:none;border:0;color:var(--text-3);}
+.gknoepfe .savechip{margin:0 4px 0 0;}
 .gknoepfe .icon-btn svg{width:16px;height:16px;}
 .sheet{position:relative;}
 .sheet > .gknoepfe{position:absolute;top:8px;right:8px;z-index:2;}
@@ -584,8 +585,6 @@ body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sto-kopf .u{font-size:11.5px;color:var(--text-3);margin-top:1px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sto-kopf .icon-btn.sto-sichern{width:32px;height:32px;background:none;border:0;color:var(--text-3);}
-.sto-kopf .icon-btn.sto-sichern svg{width:16px;height:16px;}
 .sto-zaehler{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--good);
   background:var(--good-soft);border-radius:99px;padding:5px 9px;font-variant-numeric:tabular-nums;
   flex:0 0 auto;border:1px solid color-mix(in srgb,var(--good) 30%,transparent);}
@@ -717,7 +716,7 @@ body.voll .sto-fuss{padding-bottom:calc(26px + env(safe-area-inset-bottom));}
         <button class="brand" id="btnHeim" title="Zur Liste" aria-label="Zur Liste">
           <h1>leseliste</h1>
         </button>
-        <button class="savechip" id="saveChip" data-state="clean" title="Jetzt sichern"><span class="dot"></span><span id="saveText">gesichert</span></button>
+        <button class="savechip" id="saveChip" data-gsave data-state="clean" title="Jetzt sichern"><span class="dot"></span><span class="st">gesichert</span></button>
         <button class="icon-btn" id="btnSuche" title="Suchen" aria-label="Suchen"></button>
         <button class="icon-btn" id="btnTheme" title="Hell oder dunkel" aria-label="Hell oder dunkel umschalten"></button>
         <button class="icon-btn" id="btnVoll" title="Vollbild" aria-label="Vollbild ein oder aus" hidden></button>
@@ -1264,13 +1263,17 @@ const Store = {
   }
 };
 
+/* Denselben Chip gibt es in der Kopfzeile der App und in jeder Ebene
+   darüber – ein Zustand, ein Aussehen, ein Griff. */
 function saveChipMalen() {
-  const chip = $('#saveChip'), txt = $('#saveText');
-  if (!chip) return;
-  if (Store.fehler) { chip.dataset.state = 'error'; txt.textContent = 'Fehler'; return; }
-  if (Store.dirty) { chip.dataset.state = 'dirty'; txt.textContent = 'offen'; return; }
-  chip.dataset.state = 'clean';
-  txt.textContent = Store.letzteSicherung ? relZeit(Store.letzteSicherung).replace('vor ', '') : 'gesichert';
+  const zustand = Store.fehler ? 'error' : Store.dirty ? 'dirty' : 'clean';
+  const text = Store.fehler ? 'Fehler' : Store.dirty ? 'offen'
+    : (Store.letzteSicherung ? relZeit(Store.letzteSicherung).replace('vor ', '') : 'gesichert');
+  $$('.savechip').forEach(chip => {
+    chip.dataset.state = zustand;
+    const t = $('.st', chip);
+    if (t) t.textContent = text;
+  });
 }
 setInterval(saveChipMalen, 30000);
 
@@ -2230,8 +2233,10 @@ function alleLayerSchliessen() {
 /* ---------- Hell/Dunkel und Vollbild, überall erreichbar ----------
    Jede Ebene und jedes Blatt bekommt das Paar automatisch eingesetzt; die
    Kopfzeile der App liegt darunter verdeckt. */
-function globalKnoepfeHtml() {
+function globalKnoepfeHtml(mitSpeicher) {
   return '<span class="gknoepfe">'
+    + (mitSpeicher ? '<button class="savechip" data-gsave data-state="clean" title="Jetzt sichern">'
+      + '<span class="dot"></span><span class="st">gesichert</span></button>' : '')
     + '<button class="icon-btn" data-gtheme title="Hell oder dunkel" aria-label="Hell oder dunkel"></button>'
     + (vollbildGeht() ? '<button class="icon-btn" data-gvoll title="Vollbild" aria-label="Vollbild"></button>' : '')
     + '</span>';
@@ -2246,10 +2251,11 @@ function globalKnoepfeMalen(wurzel) {
 }
 function globalKnoepfeEinsetzen(node) {
   const kopf = $('.ovl-head', node);
-  if (kopf && !$('[data-gtheme]', kopf)) kopf.insertAdjacentHTML('beforeend', globalKnoepfeHtml());
+  if (kopf && !$('[data-gtheme]', kopf)) kopf.insertAdjacentHTML('beforeend', globalKnoepfeHtml(true));
   const blatt = $('.sheet', node);
-  if (blatt && !$('[data-gtheme]', blatt)) blatt.insertAdjacentHTML('afterbegin', globalKnoepfeHtml());
+  if (blatt && !$('[data-gtheme]', blatt)) blatt.insertAdjacentHTML('afterbegin', globalKnoepfeHtml(false));
   globalKnoepfeMalen(node);
+  saveChipMalen();
 }
 $('#layers').addEventListener('click', e => {
   if (e.target.closest('[data-gtheme]')) {
@@ -2258,6 +2264,8 @@ $('#layers').addEventListener('click', e => {
     viewMalen();
   } else if (e.target.closest('[data-gvoll]')) {
     vollbildUmschalten();
+  } else if (e.target.closest('[data-gsave]')) {
+    Store.alsDateiSichern(false);
   }
 });
 
@@ -6025,6 +6033,11 @@ function stoebernOeffnen() {
     listenName = g.name || '';
     schritt = ['themen', 'wischen', 'sammlung', 'bloecke'].includes(g.schritt) ? g.schritt : 'themen';
     if (schritt === 'wischen' && !stapel.length) schritt = 'themen';
+    /* Wer zurückkommt, will an die Karte, nicht noch einmal durch Laden und
+       Themen – auch wenn er beim Weggehen über diese Schritte gegangen ist. */
+    if (stapel.length && (schritt === 'laden' || schritt === 'themen')) {
+      schritt = zeiger < stapel.length ? 'wischen' : (gemerkt.length ? 'sammlung' : 'wischen');
+    }
     return true;
   };
 
@@ -6035,7 +6048,6 @@ function stoebernOeffnen() {
       <button class="icon-btn" data-back>${ICON.back}</button>
       <div class="grow"><div class="t" data-t>Stöbern</div><div class="u" data-u></div></div>
       <span class="sto-zaehler" data-zaehler hidden>${ICON.herz}<span data-zahl>0</span></span>
-      <button class="icon-btn sto-sichern" data-sichern title="Stand sichern" aria-label="Stand sichern">${ICON.save}</button>
     </div>
     <div class="sto-fort"><i data-fort style="width:0%"></i></div>
     <div class="sto-inhalt" style="flex:1;min-height:0;display:flex;flex-direction:column" data-inhalt></div>`;
@@ -6608,14 +6620,6 @@ function stoebernOeffnen() {
     else schrittBloecke();
     zaehlerAuffrischen(false);
     merken();
-  };
-
-  /* Der Knopf mit der Diskette schreibt den Stand sofort weg – sichtbar,
-     damit man sich beim Weggehen darauf verlassen kann. */
-  $('[data-sichern]', node).onclick = async () => {
-    merken();
-    try { await Store.sichern(true); toast('Stand gesichert.'); }
-    catch (e) { console.warn(e); toast('Konnte nicht sichern.', 3500); }
   };
 
   /* Der Pfeil oben führt einen Schritt zurück, aus dem ersten heraus. */

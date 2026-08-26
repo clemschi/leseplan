@@ -37,6 +37,12 @@ Fertige Bausteine, die genau das tun:
 - `aendern()` merkt nur vor (Selbstsicherung nach Sekunden),
   `Store.sichern(true)` schreibt sofort. Beim Verlassen einer Ebene, die einen
   Stand hält (z. B. Stöbern), immer sofort schreiben.
+- Es gibt genau **einen** Speicher-Chip (`.savechip`, `saveChipMalen`). Er sitzt
+  in der Kopfzeile der App und über `globalKnoepfeHtml(true)` in jeder
+  `.ovl-head`. Keine zweite Speicheranzeige, kein eigenes Symbol irgendwo –
+  gleiche Logik, gleiches Aussehen, überall.
+- Eine Ebene mit eigenem Stand (Stöbern) steigt dort wieder ein, wo gearbeitet
+  wurde, nicht dort, wo der Zurück-Pfeil zuletzt stand.
 
 ## Prüfen
 Playwright liegt unter `/opt/pw-browsers/chromium`
