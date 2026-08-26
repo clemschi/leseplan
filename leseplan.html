@@ -1661,8 +1661,8 @@ function timerFrageZeigen(buch, ersetzen) {
 }
 
 /* ---------- Vollbild-Sanduhr ----------
-   Läuft auf reinem Schwarz, damit im Dunkeln nichts blendet. Gezeichnet wird
-   auf Canvas: der Sandstand folgt der echten Uhr, das Rieseln der Dauer –
+   Auf reinem Schwarz gezeichnet, damit im Dunkeln nichts blendet. Der
+   Sandstand folgt der echten Uhr, das Rieseln der eingestellten Dauer:
    eine Minute stürzt, fünfundvierzig tröpfeln. */
 const suHex = h => {
   const s = h.replace('#', '');
@@ -1672,10 +1672,17 @@ const suHex = h => {
 const suRgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 const suHell = (c, f) => c.map(v => Math.round(v + (255 - v) * f));
 const suDunkel = (c, f) => c.map(v => Math.round(v * (1 - f)));
+/* Wärmer machen, damit aus jeder Akzentfarbe glaubhafter Sand wird. */
+const suWarm = (c, f) => [
+  Math.round(Math.min(255, c[0] + 46 * f)),
+  Math.round(Math.min(255, c[1] + 20 * f)),
+  Math.round(Math.max(0, c[2] - 26 * f))
+];
 /* Immer dieselbe Streuung je Korn, damit der Strahl nicht flackert. */
 const suStreu = i => { const f = Math.sin(i * 127.1 + 311.7) * 43758.5453; return f - Math.floor(f); };
+
 function suRundRect(ctx, x, y, w, h, r) {
-  r = Math.min(r, w / 2, h / 2);
+  r = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -1685,24 +1692,67 @@ function suRundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function sanduhrZeichnen(ctx, B, H, anteil, sek, minuten, rgb) {
+/* Eine Kachel voller Körner, einmal erzeugt und als Muster über den Sand
+   gelegt – Tausende Körner je Einzelbild wären auf dem Telefon zu teuer. */
+let suKachel = null;
+function suKornKachel() {
+  if (suKachel) return suKachel;
+  const K = 84;
+  const c = document.createElement('canvas');
+  c.width = c.height = K;
+  const g = c.getContext('2d');
+  for (let i = 0; i < 1400; i++) {
+    const x = suStreu(i * 3 + 1) * K, y = suStreu(i * 3 + 2) * K;
+    const h = suStreu(i * 3 + 3);
+    g.beginPath();
+    g.arc(x, y, 0.32 + h * 0.9, 0, Math.PI * 2);
+    g.fillStyle = h > 0.5
+      ? `rgba(255,242,214,${0.05 + (h - 0.5) * 0.34})`
+      : `rgba(58,30,4,${0.05 + (0.5 - h) * 0.46})`;
+    g.fill();
+  }
+  suKachel = c;
+  return c;
+}
+
+/* Die halbe Glasbreite über die Höhe einer Kammer: 0 am Hals, 1 am Rand.
+   Der Bauch sitzt bei 0,70 und der Rand zieht sich wieder ein – das
+   unterscheidet geblasenes Glas vom bloßen Trichter. */
+const SU_PROFIL = [[0, 0], [0.15, 0.45], [0.40, 0.855], [0.70, 1], [0.88, 0.985], [1, 0.895]];
+function suProfil(u, hals, bauch) {
+  u = clamp(u, 0, 1);
+  let i = 0;
+  while (i < SU_PROFIL.length - 2 && u > SU_PROFIL[i + 1][0]) i++;
+  const a = SU_PROFIL[i], b = SU_PROFIL[i + 1];
+  const t = (u - a[0]) / (b[0] - a[0]);
+  const s = t * t * (3 - 2 * t);
+  return hals + (bauch - hals) * (a[1] + (b[1] - a[1]) * s);
+}
+
+function sanduhrZeichnen(ctx, B, H, anteil, sek, minuten, rgb, muster) {
   ctx.clearRect(0, 0, B, H);
   const cx = B / 2, cy = H / 2;
-  const hg = Math.min(H * 0.94, B * 1.32);
-  const bauch = hg * 0.30, hals = hg * 0.021, kappeH = hg * 0.034;
+  const hg = Math.min(H * 0.95, B * 1.46);
+  const bauch = hg * 0.252, hals = hg * 0.0165;
+  const kh = hg * 0.047, kb = bauch * 1.30;      /* halbe Kappenhöhe und -breite */
   const oben = cy - hg / 2, unten = cy + hg / 2;
-  const glasOben = oben + kappeH * 2, glasUnten = unten - kappeH * 2;
+  const glasOben = oben + kh * 1.55, glasUnten = unten - kh * 1.55;
   const halbH = (glasUnten - glasOben) / 2;
-  /* Halbe Glasbreite: 0 am Hals, 1 am Rand. Der Exponent macht die Bauchung. */
-  const halb = u => hals + (bauch - hals) * Math.pow(clamp(u, 0, 1), 0.62);
+  const halb = u => suProfil(u, hals, bauch);
   const breiteBei = y => halb(Math.abs(y - cy) / halbH);
 
+  /* Farbklaviatur: warmer Sand, kühles Gestell. */
+  const sandHell = suHell(suWarm(rgb, 1), 0.42);
+  const sandMitte = suWarm(rgb, 0.7);
+  const sandTief = suDunkel(suWarm(rgb, 0.5), 0.62);
+  const metall = [122, 131, 144];
+
   const kammer = nachOben => {
-    const N = 44, ri = nachOben ? -1 : 1;
+    const N = 54, ri = nachOben ? -1 : 1;
     ctx.beginPath();
     for (let i = 0; i <= N; i++) {
-      const u = i / N, y = cy + ri * halbH * u;
-      i ? ctx.lineTo(cx - halb(u), y) : ctx.moveTo(cx - halb(u), y);
+      const u = i / N, y = cy + ri * halbH * u, x = cx - halb(u);
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
     }
     for (let i = N; i >= 0; i--) {
       const u = i / N;
@@ -1711,171 +1761,383 @@ function sanduhrZeichnen(ctx, B, H, anteil, sek, minuten, rgb) {
     ctx.closePath();
   };
 
-  /* Schein hinter dem Glas */
-  const schein = ctx.createRadialGradient(cx, cy, 0, cx, cy, hg * 0.66);
-  schein.addColorStop(0, suRgba(rgb, 0.14));
-  schein.addColorStop(1, suRgba(rgb, 0));
+  /* Kornstruktur – nur über den Sand, nie über leeres Glas. */
+  const koernen = (y0, y1) => {
+    if (!muster || y1 <= y0) return;
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = muster;
+    ctx.fillRect(cx - bauch - 2, y0, bauch * 2 + 4, y1 - y0);
+    ctx.restore();
+  };
+
+  /* --- Grund: Schein und Schlagschatten --- */
+  const schein = ctx.createRadialGradient(cx, cy, hg * 0.05, cx, cy, hg * 0.74);
+  schein.addColorStop(0, suRgba(sandMitte, 0.15));
+  schein.addColorStop(0.55, suRgba(sandMitte, 0.045));
+  schein.addColorStop(1, suRgba(sandMitte, 0));
   ctx.fillStyle = schein;
   ctx.fillRect(0, 0, B, H);
 
-  /* Zwei Streben, gewölbt durch einen waagerechten Verlauf */
-  const strebeX = bauch * 1.09, strebeB = hg * 0.021;
+  const sy = unten + hg * 0.03;
+  ctx.save();
+  ctx.translate(cx, sy); ctx.scale(1, 0.16); ctx.translate(-cx, -sy);
+  const schatten = ctx.createRadialGradient(cx, sy, 0, cx, sy, bauch * 1.6);
+  schatten.addColorStop(0, 'rgba(0,0,0,.9)');
+  schatten.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = schatten;
+  ctx.beginPath(); ctx.arc(cx, sy, bauch * 1.6, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  /* --- Gestell: zwei Säulen hinter dem Glas --- */
+  const saeuleX = bauch * 1.17, saeuleB = hg * 0.0125;
   [-1, 1].forEach(s => {
-    const x = cx + s * strebeX;
-    const g = ctx.createLinearGradient(x - strebeB, 0, x + strebeB, 0);
-    g.addColorStop(0, suRgba(suDunkel(rgb, 0.68), 1));
-    g.addColorStop(0.34, suRgba(suHell(rgb, 0.10), 1));
-    g.addColorStop(1, suRgba(suDunkel(rgb, 0.52), 1));
+    const x = cx + s * saeuleX;
+    const g = ctx.createLinearGradient(x - saeuleB, 0, x + saeuleB, 0);
+    g.addColorStop(0, suRgba(suDunkel(metall, 0.88), 1));
+    g.addColorStop(0.22, suRgba(suHell(metall, 0.55), 1));
+    g.addColorStop(0.44, suRgba(suDunkel(metall, 0.12), 1));
+    g.addColorStop(0.78, suRgba(suDunkel(metall, 0.68), 1));
+    g.addColorStop(1, suRgba(suDunkel(metall, 0.85), 1));
     ctx.fillStyle = g;
-    suRundRect(ctx, x - strebeB, oben + kappeH, strebeB * 2, (unten - oben) - kappeH * 2, strebeB);
+    suRundRect(ctx, x - saeuleB, oben + kh * 0.6, saeuleB * 2, (unten - oben) - kh * 1.2, saeuleB);
+    ctx.fill();
+    /* Warmes Streiflicht vom Sand her, zur Mitte hin am stärksten */
+    const w = ctx.createLinearGradient(0, cy - halbH, 0, cy + halbH);
+    w.addColorStop(0, suRgba(sandMitte, 0.04));
+    w.addColorStop(0.5, suRgba(sandMitte, 0.34));
+    w.addColorStop(1, suRgba(sandMitte, 0.07));
+    ctx.fillStyle = w;
+    suRundRect(ctx, x - saeuleB * (s < 0 ? 0.9 : 0.1), oben + kh * 0.6, saeuleB, (unten - oben) - kh * 1.2, saeuleB * 0.4);
     ctx.fill();
   });
 
-  /* Glas */
-  const glasFuellung = () => {
+  /* --- Glas: dunkler Innenraum --- */
+  [true, false].forEach(o => {
+    kammer(o);
     const g = ctx.createLinearGradient(cx - bauch, 0, cx + bauch, 0);
-    g.addColorStop(0, 'rgba(255,255,255,.11)');
-    g.addColorStop(0.18, 'rgba(255,255,255,.03)');
-    g.addColorStop(0.44, 'rgba(255,255,255,.055)');
-    g.addColorStop(0.74, 'rgba(255,255,255,.015)');
-    g.addColorStop(1, 'rgba(255,255,255,.10)');
-    return g;
-  };
-  [true, false].forEach(o => { kammer(o); ctx.fillStyle = glasFuellung(); ctx.fill(); });
+    g.addColorStop(0, 'rgba(150,180,210,.13)');
+    g.addColorStop(0.22, 'rgba(9,12,17,.60)');
+    g.addColorStop(0.5, 'rgba(14,18,24,.38)');
+    g.addColorStop(0.78, 'rgba(9,12,17,.54)');
+    g.addColorStop(1, 'rgba(150,180,210,.11)');
+    ctx.fillStyle = g;
+    ctx.fill();
+  });
 
   const sandVerlauf = () => {
     const g = ctx.createLinearGradient(cx - bauch, 0, cx + bauch, 0);
-    g.addColorStop(0, suRgba(suDunkel(rgb, 0.52), 1));
-    g.addColorStop(0.26, suRgba(suHell(rgb, 0.16), 1));
-    g.addColorStop(0.58, suRgba(rgb, 1));
-    g.addColorStop(1, suRgba(suDunkel(rgb, 0.58), 1));
+    g.addColorStop(0, suRgba(suDunkel(sandTief, 0.30), 1));
+    g.addColorStop(0.17, suRgba(sandMitte, 1));
+    g.addColorStop(0.36, suRgba(sandHell, 1));
+    g.addColorStop(0.62, suRgba(sandMitte, 1));
+    g.addColorStop(1, suRgba(sandTief, 1));
     return g;
   };
 
-  /* Oben: die Oberfläche sinkt zum Hals */
+  /* --- Sand in der oberen Kammer --- */
   const flaeche = glasOben + (cy - glasOben) * anteil;
+  const rF = breiteBei(flaeche);
   if (anteil < 0.999) {
-    ctx.save(); kammer(true); ctx.clip();
+    /* Körper: streng auf den Sandbereich begrenzt */
+    ctx.save();
+    kammer(true); ctx.clip();
+    ctx.beginPath();
+    ctx.rect(cx - bauch - 2, flaeche, bauch * 2 + 4, cy - flaeche + 3);
+    ctx.clip();
     ctx.fillStyle = sandVerlauf();
-    ctx.fillRect(cx - bauch - 2, flaeche, bauch * 2 + 4, cy - flaeche + 2);
-    const rF = breiteBei(flaeche);
-    ctx.beginPath(); ctx.ellipse(cx, flaeche, rF, rF * 0.20, 0, 0, Math.PI * 2);
-    ctx.fillStyle = suRgba(suHell(rgb, 0.32), 1); ctx.fill();
-    /* Trichter, in den der Sand nachrutscht */
-    if (anteil > 0.015) {
-      const dr = Math.min(rF * 0.62, hals * 5.5);
-      ctx.beginPath(); ctx.ellipse(cx, flaeche + dr * 0.12, dr, dr * 0.30, 0, 0, Math.PI * 2);
-      ctx.fillStyle = suRgba(suDunkel(rgb, 0.46), 1); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(cx, flaeche + dr * 0.14, dr * 0.5, dr * 0.15, 0, 0, Math.PI * 2);
-      ctx.fillStyle = suRgba(suDunkel(rgb, 0.68), 1); ctx.fill();
+    ctx.fillRect(cx - bauch - 2, flaeche, bauch * 2 + 4, cy - flaeche + 3);
+    koernen(flaeche, cy + 3);
+    ctx.restore();
+
+    /* Oberfläche mit Trichter, der sich zum Ende hin vertieft */
+    ctx.save();
+    kammer(true); ctx.clip();
+    ctx.beginPath();
+    ctx.ellipse(cx, flaeche, rF, rF * 0.19, 0, 0, Math.PI * 2);
+    const og = ctx.createLinearGradient(cx - rF, 0, cx + rF, 0);
+    og.addColorStop(0, suRgba(suDunkel(sandMitte, 0.30), 1));
+    og.addColorStop(0.34, suRgba(suHell(sandHell, 0.20), 1));
+    og.addColorStop(1, suRgba(suDunkel(sandMitte, 0.44), 1));
+    ctx.fillStyle = og;
+    ctx.fill();
+    if (anteil > 0.01) {
+      const tief = 0.36 + 0.5 * anteil;
+      const kr = Math.min(rF * 0.74, hals * 7.5) * (0.55 + 0.6 * anteil);
+      ctx.beginPath();
+      ctx.ellipse(cx, flaeche + kr * 0.06, kr, kr * 0.27, 0, 0, Math.PI * 2);
+      const kg = ctx.createRadialGradient(cx, flaeche + kr * 0.05, kr * 0.05, cx, flaeche, kr);
+      kg.addColorStop(0, suRgba(suDunkel(sandTief, 0.6 * tief), 1));
+      kg.addColorStop(0.45, suRgba(suDunkel(sandMitte, 0.5 * tief), 1));
+      kg.addColorStop(1, suRgba(sandMitte, 0));
+      ctx.fillStyle = kg;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(cx, flaeche + kr * 0.06, kr * 0.96, kr * 0.26, 0, Math.PI * 1.08, Math.PI * 1.92);
+      ctx.strokeStyle = suRgba(suHell(sandHell, 0.4), 0.48);
+      ctx.lineWidth = Math.max(0.7, hg * 0.0035);
+      ctx.stroke();
     }
     ctx.restore();
   }
 
-  /* Unten: der Haufen wächst */
-  const hoehe = (glasUnten - cy) * anteil;
-  const spiegel = glasUnten - hoehe;
+  /* --- Haufen in der unteren Kammer --- */
+  const spiegel = glasUnten - (glasUnten - cy) * anteil;
   const rS = breiteBei(spiegel);
-  const kegelR = Math.min(rS, bauch * 0.62), kegelH = kegelR * 0.52;
+  const kegelR = Math.min(rS * 0.72, bauch * 0.52);
+  const kegelH = kegelR * 0.62;
   if (anteil > 0.001) {
-    ctx.save(); kammer(false); ctx.clip();
+    /* Ein einziger Körper aus Spiegelfläche und Kuppe – so bekommt nur
+       der Sand die Kornstruktur, nicht das leere Glas darüber. */
+    const sandPfad = () => {
+      ctx.beginPath();
+      ctx.moveTo(cx - bauch - 2, glasUnten + 3);
+      ctx.lineTo(cx - bauch - 2, spiegel);
+      ctx.lineTo(cx - kegelR, spiegel);
+      ctx.quadraticCurveTo(cx - kegelR * 0.34, spiegel - kegelH * 1.30, cx, spiegel - kegelH);
+      ctx.quadraticCurveTo(cx + kegelR * 0.34, spiegel - kegelH * 1.30, cx + kegelR, spiegel);
+      ctx.lineTo(cx + bauch + 2, spiegel);
+      ctx.lineTo(cx + bauch + 2, glasUnten + 3);
+      ctx.closePath();
+    };
+    ctx.save();
+    kammer(false); ctx.clip();
+    sandPfad();
     ctx.fillStyle = sandVerlauf();
-    ctx.fillRect(cx - bauch - 2, spiegel, bauch * 2 + 4, glasUnten - spiegel + 2);
+    ctx.fill();
+    ctx.save(); sandPfad(); ctx.clip();
+    koernen(spiegel - kegelH * 1.4, glasUnten + 3);
+    ctx.restore();
+
+    /* Spiegelfläche als Ellipse, damit die Kuppe darauf sitzt */
+    ctx.beginPath();
+    ctx.ellipse(cx, spiegel, rS, rS * 0.17, 0, 0, Math.PI * 2);
+    const fg = ctx.createLinearGradient(cx - rS, 0, cx + rS, 0);
+    fg.addColorStop(0, suRgba(suDunkel(sandMitte, 0.34), 1));
+    fg.addColorStop(0.36, suRgba(suHell(sandHell, 0.10), 1));
+    fg.addColorStop(1, suRgba(suDunkel(sandMitte, 0.46), 1));
+    ctx.fillStyle = fg;
+    ctx.fill();
+
+    /* Kuppe mit eigenem Licht von links oben */
     ctx.beginPath();
     ctx.moveTo(cx - kegelR, spiegel);
-    ctx.quadraticCurveTo(cx, spiegel - kegelH * 1.55, cx + kegelR, spiegel);
-    ctx.ellipse(cx, spiegel, kegelR, kegelR * 0.20, 0, 0, Math.PI, false);
+    ctx.quadraticCurveTo(cx - kegelR * 0.34, spiegel - kegelH * 1.30, cx, spiegel - kegelH);
+    ctx.quadraticCurveTo(cx + kegelR * 0.34, spiegel - kegelH * 1.30, cx + kegelR, spiegel);
+    ctx.ellipse(cx, spiegel, kegelR, kegelR * 0.17, 0, 0, Math.PI, false);
     ctx.closePath();
-    ctx.fillStyle = sandVerlauf(); ctx.fill();
-    /* Lichtkante auf der Kuppe */
+    const kg2 = ctx.createLinearGradient(cx - kegelR, spiegel - kegelH, cx + kegelR, spiegel);
+    kg2.addColorStop(0, suRgba(suHell(sandHell, 0.26), 1));
+    kg2.addColorStop(0.40, suRgba(sandMitte, 1));
+    kg2.addColorStop(1, suRgba(suDunkel(sandTief, 0.16), 1));
+    ctx.fillStyle = kg2;
+    ctx.fill();
+    ctx.save();
     ctx.beginPath();
-    ctx.moveTo(cx - kegelR * 0.62, spiegel - kegelH * 0.30);
-    ctx.quadraticCurveTo(cx - kegelR * 0.12, spiegel - kegelH * 1.42, cx + kegelR * 0.20, spiegel - kegelH * 1.10);
-    ctx.strokeStyle = suRgba(suHell(rgb, 0.45), 0.5);
-    ctx.lineWidth = Math.max(1, hg * 0.006);
+    ctx.moveTo(cx - kegelR, spiegel);
+    ctx.quadraticCurveTo(cx - kegelR * 0.34, spiegel - kegelH * 1.30, cx, spiegel - kegelH);
+    ctx.quadraticCurveTo(cx + kegelR * 0.34, spiegel - kegelH * 1.30, cx + kegelR, spiegel);
+    ctx.closePath(); ctx.clip();
+    koernen(spiegel - kegelH * 1.4, spiegel + 2);
+    ctx.restore();
+    /* Grat auf der Kuppe */
+    ctx.beginPath();
+    ctx.moveTo(cx - kegelR * 0.60, spiegel - kegelH * 0.42);
+    ctx.quadraticCurveTo(cx - kegelR * 0.14, spiegel - kegelH * 1.24, cx + kegelR * 0.12, spiegel - kegelH * 0.94);
+    ctx.strokeStyle = suRgba(suHell(sandHell, 0.55), 0.5);
+    ctx.lineWidth = Math.max(0.8, hg * 0.0048);
     ctx.stroke();
     ctx.restore();
   }
 
-  /* Rieselnder Sand */
+  /* --- Rieselnder Sand --- */
   const flott = clamp(1 - (minuten - 1) / 44, 0, 1);
   if (anteil > 0.0005 && anteil < 0.9995) {
-    const zielY = spiegel - kegelH * 0.92;
+    const zielY = spiegel - kegelH * 0.88;
     const strahl = hals * (0.30 + 0.55 * flott);
+    const weg = Math.max(1, zielY - cy);
+    /* Ein echter Sandstrahl steht nie still – er pendelt leicht. */
+    const pendel = y => Math.sin(sek * 1.9 + (y - cy) * 0.035) * strahl * 0.5 * ((y - cy) / weg);
     ctx.save();
     ctx.beginPath();
-    ctx.rect(cx - bauch, cy, bauch * 2, Math.max(0, zielY - cy));
+    ctx.rect(cx - bauch, cy, bauch * 2, weg);
     ctx.clip();
-    /* Bei kurzer Dauer ein dichter Strahl, bei langer nur einzelne Körner. */
-    const dicht = 0.10 + 0.68 * flott;
-    const sg = ctx.createLinearGradient(cx - strahl, 0, cx + strahl, 0);
-    sg.addColorStop(0, suRgba(suDunkel(rgb, 0.4), dicht * 0.45));
-    sg.addColorStop(0.5, suRgba(suHell(rgb, 0.25), dicht));
-    sg.addColorStop(1, suRgba(suDunkel(rgb, 0.4), dicht * 0.45));
-    ctx.fillStyle = sg;
-    ctx.fillRect(cx - strahl, cy, strahl * 2, Math.max(0, zielY - cy));
-    /* Eine Minute stürzt in einem Achtel der Zeit, fünfundvierzig tröpfeln. */
+
+    /* Dichter Faden bei kurzer Dauer, kaum sichtbar bei langer. Als zwei
+       durchgehende Bänder statt vieler Streifen – das bleibt glatt und
+       spart je Bild ein Dutzend Verläufe. */
+    const dicht = 0.08 + 0.62 * flott;
+    const band = (weite, farbe) => {
+      ctx.beginPath();
+      const N = 30;
+      for (let i = 0; i <= N; i++) {
+        const y = cy + weg * (i / N), b0 = strahl * weite * (0.72 + 0.5 * (i / N));
+        const x = cx + pendel(y) - b0;
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      for (let i = N; i >= 0; i--) {
+        const y = cy + weg * (i / N), b0 = strahl * weite * (0.72 + 0.5 * (i / N));
+        ctx.lineTo(cx + pendel(y) + b0, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = farbe;
+      ctx.fill();
+    };
+    const verlauf = ctx.createLinearGradient(0, cy, 0, cy + weg);
+    verlauf.addColorStop(0, suRgba(sandHell, dicht));
+    verlauf.addColorStop(0.75, suRgba(sandHell, dicht * 0.9));
+    verlauf.addColorStop(1, suRgba(sandHell, dicht * 0.5));
+    band(1, suRgba(sandTief, dicht * 0.55));
+    band(0.46, verlauf);
+
+    /* Einzelne Körner mit Bewegungsunschärfe */
     const fallZeit = 0.12 + 1.55 * (1 - flott);
-    const koerner = Math.round(5 + 30 * flott);
+    const koerner = Math.round(6 + 34 * flott);
     for (let i = 0; i < koerner; i++) {
-      const ph = ((sek / fallZeit) + i / koerner) % 1;
-      const y = cy + (zielY - cy) * ph;
-      const z = suStreu(i);
-      const x = cx + (z - 0.5) * strahl * (1.2 + ph * 2.8);
-      const r = hals * (0.30 + z * 0.30) * (1.25 - 0.35 * flott);
-      ctx.beginPath(); ctx.ellipse(x, y, r, r * 1.4, 0, 0, Math.PI * 2);
-      ctx.fillStyle = suRgba(suHell(rgb, 0.10 + z * 0.34), 0.9);
+      const z = suStreu(i), z2 = suStreu(i + 500);
+      /* Nicht alle gleich schnell – sonst wirkt es wie eine Perlenkette. */
+      const ph = ((sek / (fallZeit * (0.82 + z2 * 0.4))) + i / koerner) % 1;
+      const y = cy + weg * (ph * ph * 0.55 + ph * 0.45);
+      /* Der Fächer haengt nicht an der Strahlbreite – sonst faedeln sich
+         die wenigen Koerner langer Timer zu einer Perlenschnur auf. */
+      const spreiz = hals * (0.55 + 0.85 * flott);
+      const x = cx + pendel(y) + (z - 0.5) * spreiz * (1.1 + ph * 3.2);
+      const r = hals * (0.22 + z * 0.26) * (1.3 - 0.4 * flott);
+      const streck = 1.5 + 2.6 * flott * (0.4 + ph);
+      ctx.beginPath();
+      ctx.ellipse(x, y, r, r * streck, 0, 0, Math.PI * 2);
+      ctx.fillStyle = suRgba(suHell(sandHell, z2 * 0.45), 0.5 + z2 * 0.45);
       ctx.fill();
     }
     ctx.restore();
-    /* Glanz am Hals */
-    const hg2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, hals * 4);
-    hg2.addColorStop(0, suRgba(suHell(rgb, 0.5), 0.5));
-    hg2.addColorStop(1, suRgba(rgb, 0));
-    ctx.fillStyle = hg2;
-    ctx.fillRect(cx - hals * 4, cy - hals * 4, hals * 8, hals * 8);
+
+    /* Aufprall: springende Körner und ein Hauch Staub */
+    ctx.save();
+    kammer(false); ctx.clip();
+    const staub = ctx.createRadialGradient(cx, zielY, 0, cx, zielY, kegelR * 0.7 + hals * 3);
+    staub.addColorStop(0, suRgba(sandHell, 0.15 * (0.4 + flott)));
+    staub.addColorStop(1, suRgba(sandHell, 0));
+    ctx.fillStyle = staub;
+    ctx.fillRect(cx - bauch, zielY - kegelR, bauch * 2, kegelR * 2);
+    const spritzer = Math.round(3 + 7 * flott);
+    for (let i = 0; i < spritzer; i++) {
+      const z = suStreu(i + 900), z2 = suStreu(i + 1300);
+      const ph = ((sek / (0.30 + 0.5 * (1 - flott))) + i / spritzer) % 1;
+      const seite = z < 0.5 ? -1 : 1;
+      const x = cx + seite * kegelR * 0.95 * ph * (0.5 + z2 * 0.7);
+      const y = zielY + kegelH * 0.55 * ph * ph - kegelH * 0.5 * Math.sin(ph * Math.PI) * (0.4 + z2 * 0.6);
+      const r = hals * (0.2 + z2 * 0.22);
+      ctx.beginPath();
+      ctx.ellipse(x, y, r, r * 1.2, 0, 0, Math.PI * 2);
+      ctx.fillStyle = suRgba(suHell(sandHell, 0.25), (1 - ph) * 0.7);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    /* Glut am Hals */
+    const neck = ctx.createRadialGradient(cx, cy, 0, cx, cy, hals * 6);
+    neck.addColorStop(0, suRgba(suHell(sandHell, 0.6), 0.5));
+    neck.addColorStop(0.4, suRgba(sandMitte, 0.2));
+    neck.addColorStop(1, suRgba(sandMitte, 0));
+    ctx.fillStyle = neck;
+    ctx.fillRect(cx - hals * 6, cy - hals * 6, hals * 12, hals * 12);
   }
 
-  /* Glanz und Kanten auf dem Glas */
+  /* --- Glas von vorn: Dicke, Glanz, Kante --- */
   [true, false].forEach(o => {
+    const y0 = o ? glasOben : cy;
     ctx.save(); kammer(o); ctx.clip();
-    const g = ctx.createLinearGradient(cx - bauch * 0.74, 0, cx - bauch * 0.26, 0);
-    g.addColorStop(0, 'rgba(255,255,255,0)');
-    g.addColorStop(0.5, 'rgba(255,255,255,.16)');
-    g.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(cx - bauch, o ? glasOben : cy, bauch, halbH);
+    /* Glasdicke verdunkelt die Ränder – das gibt dem Rohr Rundung. */
+    const dick = ctx.createLinearGradient(cx - bauch, 0, cx + bauch, 0);
+    dick.addColorStop(0, 'rgba(0,0,0,.66)');
+    dick.addColorStop(0.13, 'rgba(0,0,0,.17)');
+    dick.addColorStop(0.42, 'rgba(0,0,0,0)');
+    dick.addColorStop(0.80, 'rgba(0,0,0,.21)');
+    dick.addColorStop(1, 'rgba(0,0,0,.70)');
+    ctx.fillStyle = dick;
+    ctx.fillRect(cx - bauch, y0, bauch * 2, halbH);
+    /* Breiter, weicher Glanz links */
+    const gl = ctx.createLinearGradient(cx - bauch * 0.82, 0, cx - bauch * 0.18, 0);
+    gl.addColorStop(0, 'rgba(255,255,255,0)');
+    gl.addColorStop(0.45, 'rgba(255,255,255,.13)');
+    gl.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gl;
+    ctx.fillRect(cx - bauch, y0, bauch, halbH);
+    /* Schmaler Glanz daneben – weich ausgelaufen, kein harter Strich */
+    const gx = cx - bauch * 0.60, gr = hg * 0.013;
+    ctx.save();
+    ctx.translate(gx, y0 + halbH * (o ? 0.42 : 0.52));
+    ctx.scale(1, halbH * 0.34 / gr);
+    const sp = ctx.createRadialGradient(0, 0, 0, 0, 0, gr);
+    sp.addColorStop(0, 'rgba(255,255,255,.30)');
+    sp.addColorStop(0.55, 'rgba(255,255,255,.11)');
+    sp.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sp;
+    ctx.beginPath(); ctx.arc(0, 0, gr, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
+    /* Kühler Widerschein rechts */
+    const rs = ctx.createLinearGradient(cx + bauch * 0.35, 0, cx + bauch, 0);
+    rs.addColorStop(0, 'rgba(150,190,240,0)');
+    rs.addColorStop(1, 'rgba(150,190,240,.15)');
+    ctx.fillStyle = rs;
+    ctx.fillRect(cx, y0, bauch, halbH);
+    ctx.restore();
+
+    /* Silhouettenkante, oben heller als unten */
     kammer(o);
-    ctx.strokeStyle = 'rgba(255,255,255,.21)';
-    ctx.lineWidth = Math.max(1, hg * 0.0042);
-    ctx.stroke();
-  });
-  /* Randellipsen geben dem Glas Tiefe */
-  [glasOben, glasUnten].forEach(y => {
-    ctx.beginPath(); ctx.ellipse(cx, y, bauch, bauch * 0.19, 0, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255,255,255,.20)';
-    ctx.lineWidth = Math.max(1, hg * 0.0035);
+    const kante = ctx.createLinearGradient(0, o ? glasOben : cy, 0, o ? cy : glasUnten);
+    kante.addColorStop(0, o ? 'rgba(255,255,255,.44)' : 'rgba(255,255,255,.13)');
+    kante.addColorStop(1, o ? 'rgba(255,255,255,.13)' : 'rgba(255,255,255,.36)');
+    ctx.strokeStyle = kante;
+    ctx.lineWidth = Math.max(1, hg * 0.0045);
     ctx.stroke();
   });
 
-  /* Kappen oben und unten */
-  const kappe = mitte => {
-    const kb = bauch * 1.18;
-    const g = ctx.createLinearGradient(0, mitte - kappeH * 2, 0, mitte + kappeH * 2);
-    g.addColorStop(0, suRgba(suHell(rgb, 0.34), 1));
-    g.addColorStop(0.48, suRgba(rgb, 1));
-    g.addColorStop(1, suRgba(suDunkel(rgb, 0.55), 1));
-    ctx.fillStyle = g;
-    suRundRect(ctx, cx - kb, mitte - kappeH * 2, kb * 2, kappeH * 4, kappeH * 1.5);
-    ctx.fill();
+  /* Randellipsen an den Übergängen zu den Kappen */
+  [glasOben, glasUnten].forEach((y, i) => {
+    const r = breiteBei(y);
     ctx.beginPath();
-    ctx.ellipse(cx, mitte - kappeH * 1.15, kb * 0.97, kb * 0.15, 0, 0, Math.PI * 2);
-    ctx.fillStyle = suRgba(suHell(rgb, 0.44), 1);
+    ctx.ellipse(cx, y, r, r * 0.17, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = i ? 'rgba(255,255,255,.15)' : 'rgba(255,255,255,.24)';
+    ctx.lineWidth = Math.max(0.8, hg * 0.0035);
+    ctx.stroke();
+  });
+
+  /* --- Kappen aus gebürstetem Metall --- */
+  const kappeMalen = (mitte, obenAuf) => {
+    const g = ctx.createLinearGradient(0, mitte - kh, 0, mitte + kh);
+    g.addColorStop(0, suRgba(suHell(metall, obenAuf ? 0.55 : 0.34), 1));
+    g.addColorStop(0.32, suRgba(metall, 1));
+    g.addColorStop(0.66, suRgba(suDunkel(metall, 0.55), 1));
+    g.addColorStop(1, suRgba(suDunkel(metall, 0.32), 1));
+    ctx.fillStyle = g;
+    suRundRect(ctx, cx - kb, mitte - kh, kb * 2, kh * 2, kh * 0.55);
+    ctx.fill();
+    /* Waagerechte Wölbung */
+    const w = ctx.createLinearGradient(cx - kb, 0, cx + kb, 0);
+    w.addColorStop(0, 'rgba(0,0,0,.58)');
+    w.addColorStop(0.26, 'rgba(255,255,255,.17)');
+    w.addColorStop(0.55, 'rgba(255,255,255,.04)');
+    w.addColorStop(1, 'rgba(0,0,0,.52)');
+    ctx.fillStyle = w;
+    suRundRect(ctx, cx - kb, mitte - kh, kb * 2, kh * 2, kh * 0.55);
+    ctx.fill();
+    /* Deckfläche */
+    ctx.beginPath();
+    ctx.ellipse(cx, mitte + (obenAuf ? -kh * 0.58 : kh * 0.58), kb * 0.96, kb * 0.135, 0, 0, Math.PI * 2);
+    const d = ctx.createLinearGradient(cx - kb, 0, cx + kb, 0);
+    d.addColorStop(0, suRgba(suDunkel(metall, 0.45), 1));
+    d.addColorStop(0.34, suRgba(suHell(metall, 0.60), 1));
+    d.addColorStop(1, suRgba(suDunkel(metall, 0.36), 1));
+    ctx.fillStyle = d;
+    ctx.fill();
+    /* Warmer Widerschein des Sandes auf dem Metall */
+    ctx.fillStyle = suRgba(sandMitte, 0.11);
+    suRundRect(ctx, cx - kb, mitte + (obenAuf ? kh * 0.1 : -kh * 0.6), kb * 2, kh * 0.5, kh * 0.2);
     ctx.fill();
   };
-  kappe(oben + kappeH * 2);
-  kappe(unten - kappeH * 2);
+  kappeMalen(oben + kh, true);
+  kappeMalen(unten - kh, false);
 }
 
 function sanduhrOeffnen(ersetzen) {
@@ -1902,6 +2164,7 @@ function sanduhrOeffnen(ersetzen) {
   const cv = $('[data-c]', node);
   const ctx = cv.getContext('2d');
   const rgb = suHex(akzentAktiv().dark);
+  const muster = ctx.createPattern(suKornKachel(), 'repeat');
   let laeuft = true, raf = 0, B = 0, Hc = 0;
 
   const messen = () => {
@@ -1929,7 +2192,7 @@ function sanduhrOeffnen(ersetzen) {
     const min = +t.weckMin || +DB.einstellungen.weckerMin || 45;
     const sek = (Date.now() - t.startTs) / 1000;
     const ganz = min * 60;
-    sanduhrZeichnen(ctx, B, Hc, clamp(sek / ganz, 0, 1), sek, min, rgb);
+    sanduhrZeichnen(ctx, B, Hc, clamp(sek / ganz, 0, 1), sek, min, rgb, muster);
     const rest = Math.ceil(ganz - sek);
     node.classList.toggle('aus', rest <= 0);
     $('[data-rest]', node).textContent = rest > 0 ? uhrText(rest) : uhrText(Math.floor(sek));
