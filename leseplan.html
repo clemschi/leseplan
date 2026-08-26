@@ -1235,6 +1235,7 @@ function setupZeigen(nurWechsel) {
 
       <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
         ${dateiDa ? '<button class="btn btn-sm" data-act="import">Daten aus Datei laden</button>' : ''}
+        ${nurWechsel ? '' : '<button class="btn btn-sm" data-act="stoebern">' + ICON.herz + ' Stöbern</button>'}
         ${nurWechsel ? '' : '<button class="btn btn-sm" data-act="ki">Liste von KI zusammenstellen</button>'}
         ${nurWechsel ? '<button class="btn btn-sm btn-ghost" data-act="abbrechen">Abbrechen</button>' : ''}
         <button class="btn btn-sm btn-ghost" data-act="theme">Hell/Dunkel</button>
@@ -1253,6 +1254,19 @@ function setupZeigen(nurWechsel) {
     if (act === 'abbrechen') { s.hidden = true; $('#app').hidden = false; return; }
     if (act === 'import') { importDialog(!nurWechsel); return; }
     if (act === 'ki') { kiErstellenOeffnen(); return; }
+    /* Stöbern legt am Ende selbst eine leseliste an – dafür braucht es einen
+       Speicherort, also gilt hier dieselbe Arbeitskopie wie bei „Loslegen“. */
+    if (act === 'stoebern') {
+      if (!Store.modus) {
+        Store.modus = 'geraet'; Store.handle = null;
+        await Store.metaSchreiben();
+        if (!nurWechsel) DB = normalisiere(await IDB.get('daten'));
+        await Store.sichern(true);
+        appStarten(true);
+      }
+      stoebernOeffnen();
+      return;
+    }
 
     if (act === 'geraet') {
       Store.modus = 'geraet'; Store.handle = null;
@@ -1584,7 +1598,9 @@ function einfuehrungZeigen() {
 /* ============================================================
    Start
    ============================================================ */
-function appStarten() {
+/* „still“ heisst: ohne Einführung – etwa wenn vom Startbildschirm aus direkt
+   das Stöbern aufgeht, das sich sonst die Einführung überstülpen würde. */
+function appStarten(still) {
   $('#setup').hidden = true;
   $('#app').hidden = false;
   aktiverTab = 'plan';
@@ -1593,7 +1609,7 @@ function appStarten() {
   viewMalen();
   Store.autosaveStarten();
   saveChipMalen();
-  if (!DB.einstellungen.einfuehrung) setTimeout(einfuehrungZeigen, 350);
+  if (!still && !DB.einstellungen.einfuehrung) setTimeout(einfuehrungZeigen, 350);
 }
 
 async function boot() {
