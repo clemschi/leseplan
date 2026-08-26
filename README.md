@@ -111,13 +111,19 @@ unter *Daten aus Datei laden → Ergänzen* eingespielt.
 
 Ein dritter Prompt, **Sammlung zum Stöbern**, liefert keinen fertigen Plan, sondern
 einen Vorrat: mehrere Themen hinein, rund hundert Werke heraus, jedes mit seinem Thema.
-Diese Datei ist das Futter fürs Stöbern.
+Diese Datei ist das Futter fürs Stöbern. Die Themen gibst du entweder selbst vor, oder du
+wählst **Überrasch mich** und sagst nur, wie viele es sein sollen – dann sucht die KI sie
+aus, auf Wunsch in eine grobe Richtung. Der **Anteil Fachartikel** ist in Stufen bis
+siebzig Prozent einstellbar, und Artikel lassen sich auf einen **Jahresbereich**
+eingrenzen; für Bücher gilt die Schranke nicht.
 
 Alle drei Prompts nehmen auf Wunsch **Fachartikel** mit auf – peer-reviewed und viel
 zitiert, wie über Google Scholar auffindbar. Bei Büchern werden deutsche Ausgaben
 bevorzugt, einschlägige englische aber ausdrücklich mitgenommen; bei Artikeln zählt
-allein die Qualität, nicht die Sprache. Artikel tragen Zeitschrift, Seiten und DOI im
-Feld *Ausgabe* und landen nicht auf der Einkaufsliste.
+allein die Qualität, nicht die Sprache. Artikel tragen Zeitschrift und Seiten im Feld
+*Ausgabe*, die auflösbare DOI-Adresse im Feld **Link**, und landen nicht auf der
+Einkaufsliste. Der Link steht beim Buch unter der Ausgabe und ist antippbar; von Hand
+lässt er sich unter *Bearbeiten* nachtragen.
 
 ## Stöbern
 
@@ -146,7 +152,14 @@ Es wird nichts gespeichert, bevor du am Ende *leseliste anlegen* drückst.
 Über der Tableiste sitzt eine Leiste für die laufende Sitzung: Läuft eine, zeigt sie
 Buch und Uhr; läuft keine, startet sie das aktuelle Buch. Gibt es kein oder mehr als
 ein angefangenes Buch, wird gewählt. Starten geht auch im Buch und über langes Drücken
-auf eine Zeile der Liste – dort finden sich außerdem *nach oben* und *nach unten*.
+auf eine Zeile der Liste – dort finden sich außerdem *nach oben* und *nach unten*. Der
+Rand der Leiste zeigt den Zustand: Akzentfarbe, solange sie zum Start bereitsteht, rot,
+während tatsächlich gelesen wird.
+
+Wird eine Sitzung beendet, öffnet sich das Eintragen-Blatt. Schiebst du es weg, ohne
+einzutragen, fragt die App nach – die gelesene Zeit soll nicht stillschweigend verfallen;
+*Nachtragen* holt das Blatt mit deinen Eingaben zurück. Eine eingetragene Sitzung wird
+sofort weggeschrieben, nicht erst beim nächsten Takt der Selbstsicherung.
 
 Ein Tipp auf **leseliste** oben links führt aus jeder Ansicht zurück auf die Liste;
 steht man schon dort, geht es nach oben.

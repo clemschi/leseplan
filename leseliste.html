@@ -135,11 +135,14 @@ p{margin:0;}
 }
 .nowbar-inner{
   pointer-events:auto;width:100%;max-width:656px;display:flex;align-items:center;gap:10px;
-  padding:8px 10px 8px 13px;border-radius:13px;border:1px solid var(--border);
+  padding:8px 10px 8px 13px;border-radius:13px;
+  /* Bereit zum Starten: Akzent. Läuft gerade eine Sitzung: rot. */
+  border:1.5px solid color-mix(in srgb,var(--accent) 60%,var(--border));
   background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(12px);
-  box-shadow:var(--shadow);
+  box-shadow:var(--shadow);transition:border-color .25s ease;
 }
-.nowbar-inner.laeuft{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));}
+.nowbar-inner.laeuft{border-color:color-mix(in srgb,var(--bad) 72%,var(--border));}
+.nowbar-inner.laeuft .uhr{color:var(--bad);}
 .nowbar .grow{flex:1;min-width:0;}
 .nowbar .nt{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .nowbar .nm{font-size:10.5px;color:var(--text-3);margin-top:2px;display:block;}
@@ -938,6 +941,7 @@ function normalisiere(raw) {
     seiten: b.seiten == null ? null : b.seiten,
     seitenUnsicher: !!b.seitenUnsicher,
     ausgabe: b.ausgabe || '',
+    link: String(b.link || b.doi || b.url || '').trim(),
     beschreibung: b.beschreibung || '',
     kurz: b.kurz || '',
     preis: b.preis == null ? null : b.preis,
@@ -1560,7 +1564,7 @@ function einfuehrungZeigen() {
           id: uid(), blockId: blk.id, ord: buecherIn(blk.id).length, titel,
           autor: ($('[data-autor]', body).value || '').trim(),
           autorGeb: null, autorGest: null, autorBio: '', jahr: null, seiten: null, seitenUnsicher: false,
-          ausgabe: '', beschreibung: '', kurz: '', schwierigkeit: null, preis: null,
+          ausgabe: '', link: '', beschreibung: '', kurz: '', schwierigkeit: null, preis: null,
           status: 'offen', besitz: 'fehlt', einkauf: false, sessions: [], notizen: []
         }));
       }
@@ -1767,7 +1771,7 @@ function sitzungBeenden() {
   viewMalen();
   if (!b) return;
   const stand = b.sessions.reduce((m, s) => Math.max(m, s.bis || 0), 0);
-  sessionBearbeiten(b, null, { minuten, von: stand || null }, () => viewMalen());
+  sessionBearbeiten(b, null, { minuten, von: stand || null }, () => viewMalen(), true);
 }
 
 function buchWaehlenFuerSitzung() {
@@ -2618,7 +2622,7 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
   const neu = !buch;
   const b = buch || {
     id: null, blockId: blockIdVorgabe, titel: '', autor: '', autorGeb: null, autorGest: null,
-    jahr: null, seiten: null, seitenUnsicher: false, ausgabe: '', beschreibung: '', preis: null, status: 'offen'
+    jahr: null, seiten: null, seitenUnsicher: false, ausgabe: '', link: '', beschreibung: '', preis: null, status: 'offen'
   };
   const s = blatt(neu ? 'Neues Buch' : 'Buch bearbeiten', `
     <div class="field"><label>Titel</label><input type="text" data-titel value="${esc(b.titel)}"></div>
@@ -2642,6 +2646,10 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
       </select></div>
     </div>
     <div class="field"><label>Ausgabe</label><input type="text" data-ausgabe value="${esc(b.ausgabe || '')}" placeholder="z.B. Suhrkamp Taschenbuch"></div>
+    <div class="field"><label>Link</label>
+      <input type="url" data-link value="${esc(b.link || '')}" placeholder="https://doi.org/…" inputmode="url">
+      <span class="hint">Bei Fachartikeln die Fundstelle – DOI-Adresse oder Seite der Zeitschrift.</span>
+    </div>
     <div class="field">
       <label>Besitz</label>
       <div style="display:flex;gap:7px;flex-wrap:wrap" data-besitz></div>
@@ -2716,6 +2724,7 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
       preis: num($('[data-preis]', s).value),
       status: $('[data-status]', s).value,
       ausgabe: $('[data-ausgabe]', s).value.trim(),
+      link: $('[data-link]', s).value.trim(),
       blockId: $('[data-block]', s).value,
       beschreibung: $('[data-besch]', s).value.trim(),
       kurz: $('[data-kurz]', s).value.trim().replace(/\s+/g, ' '),
@@ -2845,7 +2854,7 @@ function importDialog(erstStart) {
         });
         /* Felder, die aus der Datei kommen dürfen – alles andere ist dein Fortschritt. */
         const katalogFelder = ['titel', 'autor', 'autoren', 'autorGeb', 'autorGest', 'autorBio', 'autorEinfluss',
-          'jahr', 'seiten', 'seitenUnsicher', 'ausgabe', 'beschreibung', 'kurz', 'schwierigkeit'];
+          'jahr', 'seiten', 'seitenUnsicher', 'ausgabe', 'link', 'beschreibung', 'kurz', 'schwierigkeit'];
         neu.buecher.forEach(bu => {
           const zielBlock = blockNach[bu.blockId] || (DB.bloecke[0] && DB.bloecke[0].id);
           const da = DB.buecher.find(x => x.blockId === zielBlock && x.titel.toLowerCase() === bu.titel.toLowerCase());
@@ -3119,6 +3128,8 @@ function seiteBeschreibung(b, root, neuMalen) {
       <div class="fact"><div class="k">Schwierigkeit</div><div class="v" style="font-size:12.5px">${b.schwierigkeit ? stufeHtml(b.schwierigkeit) + ' <small>' + esc(STUFEN[b.schwierigkeit]) + '</small>' : '–'}</div></div>
     </div>
     ${b.ausgabe ? `<p class="muted" style="font-size:12px;margin-top:10px">Ausgabe: ${esc(b.ausgabe)}</p>` : ''}
+    ${b.link ? `<p style="font-size:12px;margin-top:8px"><a href="${esc(b.link)}" target="_blank" rel="noopener noreferrer"
+      style="color:var(--accent);word-break:break-all">${esc(b.link)}</a></p>` : ''}
     ${b.kurz ? `<p class="muted" style="font-size:12.5px;margin-top:10px;font-family:'Literata',Georgia,serif">In Kürze: ${esc(b.kurz)}</p>` : ''}
     <div class="btn-row" style="margin-top:16px">
       <button class="btn btn-primary" data-neu-notiz style="flex:1">${ICON.plus} Notiz anlegen</button>
@@ -3584,12 +3595,18 @@ function seiteLesen(b, root, neuMalen) {
   });
 }
 
-function sessionBearbeiten(b, session, vorgabe, neuMalen) {
+/* „nachSitzung“ heisst: die Stoppuhr wurde gerade beendet. Dann darf das
+   Blatt nicht stillschweigend verschwinden – die gelesene Zeit wäre weg. */
+function sessionBearbeiten(b, session, vorgabe, neuMalen, nachSitzung) {
   const neu = !session;
   const s0 = session || {
     id: uid(), datum: heute(), minuten: vorgabe.minuten || 0,
-    von: vorgabe.von != null ? vorgabe.von : null, bis: null, notiz: ''
+    von: vorgabe.von != null ? vorgabe.von : null,
+    bis: vorgabe.bis != null ? vorgabe.bis : null,
+    notiz: vorgabe.notiz || ''
   };
+  if (vorgabe && vorgabe.datum) s0.datum = vorgabe.datum;
+  let gespeichert = false;
   const s = blatt(neu ? 'Sitzung eintragen' : 'Sitzung ändern', `
     <div class="grid2">
       <div class="field"><label>Datum</label><input type="date" data-datum value="${s0.datum}"></div>
@@ -3603,7 +3620,22 @@ function sessionBearbeiten(b, session, vorgabe, neuMalen) {
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-primary" data-ok style="flex:1">${neu ? 'Eintragen' : 'Sichern'}</button>
       ${neu ? '' : `<button class="btn btn-danger" data-del>${ICON.trash}</button>`}
-    </div>`, { fokus: false });
+    </div>`, {
+    fokus: false,
+    onClose: () => {
+      if (gespeichert || !nachSitzung) return;
+      /* Die Felder liegen noch im abgehängten Blatt – der Stand geht also
+         nicht verloren, falls nachgetragen wird. */
+      const stand = {
+        datum: $('[data-datum]', s).value || heute(),
+        minuten: num($('[data-min]', s).value) || 0,
+        von: num($('[data-von]', s).value),
+        bis: num($('[data-bis]', s).value),
+        notiz: $('[data-notiz]', s).value.trim()
+      };
+      setTimeout(() => sitzungVerwerfenFragen(b, stand, neuMalen), 60);
+    }
+  });
 
   $('[data-ok]', s).onclick = () => {
     const minuten = num($('[data-min]', s).value) || 0;
@@ -3618,16 +3650,41 @@ function sessionBearbeiten(b, session, vorgabe, neuMalen) {
       if (b.status === 'offen') b.status = 'lese';
       if (b.seiten && s0.bis && s0.bis >= b.seiten) b.status = 'gelesen';
     });
+    gespeichert = true;
     layerSchliessen();
+    /* Eine eingetragene Sitzung wird sofort weggeschrieben, nicht erst beim
+       nächsten Takt der Selbstsicherung. */
+    Store.sichern(true);
     if (neuMalen) neuMalen();
   };
   if (!neu) $('[data-del]', s).onclick = async () => {
     const ok = await bestaetigen('Sitzung löschen?', fmtDatum(s0.datum) + ', ' + fmtDauer(s0.minuten), 'Löschen', true);
     if (!ok) return;
     aendern(() => { b.sessions = b.sessions.filter(x => x.id !== s0.id); });
+    gespeichert = true;
     layerSchliessen();
+    Store.sichern(true);
     if (neuMalen) neuMalen();
   };
+}
+
+/* Weggezogen, ohne einzutragen: nachfragen statt die Zeit verfallen lassen. */
+function sitzungVerwerfenFragen(b, stand, neuMalen) {
+  const dauer = stand.minuten > 0 ? fmtDauer(stand.minuten) : 'Die Sitzung';
+  const s = blatt('Nicht eingetragen', `
+    <p class="muted" style="font-size:13.5px;line-height:1.6;margin-bottom:16px">
+      ${esc(dauer)}${stand.minuten > 0 ? ' Lesezeit' : ''} an „${esc(b.titel)}“ ist noch nicht eingetragen.
+      Verworfen taucht sie nirgends mehr auf – weder im Protokoll noch im Tagesziel.
+    </p>
+    <div class="btn-row">
+      <button class="btn btn-primary" data-nach style="flex:1">Nachtragen</button>
+      <button class="btn btn-danger" data-weg style="flex:1">Verwerfen</button>
+    </div>`, { fokus: false });
+  $('[data-nach]', s).onclick = () => {
+    layerSchliessen();
+    setTimeout(() => sessionBearbeiten(b, null, stand, neuMalen, true), 60);
+  };
+  $('[data-weg]', s).onclick = () => { layerSchliessen(); toast('Sitzung verworfen.'); };
 }
 
 /* ============================================================
@@ -5064,6 +5121,7 @@ function kiSchemaText(regeln, mitArtikeln, stoebern) {
     "seiten": 300,
     "seitenUnsicher": false,
     "ausgabe": "Verlag, ggf. Übersetzer:in einer gängigen deutschen Ausgabe",
+    "link": "",
     "beschreibung": "Ein Absatz: worum es geht und für wen es sich lohnt.",
     "kurz": "Das Werk in höchstens 15 Wörtern.",
     "schwierigkeit": 3,
@@ -5083,6 +5141,7 @@ function kiSchemaText(regeln, mitArtikeln, stoebern) {
     "seiten": 300,
     "seitenUnsicher": false,
     "ausgabe": "Verlag, ggf. Übersetzer:in einer gängigen deutschen Ausgabe",
+    "link": "",
     "beschreibung": "Ein Absatz: worum es geht und warum es in diese Liste gehört.",
     "kurz": "Das Werk in höchstens 15 Wörtern.",
     "schwierigkeit": 3,
@@ -5111,6 +5170,7 @@ ${aufbau}
 - "seiten" ist der Umfang; bei Unsicherheit "seitenUnsicher": true setzen und trotzdem schätzen.
 - "schwierigkeit" von 1 (leicht) bis 5 (sehr anspruchsvoll).
 - Bei mehreren Autoren jede:n einzeln in "autoren" auflisten, mit je eigenen Lebensdaten, Biographie und Einfluss.
+- "link" bleibt leer, wo es keine verlässliche feste Adresse gibt – lieber leer als geraten.
 ${eigen}
 
 ## Sprache
@@ -5124,7 +5184,9 @@ ${eigen}
 - Bei Artikeln ist die Sprache gleichgültig – englische sind ausdrücklich erwünscht, entscheidend ist allein die Qualität.
 - "ausgabe" beginnt bei Artikeln mit \`Fachartikel · \` und nennt dann Zeitschrift, Jahrgang, Heft, Seiten und DOI, z. B.:
   \`Fachartikel · Econometrica 47(2), S. 263–291, DOI: 10.2307/1914185\`
-- "seiten" ist bei Artikeln der Umfang in Seiten, "besitz" setzt du bei Artikeln auf \`"bibliothek"\` – dann landen sie nicht auf der Einkaufsliste.` : ''}${regeln ? '\n' + regeln : ''}`;
+- "seiten" ist bei Artikeln der Umfang in Seiten, "besitz" setzt du bei Artikeln auf \`"bibliothek"\` – dann landen sie nicht auf der Einkaufsliste.
+- **"link" ist bei jedem Fachartikel Pflicht**: die auflösbare DOI-Adresse in der Form \`https://doi.org/10.xxxx/yyyy\`. Nur wenn es nachweislich keine DOI gibt, die feste Seite der Zeitschrift oder des Repositoriums. Keine Suchlinks, keine erfundenen Adressen – im Zweifel nimm ein anderes Werk, zu dem du die Fundstelle sicher kennst.
+- Bei Büchern bleibt "link" leer, es sei denn, das Werk ist frei und dauerhaft online zu lesen; dann darf die Adresse hinein.` : ''}${regeln ? '\n' + regeln : ''}`;
 }
 
 function kiPromptZeigen(prompt, dateiname, stoebern) {
@@ -5261,46 +5323,121 @@ function stoebernPromptOeffnen() {
       interessiert. Aus dem Gemerkten baust du danach die Blöcke.
     </p>
     <div class="field">
+      <label>Woher kommen die Themen?</label>
+      <label class="optzeile"><input type="radio" name="stoquelle" value="selbst" checked>
+        <span><strong>Ich gebe sie vor</strong></span></label>
+      <label class="optzeile"><input type="radio" name="stoquelle" value="ueberrasch">
+        <span><strong>Überrasch mich</strong> – die KI wählt sie selbst</span></label>
+    </div>
+    <div class="field" data-feldSelbst>
       <label>Themen – eines je Zeile</label>
-      <textarea data-themen style="min-height:120px" placeholder="Wachstumskritik&#10;Erkenntnistheorie&#10;Kolonialismus und seine Folgen&#10;Verhaltensökonomik"></textarea>
+      <textarea data-themen style="min-height:110px" placeholder="Wachstumskritik&#10;Erkenntnistheorie&#10;Kolonialismus und seine Folgen&#10;Verhaltensökonomik"></textarea>
       <span class="hint">Zwei bis acht Themen sind eine gute Spanne. Je Thema kommt etwa der gleiche Anteil.</span>
+    </div>
+    <div class="field" data-feldUeberrasch hidden>
+      <label>Wie viele Themen?</label>
+      <input type="number" data-themenzahl value="6" min="2" max="20">
+      <span class="hint">Die KI sucht sie frei aus – lohnende Felder, die weit auseinanderliegen.</span>
+    </div>
+    <div class="field" data-feldRichtung hidden>
+      <label>In welche Richtung? (optional)</label>
+      <input type="text" data-richtung placeholder="z. B. Gesellschaft und Ökonomie, Naturwissenschaft, quer durch alles">
     </div>
     <div class="field">
       <label>Wie viele Werke insgesamt?</label>
       <input type="number" data-anzahl value="100" min="20" max="250">
     </div>
     <div class="field">
-      <label>Worauf soll besonders geachtet werden? (optional)</label>
-      <textarea data-zusatz style="min-height:60px" placeholder="z. B. auch ältere Grundlagentexte, nichts vor 1900, gern Gegenpositionen …"></textarea>
+      <label>Anteil Fachartikel</label>
+      <div class="chiprow" style="padding-left:0;flex-wrap:wrap;overflow:visible" data-anteil></div>
+      <span class="hint">Der Rest sind Bücher. Artikel sind peer-reviewed und viel zitiert, wie über
+      Google Scholar auffindbar; bei ihnen zählt allein die Qualität, nicht die Sprache.</span>
+    </div>
+    <div class="field" data-feldJahr>
+      <label>Fachartikel nur aus diesen Jahren (optional)</label>
+      <div class="grid2">
+        <div class="field" style="margin:0"><input type="number" data-jahrVon placeholder="ab z. B. 2010" min="1800" max="2100"></div>
+        <div class="field" style="margin:0"><input type="number" data-jahrBis placeholder="bis z. B. 2025" min="1800" max="2100"></div>
+      </div>
+      <span class="hint">Gilt nur für Artikel – Bücher bleiben ohne Schranke.</span>
     </div>
     <div class="field">
-      <label class="optzeile"><input type="checkbox" data-artikel checked>
-        <span><strong>Auch Fachartikel</strong><br>Peer-reviewed und viel zitiert, wie über Google Scholar
-        auffindbar – bei Artikeln zählt allein die Qualität, nicht die Sprache.</span></label>
+      <label>Worauf soll besonders geachtet werden? (optional)</label>
+      <textarea data-zusatz style="min-height:60px" placeholder="z. B. auch ältere Grundlagentexte, gern Gegenpositionen …"></textarea>
     </div>
     <button class="btn btn-primary btn-block" data-ok>Prompt erzeugen</button>`, { fokus: false });
 
+  /* Anteil in Zehnerschritten bis siebzig Prozent. */
+  const STUFEN_ANTEIL = [0, 10, 20, 30, 40, 50, 60, 70];
+  let anteil = 30;
+  const anteilMalen = () => {
+    $('[data-anteil]', s).innerHTML = STUFEN_ANTEIL.map(v =>
+      `<button class="chip" data-a="${v}" aria-pressed="${v === anteil}">${v ? v + ' %' : 'keine'}</button>`).join('');
+    $$('[data-a]', s).forEach(b => b.onclick = () => { anteil = +b.dataset.a; anteilMalen(); });
+    $('[data-feldJahr]', s).hidden = anteil === 0;
+  };
+  anteilMalen();
+
+  const quelleMalen = () => {
+    const wahl = $('input[name=stoquelle]:checked', s).value;
+    $('[data-feldSelbst]', s).hidden = wahl !== 'selbst';
+    $('[data-feldUeberrasch]', s).hidden = wahl === 'selbst';
+    $('[data-feldRichtung]', s).hidden = wahl === 'selbst';
+  };
+  $$('input[name=stoquelle]', s).forEach(r => r.onchange = quelleMalen);
+  quelleMalen();
+
   $('[data-ok]', s).onclick = () => {
-    const themen = $('[data-themen]', s).value.split('\n').map(x => x.trim()).filter(Boolean);
-    if (!themen.length) { toast('Bitte mindestens ein Thema eintragen.'); return; }
+    const wahl = $('input[name=stoquelle]:checked', s).value;
     const anzahl = clamp(Math.round(num($('[data-anzahl]', s).value) || 100), 20, 250);
     const zusatz = $('[data-zusatz]', s).value.trim();
-    const artikel = $('[data-artikel]', s).checked;
-    const jeThema = Math.max(3, Math.round(anzahl / themen.length));
+    const artikel = anteil > 0;
+    const vonJ = artikel ? Math.round(num($('[data-jahrVon]', s).value) || 0) : 0;
+    const bisJ = artikel ? Math.round(num($('[data-jahrBis]', s).value) || 0) : 0;
 
-    const prompt = `Ich nutze eine App für einen mehrjährigen Leseplan. Stell mir keinen fertigen Plan zusammen, sondern einen **Vorrat an Werken**, durch den ich mich anschließend durchblättere und auswähle. Diese Themen sollen darin vorkommen:
+    let themenTeil, themenRegel;
+    if (wahl === 'selbst') {
+      const themen = $('[data-themen]', s).value.split('\n').map(x => x.trim()).filter(Boolean);
+      if (!themen.length) { toast('Bitte mindestens ein Thema eintragen.'); return; }
+      const jeThema = Math.max(3, Math.round(anzahl / themen.length));
+      themenTeil = `Diese Themen sollen darin vorkommen:\n\n`
+        + themen.map((t, i) => (i + 1) + '. ' + t).join('\n')
+        + `\n\nUngefähr gleich auf die Themen verteilt, rund ${jeThema} Werke je Thema.`;
+      themenRegel = 'gib genau die Schreibweise aus meiner Liste zurück';
+    } else {
+      const zahl = clamp(Math.round(num($('[data-themenzahl]', s).value) || 6), 2, 20);
+      const richtung = $('[data-richtung]', s).value.trim();
+      themenTeil = `Überrasch mich: Wähle **${zahl} Themen** selbst aus`
+        + (richtung ? ` – in dieser Richtung: ${richtung}.` : '.')
+        + ` Nimm Felder, die für sich lohnen und weit genug auseinanderliegen, dass die Sammlung`
+        + ` abwechslungsreich wird; keine zwei Themen, die sich stark überschneiden.`
+        + ` Ungefähr gleich auf die Themen verteilt, rund ${Math.max(3, Math.round(anzahl / zahl))} Werke je Thema.`;
+      themenRegel = 'trag die von dir gewählten Themen oben unter "themen" ein und verwende genau diese Schreibweise';
+    }
 
-${themen.map((t, i) => (i + 1) + '. ' + t).join('\n')}
+    let anteilTeil;
+    if (!artikel) anteilTeil = 'Nur Bücher, keine Fachartikel.';
+    else if (anteil >= 70) anteilTeil = `Rund ${anteil} % der Werke sollen wissenschaftliche Fachartikel sein, der Rest Bücher.`;
+    else anteilTeil = `Rund ${anteil} % der Werke sollen wissenschaftliche Fachartikel sein, die übrigen ${100 - anteil} % Bücher.`;
 
-Etwa ${anzahl} Werke insgesamt, ungefähr gleich auf die Themen verteilt (rund ${jeThema} je Thema)${artikel ? ' – Bücher und wissenschaftliche Fachartikel gemischt' : ' (nur Bücher)'}. Innerhalb eines Themas soll die Spannweite groß sein: Grundlagentexte neben aktuellen Arbeiten, unterschiedliche Positionen, wo möglich Primärquellen statt Sekundärliteratur darüber. Keine Dopplungen.
+    const jahrRegel = artikel && (vonJ || bisJ)
+      ? '\n- Fachartikel nur aus ' + (vonJ && bisJ ? `den Jahren ${vonJ} bis ${bisJ}`
+        : vonJ ? `${vonJ} oder später` : `${bisJ} oder früher`)
+      + '; für Bücher gilt diese Schranke nicht.'
+      : '';
 
-Jedes Werk trägt das Thema, zu dem es gehört – gib genau die Schreibweise aus meiner Liste zurück.
+    const prompt = `Ich nutze eine App für einen mehrjährigen Leseplan. Stell mir keinen fertigen Plan zusammen, sondern einen **Vorrat an Werken**, durch den ich mich anschließend durchblättere und auswähle.
 
-${kiSchemaText('', artikel, true)}${zusatz ? '\n\n## Außerdem\n' + zusatz : ''}`;
+${themenTeil}
+
+Etwa ${anzahl} Werke insgesamt. ${anteilTeil} Innerhalb eines Themas soll die Spannweite groß sein: Grundlagentexte neben aktuellen Arbeiten, unterschiedliche Positionen, wo möglich Primärquellen statt Sekundärliteratur darüber. Keine Dopplungen.
+
+Jedes Werk trägt das Thema, zu dem es gehört – ${themenRegel}.
+
+${kiSchemaText(jahrRegel.replace(/^\n/, ''), artikel, true)}${zusatz ? '\n\n## Außerdem\n' + zusatz : ''}`;
     kiPromptZeigen(prompt, 'stoebern-prompt.txt', true);
   };
 }
-
 /* ============================================================
    Stöbern, Teil 2: die App in der App
    Laden → Themen wählen → wischen → Sammlung → Blöcke → anlegen
@@ -5321,6 +5458,7 @@ function stoWerkNorm(roh, i) {
     seiten: b.seiten == null ? null : b.seiten,
     seitenUnsicher: !!b.seitenUnsicher,
     ausgabe: b.ausgabe || '',
+    link: String(b.link || b.doi || b.url || '').trim(),
     beschreibung: b.beschreibung || '',
     kurz: b.kurz || '',
     schwierigkeit: (b.schwierigkeit >= 1 && b.schwierigkeit <= 5) ? +b.schwierigkeit : null,
@@ -5354,7 +5492,7 @@ function stoBuchAus(w, blockId, ord) {
     autoren: w.autoren,
     schwierigkeit: w.schwierigkeit,
     jahr: w.jahr, seiten: w.seiten, seitenUnsicher: w.seitenUnsicher,
-    ausgabe: w.ausgabe, beschreibung: w.beschreibung, kurz: w.kurz,
+    ausgabe: w.ausgabe, link: w.link, beschreibung: w.beschreibung, kurz: w.kurz,
     preis: null, status: 'offen', besitz: w.besitz, einkauf: false,
     sessions: [], notizen: []
   };
@@ -5959,7 +6097,9 @@ function stoWerkBlatt(w) {
       <div class="section-head" style="margin:18px 0 6px;padding:0"><h2>${esc(a.name)}</h2>
         ${lebensdaten(a.geb, a.gest) ? `<span class="eyebrow num">${esc(lebensdaten(a.geb, a.gest))}</span>` : ''}</div>
       <p class="desc" style="font-size:13px">${esc(a.bio)}</p>`).join('')}
-    ${w.ausgabe ? `<p class="hinweis" style="padding:14px 0 0">${esc(w.ausgabe)}</p>` : ''}`,
+    ${w.ausgabe ? `<p class="hinweis" style="padding:14px 0 0">${esc(w.ausgabe)}</p>` : ''}
+    ${w.link ? `<p style="font-size:12px;margin-top:8px"><a href="${esc(w.link)}" target="_blank" rel="noopener noreferrer"
+      style="color:var(--accent);word-break:break-all">${esc(w.link)}</a></p>` : ''}`,
     { fokus: false });
 }
 
