@@ -22,6 +22,11 @@ const seite = `<!DOCTYPE html>
 <meta name="theme-color" content="#0c0e11">
 <meta name="color-scheme" content="dark light">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<!-- Legt man die Seite auf den Startbildschirm, startet sie damit ohne Browserleisten. -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="leseliste">
+<meta name="application-name" content="leseliste">
 <!-- Erzeugt aus leseplan.html - nicht von Hand bearbeiten, sondern: node build.js -->
 ${kopf}
 </head>

@@ -22,6 +22,14 @@ separaten Datei und wird bewusst geladen.
 umgeschaltet wird über die Leiste ganz oben in der Planansicht oder unter *Mehr →
 leselisten*. Beim Start öffnet sich immer die zuletzt benutzte.
 
+## Erster Start
+
+Zuerst steht nur der Name der App auf dem Grund – karg wie ein Homescreen, daneben ein
+Platzhalter für später. Ein Tipp auf **leseliste** öffnet sie; derselbe Tipp löst das
+Vollbild aus, denn ohne Geste des Nutzers lässt kein Browser es zu. Unten sitzen
+Hell/Dunkel, Vollbild und *Speicherort und Daten* – dahinter liegen die ausführlichen
+Wege: Datei anlegen, Datei öffnen, Daten laden, von KI zusammenstellen, Stöbern.
+
 ## Speicherort
 
 Beim ersten Start stehen zwei Wege zur Wahl:
@@ -74,9 +82,11 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
   über die Kamera in der Seite (fällt auf die Kamera-App zurück, wo die Umgebung
   das verbietet) oder aus der Galerie; sie werden auf 1600 px Kantenlänge
   verkleinert, rund 300 KB je Bild.
-- **Übersicht** – vier Rubriken: *Zahlen* (Kennzahlen und Graphen, jeder als Tabelle
-  aufklappbar), *Zusammenfassungen* (je Block jedes Buch zum Auf- und Zuklappen),
-  *Autoren* und *Tage* (Tagesziel, Seiten pro Tag, Protokoll jedes Lesetags).
+- **Übersicht** – nicht in der Tableiste, sondern hinter dem Fortschritt in der
+  Kopfzeile: antippen oder von dort nach unten ziehen. Vier Rubriken: *Zahlen*
+  (Kennzahlen und Graphen, jeder als Tabelle aufklappbar), *Zusammenfassungen* (je Block
+  jedes Buch zum Auf- und Zuklappen), *Autoren* und *Tage* (Tagesziel, Seiten pro Tag,
+  Protokoll jedes Lesetags).
 - **Autoren** – nach Blöcken geordnet wie die Zusammenfassungen, jeder Eintrag zum
   Aufklappen; ein Wisch zeigt die Kurzinfo. Jeder Autor führt, von wem er beeinflusst
   wurde; wer auf wen wirkt, leitet die App daraus ab und verlinkt es – in eigener Farbe,
@@ -154,7 +164,9 @@ Buch und Uhr; läuft keine, startet sie das aktuelle Buch. Gibt es kein oder meh
 ein angefangenes Buch, wird gewählt. Starten geht auch im Buch und über langes Drücken
 auf eine Zeile der Liste – dort finden sich außerdem *nach oben* und *nach unten*. Der
 Rand der Leiste zeigt den Zustand: Akzentfarbe, solange sie zum Start bereitsteht, rot,
-während tatsächlich gelesen wird.
+während tatsächlich gelesen wird, grün, wenn das Tagesziel steht. Ist eines gesetzt,
+steht in der Leiste **Heute noch X Seiten zu lesen** – die Zahl rechnet aus den Sitzungen
+des Tages mit; während einer laufenden Sitzung steht sie klein unter dem Buchtitel.
 
 Wird eine Sitzung beendet, öffnet sich das Eintragen-Blatt. Schiebst du es weg, ohne
 einzutragen, fragt die App nach – die gelesene Zeit soll nicht stillschweigend verfallen;
@@ -163,6 +175,9 @@ sofort weggeschrieben, nicht erst beim nächsten Takt der Selbstsicherung.
 
 Ein Tipp auf **leseliste** oben links führt aus jeder Ansicht zurück auf die Liste;
 steht man schon dort, geht es nach oben.
+
+Unten stehen **Liste**, **Stöbern**, **Notizen** und **Mehr**; *Stöbern* öffnet dabei
+keine Ansicht, sondern die eigene Ebene.
 
 Wischen führt durch die App: nach links zur nächsten Ansicht, nach rechts zurück
 beziehungsweise aus einer geöffneten Ansicht heraus. Blätter von unten lassen sich

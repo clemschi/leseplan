@@ -6,6 +6,11 @@
 <meta name="theme-color" content="#0c0e11">
 <meta name="color-scheme" content="dark light">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<!-- Legt man die Seite auf den Startbildschirm, startet sie damit ohne Browserleisten. -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="leseliste">
+<meta name="application-name" content="leseliste">
 <!-- Erzeugt aus leseplan.html - nicht von Hand bearbeiten, sondern: node build.js -->
 <title>leseliste</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -142,10 +147,16 @@ p{margin:0;}
   box-shadow:var(--shadow);transition:border-color .25s ease;
 }
 .nowbar-inner.laeuft{border-color:color-mix(in srgb,var(--bad) 72%,var(--border));}
+.nowbar-inner.fertig{border-color:color-mix(in srgb,var(--good) 60%,var(--border));}
+.nowbar-inner.fertig .nt{color:var(--good);}
 .nowbar-inner.laeuft .uhr{color:var(--bad);}
 .nowbar .grow{flex:1;min-width:0;}
-.nowbar .nt{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.nowbar .nm{font-size:10.5px;color:var(--text-3);margin-top:2px;display:block;}
+/* display:block ist nötig – an einem Inline-Element greift overflow nicht,
+   der Titel lief sonst über die Uhr. */
+.nowbar .nt{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nowbar .nm{font-size:10.5px;color:var(--text-3);margin-top:2px;display:block;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nowbar .uhr,.nowbar .btn{flex:0 0 auto;}
 .nowbar .uhr{font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--accent);font-variant-numeric:tabular-nums;}
 main{padding-bottom:calc(var(--tabh, 58px) + 38px);}
 body.hat-nowbar main{padding-bottom:calc(var(--tabh, 58px) + 96px);}
@@ -506,6 +517,25 @@ body.voll .cam{padding-top:14px;}
 .opt .badge{font-size:10px;padding:2px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:600;letter-spacing:.03em;}
 .opt[disabled]{opacity:.5;}
 
+/* Startbildschirm wie ein karger Homescreen: ein paar Namen auf dem Grund
+   der App, sonst nichts. Ein Tipp auf „leseliste“ öffnet sie – und derselbe
+   Tipp löst das Vollbild aus, das ohne Geste nicht zu haben ist. */
+.splash{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;
+  background:var(--bg);padding:24px 30px;}
+.splash .apps{display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+  animation:splashAuf .6s cubic-bezier(.2,.8,.3,1) both;}
+.splash .app{background:none;border:0;padding:13px 2px;font-family:inherit;font-size:17px;
+  letter-spacing:.01em;color:var(--text-2);cursor:pointer;text-align:left;line-height:1.2;}
+.splash .app.ist{color:var(--text);}
+.splash .app:active{color:var(--accent);}
+.splash .app.aus{color:var(--text-3);opacity:.5;}
+@keyframes splashAuf{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.splash .leiste{position:absolute;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom));
+  display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;padding:0 16px;}
+.splash .leiste .icon-btn{background:none;border:0;color:var(--text-3);width:34px;height:34px;}
+.splash .leiste .mehr{background:none;border:0;color:var(--text-3);font:inherit;font-size:11.5px;
+  padding:9px 8px;cursor:pointer;opacity:.75;}
+
 .toast{
   position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom));transform:translateX(-50%);
   z-index:120;background:var(--surface-3);border:1px solid var(--border-strong);color:var(--text);
@@ -604,6 +634,14 @@ body.voll .cam{padding-top:14px;}
 .stoWerk .wn{font-family:"Literata",Georgia,serif;font-size:13.5px;display:block;line-height:1.35;}
 .stoWerk .wm{font-size:11px;color:var(--text-3);margin-top:3px;display:block;}
 .stoLeer{padding:15px 12px;font-size:12.5px;color:var(--text-3);text-align:center;}
+/* Der Fortschritt im Kopf ist zugleich der Weg in die Übersicht:
+   antippen oder nach unten ziehen. */
+.fortschritt{display:block;width:100%;text-align:left;background:none;border:0;padding:0 0 7px;
+  color:inherit;font:inherit;cursor:pointer;position:relative;}
+.fortschritt .griff{display:block;width:34px;height:3px;border-radius:99px;margin:7px auto 0;
+  background:var(--border-strong);opacity:.55;transition:opacity .2s ease,transform .2s ease;}
+.fortschritt:active .griff{opacity:1;transform:scaleX(1.35);}
+
 .searchbar{display:flex;gap:8px;padding:10px 14px 4px;}
 .searchbar input{flex:1;}
 
@@ -655,7 +693,7 @@ body.voll .cam{padding-top:14px;}
         <button class="icon-btn" id="btnTheme" title="Hell oder dunkel" aria-label="Hell oder dunkel umschalten"></button>
         <button class="icon-btn" id="btnVoll" title="Vollbild" aria-label="Vollbild ein oder aus" hidden></button>
       </div>
-      <div>
+      <button class="fortschritt" id="btnUebersicht" title="Übersicht" aria-label="Übersicht öffnen">
         <div class="progress-line">
           <span id="progText" class="num">0 / 0</span>
           <span id="progRight" class="num"></span>
@@ -664,7 +702,8 @@ body.voll .cam{padding-top:14px;}
           <i class="bar-read" id="barRead" style="width:0%"></i>
           <i class="bar-active" id="barActive" style="width:0%"></i>
         </div>
-      </div>
+        <span class="griff" aria-hidden="true"></span>
+      </button>
       <button class="zielrow" id="zielRow" hidden></button>
     </div>
   </header>
@@ -1210,7 +1249,52 @@ function aendern(fn) {
 /* ============================================================
    Ersteinrichtung: Speicherort festlegen
    ============================================================ */
-function setupZeigen(nurWechsel) {
+/* Der erste Bildschirm ist nur der Name der App. Alles Weitere steckt hinter
+   „Speicherort und Daten“ – wer nichts anrührt, tippt einmal und ist drin. */
+function splashZeigen() {
+  const s = $('#setup');
+  s.innerHTML = `
+    <div class="splash">
+      <div class="apps">
+        <button class="app ist" data-oeffnen>leseliste</button>
+        <button class="app aus" data-act="platzhalter">kalender</button>
+      </div>
+      <div class="leiste">
+        <button class="icon-btn" data-act="theme" title="Hell oder dunkel" aria-label="Hell oder dunkel"></button>
+        ${vollbildGeht() ? `<button class="icon-btn" data-act="voll" title="Vollbild" aria-label="Vollbild">${ICON.voll}</button>` : ''}
+        <button class="mehr" data-act="mehr">Speicherort und Daten</button>
+      </div>
+    </div>`;
+  s.hidden = false;
+  $('#app').hidden = true;
+  const themeKnopf = () => {
+    const b = $('[data-act="theme"]', s);
+    if (b) b.innerHTML = DB.einstellungen.theme === 'light' ? ICON.moon : ICON.sun;
+  };
+  themeKnopf();
+
+  s.onclick = async (e) => {
+    const b = e.target.closest('[data-act]');
+    if (b) {
+      const act = b.dataset.act;
+      if (act === 'theme') { themeUmschalten(); themeKnopf(); return; }
+      if (act === 'voll') { vollbildUmschalten(); return; }
+      if (act === 'mehr') { setupZeigen(false, true); return; }
+      if (act === 'platzhalter') { toast('Noch nichts dahinter.'); return; }
+      return;
+    }
+    if (!e.target.closest('[data-oeffnen]')) return;
+    /* Erst das Vollbild – nach einem await ist die Geste verbraucht. */
+    try { if (DB.einstellungen.vollbildStart && !vollbildAn()) vollbildUmschalten(); } catch (err) { }
+    Store.modus = 'geraet'; Store.handle = null;
+    await Store.metaSchreiben();
+    DB = normalisiere(await IDB.get('daten'));
+    await Store.sichern(true);
+    appStarten();
+  };
+}
+
+function setupZeigen(nurWechsel, ausSplash) {
   const s = $('#setup');
   const dateiDa = Store.dateiApiDa();
   s.innerHTML = `
@@ -1251,7 +1335,7 @@ function setupZeigen(nurWechsel) {
         ${dateiDa ? '<button class="btn btn-sm" data-act="import">Daten aus Datei laden</button>' : ''}
         ${nurWechsel ? '' : '<button class="btn btn-sm" data-act="stoebern">' + ICON.herz + ' Stöbern</button>'}
         ${nurWechsel ? '' : '<button class="btn btn-sm" data-act="ki">Liste von KI zusammenstellen</button>'}
-        ${nurWechsel ? '<button class="btn btn-sm btn-ghost" data-act="abbrechen">Abbrechen</button>' : ''}
+        ${(nurWechsel || ausSplash) ? '<button class="btn btn-sm btn-ghost" data-act="abbrechen">Zurück</button>' : ''}
         <button class="btn btn-sm btn-ghost" data-act="theme">Hell/Dunkel</button>
         ${vollbildGeht() ? `<button class="btn btn-sm btn-ghost" data-act="voll">${ICON.voll} Vollbild</button>` : ''}
       </div>
@@ -1265,7 +1349,10 @@ function setupZeigen(nurWechsel) {
     const act = b.dataset.act;
     if (act === 'theme') { themeUmschalten(); return; }
     if (act === 'voll') { vollbildUmschalten(); return; }
-    if (act === 'abbrechen') { s.hidden = true; $('#app').hidden = false; return; }
+    if (act === 'abbrechen') {
+      if (ausSplash) { splashZeigen(); return; }
+      s.hidden = true; $('#app').hidden = false; return;
+    }
     if (act === 'import') { importDialog(!nurWechsel); return; }
     if (act === 'ki') { kiErstellenOeffnen(); return; }
     /* Stöbern legt am Ende selbst eine leseliste an – dafür braucht es einen
@@ -1366,11 +1453,14 @@ const vollbildGeht = () => !!(document.documentElement.requestFullscreen || docu
 const vollbildAn = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function vollbildUmschalten() {
   const el = document.documentElement;
+  /* Beide Wege liefern ein Versprechen, das der Browser ablehnen darf – etwa
+     wenn keine Geste dahintersteht. Das ist kein Fehler, nur kein Vollbild. */
+  const still = p => { if (p && p.catch) p.catch(() => { }); };
   if (vollbildAn()) {
-    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    still((document.exitFullscreen || document.webkitExitFullscreen).call(document));
   } else {
     const f = el.requestFullscreen || el.webkitRequestFullscreen;
-    if (f) f.call(el, { navigationUI: 'hide' });
+    if (f) still(f.call(el, { navigationUI: 'hide' }));
   }
 }
 function vollbildKnopfMalen() {
@@ -1401,12 +1491,15 @@ function vollbildAutostart() {
 /* ============================================================
    Rahmen: Tabs, Kopfzeile
    ============================================================ */
+/* „tat“ statt Ansicht: das Stöbern ist keine Registerkarte, sondern öffnet
+   eine eigene Ebene – es steht nur der Erreichbarkeit halber in der Leiste. */
 const TABS = [
   { id: 'plan', label: 'Liste', icon: ICON.books },
-  { id: 'uebersicht', label: 'Übersicht', icon: ICON.chart },
+  { id: 'stoebern', label: 'Stöbern', icon: ICON.herz, tat: () => stoebernOeffnen() },
   { id: 'themen', label: 'Notizen', icon: ICON.tags },
   { id: 'mehr', label: 'Mehr', icon: ICON.more }
 ];
+const ANSICHTEN = TABS.filter(t => !t.tat).map(t => t.id);
 let aktiverTab = 'plan';
 
 function tabbarMalen() {
@@ -1414,7 +1507,9 @@ function tabbarMalen() {
     `<button data-tab="${t.id}" aria-selected="${t.id === aktiverTab}">${t.icon}<span>${t.label}</span></button>`).join('');
   $('#tabbar').onclick = e => {
     const b = e.target.closest('[data-tab]');
-    if (b) tabWechseln(b.dataset.tab);
+    if (!b) return;
+    const t = TABS.find(x => x.id === b.dataset.tab);
+    if (t && t.tat) t.tat(); else tabWechseln(b.dataset.tab);
   };
 }
 function tabWechseln(id) {
@@ -1426,12 +1521,14 @@ function tabWechseln(id) {
 function viewMalen() {
   const v = $('#view');
   if (aktiverTab === 'plan') planMalen(v);
-  else if (aktiverTab === 'uebersicht') uebersichtMalen(v);
   else if (aktiverTab === 'themen') notizenTabMalen(v);
   else mehrMalen(v);
   kopfMalen();
   nowbarMalen();
+  /* Liegt die Übersicht offen, wandert die Änderung gleich mit hinein. */
+  if (ueOffen) ueOffen();
 }
+let ueOffen = null;
 function kopfMalen() {
   const buecher = buecherAktiv();
   const ges = buecher.length;
@@ -1637,6 +1734,24 @@ async function boot() {
     else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   $('#saveChip').onclick = () => Store.alsDateiSichern(false);
+  $('#btnUebersicht').onclick = () => uebersichtOeffnen();
+  /* Von der Kopfzeile nach unten ziehen holt die Übersicht hervor. Die
+     Kopfzeile scrollt nicht, hier kommt sich nichts in die Quere. */
+  (() => {
+    const kopf = $('.topbar');
+    let y0 = null, x0 = 0;
+    kopf.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1 || Layers.length) { y0 = null; return; }
+      y0 = e.touches[0].clientY; x0 = e.touches[0].clientX;
+    }, { passive: true });
+    kopf.addEventListener('touchend', e => {
+      if (y0 == null) return;
+      const t = e.changedTouches[0];
+      const dy = t.clientY - y0, dx = Math.abs(t.clientX - x0);
+      y0 = null;
+      if (dy > 46 && dx < 60 && !Layers.length) uebersichtOeffnen();
+    }, { passive: true });
+  })();
 
   let meta = null;
   try { meta = await Store.metaLesen(); } catch (e) { console.warn(e); }
@@ -1658,7 +1773,7 @@ async function boot() {
     appStarten();
     return;
   }
-  setupZeigen(false);
+  splashZeigen();
 }
 
 function zugriffFreigebenZeigen() {
@@ -1930,6 +2045,10 @@ function nowbarMalen() {
   bar.hidden = false;
   document.body.classList.add('hat-nowbar');
   const t = laufenderTimer();
+  /* Was heute noch fehlt – rechnet sich aus den Sitzungen des Tages. */
+  const z = zielHeute();
+  const rest = z.ziel ? Math.max(0, z.ziel - z.gelesen) : 0;
+  const offen = !z.ziel ? '' : (rest ? 'noch ' + rest + ' S.' : 'Ziel geschafft');
 
   if (t) {
     const b = buchById(t.buchId);
@@ -1937,7 +2056,7 @@ function nowbarMalen() {
     inner.innerHTML = `
       <span class="grow">
         <span class="nt serif">${esc(b ? b.titel : 'Sitzung')}</span>
-        <span class="nm">Sitzung läuft</span>
+        <span class="nm">Sitzung läuft${offen ? ' · ' + offen : ''}</span>
       </span>
       <span class="uhr" data-uhr>00:00</span>
       <button class="btn btn-sm" data-wecker title="Lese-Wecker">${DB.einstellungen.weckerMin ? DB.einstellungen.weckerMin + '′' : '⏰'}</button>
@@ -1964,11 +2083,14 @@ function nowbarMalen() {
   } else {
     const lese = DB.buecher.filter(b => b.status === 'lese');
     const eines = lese.length === 1 ? lese[0] : null;
-    inner.className = 'nowbar-inner';
+    const kopf = !z.ziel ? (eines ? eines.titel : 'Lesen')
+      : rest ? 'Heute noch ' + rest + ' Seiten zu lesen'
+        : 'Tagesziel geschafft';
+    inner.className = 'nowbar-inner' + (z.ziel && !rest ? ' fertig' : '');
     inner.innerHTML = `
       <span class="grow">
-        <span class="nt serif">${eines ? esc(eines.titel) : 'Lesen'}</span>
-        <span class="nm">${eines ? 'aktuelles Buch' : (lese.length > 1 ? lese.length + ' Bücher angefangen' : 'Buch wählen')}</span>
+        <span class="nt serif">${esc(kopf)}</span>
+        <span class="nm">${eines ? esc(eines.titel) : (lese.length > 1 ? lese.length + ' Bücher angefangen' : 'Buch wählen')}</span>
       </span>
       <button class="btn btn-sm btn-primary" data-start>${ICON.play} Starten</button>`;
     $('[data-start]', inner).onclick = () => eines ? sitzungStarten(eines.id) : buchWaehlenFuerSitzung();
@@ -2114,9 +2236,10 @@ function ziehenZumSchliessen(sheet) {
 
 /* Wischen wie in einer App: nach rechts zurück, nach links weiter. */
 function tabVerschieben(d) {
-  const i = TABS.findIndex(t => t.id === aktiverTab);
-  const j = clamp(i + d, 0, TABS.length - 1);
-  if (j !== i) tabWechseln(TABS[j].id);
+  const i = ANSICHTEN.indexOf(aktiverTab);
+  if (i < 0) return;
+  const j = clamp(i + d, 0, ANSICHTEN.length - 1);
+  if (j !== i) tabWechseln(ANSICHTEN[j]);
 }
 (function wischNavigation() {
   let x0 = null, y0 = null, zeit = 0, gesperrt = false;
@@ -3805,14 +3928,44 @@ function monatsListe(von, bis) {
 let uebersichtAllePlaene = false;
 let uebersichtUnter = 'zahlen';
 
-function uebersichtMalen(root) {
+/* Die Übersicht liegt nicht mehr in der Tableiste, sondern hinter dem
+   Fortschritt im Kopf – antippen oder von dort nach unten ziehen. */
+function uebersichtOeffnen() {
+  if (ueOffen) return;
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">Übersicht</div>
+        <div class="ovl-sub" data-sub></div></div>
+    </div>
+    <div class="ovl-body shell" style="padding:12px 0 40px" data-body></div>`;
+  const body = $('[data-body]', node);
+  const malen = () => {
+    const bs = buecherAktiv();
+    const gel = bs.filter(b => b.status === 'gelesen').length;
+    $('[data-sub]', node).textContent = (aktiverPlan() ? aktiverPlan().name + ' · ' : '')
+      + gel + ' von ' + pl(bs.length, 'Werk', 'Werken') + ' gelesen';
+    uebersichtMalen(body, malen);
+  };
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  layerOeffnen(node, () => { ueOffen = null; });
+  ueOffen = malen;
+  malen();
+}
+
+function uebersichtMalen(root, neuMalen) {
   const unter = [['zahlen', 'Zahlen'], ['zusammen', 'Zusammenfassungen'], ['autoren', 'Autoren'], ['tage', 'Tage']];
   root.innerHTML = `
     <div class="chiprow">
       ${unter.map(([k, l]) => `<button class="chip" data-ub="${k}" aria-pressed="${uebersichtUnter === k}">${l}</button>`).join('')}
     </div>
     <div id="ueInhalt" style="margin-top:14px"></div>`;
-  $$('[data-ub]', root).forEach(c => c.onclick = () => { uebersichtUnter = c.dataset.ub; viewMalen(); });
+  $$('[data-ub]', root).forEach(c => c.onclick = () => {
+    uebersichtUnter = c.dataset.ub;
+    (neuMalen || viewMalen)();
+  });
   const ziel = $('#ueInhalt', root);
   if (uebersichtUnter === 'zahlen') zahlenMalen(ziel);
   else if (uebersichtUnter === 'zusammen') zusammenfassungenMalen(ziel);
@@ -6344,7 +6497,7 @@ function mehrMalen(root) {
     Store.modus = null; Store.handle = null; Store.dirty = false;
     Store.letzteSicherung = 0; Store.fehler = null;
     themeAnwenden();
-    setupZeigen(false);
+    splashZeigen();
     toast('Zurückgesetzt.');
   };
 }
