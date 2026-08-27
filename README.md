@@ -45,7 +45,8 @@ Wort für Wort an einem festen Punkt: das Auge bleibt stehen, der Text läuft. V
   Zeilenumbrüche aus Dateien werden als Layout behandelt: getrennte Wörter wachsen wieder
   zusammen, Kopf- und Fusszeilen fliegen raus.
 - **Lesen** – ein Wort zwischen zwei Strichen, mittig, in immer derselben Größe. Der
-  Buchstabe am Blickpunkt ist rot – er sitzt nicht in der Wortmitte, sondern etwas davor,
+  Buchstabe am Blickpunkt ist rot, und die beiden Markierungen an den Strichen wandern mit
+  ihm – er sitzt nicht in der Wortmitte, sondern etwas davor,
   wo das Auge ein Wort tatsächlich erfasst. **Sobald gelesen wird, versinkt alles andere:**
   Kopfzeile, Leisten, Striche und Kontext gehen langsam in den Grund über, bis nur noch das
   Wort samt seinen Strichen dasteht. Es sitzt dabei genau in der Bildmitte – waagerecht

@@ -724,7 +724,7 @@ body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
 .frzeiger{width:100%;max-width:680px;position:relative;}
 .frbuehne .frkontext{position:absolute;left:14px;right:14px;top:calc(50% + 96px);margin:0 auto;}
 .frstrich{display:block;height:1px;background:var(--border);position:relative;}
-.frstrich::after{content:'';position:absolute;left:50%;top:-6px;width:1px;height:6px;background:var(--bad);}
+.frstrich::after{content:'';position:absolute;left:var(--fixx,50%);top:-6px;width:1px;height:6px;background:var(--bad);}
 .frstrich.unten::after{top:0;}
 /* Ein Schriftgrad für alle Wörter, immer mittig. Der Buchstabe am Blickpunkt
    bleibt rot – er markiert die Stelle, nicht die Ausrichtung. */
@@ -3909,6 +3909,15 @@ function frWortMalen() {
   punkt.textContent = t.w[k] || '';
   nach.textContent = t.w.slice(k + 1);
   wort.style.fontSize = FDB.einstellungen.groesse + 'px';
+  /* Die beiden Striche stehen über und unter dem roten Buchstaben – sie
+     wandern also mit ihm, während das Wort mittig bleibt. */
+  const zeiger = wort.parentElement;
+  if (zeiger) {
+    const rz = zeiger.getBoundingClientRect();
+    const rp = punkt.getBoundingClientRect();
+    const x = rp.width ? (rp.left + rp.width / 2 - rz.left) : rz.width / 2;
+    zeiger.style.setProperty('--fixx', clamp(x, 0, rz.width).toFixed(1) + 'px');
+  }
 }
 
 function frPultMalen() {
