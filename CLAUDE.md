@@ -1,12 +1,20 @@
-# Arbeitsregeln für diese Datei
+# Arbeitsregeln für dieses Verzeichnis
 
-**Vor dem ersten Suchen in `mylife.src.html`: `KARTE.md` lesen.** Dort steht,
-welcher Abschnitt wo liegt und wie er heisst – das erspart das Durchsuchen von
-10.000 Zeilen.
+**Vor dem ersten Suchen: `KARTE.md` lesen.** Dort steht, in welchem Baustein
+etwas liegt – dann wird nur der geöffnet, nicht die ganze App.
 
 ## Aufbau
-- Quelle ist immer `mylife.src.html`. `node build.js` schreibt daraus `mylife.html`
-  (eine Datei, alles darin). `mylife.html` niemals von Hand bearbeiten.
+- Quelle sind die Bausteine unter `src/`: `src/kopf.html`, `src/rumpf.html`,
+  `src/stil/*.css`, `src/js/*.js`. `node build.js` setzt sie in der in
+  `build.js` festgelegten Reihenfolge zu `mylife.html` zusammen (eine Datei,
+  alles darin). `mylife.html` niemals von Hand bearbeiten.
+- **Nur den Baustein öffnen, um den es geht.** Gesucht wird mit `grep` über
+  `src/` – der Dateiname im Treffer sagt schon, wo man ist.
+- Alle Bausteine landen in **einem** `<script>`: gemeinsamer Namensraum, keine
+  Module, keine Importe. Die Reihenfolge in `build.js` ist die Ausführungs-
+  reihenfolge – ein `const` ganz unten steht oben noch nicht bereit.
+- Ein neuer Abschnitt wird eine neue Datei und ein Eintrag in `build.js`;
+  bestehende Dateien wachsen nicht über etwa 1000 Zeilen hinaus.
 - Kommentare und Oberfläche auf Deutsch, im Ton des übrigen Codes.
 
 ## Antworten

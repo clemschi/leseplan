@@ -12,7 +12,7 @@ Kalender eine `kalender.json`, der fastreader eine `fastreader.json`, g’sund e
 getrennte Speicherorte, getrennte Sicherung. Was allen gemeinsam ist, sind Hell/Dunkel, Akzentfarbe und Vollbild; die
 gehören der Hülle und gelten überall.
 
-Gebaut wird mit `node build.js` aus `mylife.src.html`.
+Gebaut wird mit `node build.js` aus den Bausteinen unter `src/`.
 
 ## kalender
 
@@ -101,9 +101,9 @@ Vier Reiter in der Fussleiste:
 
 | Datei | Wofür |
 |---|---|
-| `mylife.src.html` | Alle Apps. Quelle der Wahrheit, ohne Dokumentrahmen. |
+| `src/` | Alle Apps in Bausteinen: `kopf.html`, `rumpf.html`, `stil/*.css`, `js/*.js`. Quelle der Wahrheit. Welcher Baustein was enthält, steht in `KARTE.md`. |
 | `mylife.html` | Daraus erzeugt: eigenständige Seite zum lokalen Öffnen. **Nicht von Hand bearbeiten.** |
-| `build.js` | Erzeugt `mylife.html` aus `mylife.src.html`: `node build.js` |
+| `build.js` | Setzt `src/` zu `mylife.html` zusammen: `node build.js`. Die Reihenfolge der Bausteine steht hier. |
 | `leseplan-katalog.json` | Die leseliste „Lesestart": 14 Blöcke, 66 Bücher mit Seitenzahl, Erscheinungsjahr, Autor-Lebensdaten und Beschreibung. |
 
 ## Über der Tastatur

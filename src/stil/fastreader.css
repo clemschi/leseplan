@@ -1,0 +1,91 @@
+/* ===== fastreader: Wort für Wort an einem festen Punkt =====
+   Dieselben Marken wie überall; eigen ist nur die Anzeige selbst –
+   zwei Striche, dazwischen das Wort, der Blickpunkt in Rot. */
+.frquellen{display:grid;gap:8px;}
+.frquelle{display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:left;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;cursor:pointer;}
+.frquelle:active{border-color:var(--border-strong);}
+.frquelle .q-kopf{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);}
+.frquelle .q-kopf svg{width:15px;height:15px;color:var(--accent);}
+.frquelle .q-sub{font-size:11.5px;color:var(--text-3);}
+.frzeile{align-items:center;}
+.frzeile .grow{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.frbalken{display:block;height:3px;border-radius:99px;background:var(--surface-3);margin-top:6px;overflow:hidden;}
+.frbalken > i{display:block;height:100%;background:var(--accent);border-radius:99px;}
+.frpct{font-size:14px;color:var(--text-2);flex:0 0 auto;}
+.frpct small{font-size:9px;color:var(--text-3);margin-left:1px;}
+
+/* Die Anzeige */
+/* Die Bühne füllt das Bild und hält das Wort in seiner Mitte – waagerecht
+   wie senkrecht, unabhängig von Kopfzeile und Pult. */
+.frbuehne{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:0 14px;cursor:pointer;user-select:none;-webkit-user-select:none;}
+.frmarke{position:absolute;top:0;left:50%;transform:translateX(-50%);
+  font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);
+  opacity:0;transition:opacity .2s;pointer-events:none;}
+.frmarke.an{opacity:1;}
+.frzeiger{width:100%;max-width:680px;position:relative;}
+.frbuehne .frkontext{position:absolute;left:14px;right:14px;top:calc(50% + 96px);margin:0 auto;}
+.frstrich{display:block;height:1px;background:var(--border);position:relative;}
+.frstrich::after{content:'';position:absolute;left:var(--fixx,50%);top:-6px;width:1px;height:6px;background:var(--bad);}
+.frstrich.unten::after{top:0;}
+/* Ein Schriftgrad für alle Wörter, immer mittig. Der Buchstabe am Blickpunkt
+   bleibt rot – er markiert die Stelle, nicht die Ausrichtung. */
+.frwort{display:block;text-align:center;padding:24px 0;line-height:1.1;
+  white-space:normal;overflow-wrap:break-word;word-break:break-word;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:-.015em;}
+.frwort .w-vor,.frwort .w-punkt,.frwort .w-nach{display:inline;}
+.frwort .w-punkt{color:var(--bad);}
+.frkontext{max-width:56ch;margin:20px auto 0;text-align:center;font-size:13.5px;line-height:1.65;
+  color:var(--text-3);opacity:0;transition:opacity .22s;pointer-events:none;
+  font-family:"Literata",Georgia,serif;}
+.frkontext.an{opacity:1;}
+/* Der Übergang ins Versinken dauert; das Auftauchen geht sofort. */
+#fr .topbar,#fr .tabbar,#fr .frpult,#fr .frmarke,#fr .frkontext{
+  transition:opacity .22s ease;}
+#fr.vertieft .topbar,#fr.vertieft .tabbar,#fr.vertieft .frpult,#fr.vertieft .frmarke{
+  opacity:0;transition:opacity 1.6s ease .45s;}
+#fr.vertieft .frkontext{opacity:0;transition:opacity .5s ease;}
+
+.frkontext b{color:var(--text);font-weight:600;}
+
+/* Das Pult */
+.frpult{position:fixed;left:0;right:0;bottom:var(--tabh,58px);z-index:5;
+  background:var(--bg);border-top:1px solid var(--border);
+  padding:12px 14px 10px;}
+.frpult > *{max-width:680px;margin-left:auto;margin-right:auto;}
+.frbahn{height:4px;background:var(--surface-3);border-radius:99px;position:relative;cursor:pointer;
+  touch-action:none;margin-bottom:12px;}
+.frbahn > i{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:99px;}
+.frbahn::after{content:'';position:absolute;inset:-11px 0;}
+.frreihe{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.frplay{width:46px;height:46px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft);}
+.frplay svg{width:19px;height:19px;}
+.frspul{width:34px;height:34px;flex:0 0 auto;background:none;border:0;color:var(--text-3);}
+.frspul svg{width:17px;height:17px;}
+.frspul.vor svg{transform:rotate(180deg);}
+.frtempo{flex:1;min-width:180px;display:flex;flex-direction:column;gap:2px;}
+.frtempo .t-kopf{display:flex;align-items:baseline;gap:6px;}
+.frtempo .t-kopf b{font-size:17px;font-weight:500;}
+.frtempo .t-kopf i{font-size:9.5px;letter-spacing:.1em;color:var(--text-3);font-style:normal;}
+.frtempo .t-warm{margin-left:auto;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--bad);opacity:0;transition:opacity .2s;}
+.frtempo .t-warm.an{opacity:1;}
+.frtempo input[type=range]{width:100%;}
+.frstand{display:flex;flex-direction:column;align-items:flex-end;flex:0 0 auto;}
+.frstand .num{font-size:12.5px;color:var(--text-2);}
+.frstand .s-k{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);}
+input[type=range]{-webkit-appearance:none;appearance:none;background:none;height:22px;width:100%;margin:0;}
+input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:99px;background:var(--surface-3);}
+input[type=range]::-moz-range-track{height:3px;border-radius:99px;background:var(--surface-3);}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--accent);border:0;margin-top:-6.5px;}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:0;}
+.frkurve{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;}
+.frkurve svg{display:block;width:100%;height:56px;overflow:visible;}
+#fview{padding:18px 14px calc(var(--tabh, 58px) + 18px);overscroll-behavior-x:contain;}
+/* Der Formularrahmen um jedes Eingabefeld kommt im Layout nicht vor. */
+form.feldrahmen{display:contents;}
+

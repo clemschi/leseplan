@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="mylife">
 <meta name="application-name" content="mylife">
-<!-- Erzeugt aus mylife.src.html - nicht von Hand bearbeiten, sondern: node build.js -->
+<!-- Erzeugt aus src/ - nicht von Hand bearbeiten, sondern: node build.js -->
 <title>leseliste</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -235,7 +235,6 @@ input:focus,textarea:focus,select:focus,.zeile:focus{outline:none;border-color:v
 .zeile::-webkit-scrollbar{display:none;}
 .zeile.leer::before{content:attr(data-ph);color:var(--text-3);pointer-events:none;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
 
 /* ---------- Plan ---------- */
 .block{margin:0 12px 10px;border:1px solid var(--border);border-radius:14px;background:var(--surface);overflow:hidden;}
@@ -684,7 +683,6 @@ body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview{
 .kt-text{font-size:13px;color:var(--text);line-height:1.35;margin-top:3px;word-break:break-word;}
 .kt-kasten.fertig .kt-text{color:var(--text-3);text-decoration:line-through;}
 .kt-notiz{font-size:11.5px;color:var(--text-3);margin-top:3px;line-height:1.35;}
-.kt-frist{font-size:10px;color:var(--text-3);margin-top:3px;}
 .kspalte.anfuegen .kzeile input[type=date]{font-size:12px;}
 .kt-liste{display:flex;flex-direction:column;gap:4px;margin-top:8px;}
 .kh{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);
@@ -703,11 +701,6 @@ body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview{
 .kzeile input{flex:1;min-width:0;padding:7px 9px;font-size:12.5px;border-radius:8px;}
 .kzeile .btn{flex:0 0 auto;padding:0 10px;}
 .kzeile .btn svg{width:12px;height:12px;}
-.kt-fuss{display:flex;justify-content:flex-end;gap:1px;margin-top:6px;}
-.kt-fuss .icon-btn{width:22px;height:22px;background:none;border:0;color:var(--text-3);}
-.kt-fuss .icon-btn svg{width:11px;height:11px;}
-.kt-fuss [data-tlinks] svg{transform:rotate(-90deg);}
-.kt-fuss [data-trechts] svg{transform:rotate(-90deg);}
 .status-btn.an{border-color:var(--good);background:var(--good);color:#07120d;}
 :root[data-app-theme="light"] .status-btn.an{color:#fff;}
 .status-btn.klein{width:17px;height:17px;}
@@ -965,8 +958,6 @@ body.voll .sto-fuss{padding-bottom:calc(26px + env(safe-area-inset-bottom));}
   background:var(--border-strong);opacity:.55;transition:opacity .2s ease,transform .2s ease;}
 .fortschritt:active .griff{opacity:1;transform:scaleX(1.35);}
 
-.searchbar{display:flex;gap:8px;padding:10px 14px 4px;}
-.searchbar input{flex:1;}
 
 /* Balken in HTML: saubere Beschriftung, kein Überlauf */
 .bars{display:flex;flex-direction:column;gap:9px;}
@@ -976,7 +967,6 @@ body.voll .sto-fuss{padding-bottom:calc(26px + env(safe-area-inset-bottom));}
 .bseg{height:100%;border-radius:0 4px 4px 0;min-width:2px;}
 .bseg:first-child{border-radius:4px;}
 .bval{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-2);font-variant-numeric:tabular-nums;white-space:nowrap;}
-.axnote{font-size:11px;color:var(--text-3);margin-top:9px;}
 .hinweis{font-size:12.5px;color:var(--text-3);line-height:1.55;padding:14px 2px;}
 
 /* Leseplan-Umschalter über der Blockliste */
@@ -1779,6 +1769,111 @@ function aendern(fn) {
   Store.aendern();
 }
 
+
+/* ===== Speicherort einer Nebenapp =====
+   Kalender, fastreader und g'sund gehen denselben Weg: beim Öffnen nachsehen,
+   wo die Daten liegen – und beim ersten Mal einmal fragen. Der Weg steht hier
+   ein Mal. Jede App gibt nur ihre Angaben mit:
+     store, name, datei, lead, normalisiere, leer, starten.
+   (Die leseliste hat ihre eigene, längere Ersteinrichtung: setupZeigen.) */
+async function appSpeicherOeffnen(cfg) {
+  const store = cfg.store;
+  aktiverSpeicher = store;
+  let meta = null;
+  try { meta = await store.metaLesen(); } catch (e) { console.warn(e); }
+
+  if (meta && meta.modus === 'datei' && meta.handle) {
+    store.modus = 'datei'; store.handle = meta.handle; store.dateiname = meta.dateiname || cfg.datei;
+    if (await store.rechtePruefen(meta.handle, false)) {
+      try { store.setzen(cfg.normalisiere(await store.ladeDaten())); cfg.starten(); return; }
+      catch (e) { console.error(e); }
+    }
+    appSpeicherort(cfg, true);
+    return;
+  }
+  if (meta && meta.modus === 'geraet') {
+    store.modus = 'geraet';
+    store.setzen(cfg.normalisiere(await IDB.get(store.datenKey)));
+    cfg.starten();
+    return;
+  }
+  appSpeicherort(cfg, false);
+}
+
+function appSpeicherort(cfg, erneut) {
+  const store = cfg.store;
+  const s = $('#setup');
+  const dateiDa = store.dateiApiDa();
+  s.innerHTML = `
+    <div class="setup-inner">
+      <div class="mark serif">${cfg.name}</div>
+      ${erneut ? `<p class="lead">Der Browser hat den Zugriff auf <strong>${esc(store.dateiname)}</strong> zurückgesetzt. Einmal bestätigen, dann geht es weiter.</p>`
+      : `<p class="lead">${cfg.lead}</p>`}
+      ${dateiDa ? `
+        <button class="opt" data-sact="datei-neu">
+          <span class="on">${ICON.save} Neue Datei anlegen <span class="badge">empfohlen</span></span>
+          <span class="od">Einmal den Ort wählen – danach speichert die App still in ${cfg.datei}.</span>
+        </button>
+        <button class="opt" data-sact="datei-oeffnen">
+          <span class="on">${ICON.books} Bestehende Datei öffnen</span>
+          <span class="od">Eine ${cfg.datei} weiterführen.</span>
+        </button>` : ''}
+      <button class="opt" data-sact="geraet">
+        <span class="on">${ICON.check} Auf diesem Gerät speichern</span>
+        <span class="od">Ohne Datei-Dialog. Jederzeit als Datei sicherbar.</span>
+      </button>
+      <div style="margin-top:10px"><button class="btn btn-block btn-ghost" data-sact="zurueck">Zurück zur Startseite</button></div>
+    </div>`;
+  s.hidden = false;
+  $$('.appflaeche').forEach(x => { x.hidden = true; });
+
+  s.onclick = async (e) => {
+    const b = e.target.closest('[data-sact]');
+    if (!b || b.disabled) return;
+    const act = b.dataset.sact;
+    if (act === 'zurueck') { splashZeigen(); return; }
+    b.disabled = true;
+    try {
+      if (act === 'datei-neu' || act === 'datei-oeffnen') {
+        let handle = null;
+        if (act === 'datei-neu') {
+          handle = await window.showSaveFilePicker({
+            suggestedName: cfg.datei,
+            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+          });
+        } else {
+          const [h] = await window.showOpenFilePicker({
+            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+          });
+          handle = h;
+        }
+        if (!handle) { b.disabled = false; return; }
+        store.modus = 'datei'; store.handle = handle; store.dateiname = handle.name || cfg.datei;
+        if (act === 'datei-oeffnen') {
+          try { store.setzen(cfg.normalisiere(await store.ladeDaten())); } catch (err) { store.setzen(cfg.leer()); }
+        } else { store.setzen(cfg.leer()); }
+        await store.metaSchreiben();
+        await store.sichern(true);
+        cfg.starten();
+        return;
+      }
+      if (act === 'geraet') {
+        store.modus = 'geraet'; store.handle = null;
+        await store.metaSchreiben();
+        store.setzen(cfg.normalisiere(await IDB.get(store.datenKey)));
+        await store.sichern(true);
+        cfg.starten();
+        return;
+      }
+    } catch (err) {
+      console.warn(err);
+      if (err && err.name === 'AbortError') { b.disabled = false; return; }
+      if (err && err.name === 'SecurityError') { store.dateiGesperrt = true; appSpeicherort(cfg, false); return; }
+      toast('Das hat nicht geklappt.', 3500);
+      b.disabled = false;
+    }
+  };
+}
 /* ============================================================
    Ersteinrichtung: Speicherort festlegen
    ============================================================ */
@@ -2576,103 +2671,15 @@ function kTagEinfuegen(thema, tag) {
 }
 
 /* ---------- Öffnen und Speicherort ---------- */
-async function kalenderOeffnen() {
-  aktiverSpeicher = KStore;
-  let meta = null;
-  try { meta = await KStore.metaLesen(); } catch (e) { console.warn(e); }
-
-  if (meta && meta.modus === 'datei' && meta.handle) {
-    KStore.modus = 'datei'; KStore.handle = meta.handle; KStore.dateiname = meta.dateiname || 'kalender.json';
-    if (await KStore.rechtePruefen(meta.handle, false)) {
-      try { KDB = kalNormalisiere(await KStore.ladeDaten()); kalStarten(); return; }
-      catch (e) { console.error(e); }
-    }
-    kalSpeicherort(true);
-    return;
-  }
-  if (meta && meta.modus === 'geraet') {
-    KStore.modus = 'geraet';
-    KDB = kalNormalisiere(await IDB.get('daten-kalender'));
-    kalStarten();
-    return;
-  }
-  kalSpeicherort(false);
-}
-
-/* Derselbe Weg wie in der leseliste, nur kürzer: einmal den Ort wählen. */
-function kalSpeicherort(erneut) {
-  const s = $('#setup');
-  const dateiDa = KStore.dateiApiDa();
-  s.innerHTML = `
-    <div class="setup-inner">
-      <div class="mark serif">kalender</div>
-      ${erneut ? `<p class="lead">Der Browser hat den Zugriff auf <strong>${esc(KStore.dateiname)}</strong> zurückgesetzt. Einmal bestätigen, dann geht es weiter.</p>`
-      : `<p class="lead">Wo sollen Termine und Aufgaben liegen? Der Kalender führt eine eigene Datei – die leseliste bleibt davon unberührt.</p>`}
-      ${dateiDa ? `
-        <button class="opt" data-kact="datei-neu">
-          <span class="on">${ICON.save} Neue Datei anlegen <span class="badge">empfohlen</span></span>
-          <span class="od">Einmal den Ort wählen – danach speichert die App still in kalender.json.</span>
-        </button>
-        <button class="opt" data-kact="datei-oeffnen">
-          <span class="on">${ICON.books} Bestehende Datei öffnen</span>
-          <span class="od">Eine kalender.json weiterführen.</span>
-        </button>` : ''}
-      <button class="opt" data-kact="geraet">
-        <span class="on">${ICON.check} Auf diesem Gerät speichern</span>
-        <span class="od">Ohne Datei-Dialog. Jederzeit als Datei sicherbar.</span>
-      </button>
-      <div style="margin-top:10px"><button class="btn btn-block btn-ghost" data-kact="zurueck">Zurück zur Startseite</button></div>
-    </div>`;
-  s.hidden = false;
-  $$('.appflaeche').forEach(x => { x.hidden = true; });
-
-  s.onclick = async (e) => {
-    const b = e.target.closest('[data-kact]');
-    if (!b || b.disabled) return;
-    const act = b.dataset.kact;
-    if (act === 'zurueck') { splashZeigen(); return; }
-    b.disabled = true;
-    try {
-      if (act === 'datei-neu' || act === 'datei-oeffnen') {
-        let handle = null;
-        if (act === 'datei-neu') {
-          handle = await window.showSaveFilePicker({
-            suggestedName: 'kalender.json',
-            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
-          });
-        } else {
-          const [h] = await window.showOpenFilePicker({
-            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
-          });
-          handle = h;
-        }
-        if (!handle) { b.disabled = false; return; }
-        KStore.modus = 'datei'; KStore.handle = handle; KStore.dateiname = handle.name || 'kalender.json';
-        if (act === 'datei-oeffnen') {
-          try { KDB = kalNormalisiere(await KStore.ladeDaten()); } catch (err) { KDB = leereKal(); }
-        } else { KDB = leereKal(); }
-        await KStore.metaSchreiben();
-        await KStore.sichern(true);
-        kalStarten();
-        return;
-      }
-      if (act === 'geraet') {
-        KStore.modus = 'geraet'; KStore.handle = null;
-        await KStore.metaSchreiben();
-        KDB = kalNormalisiere(await IDB.get('daten-kalender'));
-        await KStore.sichern(true);
-        kalStarten();
-        return;
-      }
-    } catch (err) {
-      console.warn(err);
-      if (err && err.name === 'AbortError') { b.disabled = false; return; }
-      if (err && err.name === 'SecurityError') { KStore.dateiGesperrt = true; kalSpeicherort(false); return; }
-      toast('Das hat nicht geklappt.', 3500);
-      b.disabled = false;
-    }
-  };
-}
+/* Den Weg dorthin geht appSpeicherort in speicher.js für alle Nebenapps
+   gleich; hier stehen nur die Angaben des Kalenders. */
+const KORT = {
+  store: KStore, name: 'kalender', datei: 'kalender.json',
+  lead: 'Wo sollen Termine und Aufgaben liegen? Der Kalender führt eine eigene Datei – die leseliste bleibt davon unberührt.',
+  normalisiere: kalNormalisiere, leer: leereKal, starten: () => kalStarten()
+};
+function kalenderOeffnen() { return appSpeicherOeffnen(KORT); }
+function kalSpeicherort(erneut) { appSpeicherort(KORT, erneut); }
 
 /* ---------- Gerüst ---------- */
 const KTABS = [
@@ -3538,103 +3545,16 @@ function frFaktor(t, pausen) {
   return m;
 }
 
-/* ---------- Öffnen ---------- */
-async function fastreaderOeffnen() {
-  aktiverSpeicher = FStore;
-  let meta = null;
-  try { meta = await FStore.metaLesen(); } catch (e) { console.warn(e); }
-
-  if (meta && meta.modus === 'datei' && meta.handle) {
-    FStore.modus = 'datei'; FStore.handle = meta.handle; FStore.dateiname = meta.dateiname || 'fastreader.json';
-    if (await FStore.rechtePruefen(meta.handle, false)) {
-      try { FDB = frNormalisiere(await FStore.ladeDaten()); frStarten(); return; }
-      catch (e) { console.error(e); }
-    }
-    frSpeicherort(true);
-    return;
-  }
-  if (meta && meta.modus === 'geraet') {
-    FStore.modus = 'geraet';
-    FDB = frNormalisiere(await IDB.get('daten-fastreader'));
-    frStarten();
-    return;
-  }
-  frSpeicherort(false);
-}
-
-function frSpeicherort(erneut) {
-  const s = $('#setup');
-  const dateiDa = FStore.dateiApiDa();
-  s.innerHTML = `
-    <div class="setup-inner">
-      <div class="mark serif">fastreader</div>
-      ${erneut ? `<p class="lead">Der Browser hat den Zugriff auf <strong>${esc(FStore.dateiname)}</strong> zurückgesetzt. Einmal bestätigen, dann geht es weiter.</p>`
-      : `<p class="lead">Wo sollen deine Texte und Lesezeichen liegen? Der fastreader führt eine eigene Datei – die anderen Apps bleiben davon unberührt.</p>`}
-      ${dateiDa ? `
-        <button class="opt" data-fact="datei-neu">
-          <span class="on">${ICON.save} Neue Datei anlegen <span class="badge">empfohlen</span></span>
-          <span class="od">Einmal den Ort wählen – danach speichert die App still in fastreader.json.</span>
-        </button>
-        <button class="opt" data-fact="datei-oeffnen">
-          <span class="on">${ICON.books} Bestehende Datei öffnen</span>
-          <span class="od">Eine fastreader.json weiterführen.</span>
-        </button>` : ''}
-      <button class="opt" data-fact="geraet">
-        <span class="on">${ICON.check} Auf diesem Gerät speichern</span>
-        <span class="od">Ohne Datei-Dialog. Jederzeit als Datei sicherbar.</span>
-      </button>
-      <div style="margin-top:10px"><button class="btn btn-block btn-ghost" data-fact="zurueck">Zurück zur Startseite</button></div>
-    </div>`;
-  s.hidden = false;
-  $$('.appflaeche').forEach(x => { x.hidden = true; });
-
-  s.onclick = async (e) => {
-    const b = e.target.closest('[data-fact]');
-    if (!b || b.disabled) return;
-    const act = b.dataset.fact;
-    if (act === 'zurueck') { splashZeigen(); return; }
-    b.disabled = true;
-    try {
-      if (act === 'datei-neu' || act === 'datei-oeffnen') {
-        let handle = null;
-        if (act === 'datei-neu') {
-          handle = await window.showSaveFilePicker({
-            suggestedName: 'fastreader.json',
-            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
-          });
-        } else {
-          const [h] = await window.showOpenFilePicker({
-            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
-          });
-          handle = h;
-        }
-        if (!handle) { b.disabled = false; return; }
-        FStore.modus = 'datei'; FStore.handle = handle; FStore.dateiname = handle.name || 'fastreader.json';
-        if (act === 'datei-oeffnen') {
-          try { FDB = frNormalisiere(await FStore.ladeDaten()); } catch (err) { FDB = leereFr(); }
-        } else { FDB = leereFr(); }
-        await FStore.metaSchreiben();
-        await FStore.sichern(true);
-        frStarten();
-        return;
-      }
-      if (act === 'geraet') {
-        FStore.modus = 'geraet'; FStore.handle = null;
-        await FStore.metaSchreiben();
-        FDB = frNormalisiere(await IDB.get('daten-fastreader'));
-        await FStore.sichern(true);
-        frStarten();
-        return;
-      }
-    } catch (err) {
-      console.warn(err);
-      if (err && err.name === 'AbortError') { b.disabled = false; return; }
-      if (err && err.name === 'SecurityError') { FStore.dateiGesperrt = true; frSpeicherort(false); return; }
-      toast('Das hat nicht geklappt.', 3500);
-      b.disabled = false;
-    }
-  };
-}
+/* ---------- Öffnen und Speicherort ---------- */
+/* Den Weg dorthin geht appSpeicherort in speicher.js für alle Nebenapps
+   gleich; hier stehen nur die Angaben des fastreaders. */
+const FRORT = {
+  store: FStore, name: 'fastreader', datei: 'fastreader.json',
+  lead: 'Wo sollen deine Texte und Lesezeichen liegen? Der fastreader führt eine eigene Datei – die anderen Apps bleiben davon unberührt.',
+  normalisiere: frNormalisiere, leer: leereFr, starten: () => frStarten()
+};
+function fastreaderOeffnen() { return appSpeicherOeffnen(FRORT); }
+function frSpeicherort(erneut) { appSpeicherort(FRORT, erneut); }
 
 /* ---------- Gerüst ---------- */
 const FTABS = [
@@ -4522,103 +4442,16 @@ const GICON = {
   drehen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5A8 8 0 0 0 6.3 6.3L4 8.5"/><path d="M4 4.5v4h4"/><path d="M4 12.5A8 8 0 0 0 17.7 17.7L20 15.5"/><path d="M20 19.5v-4h-4"/></svg>'
 };
 
-/* ---------- Öffnen ---------- */
-async function gsundOeffnen() {
-  aktiverSpeicher = GStore;
-  let meta = null;
-  try { meta = await GStore.metaLesen(); } catch (e) { console.warn(e); }
-
-  if (meta && meta.modus === 'datei' && meta.handle) {
-    GStore.modus = 'datei'; GStore.handle = meta.handle; GStore.dateiname = meta.dateiname || 'gsund.json';
-    if (await GStore.rechtePruefen(meta.handle, false)) {
-      try { GDB = gsNormalisiere(await GStore.ladeDaten()); gsStarten(); return; }
-      catch (e) { console.error(e); }
-    }
-    gsSpeicherort(true);
-    return;
-  }
-  if (meta && meta.modus === 'geraet') {
-    GStore.modus = 'geraet';
-    GDB = gsNormalisiere(await IDB.get('daten-gsund'));
-    gsStarten();
-    return;
-  }
-  gsSpeicherort(false);
-}
-
-function gsSpeicherort(erneut) {
-  const s = $('#setup');
-  const dateiDa = GStore.dateiApiDa();
-  s.innerHTML = `
-    <div class="setup-inner">
-      <div class="mark serif">g&rsquo;sund</div>
-      ${erneut ? `<p class="lead">Der Browser hat den Zugriff auf <strong>${esc(GStore.dateiname)}</strong> zurückgesetzt. Einmal bestätigen, dann geht es weiter.</p>`
-      : `<p class="lead">Wo soll g&rsquo;sund seine Sachen ablegen? Auch diese App führt eine eigene Datei – die anderen bleiben davon unberührt.</p>`}
-      ${dateiDa ? `
-        <button class="opt" data-gact="datei-neu">
-          <span class="on">${ICON.save} Neue Datei anlegen <span class="badge">empfohlen</span></span>
-          <span class="od">Einmal den Ort wählen – danach speichert die App still in gsund.json.</span>
-        </button>
-        <button class="opt" data-gact="datei-oeffnen">
-          <span class="on">${ICON.books} Bestehende Datei öffnen</span>
-          <span class="od">Eine gsund.json weiterführen.</span>
-        </button>` : ''}
-      <button class="opt" data-gact="geraet">
-        <span class="on">${ICON.check} Auf diesem Gerät speichern</span>
-        <span class="od">Ohne Datei-Dialog. Jederzeit als Datei sicherbar.</span>
-      </button>
-      <div style="margin-top:10px"><button class="btn btn-block btn-ghost" data-gact="zurueck">Zurück zur Startseite</button></div>
-    </div>`;
-  s.hidden = false;
-  $$('.appflaeche').forEach(x => { x.hidden = true; });
-
-  s.onclick = async (e) => {
-    const b = e.target.closest('[data-gact]');
-    if (!b || b.disabled) return;
-    const act = b.dataset.gact;
-    if (act === 'zurueck') { splashZeigen(); return; }
-    b.disabled = true;
-    try {
-      if (act === 'datei-neu' || act === 'datei-oeffnen') {
-        let handle = null;
-        if (act === 'datei-neu') {
-          handle = await window.showSaveFilePicker({
-            suggestedName: 'gsund.json',
-            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
-          });
-        } else {
-          const [h] = await window.showOpenFilePicker({
-            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
-          });
-          handle = h;
-        }
-        if (!handle) { b.disabled = false; return; }
-        GStore.modus = 'datei'; GStore.handle = handle; GStore.dateiname = handle.name || 'gsund.json';
-        if (act === 'datei-oeffnen') {
-          try { GDB = gsNormalisiere(await GStore.ladeDaten()); } catch (err) { GDB = leereGs(); }
-        } else { GDB = leereGs(); }
-        await GStore.metaSchreiben();
-        await GStore.sichern(true);
-        gsStarten();
-        return;
-      }
-      if (act === 'geraet') {
-        GStore.modus = 'geraet'; GStore.handle = null;
-        await GStore.metaSchreiben();
-        GDB = gsNormalisiere(await IDB.get('daten-gsund'));
-        await GStore.sichern(true);
-        gsStarten();
-        return;
-      }
-    } catch (err) {
-      console.warn(err);
-      if (err && err.name === 'AbortError') { b.disabled = false; return; }
-      if (err && err.name === 'SecurityError') { GStore.dateiGesperrt = true; gsSpeicherort(false); return; }
-      toast('Das hat nicht geklappt.', 3500);
-      b.disabled = false;
-    }
-  };
-}
+/* ---------- Öffnen und Speicherort ---------- */
+/* Den Weg dorthin geht appSpeicherort in speicher.js für alle Nebenapps
+   gleich; hier stehen nur die Angaben von g'sund. */
+const GORT = {
+  store: GStore, name: 'g&rsquo;sund', datei: 'gsund.json',
+  lead: 'Wo soll g&rsquo;sund seine Sachen ablegen? Auch diese App führt eine eigene Datei – die anderen bleiben davon unberührt.',
+  normalisiere: gsNormalisiere, leer: leereGs, starten: () => gsStarten()
+};
+function gsundOeffnen() { return appSpeicherOeffnen(GORT); }
+function gsSpeicherort(erneut) { appSpeicherort(GORT, erneut); }
 
 /* ---------- Gerüst ---------- */
 const GTABS = [
@@ -5693,23 +5526,32 @@ function layerOeffnen(node, onClose) {
    Jeder Aufruf von back() oder go() meldet genau ein popstate; solange eines
    aussteht, stammt es von uns und nicht von der Zurück-Taste. */
 let zurueckOffen = 0;
+/* Wie viele eigene Marken über der App im Verlauf liegen. Jede Ebene legt beim
+   Öffnen ihre Nummer in den Zustand; ohne Zustand steht nichts von uns darüber.
+   Weiter zurück als bis hierher darf niemand springen – ein Sprung darüber
+   hinaus verlässt die Seite, und die App ist weg. */
+const verlaufTiefe = () => (history.state && +history.state.layer) || 0;
 function layerSchliessen() {
   if (!Layers.length) return;
   /* Sofort aus dem DOM: sonst schließt das später eintreffende popstate eine
      Ebene, die inzwischen darüber geöffnet wurde – etwa wenn aus der
      Buchauswahl heraus gleich die Timer-Frage aufgeht. */
   layerPop();
+  if (!verlaufTiefe()) return;    /* keine eigene Marke: nichts zurückzuspulen */
   zurueckOffen++;
   try { history.back(); } catch (e) { zurueckOffen--; }
 }
-/* Alle offenen Ebenen auf einmal zu; der Verlauf wird danach zurückgespult. */
+/* Alle offenen Ebenen auf einmal zu; der Verlauf wird danach zurückgespult –
+   höchstens aber bis zur App selbst. */
 function alleLayerSchliessen() {
   const n = Layers.length;
   if (!n) return;
   Layers.slice().reverse().forEach(l => { l.node.remove(); if (l.onClose) l.onClose(); });
   Layers.length = 0;
+  const zurueck = Math.min(n, verlaufTiefe());
+  if (!zurueck) return;
   zurueckOffen++;
-  try { history.go(-n); } catch (e) { zurueckOffen--; }
+  try { history.go(-zurueck); } catch (e) { zurueckOffen--; }
 }
 /* Die oberste Ebene gegen eine andere tauschen, ohne den Verlauf anzufassen.
    Schliessen und gleich wieder Öffnen ginge schief: das nachlaufende popstate
@@ -5768,8 +5610,14 @@ function layerPop() {
   if (l.onClose) l.onClose();
 }
 window.addEventListener('popstate', () => {
-  if (zurueckOffen > 0) { zurueckOffen--; return; }
-  layerPop();
+  if (zurueckOffen > 0) zurueckOffen--;
+  else layerPop();
+  /* Sicherheitsnetz: nie mehr Ebenen offen halten, als Marken im Verlauf
+     stehen. Kommt der Zähler einmal aus dem Tritt – zwei Sprünge kurz
+     hintereinander –, räumt das hier auf, statt eine Ebene zurückzulassen,
+     die die Zurück-Taste nicht mehr erreicht. */
+  const tiefe = verlaufTiefe();
+  while (Layers.length > tiefe) layerPop();
 });
 
 function blatt(titel, inhalt, opts) {
@@ -7225,7 +7073,13 @@ function bildGrossMitNotiz(buch, bilder, start, neuMalen) {
   $('[data-prev]', node).onclick = () => { i = (i - 1 + bilder.length) % bilder.length; malen(); };
   $('[data-next]', node).onclick = () => { i = (i + 1) % bilder.length; malen(); };
   $('[data-zu]', node).onclick = () => layerSchliessen();
-  $('[data-notiz]', node).onclick = () => { const n = bilder[i].notiz; layerSchliessen(); notizBearbeiten(buch, n, {}, neuMalen); };
+  /* Erst schliessen, dann öffnen – aber nicht im selben Zug: das popstate des
+     Schliessens käme sonst hinterher und räumte die eben geöffnete Notiz weg. */
+  $('[data-notiz]', node).onclick = () => {
+    const n = bilder[i].notiz;
+    layerSchliessen();
+    setTimeout(() => notizBearbeiten(buch, n, {}, neuMalen), 80);
+  };
 }
 
 /* ---------- Notizliste einer Gruppe ---------- */

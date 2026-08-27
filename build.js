@@ -1,18 +1,87 @@
 #!/usr/bin/env node
 /**
- * Baut aus mylife.src.html (Fassung ohne Dokumentrahmen)
- * die eigenstaendige mylife.html zum lokalen Oeffnen.
+ * Setzt aus den Bausteinen unter src/ die eigenstaendige mylife.html zusammen.
+ * Ein Baustein ist reiner Inhalt - Stil, Markup oder Skript; die Klammern
+ * (<style>, <script>, Dokumentrahmen) kommen von hier.
  */
 const fs = require('fs');
 const path = require('path');
 
 const wurzel = __dirname;
-const inhalt = fs.readFileSync(path.join(wurzel, 'mylife.src.html'), 'utf8');
 
-const schnitt = inhalt.indexOf('</style>');
-if (schnitt < 0) throw new Error('Kein </style> gefunden – Aufbau von mylife.src.html geprueft?');
-const kopf = inhalt.slice(0, schnitt + '</style>'.length);
-const rumpf = inhalt.slice(schnitt + '</style>'.length);
+/* Die Reihenfolge ist die des Skripts: was oben steht, laeuft zuerst.
+   Ein neuer Abschnitt kommt als eigene Datei dazu und wird hier eingehaengt. */
+const KOPF = ['kopf.html'];
+const STIL = [
+  'stil/basis.css',
+  'stil/kalender.css',
+  'stil/fastreader.css',
+  'stil/gsund.css',
+  'stil/stoebern.css'
+];
+const MARKUP = ['rumpf.html'];
+const SKRIPT = [
+  'js/grundlage.js',
+  'js/datenmodell.js',
+  'js/speicher.js',
+  'js/einrichtung.js',
+  'js/erscheinung.js',
+  'js/rahmen.js',
+  'js/kalender.js',
+  'js/fastreader.js',
+  'js/gsund.js',
+  'js/sitzungen.js',
+  'js/ebenen.js',
+  'js/plan.js',
+  'js/laden.js',
+  'js/bilder.js',
+  'js/buch.js',
+  'js/diagramme.js',
+  'js/themenfelder.js',
+  'js/einkauf.js',
+  'js/prompts.js',
+  'js/stoebern.js',
+  'js/mehr.js',
+  'js/start.js'
+];
+
+const lies = name => {
+  const p = path.join(wurzel, 'src', name);
+  if (!fs.existsSync(p)) throw new Error('Baustein fehlt: src/' + name);
+  return fs.readFileSync(p, 'utf8');
+};
+const teile = liste => liste.map(lies).join('');
+
+const skript = teile(SKRIPT);
+const kopf = teile(KOPF) + '<style>\n' + teile(STIL) + '</style>';
+const rumpf = teile(MARKUP) + '<script>\n' + skript + '</script>';
+
+/* Zwei Pruefungen, bevor geschrieben wird - sie kosten nichts und ersparen
+   den Umweg ueber den Browser. */
+
+/* 1. Ist das Skript ueberhaupt gueltig? new Function baut es, fuehrt es aber
+      nicht aus: ein Tippfehler faellt hier auf, nicht erst beim Oeffnen. */
+try {
+  new Function(skript);
+} catch (e) {
+  throw new Error('Das Skript hat einen Syntaxfehler: ' + e.message);
+}
+
+/* 2. Alle Bausteine teilen sich einen Namensraum. Ein zweites "function foo"
+      ueberschreibt das erste stillschweigend - das faellt sonst erst auf,
+      wenn die falsche Ausfertigung laeuft. */
+const namen = new Map();
+SKRIPT.forEach(datei => {
+  lies(datei).split('\n').forEach((zeile, i) => {
+    const m = /^(?:async\s+)?(?:function|const|let|var)\s+([A-Za-z0-9_$]+)/.exec(zeile);
+    if (!m) return;
+    const vorher = namen.get(m[1]);
+    if (vorher) {
+      console.warn('WARNUNG: "' + m[1] + '" steht zweimal - ' + vorher
+        + ' und src/' + datei + ':' + (i + 1) + '. Der zweite gewinnt.');
+    } else namen.set(m[1], 'src/' + datei + ':' + (i + 1));
+  });
+});
 
 const seite = `<!DOCTYPE html>
 <html lang="de">
@@ -27,7 +96,7 @@ const seite = `<!DOCTYPE html>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="mylife">
 <meta name="application-name" content="mylife">
-<!-- Erzeugt aus mylife.src.html - nicht von Hand bearbeiten, sondern: node build.js -->
+<!-- Erzeugt aus src/ - nicht von Hand bearbeiten, sondern: node build.js -->
 ${kopf}
 </head>
 <body>
@@ -37,7 +106,8 @@ ${rumpf.trim()}
 `;
 
 fs.writeFileSync(path.join(wurzel, 'mylife.html'), seite);
-console.log('mylife.html geschrieben (' + Math.round(seite.length / 1024) + ' KB)');
+console.log('mylife.html geschrieben (' + Math.round(seite.length / 1024) + ' KB aus '
+  + (KOPF.length + STIL.length + MARKUP.length + SKRIPT.length) + ' Bausteinen)');
 
 /* Daneben ein Manifest. Aus einer Datei heraus meldet die Seite es gar nicht
    erst an; liegt sie aber unter einer Adresse, legt Chrome sie damit als

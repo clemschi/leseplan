@@ -1,98 +1,82 @@
 # Karte der Quelle
 
-Wegweiser durch `mylife.src.html` (rund 10.600 Zeilen, eine Datei, vier Apps).
-**Nicht nach Zeilennummern suchen – die verschieben sich.** Gesucht wird nach den
-Ankern in `«»`: das sind die Abschnittsbanner im Text, wörtlich greppbar.
+Die Quelle liegt in Bausteinen unter `src/`. `node build.js` setzt sie in dieser
+Reihenfolge zu `mylife.html` zusammen – die Reihenfolge steht in `build.js`.
 
-Aufbau der Datei: erst der `<style>`-Block, dann ein einziger `<script>`.
-`build.js` setzt Dokumentrahmen und Kopfdaten darum.
-
----
-
-## CSS (oben, bis `</style>`)
-
-| Anker | Was |
-|---|---|
-| `«Tokens:` | Farben hell und dunkel, Akzent-Tabelle `DREI` |
-| `«Kopfzeile` | `.topbar`, `.savechip`, `.kbanner` |
-| `«Tableiste` | `.tabbar` |
-| `«Bausteine` | `.list-card`, `.rowline`, `.field`, `.grid2`, `.zeile`, `.btn`, `.chip` |
-| `«Plan` | `.book`, `.blockcard` |
-| `«Overlay / Sheets` | `.overlay`, `.ovl-head`, `.sheet`, `.sheet-scrim` |
-| `«Pager` | Buchseiten |
-| `«Übersicht / Diagramme` | Graphen, Netz, Zeitstrahl |
-| `«Einrichtung` | `.splash`, `.setup-inner`, Vollbild-Regeln |
-| `«g'sund` | `.gbuehne`, `.gkarte`, `.gseite`, `.g-uhr`, `.gb-griff` |
-
-Fastreader-CSS steht ohne eigenes Banner zwischen Einrichtung und g'sund:
-`.frbuehne`, `.frwort`, `.frpult`, `.frbahn`.
+**Zuerst hier nachsehen, welcher Baustein gemeint ist, dann nur den öffnen.**
+Eine ganze App sind 900–1200 Zeilen statt 10.600.
 
 ---
 
-## JavaScript
+## Stil (`src/stil/`, wird zu einem `<style>`)
 
-### Grundlage
-| Anker / Funktion | Was |
-|---|---|
-| `«kleine Helfer` | `$`, `$$`, `uid`, `clamp`, `esc`, `pl` |
-| `«Ruhe über der Tastatur` | `feldZuZeile`, `zeilenMachen`, `feldRuhig`, `felderBeobachten` – einzeilige Felder sind `.zeile` (contenteditable), nicht `<input>` |
-| `«Toast` | `toast()` |
-| `«Sichtbarer Bereich` | `leistenHoeheMessen`, `--vvh`, `--tabh` |
-| `«Datenmodell` | `leereDb`, `normalisiere`, Statistik der leseliste |
-| `«Speicher:` | `macheSpeicher(cfg)` – eine Ausfertigung je App |
-| `«Ersteinrichtung` | `splashZeigen`, `setupZeigen`, `speicherErklaerung`, `appFlaeche`, `APPS` |
-| `«Erscheinungsbild` | `SHELL`, `shellSchreiben`, `themeAnwenden`, `alsAppGestartet`, `vollbildUmschalten`, `vollbildAutostart` |
-| `huelleEinstellungenHtml` / `…Binden` | der gemeinsame Block „Darstellung" im *Mehr* jeder App |
-| `«Los geht's` | ganz unten: `boot()` |
+| Datei | Zeilen | Was |
+|---|---|---|
+| `basis.css` | 583 | Farbtokens hell/dunkel, Akzente (`DREI`), Kopfzeile, Tableiste, Bausteine (`.list-card`, `.rowline`, `.chip`, `.field`, `.grid2`), Plan, Overlay/Sheets, Pager, Bilder, Diagramme, Einrichtung |
+| `kalender.css` | 123 | alles mit `k`-Präfix |
+| `fastreader.css` | 91 | `.frbuehne`, `.frwort`, `.frpult`, `.frbahn` |
+| `gsund.css` | 53 | `.gbuehne`, `.gkarte`, `.gseite`, `.g-uhr`, `.gb-griff` |
+| `stoebern.css` | 132 | `.sto…` – der Kartenstapel |
 
-### Ebenen und Gesten
-| Anker / Funktion | Was |
-|---|---|
-| `«Ebenen:` | `layerOeffnen`, `layerErsetzen`, `layerSchliessen`, `alleLayerSchliessen`, `blatt`, `bestaetigen` |
-| `ziehenZumSchliessen` | Blatt nach unten wegschieben |
-| `ebeneZiehen` | Vollbild-Ebene vom linken Rand wegziehen |
-| `vorhangSetzen` / `vorhangLoesen` / `vorhangHochBinden` / `unschaerfeSetzen` | Vorhang von oben (Übersicht, Vergangene) |
-| `heimZiehen` | App nach rechts schieben → Startbildschirm; enthält die Tabu-Liste |
-| `ziehenZumSortieren` | langes Drücken zum Verschieben |
-| `wischNavigation` | quer durch die Reiter der leseliste |
+## Markup
 
-### leseliste (Rumpf `#app`)
-`«Plan`, `«Buchansicht:`, `«Seite 4: Lesen`, `«Diagramme`, `«Themenfelder`,
-`«Suche über alles`, `«Einkaufsliste`, `«KI-Prompts`, `«Stöbern, Teil 1`,
-`«Stöbern, Teil 2`, `«Mehr:`, `«Lese-Sitzungen`, `«Bilder:`, `«Daten laden`.
-Einstieg: `leselisteOeffnen` → `appStarten` → `viewMalen`.
+| Datei | Zeilen | Was |
+|---|---|---|
+| `kopf.html` | 4 | Titel und Schriften |
+| `rumpf.html` | 109 | `#setup` und die vier Rümpfe `#app`, `#kal`, `#fr`, `#gs`, dazu `#layers` |
 
-### kalender (Rumpf `#kal`, Präfix `k`)
-Banner `«Kalender – die zweite App`. `kalenderOeffnen` → `kalStarten` → `kViewMalen`.
-`«Tage rechnen` (`kDatum`, `kTagText`, `kFaelltAuf`), `«Heute` (`kHeuteMalen`),
-`«Kalender: das Monatsblatt` (`kMonatMalen`, `kMonatZiehen`, `kTagBlatt`),
-`«To-Do` (`kTodoMalen`, `kThemaHtml`, `kTagBearbeiten`) – Thema → Tag → Tätigkeit.
+## Skript (`src/js/`, wird zu einem `<script>`)
 
-### fastreader (Rumpf `#fr`, Präfix `fr`/`f`)
-Banner `«fastreader – die dritte App`. `fastreaderOeffnen` → `frStarten` → `fViewMalen`.
-`«Text aufbereiten` (`frZerlegen`, `frFixpunkt`, `frFaktor`),
-`«Bibliothek`, `«Text hereinholen` (`frDocx`, `frPdf`, `frUrl`),
-`«Lesen` (`frTakt`, `frWortMalen`, `frVertiefen`, `frBahnZiehen`), `«Bilanz`.
+Grundlage – gilt für alle Apps:
 
-### g'sund (Rumpf `#gs`, Präfix `g`)
-Banner `«g'sund – die vierte App`. `gsundOeffnen` → `gsStarten` → `gViewMalen`.
-`«Der Countdown` (`gZiel`, `gRest`, `gUhrLaufen`),
-`«Guzi: die Karte` (`gGuziMalen`, `gKarteZiehen`, `gKarteAblegen`),
-`«Die Vergangenen` (`gVergangenOeffnen`, `gZurueckholen`, `gVorhangBinden`),
-`«Puzzle und Bald` – noch leer.
+| Datei | Zeilen | Was |
+|---|---|---|
+| `grundlage.js` | 248 | `$`, `$$`, `uid`, `clamp`, `esc`, `pl`; Ruhe über der Tastatur (`felderBeobachten`, `.zeile` statt `<input>`); `toast()`; sichtbarer Bereich (`--vvh`, `--tabh`) |
+| `datenmodell.js` | 215 | `leereDb`, `normalisiere`, `DB`, Zugriffe und Statistik der leseliste |
+| `speicher.js` | 204 | `IDB`, `macheSpeicher(cfg)`, `Store` |
+| `einrichtung.js` | 287 | `setupZeigen`, `huelleEinstellungenHtml/…Binden`, `splashZeigen`, `APPS`, `appFlaeche` |
+| `erscheinung.js` | 115 | `SHELL`, `shellSchreiben`, `themeAnwenden`, Vollbild |
+| `rahmen.js` | 234 | `TABS`, `tabbarMalen`, `viewMalen`, Kopfzeile, Einführung, `appStarten` |
+| `ebenen.js` | 380 | `layerOeffnen/…Schliessen/alleLayerSchliessen/layerErsetzen`, `verlaufTiefe`, `blatt`, `bestaetigen`, `ziehenZumSchliessen`, `ebeneZiehen`, `vorhang…`, `heimZiehen`, `globalKnoepfe…` |
+| `start.js` | 11 | `boot()` |
+
+Die vier Apps:
+
+| Datei | Zeilen | Was |
+|---|---|---|
+| `kalender.js` | 980 | `KDB`, `KStore`, `kalenderOeffnen` → `kViewMalen`; Tage rechnen, Heute, Monatsblatt (`kMonatZiehen`), To-Do, Mehr |
+| `fastreader.js` | 1066 | `FDB`, `FStore`, `fastreaderOeffnen`; Text aufbereiten (`frZerlegen`), Bibliothek, Hereinholen (`frDocx`, `frPdf`, `frUrl`), Lesen (`frTakt`, `frBahnZiehen`), Bilanz |
+| `gsund.js` | 907 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Vergangene; Puzzle und Bald sind leer |
+
+leseliste – der Rest, nach Aufgaben getrennt:
+
+| Datei | Zeilen | Was |
+|---|---|---|
+| `plan.js` | 627 | Listen, Blöcke, Bücher: anlegen, ordnen, verschieben |
+| `buch.js` | 676 | Buchansicht (Beschreibung, Themen, Arten), Seite „Lesen“, Notizen |
+| `diagramme.js` | 1214 | Übersicht, Graphen, Autorennetz, Zeitstrahl |
+| `stoebern.js` | 903 | Prompt für eine Sammlung und die App in der App (`ziehenBinden`) |
+| `sitzungen.js` | 308 | Stoppuhr, laufende und vergangene Sitzungen |
+| `mehr.js` | 263 | Speicherort, Arten, Sicherung |
+| `themenfelder.js` | 257 | Themenfelder über alle Bücher, Suche über alles |
+| `prompts.js` | 235 | KI-Prompts zum Erstellen und Bewerten |
+| `einkauf.js` | 187 | Was fehlt und was als Nächstes drankommt |
+| `bilder.js` | 133 | aufnehmen, wählen, verkleinern |
+| `laden.js` | 111 | ganze Liste ersetzen oder ergänzen |
 
 ---
 
 ## Wo suche ich was?
 
-| Frage | Anker |
+| Frage | Wo |
 |---|---|
-| Wo wird gespeichert? | `macheSpeicher`, `IDB`, Schlüssel `daten-*` / `meta-*` |
-| Warum springt die Tastatur auf? | `blatt(` – Fokus nur bei `{ fokus: true }` |
-| Wie kommt eine App in die Fussleiste? | `TABS`, `KTABS`, `FTABS`, `GTABS` |
+| Wo wird gespeichert? | `js/speicher.js`, Schlüssel `daten-*` / `meta-*` |
+| Warum springt die Tastatur auf? | `js/ebenen.js`, `blatt(` – Fokus nur bei `{ fokus: true }` |
+| Wie kommt eine App in die Fussleiste? | `TABS` in `js/rahmen.js`, `KTABS`/`FTABS`/`GTABS` in der jeweiligen App |
 | Wo hängt ein Wisch? | `window.__zieht` – wer ihn setzt, hat den Zug |
 | Warum sieht ein Knopf überall gleich aus? | `globalKnoepfeHtml`, `saveChipMalen` |
-| Neue App anlegen? | `APPS`, `appFlaeche`, ein `macheSpeicher`, ein Rumpf mit `.appflaeche` |
+| Warum verschwindet die Seite beim Zurück? | `verlaufTiefe()` in `js/ebenen.js` – weiter zurück als bis zur App darf niemand |
+| Neue App anlegen? | `APPS` und `appFlaeche` in `js/einrichtung.js`, ein `macheSpeicher`, ein Rumpf in `rumpf.html`, eine neue Datei unter `js/` und ein Eintrag in `build.js` |
 
 ## Stand
 
@@ -104,5 +88,4 @@ folgen noch. Ebenso der dritte Reiter **Bald**.
 
 `getBoundingClientRect()` für Masse, `getComputedStyle()` für Farben und
 `transform`, `DOMMatrixReadOnly` für Winkel. Testskripte liegen im
-Scratchpad-Verzeichnis der Sitzung; die Startbausteine heissen `helper.js`
-(leseliste), `kal.js`, `fr.js`, `gs.js`.
+Scratchpad-Verzeichnis der Sitzung.

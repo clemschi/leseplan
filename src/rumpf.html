@@ -1,0 +1,109 @@
+<div id="setup" class="setup" hidden></div>
+
+<div id="app" class="appflaeche" hidden>
+  <header class="topbar">
+    <div class="topbar-inner shell">
+      <div class="topbar-row">
+        <button class="brand" id="btnHeim" title="Zur Liste" aria-label="Zur Liste">
+          <h1>leseliste</h1>
+        </button>
+        <button class="savechip" id="saveChip" data-gsave data-state="clean" title="Jetzt sichern"><span class="dot"></span><span class="st">gesichert</span></button>
+        <button class="icon-btn" id="btnSuche" title="Suchen" aria-label="Suchen"></button>
+        <button class="icon-btn" id="btnTheme" title="Hell oder dunkel" aria-label="Hell oder dunkel umschalten"></button>
+        <button class="icon-btn" id="btnVoll" title="Vollbild" aria-label="Vollbild ein oder aus" hidden></button>
+        <button class="icon-btn" id="btnRaus" title="Zur Startseite" aria-label="Zur Startseite"></button>
+      </div>
+      <button class="fortschritt" id="btnUebersicht" title="Übersicht" aria-label="Übersicht öffnen">
+        <div class="progress-line">
+          <span id="progText" class="num">0 / 0</span>
+          <span id="progRight" class="num"></span>
+        </div>
+        <div class="barwrap" style="margin-top:6px">
+          <i class="bar-read" id="barRead" style="width:0%"></i>
+          <i class="bar-active" id="barActive" style="width:0%"></i>
+        </div>
+        <span class="griff" aria-hidden="true"></span>
+      </button>
+      <button class="zielrow" id="zielRow" hidden></button>
+    </div>
+  </header>
+
+  <main id="view" class="shell"></main>
+
+  <div class="nowbar" id="nowbar" hidden><div class="nowbar-inner" id="nowbarInner"></div></div>
+
+  <nav class="tabbar">
+    <div class="tabbar-inner" id="tabbar"></div>
+  </nav>
+</div>
+
+<div id="kal" class="appflaeche" hidden>
+  <header class="topbar">
+    <div class="topbar-inner shell">
+      <div class="topbar-row">
+        <button class="brand" id="kBrand" title="Zu Heute" aria-label="Zu Heute">
+          <h1>kalender</h1>
+        </button>
+        <button class="savechip" id="kSaveChip" data-state="clean" title="Jetzt sichern"><span class="dot"></span><span class="st">gesichert</span></button>
+        <button class="icon-btn" id="kBtnTheme" title="Hell oder dunkel" aria-label="Hell oder dunkel umschalten"></button>
+        <button class="icon-btn" id="kBtnVoll" title="Vollbild" aria-label="Vollbild ein oder aus" hidden></button>
+        <button class="icon-btn" id="kBtnRaus" title="Zur Startseite" aria-label="Zur Startseite"></button>
+      </div>
+      <div class="kbanner" id="kBanner"></div>
+    </div>
+  </header>
+
+  <main id="kview" class="shell"></main>
+
+  <nav class="tabbar">
+    <div class="tabbar-inner" id="ktabbar"></div>
+  </nav>
+</div>
+
+<div id="fr" class="appflaeche" hidden>
+  <header class="topbar">
+    <div class="topbar-inner shell">
+      <div class="topbar-row">
+        <button class="brand" id="fBrand" title="Zur Bibliothek" aria-label="Zur Bibliothek">
+          <h1>fastreader</h1>
+        </button>
+        <button class="savechip" id="fSaveChip" data-state="clean" title="Jetzt sichern"><span class="dot"></span><span class="st">gesichert</span></button>
+        <button class="icon-btn" id="fBtnTheme" title="Hell oder dunkel" aria-label="Hell oder dunkel umschalten"></button>
+        <button class="icon-btn" id="fBtnVoll" title="Vollbild" aria-label="Vollbild ein oder aus" hidden></button>
+        <button class="icon-btn" id="fBtnRaus" title="Zur Startseite" aria-label="Zur Startseite"></button>
+      </div>
+      <div class="kbanner" id="fBanner"></div>
+    </div>
+  </header>
+
+  <main id="fview" class="shell"></main>
+
+  <nav class="tabbar">
+    <div class="tabbar-inner" id="ftabbar"></div>
+  </nav>
+</div>
+
+<div id="gs" class="appflaeche" hidden>
+  <header class="topbar">
+    <div class="topbar-inner shell">
+      <div class="topbar-row">
+        <button class="brand" id="gBrand" title="Zu Guzi" aria-label="Zu Guzi">
+          <h1>g&rsquo;sund</h1>
+        </button>
+        <button class="savechip" id="gSaveChip" data-state="clean" title="Jetzt sichern"><span class="dot"></span><span class="st">gesichert</span></button>
+        <button class="icon-btn" id="gBtnTheme" title="Hell oder dunkel" aria-label="Hell oder dunkel umschalten"></button>
+        <button class="icon-btn" id="gBtnVoll" title="Vollbild" aria-label="Vollbild ein oder aus" hidden></button>
+        <button class="icon-btn" id="gBtnRaus" title="Zur Startseite" aria-label="Zur Startseite"></button>
+      </div>
+      <div class="kbanner" id="gBanner"></div>
+    </div>
+  </header>
+
+  <main id="gview" class="shell"></main>
+
+  <nav class="tabbar">
+    <div class="tabbar-inner" id="gtabbar"></div>
+  </nav>
+</div>
+
+<div id="layers"></div>

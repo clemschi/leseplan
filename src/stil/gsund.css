@@ -1,0 +1,53 @@
+/* ---------- g'sund ---------- */
+#gview{padding:18px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
+/* Die Bühne gibt der Karte Tiefe; ohne Perspektive bliebe die Drehung flach. */
+.gbuehne{max-width:560px;margin:8px auto 0;perspective:1400px;}
+.gkarte{position:relative;width:100%;min-height:min(58vh,404px);
+  transform-style:preserve-3d;transform-origin:50% 50%;
+  transition:transform .55s cubic-bezier(.2,.8,.25,1),opacity .28s ease;
+  touch-action:none;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.gseite{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;gap:6px;
+  padding:30px 22px 38px;border-radius:22px;border:1px solid var(--border);
+  background:var(--surface);box-shadow:var(--shadow);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;}
+.gseite.hinten{transform:rotateY(180deg);
+  background:linear-gradient(160deg,var(--accent-soft),var(--surface) 55%);}
+/* Ein feiner Schimmer, damit die Seiten beim Drehen auseinanderzuhalten sind. */
+.gseite::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.65;}
+.g-titel{font-size:21px;line-height:1.28;font-weight:500;color:var(--accent);
+  max-width:22ch;overflow-wrap:break-word;}
+.g-datum{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);
+  margin-top:2px;}
+.g-uhr{margin-top:15px;font-size:36px;line-height:1.05;font-weight:300;letter-spacing:-.015em;
+  color:var(--text);font-variant-numeric:tabular-nums;}
+.g-uhr.vorbei{color:var(--text-3);}
+.g-uhrsub{font-size:12.5px;color:var(--text-2);font-variant-numeric:tabular-nums;margin-top:4px;}
+.g-ohne{margin-top:14px;font-size:13px;color:var(--text-3);}
+.g-rueck{font-size:15px;line-height:1.7;color:var(--text);text-align:left;
+  max-width:44ch;overflow-wrap:break-word;
+  max-height:100%;overflow:auto;font-family:"Literata",Georgia,serif;}
+.g-leer{font-size:13.5px;line-height:1.7;color:var(--text-3);max-width:34ch;}
+.g-leer strong{display:block;font-size:15px;color:var(--text-2);font-weight:500;margin-bottom:6px;}
+.g-marke{position:absolute;left:0;right:0;bottom:14px;font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text-3);opacity:.7;}
+/* Der Kopf ist der Griff zu den Vergangenen. */
+#gBanner{cursor:pointer;}
+.gb-griff{display:inline-flex;align-items:center;gap:4px;margin-left:8px;color:var(--text-3);}
+.gb-griff i{font-style:normal;font-size:11px;font-variant-numeric:tabular-nums;}
+.gb-griff svg{width:13px;height:13px;}
+.toast{
+  position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  z-index:120;background:var(--surface-3);border:1px solid var(--border-strong);color:var(--text);
+  padding:10px 15px;border-radius:11px;font-size:13px;box-shadow:var(--shadow);max-width:calc(100% - 32px);
+}
+.rowline{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--border);}
+.rowline:last-child{border-bottom:0;}
+.rowline .grow{flex:1;min-width:0;}
+.rowline svg,.rowline span > svg,.grouprow > svg,.nowbar svg{width:17px;height:17px;flex:0 0 auto;}
+.rowline .rn{font-size:14px;display:block;}
+.rowline .rm{font-size:11.5px;color:var(--text-3);margin-top:3px;display:block;line-height:1.45;}
+.list-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.timer-big{font-family:"IBM Plex Mono",monospace;font-size:40px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:center;padding:6px 0 2px;}
+
