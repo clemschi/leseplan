@@ -5,6 +5,13 @@
   (eine Datei, alles darin). `mylife.html` niemals von Hand bearbeiten.
 - Kommentare und Oberfläche auf Deutsch, im Ton des übrigen Codes.
 
+## Übergabe
+- **Am Ende jeder Aufgabe, die an der App etwas ändert: `node build.js` laufen
+  lassen und `mylife.html` mitgeben.** Nicht auf Nachfrage warten, nicht nur
+  darauf verweisen – die Datei gehört zur Antwort. Hat sich an der App nichts
+  geändert (nur Notizen, nur Dokumentation), einen Satz dazu sagen statt
+  dieselbe Datei ein zweites Mal zu schicken.
+
 ## Mehrere Apps in einer Datei
 - `mylife.html` ist die Hülle. Der Startbildschirm (`splashZeigen`, Register
   `APPS`) ist ihr Homescreen; jede App wird erst beim Antippen geweckt.
