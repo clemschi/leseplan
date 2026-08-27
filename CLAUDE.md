@@ -104,11 +104,17 @@ Fertige Bausteine, die genau das tun:
   wurde, nicht dort, wo der Zurück-Pfeil zuletzt stand.
 
 ## Eingabefelder
-- Kein Feld bekommt von Hand `autocomplete`/`spellcheck`. `felderBeobachten()`
-  stellt beim Start jedes Feld ruhig und jedes neue gleich mit – Chrome lässt
-  dann seine Ausfüllhilfe weg, die Tastatur meist ihre Vorschlagsleiste.
-- Die Vorschlagsleiste selbst gehört der Tastatur. Was sie trotzdem zeigt,
-  lässt sich nur in deren Einstellungen abstellen, nicht aus der Seite.
+- Kein Feld bekommt von Hand `autocomplete` oder einen Formularrahmen.
+  `felderBeobachten()` nimmt sich beim Start jedes Feld vor und jedes neue:
+  `autocomplete=off` und ein eigenes `<form class="feldrahmen">` je Feld.
+  Der einzelne Rahmen ist der Punkt – Felder ohne Formular fasst Chrome zu
+  einem gedachten Adressformular zusammen und blendet darüber seine
+  Ausfüllhilfe ein.
+- **Rechtschreibprüfung bleibt an.** Kein `spellcheck=false` irgendwo.
+- Die Vorschlagsleiste der Tastatur gehört der Tastatur, nicht der Seite.
+- **Blätter springen nicht von selbst ins erste Feld.** `blatt()` setzt den
+  Fokus nur bei `{ fokus: true }`; sonst fährt bei jedem Blatt die Tastatur hoch.
+- Zwei Felder nebeneinander: `.grid2`. `.row2` gibt es nicht.
 
 ## Prüfen
 Playwright liegt unter `/opt/pw-browsers/chromium`

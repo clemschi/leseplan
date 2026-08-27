@@ -102,13 +102,24 @@ Vier Reiter in der Fussleiste:
 
 ## Über der Tastatur
 
-Jedes Eingabefeld meldet sich von Chromes Ausfüllhilfe ab (`autocomplete="off"`)
-und trägt das Merkmal „keine Vorschläge" (`spellcheck="false"`) – damit fällt die
-Leiste mit Schlüssel, Karte und Ortsnadel weg, und die meisten Tastaturen lassen
-auch ihre Wortvorschläge aus. Gestempelt wird das nicht von Hand: `felderBeobachten()`
-nimmt sich beim Start jedes Feld vor und jedes neue, sobald es entsteht. Was eine
-Tastatur darüber hinaus einblendet, gehört ihr – das lässt sich nur in ihren
-eigenen Einstellungen abstellen.
+Chrome blendet über Eingabefeldern gern seine Ausfüllhilfe ein – Schlüssel, Karte,
+Ortsnadel. Sie hängt nicht am einzelnen Feld: Felder ohne Formular fasst Chrome zu
+einem gedachten zusammen, und weil in dieser einen Datei alle Apps zugleich im
+Dokument stehen, sind das Dutzende auf einmal – genug, damit Chrome darin ein
+Adressformular erkennt. `autocomplete="off"` allein hilft dagegen nicht, das
+überspringt Chrome bei allem, was es für eine Anschrift hält. Darum bekommt jedes
+Feld sein eigenes `<form class="feldrahmen">`: eines mit einem einzigen Feld bleibt
+unter der Schwelle, ab der Chrome überhaupt zu raten anfängt. Der Rahmen kommt im
+Layout nicht vor (`display:contents`) und lässt sich nicht absenden. Gestempelt wird
+das nicht von Hand – `felderBeobachten()` nimmt sich jedes Feld vor, auch jedes, das
+später entsteht.
+
+Die **Rechtschreibprüfung bleibt an**. Die Wortvorschläge der Tastatur gehören ihr
+selbst und lassen sich nur in ihren eigenen Einstellungen abstellen.
+
+Und: **kein Blatt springt von selbst ins erste Feld.** Sonst führe jedes Öffnen die
+Tastatur mit. Wer schreiben will, tippt hinein; nur die Suche fängt den Finger
+gleich ab.
 
 ## Ebenen
 

@@ -805,6 +805,9 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .frkurve{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;}
 .frkurve svg{display:block;width:100%;height:56px;overflow:visible;}
 #fview{padding:18px 14px calc(var(--tabh, 58px) + 18px);overscroll-behavior-x:contain;}
+/* Der Formularrahmen um jedes Eingabefeld kommt im Layout nicht vor. */
+form.feldrahmen{display:contents;}
+
 /* ---------- g'sund ---------- */
 #gview{padding:18px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
 /* Die Bühne gibt der Karte Tiefe; ohne Perspektive bliebe die Drehung flach. */
@@ -1116,22 +1119,36 @@ const uid = () => 'x' + Date.now().toString(36) + Math.random().toString(36).sli
 
 /* ---------- Ruhe über der Tastatur ----------
    Über jedem Eingabefeld blendet Chrome seine Ausfüllhilfe ein – Schlüssel,
-   Karte, Ortsnadel –, und die Tastatur legt ihre Wortvorschläge darüber. Kein
-   Feld dieser App will je ausgefüllt werden, also meldet sich jedes davon ab:
-   `autocomplete=off` nimmt Chrome die Ausfüllhilfe, `spellcheck=false` setzt
-   das Android-Merkmal „keine Vorschläge", worauf die meisten Tastaturen ihre
-   Leiste weglassen. Aus der Seite heraus geht nicht mehr – die Leiste gehört
-   der Tastatur, nicht dem Browser. */
+   Karte, Ortsnadel. Sie kommt nicht vom einzelnen Feld: Felder ohne Formular
+   fasst Chrome zu einem einzigen gedachten Formular zusammen, und weil in
+   dieser einen Datei alle Apps zugleich im Dokument stehen, sind das Dutzende
+   Felder auf einmal – genug, damit Chrome darin ein Adressformular erkennt.
+   `autocomplete=off` allein hilft dagegen nicht, das überspringt Chrome bei
+   allem, was es für eine Anschrift hält.
+
+   Darum bekommt jedes Feld sein eigenes Formular. Eines mit einem einzigen
+   Feld bleibt unter der Schwelle, ab der Chrome überhaupt zu raten anfängt,
+   und die Ausfüllhilfe bleibt weg. `display:contents` sorgt dafür, dass der
+   Rahmen im Layout nicht vorkommt; Absenden gibt es nicht.
+
+   Die Rechtschreibprüfung bleibt an – die Vorschlagsleiste der Tastatur
+   gehört ihr selbst und lässt sich nur dort abstellen. */
 const RUHIG_FELD = 'input:not([type=file]):not([type=radio]):not([type=checkbox]):not([type=range]),textarea';
 function feldRuhig(el) {
   if (!el || el.dataset.ruhig) return;
   el.dataset.ruhig = '1';
   el.setAttribute('autocomplete', 'off');
-  el.setAttribute('autocorrect', 'off');
-  el.setAttribute('spellcheck', 'false');
-  /* Passwortverwalter halten sich hier ebenfalls heraus. */
+  /* Passwortverwalter halten sich ebenfalls heraus. */
   el.setAttribute('data-lpignore', 'true');
   el.setAttribute('data-form-type', 'other');
+  if (!el.form && el.parentNode) {
+    const f = document.createElement('form');
+    f.className = 'feldrahmen';
+    f.setAttribute('autocomplete', 'off');
+    f.addEventListener('submit', e => e.preventDefault());
+    el.parentNode.insertBefore(f, el);
+    f.appendChild(el);
+  }
 }
 function felderRuhigStellen(wurzel) { $$(RUHIG_FELD, wurzel || document).forEach(feldRuhig); }
 /* Auch alles, was erst später entsteht – Blätter, Ebenen, neu gezeichnete
@@ -2929,11 +2946,11 @@ function kTerminBearbeiten(t, vorgabe, ersetzen) {
   const s = blatt(neu ? 'Neuer Termin' : 'Termin', `
     <div class="field"><label>Was</label>
       <input type="text" data-titel value="${esc(w.titel)}" placeholder="z.B. Zahnarzt"></div>
-    <div class="row2">
+    <div class="grid2">
       <div class="field"><label>Tag</label><input type="date" data-datum value="${esc(w.datum)}"></div>
       <div class="field"><label>Uhrzeit</label><input type="time" data-zeit value="${w.zeit ? esc(w.zeit) : ''}"></div>
     </div>
-    <div class="row2">
+    <div class="grid2">
       <div class="field"><label>Dauer in Minuten</label><input type="number" data-dauer value="${w.dauer || ''}" placeholder="60"></div>
       <div class="field"><label>Ort</label><input type="text" data-ort value="${esc(w.ort)}" placeholder="optional"></div>
     </div>
@@ -4965,7 +4982,7 @@ function gKarteBearbeiten() {
   const s = blatt('Karte', `
     <div class="field"><label>Titel (Vorderseite)</label>
       <input type="text" data-t value="${esc(k.titel)}" placeholder="z.B. Halbmarathon"></div>
-    <div class="row2">
+    <div class="grid2">
       <div class="field"><label>Datum</label><input type="date" data-d value="${esc(k.datum)}"></div>
       <div class="field"><label>Uhrzeit</label><input type="time" data-z value="${esc(k.zeit)}"></div>
     </div>
@@ -5638,8 +5655,10 @@ function blatt(titel, inhalt, opts) {
   if (typeof inhalt === 'string') body.innerHTML = inhalt; else body.appendChild(inhalt);
   scrim.addEventListener('click', e => { if (e.target === scrim) layerSchliessen(); });
   (opts.ersetzen ? layerErsetzen : layerOeffnen)(scrim, opts.onClose);
+  /* Nicht von selbst ins erste Feld springen – sonst fährt bei jedem Blatt
+     die Tastatur hoch. Wer tippen will, tippt hinein. */
   const erstes = $('input,textarea,select', body);
-  if (erstes && opts.fokus !== false) setTimeout(() => erstes.focus(), 80);
+  if (erstes && opts.fokus === true) setTimeout(() => erstes.focus(), 80);
   ziehenZumSchliessen($('.sheet', scrim));
   return scrim;
 }
@@ -6426,7 +6445,7 @@ function buchBearbeiten(buch, blockIdVorgabe, nachSpeichern) {
     <div class="btn-row" style="margin-top:16px">
       <button class="btn btn-primary" data-ok style="flex:1">${neu ? 'Anlegen' : 'Sichern'}</button>
       ${neu ? '' : `<button class="btn btn-danger" data-del>${ICON.trash}</button>`}
-    </div>`, { fokus: neu });
+    </div>`);
 
   let stufenWahl = b.schwierigkeit || null;
   const stufenMalen = () => {
@@ -8934,6 +8953,7 @@ async function inZwischenablage(text) {
        lässt sich nichts markieren, und ohne Markierung kopiert execCommand nicht. */
     ta.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;padding:0;'
       + 'border:none;outline:none;box-shadow:none;background:transparent;color:transparent;';
+    ta.dataset.ruhig = '1';   /* kein Formularrahmen um das Kopierfeld */
     document.body.appendChild(ta);
     const sel = window.getSelection();
     const vorher = sel && sel.rangeCount ? sel.getRangeAt(0) : null;
