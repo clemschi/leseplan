@@ -1,19 +1,43 @@
-# leseliste
+# mylife
 
-Eine Lese-App für einen mehrjährigen Leseplan: Blöcke, Bücher, Notizen mit Fotos,
-Lese-Sitzungen mit Stoppuhr und eine Auswertung mit Graphen.
+Eine einzige HTML-Datei, in der mehrere kleine Apps wohnen. Der Startbildschirm ist ihr
+Homescreen: ein paar Namen auf dem Grund, sonst nichts. Ein Tipp öffnet eine App, das ×
+in der Kopfzeile führt zurück.
 
-**Die HTML-Datei enthält keine Inhalte.** Sämtliche Daten liegen im Speicherort,
-den du beim ersten Start festlegst. Der mitgelieferte Leseplan steckt in einer
-separaten Datei und wird bewusst geladen.
+**Jede App hat ihre eigene Datenbasis.** Die leseliste führt eine `leseplan.json`, der
+Kalender eine `kalender.json` – getrennte Dateien, getrennte Speicherorte, getrennte
+Sicherung. Was allen gemeinsam ist, sind Hell/Dunkel, Akzentfarbe und Vollbild; die
+gehören der Hülle und gelten überall.
 
-## Dateien
+Gebaut wird mit `node build.js` aus `mylife.src.html`.
+
+## kalender
+
+Vier Reiter in der Fussleiste:
+
+- **Heute** – die Termine des Tages, was heute fällig ist, die laufenden Vorhaben mit
+  Fortschritt und ein Ausblick auf die nächsten sieben Tage. Ohne Tagesziel führt jede
+  Zeile dorthin, wo etwas einzutragen ist.
+- **Kalender** – das Monatsblatt mit Punkten für Termine und einem Ring für Fälliges.
+  Ein Tipp auf einen Tag öffnet ihn als Blatt von unten; gewischt wird von Monat zu
+  Monat, am Finger, mit derselben Mechanik wie die Karten beim Stöbern. Termine tragen
+  Uhrzeit, Dauer, Ort, Notiz, Farbe und wahlweise eine Wiederholung (täglich bis
+  jährlich).
+- **To-Do** – Aufgaben in drei Ebenen als Flussbild: **Vorhaben** → quer die
+  **Schritte** → in jedem die einzelnen **Handgriffe**. Abgehakt wird von unten nach
+  oben: sind alle Handgriffe erledigt, gilt der Schritt als erledigt, sind alle Schritte
+  erledigt, das Vorhaben. Umsortieren mit den Pfeilen, Fristen an Vorhaben und Schritten –
+  was eine Frist hat, taucht unter *Heute* und im Monatsblatt auf.
+- **Mehr** – Speicherort, Sichern, Laden, Zurücksetzen, Ansicht.
+
+## leseliste
+
 
 | Datei | Wofür |
 |---|---|
-| `leseplan.html` | Die App. Quelle der Wahrheit, ohne Dokumentrahmen – so wird sie als Artifact veröffentlicht. |
-| `leseliste.html` | Daraus erzeugt: eigenständige Seite zum lokalen Öffnen. **Nicht von Hand bearbeiten.** |
-| `build.js` | Erzeugt `leseliste.html` aus `leseplan.html`: `node build.js` |
+| `mylife.src.html` | Alle Apps. Quelle der Wahrheit, ohne Dokumentrahmen. |
+| `mylife.html` | Daraus erzeugt: eigenständige Seite zum lokalen Öffnen. **Nicht von Hand bearbeiten.** |
+| `build.js` | Erzeugt `mylife.html` aus `mylife.src.html`: `node build.js` |
 | `leseplan-katalog.json` | Die leseliste „Lesestart": 14 Blöcke, 66 Bücher mit Seitenzahl, Erscheinungsjahr, Autor-Lebensdaten und Beschreibung. |
 
 ## Ebenen

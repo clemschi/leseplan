@@ -1,9 +1,24 @@
-# Arbeitsregeln für diese App
+# Arbeitsregeln für diese Datei
 
 ## Aufbau
-- Quelle ist immer `leseplan.html`. `node build.js` schreibt daraus `leseliste.html`
-  (eine Datei, alles darin). `leseliste.html` niemals von Hand bearbeiten.
+- Quelle ist immer `mylife.src.html`. `node build.js` schreibt daraus `mylife.html`
+  (eine Datei, alles darin). `mylife.html` niemals von Hand bearbeiten.
 - Kommentare und Oberfläche auf Deutsch, im Ton des übrigen Codes.
+
+## Mehrere Apps in einer Datei
+- `mylife.html` ist die Hülle. Der Startbildschirm (`splashZeigen`, Register
+  `APPS`) ist ihr Homescreen; jede App wird erst beim Antippen geweckt.
+- **Jede App führt ihre eigene Datenbasis.** Eine Ausfertigung von
+  `macheSpeicher(...)` je App, eigener IDB-Schlüssel, eigene JSON-Datei
+  (`leseplan.json`, `kalender.json`). Nie Daten zweier Apps in eine Datei
+  mischen. Die App ohne gewählten Speicherort fragt beim ersten Öffnen danach.
+- Was allen gemeinsam ist – Hell/Dunkel, Akzent, Vollbild – liegt in `SHELL`
+  und wird über `shellSchreiben()` gesichert, nicht in den Daten einer App.
+- `aktiverSpeicher` zeigt auf den Speicher der offenen App; der Chip in der
+  Kopfzeile liest ihn.
+- Neue App: Eintrag in `APPS`, eigener `macheSpeicher`, eigener Rumpf im
+  Markup, eigene Fussleiste. Design und Bausteine kommen aus dem Bestand
+  (`.list-card`, `.rowline`, `.chip`, `.section-head`, `blatt`, `toast`).
 
 ## Wischen – so und nicht anders
 Der Kartenstapel beim Stöbern (`ziehenBinden` in `stoebernOeffnen`) ist die
@@ -32,6 +47,15 @@ Fertige Bausteine, die genau das tun:
 - `heimZiehen` – die App nach rechts schieben, dahinter liegt der
   Startbildschirm.
 - `ziehenBinden` im Stöbern – Karten nach links und rechts.
+
+## Ebenen
+- Eine offene Ebene wird **getauscht, nicht geschlossen und neu geöffnet**:
+  `blatt(..., { ersetzen: true })` beziehungsweise `layerErsetzen`. Sonst
+  räumt das nachlaufende `popstate` des `history.back()` die eben geöffnete
+  Ebene wieder weg – und mehrere solcher Fehlgriffe laufen aus dem Verlauf
+  heraus, bis die Seite ganz verschwindet.
+- Mehrere Ebenen auf einmal schliesst `alleLayerSchliessen()` (ein einziges
+  `history.go(-n)`), niemals `layerSchliessen()` in einer Schleife.
 
 ## Speichern
 - `aendern()` merkt nur vor (Selbstsicherung nach Sekunden),
