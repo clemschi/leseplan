@@ -127,3 +127,10 @@ Playwright liegt unter `/opt/pw-browsers/chromium`
 `require('/opt/node22/lib/node_modules/playwright')`). Gesten lassen sich nur
 mit `hasTouch: true` und `Input.dispatchTouchEvent` über eine CDP-Sitzung
 prüfen – `page.touchscreen` kann nicht ziehen.
+
+**Keine Screenshots in den Chat.** Ein Bild anzusehen kostet mehr als hundert
+Zeilen Code. Geprüft wird mit Zahlen: Höhen, Breiten, Winkel aus
+`getBoundingClientRect()` und `getComputedStyle()`, Farben als Wert, Text als
+Text. `page.screenshot(...)` darf in einem Testskript stehen und liegen
+bleiben – geöffnet wird es nicht. Wo etwas nur nach Augenmass zu klären ist,
+lieber fragen als schauen.
