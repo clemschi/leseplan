@@ -71,14 +71,20 @@ zehn Wörter, mit **Umschalt** einen Satz.
 
 Vier Reiter in der Fussleiste:
 
-- **Guzi** – eine einzige Karte, die sich in beide Richtungen umdrehen lässt. Vorne
-  steht ein frei gewählter Titel mit Datum und wahlweise Uhrzeit; darunter läuft der
-  Countdown im Sekundentakt, in Tagen, sonst als `HH:MM:SS`. Ist der Zeitpunkt vorbei,
-  zählt er mit Vorzeichen weiter. Hinten steht freier Text. Gedreht wird per Tipp (die
-  Hälfte, auf die getippt wird, bestimmt die Richtung), über die beiden Pfeile oder am
-  Finger: die Karte folgt der Hand, eine halbe Kartenbreite entspricht einer halben
-  Umdrehung, und beim Loslassen entscheiden Weg und Schwung. Die ersten 30 px am linken
-  Rand bleiben dem Zug zur Startseite.
+- **Guzi** – nur die Karte, sonst nichts. Vorne ein frei gewählter Titel in der
+  Akzentfarbe, darunter Datum und wahlweise Uhrzeit, dann der Countdown im
+  Sekundentakt – in Tagen, sonst als `HH:MM:SS`, nach dem Zeitpunkt mit Vorzeichen
+  weiter. Hinten freier Text. **Ein Tipp öffnet die Karte zum Ändern**, gedreht wird
+  nur mit dem Finger: quer eine halbe Umdrehung je halber Kartenbreite, dabei kippt
+  sie auch längs mit, bis 26°, so dass ein Zug von rechts oben nach links unten die
+  Karte wirklich in der Hand liegen lässt. Ein **schneller Zug nach oben** legt sie zu
+  den Vergangenen; sie fliegt weg, vorn bleibt eine leere Karte. Die ersten 30 px am
+  linken Rand bleiben dem Zug zur Startseite.
+- **Vergangen** – die Kopfzeile ist zugleich der Griff: **herunterziehen** (oder
+  antippen) holt die abgelegten Karten hervor, hochziehen schiebt sie wieder weg –
+  derselbe Vorhang wie die Übersicht in der leseliste. Von selbst landet man dort nie.
+  Jede Karte lässt sich ansehen, zurückholen (liegt vorn schon etwas, wandert das im
+  selben Zug nach hinten) oder löschen.
 - **Puzzle** – noch leer, die Anweisungen dazu folgen.
 - **Bald** – Platz für den dritten Reiter.
 - **Mehr** – Speicherort, Sichern, Laden, Karte bearbeiten, Zurücksetzen, dazu derselbe

@@ -809,10 +809,10 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 #gview{padding:18px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
 /* Die Bühne gibt der Karte Tiefe; ohne Perspektive bliebe die Drehung flach. */
 .gbuehne{max-width:560px;margin:8px auto 0;perspective:1400px;}
-.gkarte{position:relative;width:100%;min-height:min(62vh,430px);
+.gkarte{position:relative;width:100%;min-height:min(58vh,404px);
   transform-style:preserve-3d;transform-origin:50% 50%;
-  transition:transform .55s cubic-bezier(.2,.8,.25,1);
-  touch-action:pan-y;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  transition:transform .55s cubic-bezier(.2,.8,.25,1),opacity .28s ease;
+  touch-action:none;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .gseite{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;text-align:center;gap:6px;
   padding:30px 22px 38px;border-radius:22px;border:1px solid var(--border);
@@ -823,12 +823,12 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 /* Ein feiner Schimmer, damit die Seiten beim Drehen auseinanderzuhalten sind. */
 .gseite::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;
   background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.65;}
-.g-titel{font-size:24px;line-height:1.25;font-weight:500;color:var(--text);
+.g-titel{font-size:21px;line-height:1.28;font-weight:500;color:var(--accent);
   max-width:22ch;overflow-wrap:break-word;}
-.g-datum{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);
+.g-datum{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);
   margin-top:2px;}
-.g-uhr{margin-top:16px;font-size:42px;line-height:1.05;font-weight:300;letter-spacing:-.015em;
-  color:var(--accent);font-variant-numeric:tabular-nums;}
+.g-uhr{margin-top:15px;font-size:36px;line-height:1.05;font-weight:300;letter-spacing:-.015em;
+  color:var(--text);font-variant-numeric:tabular-nums;}
 .g-uhr.vorbei{color:var(--text-3);}
 .g-uhrsub{font-size:12.5px;color:var(--text-2);font-variant-numeric:tabular-nums;margin-top:4px;}
 .g-ohne{margin-top:14px;font-size:13px;color:var(--text-3);}
@@ -839,8 +839,11 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .g-leer strong{display:block;font-size:15px;color:var(--text-2);font-weight:500;margin-bottom:6px;}
 .g-marke{position:absolute;left:0;right:0;bottom:14px;font-size:9.5px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--text-3);opacity:.7;}
-.gdreher{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:18px;}
-.gdreher .spiegel svg{transform:scaleX(-1);}
+/* Der Kopf ist der Griff zu den Vergangenen. */
+#gBanner{cursor:pointer;}
+.gb-griff{display:inline-flex;align-items:center;gap:4px;margin-left:8px;color:var(--text-3);}
+.gb-griff i{font-style:normal;font-size:11px;font-variant-numeric:tabular-nums;}
+.gb-griff svg{width:13px;height:13px;}
 .toast{
   position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom));transform:translateX(-50%);
   z-index:120;background:var(--surface-3);border:1px solid var(--border-strong);color:var(--text);
@@ -4348,6 +4351,8 @@ function leereGs() {
     einstellungen: { autosaveSek: 60 },
     /* Die Karte: vorn ein Titel mit Datum, hinten freier Text. */
     karte: { titel: '', datum: '', zeit: '', rueckseite: '' },
+    /* Abgelegte Karten, die neueste zuerst. */
+    vergangen: [],
     /* Für Puzzle, sobald klar ist, was dort hingehört. */
     puzzle: {}
   };
@@ -4365,6 +4370,14 @@ function gsNormalisiere(roh) {
     zeit: /^\d{2}:\d{2}$/.test(k.zeit) ? k.zeit : '',
     rueckseite: String(k.rueckseite || '').slice(0, 4000)
   };
+  g.vergangen = Array.isArray(d.vergangen) ? d.vergangen.map(k => ({
+    id: String(k.id || uid()),
+    titel: String(k.titel || '').slice(0, 200),
+    datum: /^\d{4}-\d{2}-\d{2}$/.test(k.datum) ? k.datum : '',
+    zeit: /^\d{2}:\d{2}$/.test(k.zeit) ? k.zeit : '',
+    rueckseite: String(k.rueckseite || '').slice(0, 4000),
+    abgelegt: +k.abgelegt || Date.now()
+  })).slice(0, 400) : [];
   g.puzzle = (d.puzzle && typeof d.puzzle === 'object') ? d.puzzle : {};
   return g;
 }
@@ -4506,6 +4519,8 @@ function gsStarten() {
   $('#gBtnRaus').onclick = () => { clearInterval(gTakt); zumStartbildschirm(); };
   $('#gBrand').onclick = () => { if (gTab !== 'guzi') gTabWechseln('guzi'); else window.scrollTo({ top: 0, behavior: 'smooth' }); };
   $('#gSaveChip').onclick = () => GStore.alsDateiSichern(false);
+  $('#gBanner').onclick = () => gVergangenOeffnen();
+  gVorhangBinden();
   gTabbarMalen();
   gViewMalen();
   GStore.autosaveStarten();
@@ -4550,9 +4565,12 @@ function gBannerMalen() {
   const b = $('#gBanner');
   const k = GDB.karte;
   const r = gRest(k);
+  const n = GDB.vergangen.length;
   b.innerHTML = `
     <span class="kb-tag">${k.titel ? esc(k.titel) : 'Noch keine Karte'}</span>
-    <span class="kb-zahlen">${r ? `<span class="num">${esc(r.kurz)}</span>` : '<span>ohne Datum</span>'}</span>`;
+    <span class="kb-zahlen">${r ? `<span class="num">${esc(r.kurz)}</span>` : '<span>ohne Datum</span>'}</span>
+    <span class="gb-griff">${n ? '<i>' + n + '</i>' : ''}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>`;
+  b.title = 'Vergangene ansehen';
 }
 
 /* ---------- Der Countdown ---------- */
@@ -4584,15 +4602,17 @@ function gRest(k) {
 }
 
 /* ---------- Guzi: die Karte ---------- */
+/* Nur die Karte, sonst nichts: antippen ändert sie, gewischt wird sie
+   gedreht, und ein schneller Zug nach oben legt sie zu den Vergangenen. */
 function gGuziMalen(v) {
   const k = GDB.karte;
-  const leer = !k.titel && !k.datum && !k.rueckseite;
+  const leer = gKarteLeer(k);
   v.innerHTML = `
     <div class="gbuehne">
       <div class="gkarte" data-karte style="transform:rotateY(${gDrehung}deg)">
         <div class="gseite vorn">
           ${leer ? `<div class="g-leer"><strong>Noch nichts auf der Karte</strong>
-              Ein Titel, ein Datum – und der Countdown läuft. Die Rückseite nimmt auf, was sonst noch dazugehört.</div>`
+              Antippen: ein Titel, ein Datum – und der Countdown läuft.</div>`
       : `<div class="g-titel serif">${esc(k.titel) || 'Ohne Titel'}</div>
              ${k.datum ? `<div class="g-datum num">${esc(kTagText(k.datum, true))}${k.zeit ? ' · ' + esc(k.zeit) + ' Uhr' : ''}</div>` : ''}
              ${k.datum ? `<div class="g-uhr" data-uhr></div>
@@ -4605,12 +4625,6 @@ function gGuziMalen(v) {
           <span class="g-marke">Rückseite</span>
         </div>
       </div>
-      <div class="gdreher">
-        <button class="icon-btn" data-links aria-label="Nach links drehen">${GICON.drehen}</button>
-        <button class="btn btn-sm" data-bearbeiten>${ICON.edit} Karte bearbeiten</button>
-        <button class="icon-btn spiegel" data-rechts aria-label="Nach rechts drehen">${GICON.drehen}</button>
-      </div>
-      <p class="hinweis" style="text-align:center;padding:8px 0 0">Antippen oder wischen dreht die Karte.</p>
     </div>`;
 
   const karte = $('[data-karte]', v);
@@ -4619,25 +4633,55 @@ function gGuziMalen(v) {
     gGedreht = !gGedreht;
     karte.style.transform = 'rotateY(' + gDrehung + 'deg)';
   };
-  $('[data-links]', v).onclick = () => drehen(-1);
-  $('[data-rechts]', v).onclick = () => drehen(1);
-  $('[data-bearbeiten]', v).onclick = () => gKarteBearbeiten();
-  /* Ein Tipp dreht in die Richtung, auf deren Hälfte man tippt. */
-  karte.onclick = e => {
+  /* Ein Tipp öffnet die Karte zum Ändern – gedreht wird nur mit dem Finger. */
+  karte.onclick = () => {
     if (karte._gezogen) { karte._gezogen = false; return; }
-    const r = karte.getBoundingClientRect();
-    drehen(e.clientX < r.left + r.width / 2 ? -1 : 1);
+    gKarteBearbeiten();
   };
-  gKarteZiehen(karte, drehen);
+  gKarteZiehen(karte, drehen, () => gKarteAblegen(karte));
   if (k.datum) gUhrLaufen(v);
 }
 
-/* Wischen dreht mit: die Karte folgt dem Finger, beim Loslassen entscheidet
-   der Weg – dieselbe Mechanik wie überall. */
-function gKarteZiehen(karte, drehen) {
-  let x0 = null, y0 = 0, zieht = false, ab = 0, weg = 0, breite = 1;
-  let letztX = 0, letztT = 0, tempo = 0;
+function gKarteLeer(k) { return !k || (!k.titel && !k.datum && !k.rueckseite); }
+
+/* Weglegen: die Karte fliegt nach oben weg und liegt danach bei den
+   Vergangenen. Angeschaut wird sie dort erst, wenn man den Kopf herunterzieht –
+   von selbst landet man nicht dort. */
+function gKarteAblegen(karte) {
+  const k = GDB.karte;
+  if (gKarteLeer(k)) return false;
+  karte.style.transition = 'transform .3s cubic-bezier(.3,.7,.3,1),opacity .28s ease';
+  karte.style.transform = 'translateY(-130%) scale(.86) rotateX(26deg) rotateY(' + gDrehung + 'deg)';
+  karte.style.opacity = '0';
+  gAendern(() => {
+    GDB.vergangen.unshift(Object.assign({ id: uid(), abgelegt: Date.now() }, k));
+    GDB.vergangen = GDB.vergangen.slice(0, 400);
+    GDB.karte = { titel: '', datum: '', zeit: '', rueckseite: '' };
+  });
+  GStore.sichern(true);
+  setTimeout(() => {
+    gDrehung = 0; gGedreht = false;
+    gViewMalen();
+    toast('Bei den Vergangenen.');
+  }, 300);
+  return true;
+}
+
+/* Wischen dreht und kippt: die Karte folgt der Hand in beide Richtungen –
+   quer eine halbe Umdrehung je halber Kartenbreite, längs als Neigung. Beim
+   Loslassen entscheiden Weg und Schwung, welche der drei Wege es wird. */
+function gKarteZiehen(karte, drehen, ablegen) {
+  let x0 = null, y0 = 0, zieht = false, abX = 0, abY = 0;
+  let wegX = 0, wegY = 0, breite = 1, hoehe = 1;
+  let letztX = 0, letztY = 0, letztT = 0, tempoX = 0, tempoY = 0;
   const grund = () => gDrehung;
+  const malen = () => {
+    /* Erst kippen, dann drehen – so bleibt die Neigung zum Bildschirm hin
+       gleich, auch wenn die Rückseite oben liegt. */
+    const kipp = clamp(-wegY / hoehe * 90, -26, 26);
+    karte.style.transform = 'rotateX(' + kipp.toFixed(2) + 'deg) '
+      + 'rotateY(' + (grund() + wegX / breite * 180).toFixed(2) + 'deg)';
+  };
 
   karte.addEventListener('touchstart', e => {
     if (e.touches.length !== 1 || window.__zieht) { x0 = null; return; }
@@ -4646,27 +4690,31 @@ function gKarteZiehen(karte, drehen) {
        fängt die Karte ihn ab, weil sie fast die ganze Fläche einnimmt. */
     if (t.clientX < 30) { x0 = null; return; }
     x0 = t.clientX; y0 = t.clientY;
-    zieht = false; weg = 0;
-    breite = karte.getBoundingClientRect().width || 300;
-    letztX = x0; letztT = Date.now(); tempo = 0;
+    zieht = false; wegX = 0; wegY = 0;
+    const r = karte.getBoundingClientRect();
+    breite = r.width || 300; hoehe = r.height || 400;
+    letztX = x0; letztY = y0; letztT = Date.now(); tempoX = 0; tempoY = 0;
   }, { passive: true });
 
   karte.addEventListener('touchmove', e => {
     if (x0 == null) return;
-    const t = e.touches[0], dx = t.clientX - x0, dy = Math.abs(t.clientY - y0);
+    const t = e.touches[0], dx = t.clientX - x0, dy = t.clientY - y0;
     if (!zieht) {
-      if (dy > 16 && dy > Math.abs(dx)) { x0 = null; return; }
-      if (Math.abs(dx) < 12) return;
-      zieht = true; ab = dx; window.__zieht = true;
+      /* Kein Richtungsentscheid: quer wie längs gehört beides der Karte. */
+      if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
+      zieht = true; abX = dx; abY = dy; window.__zieht = true;
       karte.style.transition = 'none';
       karte._gezogen = true;
     }
     e.preventDefault();
     const jetzt = Date.now();
-    if (jetzt > letztT) { tempo = (t.clientX - letztX) / (jetzt - letztT); letztX = t.clientX; letztT = jetzt; }
-    weg = dx - ab;
-    /* Die halbe Kartenbreite entspricht einer halben Umdrehung. */
-    karte.style.transform = 'rotateY(' + (grund() + weg / breite * 180) + 'deg)';
+    if (jetzt > letztT) {
+      tempoX = (t.clientX - letztX) / (jetzt - letztT);
+      tempoY = (t.clientY - letztY) / (jetzt - letztT);
+      letztX = t.clientX; letztY = t.clientY; letztT = jetzt;
+    }
+    wegX = dx - abX; wegY = dy - abY;
+    malen();
   }, { passive: false });
 
   const los = () => {
@@ -4675,13 +4723,185 @@ function gKarteZiehen(karte, drehen) {
     if (!zieht) return;
     zieht = false;
     karte.style.transition = '';
-    const durch = Math.abs(weg) > Math.max(60, breite * 0.22) || Math.abs(tempo) > 0.45;
-    if (durch) drehen(weg > 0 ? 1 : -1);
+    const hoch = -wegY;
+    /* Nach oben weg: nur, wenn es wirklich ein Zug nach oben war – schnell
+       oder weit. */
+    const weg = hoch > Math.abs(wegX)
+      && (tempoY < -0.55 || hoch > Math.max(120, hoehe * 0.4));
+    if (weg && ablegen && ablegen()) { setTimeout(() => { window.__zieht = false; }, 300); return; }
+    const dreht = Math.abs(wegX) > Math.abs(wegY)
+      && (Math.abs(wegX) > Math.max(60, breite * 0.22) || Math.abs(tempoX) > 0.45);
+    if (dreht) drehen(wegX > 0 ? 1 : -1);
     else karte.style.transform = 'rotateY(' + grund() + 'deg)';
-    setTimeout(() => { window.__zieht = false; karte._gezogen = false; }, 260);
+    setTimeout(() => { window.__zieht = false; karte._gezogen = false; }, 300);
   };
   karte.addEventListener('touchend', los, { passive: true });
   karte.addEventListener('touchcancel', los, { passive: true });
+}
+
+/* ---------- Die Vergangenen ---------- */
+let gVergOffen = null;
+
+function gVergangenOeffnen(gezogen) {
+  if (gVergOffen) return null;
+  const node = document.createElement('div');
+  node.className = 'overlay' + (gezogen ? ' zieht' : '');
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">Vergangen</div>
+        <div class="ovl-sub" data-sub></div></div>
+    </div>
+    <div class="ovl-body shell" style="padding:12px 0 40px" data-body></div>`;
+  const body = $('[data-body]', node);
+  const malen = () => {
+    $('[data-sub]', node).textContent = GDB.vergangen.length
+      ? pl(GDB.vergangen.length, 'Karte', 'Karten') + ' abgelegt'
+      : 'noch nichts abgelegt';
+    gVergangenMalen(body, malen);
+  };
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  vorhangHochBinden(node, body);
+  layerOeffnen(node, () => { gVergOffen = null; });
+  gVergOffen = malen;
+  malen();
+  return node;
+}
+
+function gVergangenMalen(root, neuMalen) {
+  if (!GDB.vergangen.length) {
+    root.innerHTML = `<div class="empty" style="margin-top:36px"><strong>Noch nichts vergangen</strong>
+      Wisch die Karte schnell nach oben – dann liegt sie hier.</div>`;
+    return;
+  }
+  root.innerHTML = `<div class="list-card">${GDB.vergangen.map(k => `
+    <div class="rowline" data-alt="${esc(k.id)}">
+      <span class="grow"><span class="rn">${esc(k.titel) || 'Ohne Titel'}</span>
+        <span class="rm">${esc(gAltText(k))}</span></span>
+      <button class="btn btn-sm" data-zurueck="${esc(k.id)}">Zurück</button>
+      <button class="icon-btn" data-weg="${esc(k.id)}" aria-label="Löschen">${ICON.trash}</button>
+    </div>`).join('')}</div>`;
+
+  $$('[data-alt]', root).forEach(r => r.onclick = e => {
+    if (e.target.closest('button')) return;
+    gAlteKarteZeigen(r.dataset.alt);
+  });
+  $$('[data-zurueck]', root).forEach(b => b.onclick = () => {
+    gZurueckholen(b.dataset.zurueck);
+    neuMalen();
+  });
+  $$('[data-weg]', root).forEach(b => b.onclick = async () => {
+    if (!await bestaetigen('Karte löschen?', 'Die abgelegte Karte wird entfernt.', 'Löschen', true)) return;
+    gAendern(() => { GDB.vergangen = GDB.vergangen.filter(x => x.id !== b.dataset.weg); });
+    GStore.sichern(true);
+    neuMalen();
+  });
+}
+
+function gAltText(k) {
+  const teile = [];
+  if (k.datum) teile.push(kTagText(k.datum) + (k.zeit ? ' · ' + k.zeit : ''));
+  if (k.abgelegt) {
+    const tage = Math.floor((Date.now() - k.abgelegt) / 86400000);
+    teile.push(tage <= 0 ? 'heute abgelegt' : 'vor ' + pl(tage, 'Tag', 'Tagen') + ' abgelegt');
+  }
+  return teile.join(' · ');
+}
+
+/* Zurückholen: die Karte kommt wieder nach vorn. Liegt vorn schon etwas,
+   wandert das im selben Zug zu den Vergangenen – nichts geht verloren. */
+function gZurueckholen(id) {
+  const alt = GDB.vergangen.find(x => x.id === id);
+  if (!alt) return;
+  gAendern(() => {
+    GDB.vergangen = GDB.vergangen.filter(x => x.id !== id);
+    if (!gKarteLeer(GDB.karte)) {
+      GDB.vergangen.unshift(Object.assign({ id: uid(), abgelegt: Date.now() }, GDB.karte));
+    }
+    GDB.karte = { titel: alt.titel, datum: alt.datum, zeit: alt.zeit, rueckseite: alt.rueckseite };
+  });
+  GStore.sichern(true);
+  gDrehung = 0; gGedreht = false;
+  if (gTab === 'guzi') gViewMalen(); else gBannerMalen();
+  toast('Wieder auf der Karte.');
+}
+
+function gAlteKarteZeigen(id) {
+  const k = GDB.vergangen.find(x => x.id === id);
+  if (!k) return;
+  const s = blatt(k.titel || 'Ohne Titel', `
+    <p class="muted" style="font-size:12.5px;margin:-6px 0 14px">${esc(gAltText(k))}</p>
+    ${k.rueckseite ? `<div class="g-rueck" style="max-height:none;margin-bottom:16px">${esc(k.rueckseite).replace(/\n/g, '<br>')}</div>`
+      : '<p class="hinweis" style="margin-bottom:16px">Die Rückseite war leer.</p>'}
+    <div class="btn-row">
+      <button class="btn btn-primary" data-zurueck style="flex:1">Zurückholen</button>
+      <button class="btn btn-ghost btn-danger" data-weg>Löschen</button>
+    </div>`);
+  $('[data-zurueck]', s).onclick = () => {
+    gZurueckholen(id);
+    layerSchliessen();
+    if (gVergOffen) gVergOffen();
+  };
+  $('[data-weg]', s).onclick = async () => {
+    if (!await bestaetigen('Karte löschen?', 'Die abgelegte Karte wird entfernt.', 'Löschen', true)) return;
+    gAendern(() => { GDB.vergangen = GDB.vergangen.filter(x => x.id !== id); });
+    GStore.sichern(true);
+    layerSchliessen();
+    if (gVergOffen) gVergOffen();
+  };
+}
+
+/* Der Kopf ist zugleich der Griff: herunterziehen holt die Vergangenen
+   hervor – derselbe Vorhang wie die Übersicht in der leseliste. */
+let gVorhangGebunden = false;
+function gVorhangBinden() {
+  if (gVorhangGebunden) return;
+  gVorhangGebunden = true;
+  const kopf = $('#gs .topbar');
+  let y0 = null, x0 = 0, node = null, ab = 0, hoehe = 1, offen = false;
+  let letztY = 0, letztT = 0, tempo = 0;
+  const fertig = () => { window.__zieht = false; y0 = null; node = null; };
+
+  kopf.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1 || Layers.length || window.__zieht) { y0 = null; return; }
+    y0 = e.touches[0].clientY; x0 = e.touches[0].clientX;
+    node = null; offen = false; ab = 0;
+    hoehe = window.innerHeight || 640;
+    letztY = y0; letztT = Date.now(); tempo = 0;
+  }, { passive: true });
+
+  kopf.addEventListener('touchmove', e => {
+    if (y0 == null) return;
+    const t = e.touches[0], dy = t.clientY - y0, dx = Math.abs(t.clientX - x0);
+    if (!node) {
+      if (dx > 14 && dx > Math.abs(dy)) { y0 = null; return; }
+      if (dy < 10) return;
+      node = gVergangenOeffnen(true);
+      if (!node) { y0 = null; return; }
+      window.__zieht = true;
+      ab = dy;
+      hoehe = vorhangSetzen(node, 0);
+    }
+    e.preventDefault();
+    const jetzt = Date.now();
+    if (jetzt > letztT) {
+      tempo = (t.clientY - letztY) / (jetzt - letztT);
+      letztY = t.clientY; letztT = jetzt;
+    }
+    const y = dy - ab;
+    offen = y > vorhangSchwelle(hoehe) || tempo > 0.45;
+    vorhangSetzen(node, y);
+  }, { passive: false });
+
+  const los = () => {
+    if (y0 == null) return;
+    const el = node;
+    if (!el) { fertig(); return; }
+    vorhangLoesen(el, offen, () => { if (!offen) layerSchliessen(); });
+    fertig();
+  };
+  kopf.addEventListener('touchend', los, { passive: true });
+  kopf.addEventListener('touchcancel', los, { passive: true });
 }
 
 /* Der Countdown zählt im Sekundentakt. */
@@ -4775,7 +4995,10 @@ function gMehrMalen(v) {
       <div class="rowline"><span class="grow"><span class="rn">Karte</span>
         <span class="rm">${k.titel ? esc(k.titel) : 'leer'}${k.datum ? ' · ' + esc(kTagText(k.datum)) : ''}</span></span>
         <button class="btn btn-sm" data-gkarte>Bearbeiten</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Alles löschen</span><span class="rm">Karte und alles Weitere</span></span>
+      <div class="rowline"><span class="grow"><span class="rn">Vergangene</span>
+        <span class="rm">${GDB.vergangen.length ? pl(GDB.vergangen.length, 'Karte', 'Karten') : 'noch keine'}</span></span>
+        <button class="btn btn-sm" data-gverg>Ansehen</button></div>
+      <div class="rowline"><span class="grow"><span class="rn">Alles löschen</span><span class="rm">Karte, Vergangene und alles Weitere</span></span>
         <button class="btn btn-sm btn-danger" data-greset>Zurücksetzen</button></div>
     </div>
     ${huelleEinstellungenHtml()}
@@ -4786,6 +5009,7 @@ function gMehrMalen(v) {
   $('[data-gsave]', v).onclick = () => GStore.alsDateiSichern(false);
   $('[data-gimport]', v).onclick = () => gImportBlatt();
   $('[data-gkarte]', v).onclick = () => gKarteBearbeiten();
+  $('[data-gverg]', v).onclick = () => gVergangenOeffnen();
   $('[data-greset]', v).onclick = async () => {
     if (!await bestaetigen('Wirklich alles löschen?', 'Die Karte und alles Weitere werden entfernt.', 'Alles löschen', true)) return;
     GDB = leereGs();
