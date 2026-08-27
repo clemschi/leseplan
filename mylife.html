@@ -1827,7 +1827,10 @@ function huelleEinstellungenHtml(titel) {
       </div>
       <div class="rowline">
         <span class="grow"><span class="rn">Beim Start ins Vollbild</span>
-          <span class="rm">Greift bei der ersten Berührung, wo der Browser es zulässt</span></span>
+          <span class="rm">Greift bei der ersten Berührung. Chrome legt dabei jedes Mal
+            seinen eigenen Hinweis über den Schirm – der lässt sich von hier aus nicht
+            abstellen. Wer ihn los sein will: hier ausschalten, oder die Datei über eine
+            Adresse öffnen und auf den Startbildschirm legen.</span></span>
         <button class="btn btn-sm" data-hvollstart>${SHELL.vollbildStart ? 'An' : 'Aus'}</button>
       </div>
       <div class="rowline">
@@ -1904,7 +1907,7 @@ function splashZeigen() {
     const k = e.target.closest('[data-app]');
     if (!k) return;
     /* Erst das Vollbild – nach einem await ist die Geste verbraucht. */
-    try { if (SHELL.vollbildStart && !vollbildAn()) vollbildUmschalten(); } catch (err) { }
+    try { if (SHELL.vollbildStart && vollbildGeht() && !vollbildAn()) vollbildUmschalten(); } catch (err) { }
     const app = APPS.find(x => x.id === k.dataset.app);
     if (app) app.oeffnen();
   };
@@ -2127,7 +2130,18 @@ function themeUmschalten() {
 }
 
 /* ---------- Vollbild: Browserleisten verschwinden lassen ---------- */
-const vollbildGeht = () => !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+/* Liegt die Seite auf dem Startbildschirm und startet ohne Browserleisten,
+   gibt es nichts mehr auszublenden – und Chrome zeigt dann auch seinen
+   Vollbild-Hinweis nicht, weil gar kein Vollbild angefordert wird. */
+function alsAppGestartet() {
+  try {
+    if (navigator.standalone === true) return true;
+    return ['standalone', 'fullscreen', 'minimal-ui']
+      .some(m => matchMedia('(display-mode: ' + m + ')').matches);
+  } catch (e) { return false; }
+}
+const vollbildGeht = () => !alsAppGestartet()
+  && !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
 const vollbildAn = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function vollbildUmschalten() {
   const el = document.documentElement;
@@ -2160,7 +2174,7 @@ function vollbildAutostart() {
     document.removeEventListener('pointerdown', versuch, true);
     document.removeEventListener('keydown', versuch, true);
     try {
-      if (SHELL.vollbildStart && !vollbildAn()) vollbildUmschalten();
+      if (SHELL.vollbildStart && vollbildGeht() && !vollbildAn()) vollbildUmschalten();
     } catch (e) { }
   };
   document.addEventListener('pointerdown', versuch, true);
@@ -5178,6 +5192,15 @@ function gImportBlatt() {
 
 async function boot() {
   felderBeobachten();
+  /* Ueber eine Adresse aufgerufen, meldet die Seite ihr Manifest an: dann legt
+     Chrome sie als eigene App auf den Startbildschirm – ohne Browserleisten
+     und damit ohne den Vollbild-Hinweis. Aus einer Datei heraus gibt es keinen
+     Ursprung, dort bliebe die Zeile ein Fehlschlag. */
+  if (location.protocol === 'http:' || location.protocol === 'https:') {
+    const l = document.createElement('link');
+    l.rel = 'manifest'; l.href = 'mylife.webmanifest';
+    document.head.appendChild(l);
+  }
   vollbildKnopfMalen();
   $('#btnVoll').onclick = vollbildUmschalten;
   $('#btnTheme').onclick = () => { themeUmschalten(); viewMalen(); };

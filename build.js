@@ -38,3 +38,30 @@ ${rumpf.trim()}
 
 fs.writeFileSync(path.join(wurzel, 'mylife.html'), seite);
 console.log('mylife.html geschrieben (' + Math.round(seite.length / 1024) + ' KB)');
+
+/* Daneben ein Manifest. Aus einer Datei heraus meldet die Seite es gar nicht
+   erst an; liegt sie aber unter einer Adresse, legt Chrome sie damit als
+   eigene App auf den Startbildschirm - ohne Browserleisten und damit ohne
+   den Vollbild-Hinweis bei jedem Start. */
+const zeichen = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">'
+  + '<rect width="192" height="192" rx="42" fill="#000"/>'
+  + '<text x="96" y="126" font-family="Georgia,serif" font-size="96" fill="#dba43f"'
+  + ' text-anchor="middle">m</text></svg>';
+const manifest = {
+  name: 'mylife',
+  short_name: 'mylife',
+  start_url: './mylife.html',
+  scope: './',
+  display: 'standalone',
+  background_color: '#000000',
+  theme_color: '#0c0e11',
+  lang: 'de',
+  icons: [{
+    src: 'data:image/svg+xml,' + encodeURIComponent(zeichen),
+    sizes: 'any',
+    type: 'image/svg+xml',
+    purpose: 'any'
+  }]
+};
+fs.writeFileSync(path.join(wurzel, 'mylife.webmanifest'), JSON.stringify(manifest, null, 2) + '\n');
+console.log('mylife.webmanifest geschrieben');

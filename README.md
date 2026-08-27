@@ -145,6 +145,22 @@ Zurück führt das **×** in der Kopfzeile oder ein Wisch nach rechts, wenn die 
 ist. **Hell/Dunkel und Vollbild** stehen überall zur Verfügung: jede Ebene und jedes
 Blatt trägt das Paar oben rechts.
 
+## Vollbild und der Hinweis von Chrome
+
+Schaltet die Seite ins Vollbild, legt Chrome jedes Mal seinen eigenen Hinweis über
+den Schirm („zum Beenden des Vollbildmodus: von oben ziehen …"). Der gehört dem
+Browser; keine Seite kann ihn abstellen. Drei Wege daran vorbei:
+
+- **Vollbild beim Start ausschalten** (*Mehr → Darstellung*). Dann kommt der Hinweis
+  gar nicht erst – dafür bleiben die Leisten des Browsers stehen.
+- **Über eine Adresse öffnen und auf den Startbildschirm legen.** Liegt `mylife.html`
+  unter einer http(s)-Adresse, meldet sie dort ihr `mylife.webmanifest` an; Chrome legt
+  sie dann als eigene App ab, die ohne Browserleisten startet. Ohne Leisten kein
+  Vollbild-Ruf und damit kein Hinweis. Die App merkt das selbst: läuft sie so, bietet
+  sie das Vollbild gar nicht mehr an.
+- Aus einer Datei heraus (`file://`, `content://`) geht das nicht – dort gibt es keinen
+  Ursprung, an dem ein Manifest hängen könnte.
+
 ## Speicherort
 
 Beim ersten Start stehen zwei Wege zur Wahl:
