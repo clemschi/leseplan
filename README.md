@@ -51,7 +51,9 @@ Wort für Wort an einem festen Punkt: das Auge bleibt stehen, der Text läuft. V
   beim Anhalten erscheint der Satz um das Wort.
 - **Bilanz** – gelesene Wörter, Lesezeit, Durchschnittstempo, der Verlauf über die letzten
   Sitzungen und der Stand jedes Textes.
-- **Mehr** – Schriftgröße, Aufwärmen, Pausen, Kontext, Speicherort und Sicherung.
+- **Mehr** – Schriftgröße, Aufwärmen, Pausen, Kontext, Speicherort und Sicherung. Die
+  Schriftgröße ist der Ausgangswert: lange Wörter werden von allein kleiner gesetzt, damit
+  sie zwischen die Striche passen; Wortungetüme stehen mittig und über zwei Zeilen.
 
 Mit Tastatur: **Leertaste** startet und hält an, **↑ ↓** ändern das Tempo, **← →** springen
 zehn Wörter, mit **Umschalt** einen Satz.
