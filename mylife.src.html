@@ -712,14 +712,17 @@ body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
 .frpct small{font-size:9px;color:var(--text-3);margin-left:1px;}
 
 /* Die Anzeige */
-.frbuehne{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:calc(var(--vvh,100dvh) - var(--tabh,58px) - 250px);padding:10px 0 4px;
-  cursor:pointer;user-select:none;-webkit-user-select:none;}
+/* Die Bühne füllt das Bild und hält das Wort in seiner Mitte – waagerecht
+   wie senkrecht, unabhängig von Kopfzeile und Pult. */
+.frbuehne{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:0 14px;cursor:pointer;user-select:none;-webkit-user-select:none;}
 .frmarke{position:absolute;top:0;left:50%;transform:translateX(-50%);
   font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);
   opacity:0;transition:opacity .2s;pointer-events:none;}
 .frmarke.an{opacity:1;}
 .frzeiger{width:100%;max-width:680px;position:relative;}
+.frbuehne .frkontext{position:absolute;left:14px;right:14px;top:calc(50% + 96px);margin:0 auto;}
 .frstrich{display:block;height:1px;background:var(--border);position:relative;}
 .frstrich::after{content:'';position:absolute;left:50%;top:-6px;width:1px;height:6px;background:var(--bad);}
 .frstrich.unten::after{top:0;}
@@ -735,17 +738,19 @@ body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
   font-family:"Literata",Georgia,serif;}
 .frkontext.an{opacity:1;}
 /* Der Übergang ins Versinken dauert; das Auftauchen geht sofort. */
-#fr .topbar,#fr .tabbar,#fr .frpult,#fr .frstrich,#fr .frmarke,#fr .frkontext{
+#fr .topbar,#fr .tabbar,#fr .frpult,#fr .frmarke,#fr .frkontext{
   transition:opacity .22s ease;}
-#fr.vertieft .topbar,#fr.vertieft .tabbar,#fr.vertieft .frpult,
-#fr.vertieft .frstrich,#fr.vertieft .frmarke{
+#fr.vertieft .topbar,#fr.vertieft .tabbar,#fr.vertieft .frpult,#fr.vertieft .frmarke{
   opacity:0;transition:opacity 1.6s ease .45s;}
 #fr.vertieft .frkontext{opacity:0;transition:opacity .5s ease;}
 
 .frkontext b{color:var(--text);font-weight:600;}
 
 /* Das Pult */
-.frpult{position:sticky;bottom:0;background:var(--bg);padding-bottom:6px;}
+.frpult{position:fixed;left:0;right:0;bottom:var(--tabh,58px);z-index:5;
+  background:var(--bg);border-top:1px solid var(--border);
+  padding:12px 14px 10px;}
+.frpult > *{max-width:680px;margin-left:auto;margin-right:auto;}
 .frbahn{height:4px;background:var(--surface-3);border-radius:99px;position:relative;cursor:pointer;
   touch-action:none;margin-bottom:12px;}
 .frbahn > i{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:99px;}

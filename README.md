@@ -48,7 +48,9 @@ Wort für Wort an einem festen Punkt: das Auge bleibt stehen, der Text läuft. V
   Buchstabe am Blickpunkt ist rot – er sitzt nicht in der Wortmitte, sondern etwas davor,
   wo das Auge ein Wort tatsächlich erfasst. **Sobald gelesen wird, versinkt alles andere:**
   Kopfzeile, Leisten, Striche und Kontext gehen langsam in den Grund über, bis nur noch das
-  Wort dasteht. Ein Tipp irgendwohin hält an und holt alles zurück. Lange Wörter
+  Wort samt seinen Strichen dasteht. Es sitzt dabei genau in der Bildmitte – waagerecht
+  wie senkrecht, unabhängig von Kopfzeile und Pult. Ein Tipp irgendwohin hält an und holt
+  alles zurück. Lange Wörter
   stehen länger, Komma, Punkt und Absatz halten auf, und die ersten fünfundvierzig Wörter
   laufen langsamer an. Antippen startet und hält an, die Bahn darunter folgt dem Finger,
   beim Anhalten erscheint der Satz um das Wort.
