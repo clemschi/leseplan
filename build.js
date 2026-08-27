@@ -88,7 +88,7 @@ const seite = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#0c0e11">
+<meta name="theme-color" content="#000000">
 <meta name="color-scheme" content="dark light">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <!-- Legt man die Seite auf den Startbildschirm, startet sie damit ohne Browserleisten. -->
@@ -124,7 +124,7 @@ const manifest = {
   scope: './',
   display: 'standalone',
   background_color: '#000000',
-  theme_color: '#0c0e11',
+  theme_color: '#000000',
   lang: 'de',
   icons: [{
     src: 'data:image/svg+xml,' + encodeURIComponent(zeichen),

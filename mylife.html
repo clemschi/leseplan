@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#0c0e11">
+<meta name="theme-color" content="#000000">
 <meta name="color-scheme" content="dark light">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <!-- Legt man die Seite auf den Startbildschirm, startet sie damit ohne Browserleisten. -->
@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="mylife">
 <meta name="application-name" content="mylife">
 <!-- Erzeugt aus src/ - nicht von Hand bearbeiten, sondern: node build.js -->
-<title>leseliste</title>
+<title>mylife</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
@@ -1874,6 +1874,222 @@ function appSpeicherort(cfg, erneut) {
     }
   };
 }
+
+/* ===== Ein Speicherblock für alle Apps =====
+   Vier Apps, vier Datenbasen – aber ein Verhalten: von selbst sichern, von
+   Hand sichern, von Hand laden, den Ort wechseln. Der Block steht darum genau
+   einmal hier und wird im „Mehr“ jeder App eingesetzt. Wer eine App dazubaut,
+   meldet ihren Ort mit `appOrtAnmelden` an und bekommt alles davon geschenkt. */
+const APPORTE = [];
+function appOrtAnmelden(cfg) { APPORTE.push(cfg); return cfg; }
+const ortText = store => store.modus === 'datei' ? store.dateiname
+  : (store.modus === 'geraet' ? 'Auf diesem Gerät' : 'Nicht gewählt');
+const ortSekunden = cfg => {
+  const e = (cfg.store.daten() || {}).einstellungen || {};
+  return clamp(+(e.autosaveSek || 60), 15, 600);
+};
+
+function appDatenHtml(cfg) {
+  const store = cfg.store;
+  const sek = ortSekunden(cfg);
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Datenbasis</h2></div>
+      <div class="list-card">
+        <div class="rowline">
+          <span class="grow"><span class="rn">${esc(ortText(store))}</span>
+            <span class="rm">${store.modus === 'datei'
+      ? 'Die App schreibt still in diese Datei, von selbst alle ' + sek + ' Sekunden.'
+      : 'Von selbst alle ' + sek + ' Sekunden im Browser dieses Geräts. Sichere dir regelmäßig eine Datei.'}</span></span>
+          <button class="btn btn-sm" data-dort>Ändern</button>
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Zuletzt gesichert</span>
+            <span class="rm">${store.letzteSicherung ? relZeit(store.letzteSicherung) : 'noch nicht'}${store.dirty ? ' · offene Änderungen' : ''}</span></span>
+          <button class="btn btn-sm" data-dsave>Jetzt sichern</button>
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Von selbst sichern</span><span class="rm">Abstand in Sekunden</span></span>
+          <input type="number" data-dauto value="${sek}" style="width:82px;text-align:right">
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Daten laden</span>
+            <span class="rm">Eine ${esc(cfg.datei)} einlesen</span></span>
+          <button class="btn btn-sm" data-dimport>Laden</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function appDatenBinden(cfg, wurzel, neuMalen) {
+  const store = cfg.store;
+  const frisch = () => { if (neuMalen) neuMalen(); };
+  const o = $('[data-dort]', wurzel);
+  if (o) o.onclick = () => (cfg.ortWechseln ? cfg.ortWechseln() : appSpeicherort(cfg, false));
+  const sv = $('[data-dsave]', wurzel);
+  if (sv) sv.onclick = () => store.alsDateiSichern(false);
+  const im = $('[data-dimport]', wurzel);
+  if (im) im.onclick = () => (cfg.laden ? cfg.laden() : appImportBlatt(cfg));
+  const au = $('[data-dauto]', wurzel);
+  if (au) au.onchange = e => {
+    const v = clamp(Math.round(+e.target.value || 60), 15, 600);
+    const d = store.daten();
+    d.einstellungen = d.einstellungen || {};
+    d.einstellungen.autosaveSek = v;
+    store.aendern();
+    store.autosaveStarten();
+    frisch();
+    toast('Sichert jetzt alle ' + v + ' Sekunden.');
+  };
+}
+
+/* Eine Datei einlesen – für jede App derselbe Weg und dieselbe Prüfung. */
+function appImportBlatt(cfg) {
+  const s = blatt('Daten laden', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">Eine
+      <strong>${esc(cfg.datei)}</strong> einlesen. Der bisherige Stand dieser App wird ersetzt;
+      die anderen Apps bleiben unberührt.</p>
+    <input type="file" accept="application/json,.json" data-file style="width:100%">
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
+      <button class="btn btn-ghost" data-no>Abbrechen</button>
+    </div>`, { fokus: false });
+  $('[data-no]', s).onclick = () => layerSchliessen();
+  $('[data-ok]', s).onclick = async () => {
+    const f = $('[data-file]', s).files[0];
+    if (!f) { toast('Keine Datei gewählt.'); return; }
+    let roh = null;
+    try { roh = JSON.parse(await f.text()); }
+    catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); return; }
+    const passt = appOrtZuDaten(roh);
+    if (passt && passt !== cfg) {
+      toast('Das sind Daten für ' + passt.name + '. Dort laden.', 4200);
+      return;
+    }
+    const ok = await appDatenUebernehmen(cfg, roh);
+    if (!ok) { toast('Die Datei passt nicht zu ' + cfg.name + '.', 4000); return; }
+    layerSchliessen();
+    if (cfg.starten) cfg.starten();
+    toast('Geladen.');
+  };
+}
+
+/* Woher stammt eine Datei? Jede Datenbasis trägt ihr Format im Kopf. */
+function appOrtZuDaten(roh) {
+  if (!roh || typeof roh !== 'object') return null;
+  return APPORTE.find(o => o.format && roh.format === o.format) || null;
+}
+
+/* Übernehmen heißt: prüfen, in die Datenbasis setzen, sofort sichern. Hat die
+   App noch keinen Ort, bekommt sie die Arbeitskopie auf diesem Gerät – sonst
+   läge das Geladene nirgends. */
+async function appDatenUebernehmen(cfg, roh) {
+  if (!roh || typeof roh !== 'object') return false;
+  if (cfg.format && roh.format && roh.format !== cfg.format) return false;
+  const store = cfg.store;
+  try { store.setzen(cfg.normalisiere(roh)); } catch (e) { console.error(e); return false; }
+  if (!store.modus) {
+    store.modus = 'geraet';
+    await store.metaSchreiben();
+  }
+  await store.sichern(true);
+  return true;
+}
+
+/* Die leseliste hat ihre eigene, längere Ersteinrichtung und ihren eigenen
+   Ladedialog (ersetzen oder ergänzen) – beim Sichern, beim Takt und beim
+   Erkennen einer Datei geht sie denselben Weg wie alle anderen. */
+const LORT = appOrtAnmelden({
+  store: Store, name: 'leseliste', datei: 'leseplan.json', format: 'leseplan',
+  lead: 'Wo sollen Bücher, Notizen und Fotos liegen?',
+  normalisiere: r => normalisiere(r), leer: () => leereDb(),
+  starten: () => appStarten(),
+  ortWechseln: () => setupZeigen(true),
+  laden: () => importDialog(false)
+});
+
+/* ===== Alles auf einmal =====
+   Vier Apps, vier Dateien – zum Umziehen ist das umständlich. Darum gibt es
+   auf der Datenseite eine Sicherung über alle: eine mylife.json, in der jede
+   App ihren Teil hat. Eingelesen wird beides, die Sammeldatei wie einzelne
+   App-Dateien, auch mehrere auf einmal. */
+async function ortDatenLesen(cfg) {
+  const store = cfg.store;
+  try {
+    if (store.modus) {
+      const d = await store.ladeDaten();
+      if (d) return d;
+    }
+    const d = await IDB.get(store.datenKey);
+    if (d) return d;
+  } catch (e) { console.warn(e); }
+  try { return store.daten() || null; } catch (e) { return null; }
+}
+
+async function alleDatenSammeln() {
+  const teile = {};
+  for (const cfg of APPORTE) {
+    const d = await ortDatenLesen(cfg);
+    if (d) teile[cfg.store.id] = d;
+  }
+  return { format: 'mylife-alles', version: 1, erstellt: Date.now(), teile };
+}
+
+async function alleSichern() {
+  const alles = await alleDatenSammeln();
+  const n = Object.keys(alles.teile).length;
+  if (!n) { toast('Es liegt noch nichts zum Sichern bereit.'); return; }
+  await dateiAnbieten('mylife-' + heute() + '.json', JSON.stringify(alles), 'application/json');
+}
+
+/* Nimmt eine Sammeldatei oder einzelne App-Dateien und legt jeden Teil dort ab,
+   wo er hingehört. Gibt zurück, was angekommen ist. */
+async function alleLaden(dateien) {
+  const gelandet = [], daneben = [];
+  for (const f of dateien) {
+    let roh = null;
+    try { roh = JSON.parse(await f.text()); }
+    catch (e) { daneben.push(f.name + ' (kein JSON)'); continue; }
+    if (roh && roh.format === 'mylife-alles' && roh.teile && typeof roh.teile === 'object') {
+      for (const cfg of APPORTE) {
+        const teil = roh.teile[cfg.store.id];
+        if (!teil) continue;
+        if (await appDatenUebernehmen(cfg, teil)) gelandet.push(cfg.name);
+        else daneben.push(cfg.name);
+      }
+      continue;
+    }
+    const cfg = appOrtZuDaten(roh);
+    if (!cfg) { daneben.push(f.name + ' (unbekannt)'); continue; }
+    if (await appDatenUebernehmen(cfg, roh)) gelandet.push(cfg.name);
+    else daneben.push(f.name);
+  }
+  return { gelandet, daneben };
+}
+
+function alleLadenBlatt(fertig) {
+  const s = blatt('Alle Daten laden', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
+      Eine <strong>mylife.json</strong> mit allem darin – oder gleich mehrere einzelne
+      Dateien (leseplan, kalender, fastreader, gsund). Jeder Teil geht in seine App;
+      was dort liegt, wird ersetzt.</p>
+    <input type="file" accept="application/json,.json" data-file multiple style="width:100%">
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
+      <button class="btn btn-ghost" data-no>Abbrechen</button>
+    </div>`, { fokus: false });
+  $('[data-no]', s).onclick = () => layerSchliessen();
+  $('[data-ok]', s).onclick = async () => {
+    const fs = Array.from($('[data-file]', s).files || []);
+    if (!fs.length) { toast('Keine Datei gewählt.'); return; }
+    const { gelandet, daneben } = await alleLaden(fs);
+    layerSchliessen();
+    if (!gelandet.length) { toast('Nichts davon passte.', 4000); return; }
+    toast(gelandet.join(', ') + ' geladen'
+      + (daneben.length ? ' · nicht gepasst: ' + daneben.join(', ') : '') + '.', 4600);
+    if (fertig) fertig();
+  };
+}
 /* ============================================================
    Ersteinrichtung: Speicherort festlegen
    ============================================================ */
@@ -2040,11 +2256,15 @@ function speicherErklaerung() {
 function setupZeigen(nurWechsel, ausSplash) {
   const s = $('#setup');
   const dateiDa = Store.dateiApiDa();
+  /* Beim allerersten Start geht es nur um einen Ort für die leseliste. Wer die
+     Seite dagegen vom Startbildschirm aus öffnet, will die Daten aller Apps
+     sehen – dann steht der Sammelblock dabei. */
+  const zeigeAlle = !!(nurWechsel || ausSplash);
   s.innerHTML = `
     <div class="setup-inner">
-      <div class="mark serif">leseliste</div>
+      <div class="mark serif">mylife</div>
       ${dateiDa ? `
-        <p class="lead">Wo sollen deine Bücher, Notizen und Fotos liegen?</p>
+        <p class="lead">Wo sollen die Bücher, Notizen und Fotos der <strong>leseliste</strong> liegen?</p>
 
         <button class="opt" data-act="datei-neu">
           <span class="on">${ICON.save} Neue Datei anlegen <span class="badge">empfohlen</span></span>
@@ -2061,7 +2281,7 @@ function setupZeigen(nurWechsel, ausSplash) {
           <span class="od">Ohne Datei. Verschwindet mit den Website-Daten.</span>
         </button>
       ` : `
-        <p class="lead">Deine Bücher und Notizen bleiben in diesem Browser – gespeichert wird automatisch.</p>
+        <p class="lead">Bücher und Notizen der <strong>leseliste</strong> bleiben in diesem Browser – gesichert wird von selbst.</p>
 
         <button class="btn btn-primary btn-block" data-act="geraet" style="padding:14px;font-size:15px">Loslegen</button>
 
@@ -2073,6 +2293,23 @@ function setupZeigen(nurWechsel, ausSplash) {
           Dieser Browser lässt die Seite nicht direkt in eine Datei schreiben. Hol dir mit „Jetzt sichern“ regelmäßig eine Kopie.
         </p>
       `}
+
+      ${zeigeAlle ? `
+      <div class="section" style="margin-top:22px;text-align:left">
+        <div class="section-head"><h2>Alle Apps auf einmal</h2></div>
+        <div class="list-card">
+          <div class="rowline">
+            <span class="grow"><span class="rn">Alles laden</span>
+              <span class="rm">Eine mylife.json – oder mehrere App-Dateien zugleich. Jeder Teil geht in seine App.</span></span>
+            <button class="btn btn-sm" data-act="alle-laden">Laden</button>
+          </div>
+          <div class="rowline">
+            <span class="grow"><span class="rn">Alles sichern</span>
+              <span class="rm">${esc(APPORTE.map(o => o.name).join(', '))} in einer Datei</span></span>
+            <button class="btn btn-sm" data-act="alle-sichern">Sichern</button>
+          </div>
+        </div>
+      </div>` : ''}
 
       <button class="infobox" data-act="info" style="position:static;margin:20px 0 0;max-width:none">
         <span class="i-kopf">Wo liegen meine Daten?</span>
@@ -2104,6 +2341,8 @@ function setupZeigen(nurWechsel, ausSplash) {
       s.hidden = true; $('#app').hidden = false; return;
     }
     if (act === 'import') { importDialog(!nurWechsel); return; }
+    if (act === 'alle-laden') { alleLadenBlatt(() => setupZeigen(nurWechsel, ausSplash)); return; }
+    if (act === 'alle-sichern') { alleSichern(); return; }
     if (act === 'ki') { kiErstellenOeffnen(); return; }
     /* Stöbern legt am Ende selbst eine leseliste an – dafür braucht es einen
        Speicherort, also gilt hier dieselbe Arbeitskopie wie bei „Loslegen“. */
@@ -2215,6 +2454,10 @@ function themeAnwenden() {
   const [wirkt, beides] = DREI[a.id] || DREI.messing;
   document.documentElement.style.setProperty('--wirkt', hell ? wirkt[0] : wirkt[1]);
   document.documentElement.style.setProperty('--beides', hell ? beides[0] : beides[1]);
+  /* Die Leiste des Browsers bekommt denselben Grund wie die Seite – sonst
+     steht über Schwarz ein grauer Streifen. */
+  const tc = document.querySelector('meta[name=theme-color]');
+  if (tc) tc.setAttribute('content', hell ? '#eef0f3' : '#000000');
   const b = $('#btnTheme');
   if (b) b.innerHTML = hell ? ICON.moon : ICON.sun;
 }
@@ -2225,9 +2468,9 @@ function themeUmschalten() {
 }
 
 /* ---------- Vollbild: Browserleisten verschwinden lassen ---------- */
-/* Liegt die Seite auf dem Startbildschirm und startet ohne Browserleisten,
-   gibt es nichts mehr auszublenden – und Chrome zeigt dann auch seinen
-   Vollbild-Hinweis nicht, weil gar kein Vollbild angefordert wird. */
+/* Läuft die Seite schon ohne Browserleisten – vom Startbildschirm aus –, ist
+   das Vollbild nur noch eine Kleinigkeit obendrauf. Verlangt wird es trotzdem:
+   die Statusleiste des Geräts soll ebenfalls weg. */
 function alsAppGestartet() {
   try {
     if (navigator.standalone === true) return true;
@@ -2235,8 +2478,8 @@ function alsAppGestartet() {
       .some(m => matchMedia('(display-mode: ' + m + ')').matches);
   } catch (e) { return false; }
 }
-const vollbildGeht = () => !alsAppGestartet()
-  && !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+const vollbildGeht = () =>
+  !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
 const vollbildAn = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function vollbildUmschalten() {
   const el = document.documentElement;
@@ -2262,15 +2505,22 @@ document.addEventListener('fullscreenchange', vollbildKnopfMalen);
 document.addEventListener('webkitfullscreenchange', vollbildKnopfMalen);
 
 /* Vollbild verlangt eine Geste des Nutzers – also bei der allerersten Berührung,
-   schon auf dem Startbildschirm. Die Einstellung wird erst beim Auslösen gelesen. */
+   schon auf dem Startbildschirm. Lehnt der Browser die erste ab, bleibt der
+   Versuch scharf: die nächste Berührung nimmt ihn wieder auf, bis das Vollbild
+   einmal steht. Wer es danach selbst beendet, wird nicht wieder hineingezogen. */
+let vollbildVersucht = false;
 function vollbildAutostart() {
   if (!vollbildGeht()) return;
   const versuch = () => {
+    if (!SHELL.vollbildStart || vollbildVersucht) { abmelden(); return; }
+    if (vollbildAn()) { vollbildVersucht = true; abmelden(); return; }
+    try { vollbildUmschalten(); } catch (e) { }
+    /* Erst wenn es wirklich sitzt, ist Ruhe. */
+    setTimeout(() => { if (vollbildAn()) { vollbildVersucht = true; abmelden(); } }, 400);
+  };
+  const abmelden = () => {
     document.removeEventListener('pointerdown', versuch, true);
     document.removeEventListener('keydown', versuch, true);
-    try {
-      if (SHELL.vollbildStart && vollbildGeht() && !vollbildAn()) vollbildUmschalten();
-    } catch (e) { }
   };
   document.addEventListener('pointerdown', versuch, true);
   document.addEventListener('keydown', versuch, true);
@@ -2673,11 +2923,12 @@ function kTagEinfuegen(thema, tag) {
 /* ---------- Öffnen und Speicherort ---------- */
 /* Den Weg dorthin geht appSpeicherort in speicher.js für alle Nebenapps
    gleich; hier stehen nur die Angaben des Kalenders. */
-const KORT = {
-  store: KStore, name: 'kalender', datei: 'kalender.json',
+const KORT = appOrtAnmelden({
+  store: KStore, name: 'kalender', datei: 'kalender.json', format: 'mylife-kalender',
   lead: 'Wo sollen Termine und Aufgaben liegen? Der Kalender führt eine eigene Datei – die leseliste bleibt davon unberührt.',
-  normalisiere: kalNormalisiere, leer: leereKal, starten: () => kalStarten()
-};
+  normalisiere: kalNormalisiere, leer: leereKal, starten: () => kalStarten(),
+  ortWechseln: () => kalSpeicherort(false)
+});
 function kalenderOeffnen() { return appSpeicherOeffnen(KORT); }
 function kalSpeicherort(erneut) { appSpeicherort(KORT, erneut); }
 
@@ -3337,17 +3588,11 @@ function kTagBearbeiten(vh, t) {
 
 /* ---------- Mehr ---------- */
 function kMehrMalen(v) {
-  const ort = KStore.modus === 'datei' ? KStore.dateiname : (KStore.modus === 'geraet' ? 'Auf diesem Gerät' : 'Nicht gewählt');
   const offen = KDB.aufgaben.filter(x => !x.done).length;
   v.innerHTML = `
-    <div class="section-head" style="padding-top:14px"><h2>Datenbasis</h2></div>
+    ${appDatenHtml(KORT)}
+    <div class="section-head" style="padding-top:14px"><h2>Inhalt</h2></div>
     <div class="list-card">
-      <div class="rowline"><span class="grow"><span class="rn">Speicherort</span><span class="rm">${esc(ort)}</span></span>
-        <button class="btn btn-sm" data-kwechseln>Ändern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Jetzt sichern</span><span class="rm">Als Datei ablegen</span></span>
-        <button class="btn btn-sm" data-ksave>Sichern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Daten laden</span><span class="rm">Eine kalender.json einlesen</span></span>
-        <button class="btn btn-sm" data-kimport>Laden</button></div>
       <div class="rowline"><span class="grow"><span class="rn">Alles löschen</span><span class="rm">${pl(KDB.termine.length, 'Termin', 'Termine')} · ${pl(KDB.aufgaben.length, 'Thema', 'Themen')}</span></span>
         <button class="btn btn-sm btn-danger" data-kreset>Zurücksetzen</button></div>
     </div>
@@ -3365,9 +3610,7 @@ function kMehrMalen(v) {
     ${huelleEinstellungenHtml()}
     <p class="hinweis" style="padding:16px 0 30px">Der Kalender führt seine eigene Datei. Die leseliste bleibt davon unberührt – jede App in dieser Datei hat ihre eigene Datenbasis.</p>`;
 
-  $('[data-kwechseln]', v).onclick = () => kalSpeicherort(false);
-  $('[data-ksave]', v).onclick = () => KStore.alsDateiSichern(false);
-  $('[data-kimport]', v).onclick = () => kImportDialog();
+  appDatenBinden(KORT, v, kViewMalen);
   huelleEinstellungenBinden(v, kViewMalen);
   $('[data-kreset]', v).onclick = async () => {
     if (!await bestaetigen('Wirklich alles löschen?',
@@ -3379,28 +3622,6 @@ function kMehrMalen(v) {
   };
 }
 
-function kImportDialog() {
-  const s = blatt('Daten laden', `
-    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">Eine <strong>kalender.json</strong> einlesen. Der bisherige Stand wird ersetzt.</p>
-    <input type="file" accept="application/json,.json" data-file style="width:100%">
-    <div class="btn-row" style="margin-top:14px">
-      <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
-      <button class="btn btn-ghost" data-no>Abbrechen</button>
-    </div>`, { fokus: false });
-  $('[data-no]', s).onclick = () => layerSchliessen();
-  $('[data-ok]', s).onclick = async () => {
-    const f = $('[data-file]', s).files[0];
-    if (!f) { toast('Keine Datei gewählt.'); return; }
-    try {
-      const roh = JSON.parse(await f.text());
-      KDB = kalNormalisiere(roh);
-      await KStore.sichern(true);
-      layerSchliessen();
-      kViewMalen();
-      toast(pl(KDB.termine.length, 'Termin', 'Termine') + ' geladen.');
-    } catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); }
-  };
-}
 
 /* ============================================================
    fastreader – die dritte App
@@ -3548,11 +3769,12 @@ function frFaktor(t, pausen) {
 /* ---------- Öffnen und Speicherort ---------- */
 /* Den Weg dorthin geht appSpeicherort in speicher.js für alle Nebenapps
    gleich; hier stehen nur die Angaben des fastreaders. */
-const FRORT = {
-  store: FStore, name: 'fastreader', datei: 'fastreader.json',
+const FRORT = appOrtAnmelden({
+  store: FStore, name: 'fastreader', datei: 'fastreader.json', format: 'mylife-fastreader',
   lead: 'Wo sollen deine Texte und Lesezeichen liegen? Der fastreader führt eine eigene Datei – die anderen Apps bleiben davon unberührt.',
-  normalisiere: frNormalisiere, leer: leereFr, starten: () => frStarten()
-};
+  normalisiere: frNormalisiere, leer: leereFr, starten: () => frStarten(),
+  ortWechseln: () => frSpeicherort(false)
+});
 function fastreaderOeffnen() { return appSpeicherOeffnen(FRORT); }
 function frSpeicherort(erneut) { appSpeicherort(FRORT, erneut); }
 
@@ -4277,7 +4499,6 @@ function frKurve(p) {
 /* ---------- Mehr ---------- */
 function frMehrMalen(v) {
   const e = FDB.einstellungen;
-  const ort = FStore.modus === 'datei' ? FStore.dateiname : (FStore.modus === 'geraet' ? 'Auf diesem Gerät' : 'Nicht gewählt');
   const zeichen = FDB.dokumente.reduce((n, d) => n + d.text.length, 0);
   v.innerHTML = `
     <div class="section-head" style="padding-top:14px"><h2>Lesen</h2></div>
@@ -4293,14 +4514,9 @@ function frMehrMalen(v) {
         <button class="btn btn-sm" data-kontext>${e.kontext ? 'An' : 'Aus'}</button></div>
     </div>
 
-    <div class="section-head" style="margin-top:20px"><h2>Datenbasis</h2></div>
+    ${appDatenHtml(FRORT)}
+    <div class="section-head" style="padding-top:14px"><h2>Inhalt</h2></div>
     <div class="list-card">
-      <div class="rowline"><span class="grow"><span class="rn">Speicherort</span><span class="rm">${esc(ort)}</span></span>
-        <button class="btn btn-sm" data-fwechseln>Ändern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Jetzt sichern</span><span class="rm">Als Datei ablegen</span></span>
-        <button class="btn btn-sm" data-fsave>Sichern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Daten laden</span><span class="rm">Eine fastreader.json einlesen</span></span>
-        <button class="btn btn-sm" data-fimport>Laden</button></div>
       <div class="rowline"><span class="grow"><span class="rn">Umfang</span><span class="rm">${pl(FDB.dokumente.length, 'Text', 'Texte')} · ${fmtZahl(Math.round(zeichen / 1000))} Tausend Zeichen</span></span></div>
       <div class="rowline"><span class="grow"><span class="rn">Alles löschen</span><span class="rm">Texte, Lesezeichen und Bilanz</span></span>
         <button class="btn btn-sm btn-danger" data-freset>Zurücksetzen</button></div>
@@ -4326,9 +4542,7 @@ function frMehrMalen(v) {
     if (FS.marken.length) FS.norm = FS.marken.reduce((a, t) => a + frFaktor(t, FDB.einstellungen.pausen), 0) / FS.marken.length;
     fViewMalen();
   };
-  $('[data-fwechseln]', v).onclick = () => frSpeicherort(false);
-  $('[data-fsave]', v).onclick = () => FStore.alsDateiSichern(false);
-  $('[data-fimport]', v).onclick = () => frImportBlatt();
+  appDatenBinden(FRORT, v, fViewMalen);
   huelleEinstellungenBinden(v, fViewMalen);
   $('[data-freset]', v).onclick = async () => {
     if (!await bestaetigen('Wirklich alles löschen?',
@@ -4342,28 +4556,6 @@ function frMehrMalen(v) {
   };
 }
 
-function frImportBlatt() {
-  const s = blatt('Daten laden', `
-    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">Eine <strong>fastreader.json</strong> einlesen. Der bisherige Stand wird ersetzt.</p>
-    <input type="file" accept="application/json,.json" data-file style="width:100%">
-    <div class="btn-row" style="margin-top:14px">
-      <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
-      <button class="btn btn-ghost" data-no>Abbrechen</button>
-    </div>`, { fokus: false });
-  $('[data-no]', s).onclick = () => layerSchliessen();
-  $('[data-ok]', s).onclick = async () => {
-    const f = $('[data-file]', s).files[0];
-    if (!f) { toast('Keine Datei gewählt.'); return; }
-    try {
-      FDB = frNormalisiere(JSON.parse(await f.text()));
-      FS.doc = null; FS.marken = []; FS.i = 0;
-      await FStore.sichern(true);
-      layerSchliessen();
-      fTabWechseln('bib');
-      toast(pl(FDB.dokumente.length, 'Text', 'Texte') + ' geladen.');
-    } catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); }
-  };
-}
 
 /* Tastatur – nur, solange der Leser offen ist. */
 document.addEventListener('keydown', e => {
@@ -4445,11 +4637,12 @@ const GICON = {
 /* ---------- Öffnen und Speicherort ---------- */
 /* Den Weg dorthin geht appSpeicherort in speicher.js für alle Nebenapps
    gleich; hier stehen nur die Angaben von g'sund. */
-const GORT = {
-  store: GStore, name: 'g&rsquo;sund', datei: 'gsund.json',
-  lead: 'Wo soll g&rsquo;sund seine Sachen ablegen? Auch diese App führt eine eigene Datei – die anderen bleiben davon unberührt.',
-  normalisiere: gsNormalisiere, leer: leereGs, starten: () => gsStarten()
-};
+const GORT = appOrtAnmelden({
+  store: GStore, name: 'g\u2019sund', datei: 'gsund.json', format: 'mylife-gsund',
+  lead: 'Wo soll g\u2019sund seine Sachen ablegen? Auch diese App führt eine eigene Datei – die anderen bleiben davon unberührt.',
+  normalisiere: gsNormalisiere, leer: leereGs, starten: () => gsStarten(),
+  ortWechseln: () => gsSpeicherort(false)
+});
 function gsundOeffnen() { return appSpeicherOeffnen(GORT); }
 function gsSpeicherort(erneut) { appSpeicherort(GORT, erneut); }
 
@@ -4985,17 +5178,11 @@ function gBaldMalen(v) {
 
 /* ---------- Mehr ---------- */
 function gMehrMalen(v) {
-  const ort = GStore.modus === 'datei' ? GStore.dateiname : (GStore.modus === 'geraet' ? 'Auf diesem Gerät' : 'Nicht gewählt');
   const k = GDB.karte;
   v.innerHTML = `
-    <div class="section-head" style="padding-top:14px"><h2>Datenbasis</h2></div>
+    ${appDatenHtml(GORT)}
+    <div class="section-head" style="padding-top:14px"><h2>Karte</h2></div>
     <div class="list-card">
-      <div class="rowline"><span class="grow"><span class="rn">Speicherort</span><span class="rm">${esc(ort)}</span></span>
-        <button class="btn btn-sm" data-gwechseln>Ändern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Jetzt sichern</span><span class="rm">Als Datei ablegen</span></span>
-        <button class="btn btn-sm" data-gsave>Sichern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Daten laden</span><span class="rm">Eine gsund.json einlesen</span></span>
-        <button class="btn btn-sm" data-gimport>Laden</button></div>
       <div class="rowline"><span class="grow"><span class="rn">Karte</span>
         <span class="rm">${k.titel ? esc(k.titel) : 'leer'}${k.datum ? ' · ' + esc(kTagText(k.datum)) : ''}</span></span>
         <button class="btn btn-sm" data-gkarte>Bearbeiten</button></div>
@@ -5009,9 +5196,7 @@ function gMehrMalen(v) {
     <p class="hinweis" style="padding:16px 0 30px">g&rsquo;sund führt eine eigene Datei. Die anderen Apps
       dieser Datei bleiben davon unberührt.</p>`;
 
-  $('[data-gwechseln]', v).onclick = () => gsSpeicherort(false);
-  $('[data-gsave]', v).onclick = () => GStore.alsDateiSichern(false);
-  $('[data-gimport]', v).onclick = () => gImportBlatt();
+  appDatenBinden(GORT, v, gViewMalen);
   $('[data-gkarte]', v).onclick = () => gKarteBearbeiten();
   $('[data-gverg]', v).onclick = () => gVergangenOeffnen();
   $('[data-greset]', v).onclick = async () => {
@@ -5025,28 +5210,6 @@ function gMehrMalen(v) {
   huelleEinstellungenBinden(v, gViewMalen);
 }
 
-function gImportBlatt() {
-  const s = blatt('Daten laden', `
-    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">Eine <strong>gsund.json</strong> einlesen. Der bisherige Stand wird ersetzt.</p>
-    <input type="file" accept="application/json,.json" data-file style="width:100%">
-    <div class="btn-row" style="margin-top:14px">
-      <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
-      <button class="btn btn-ghost" data-no>Abbrechen</button>
-    </div>`, { fokus: false });
-  $('[data-no]', s).onclick = () => layerSchliessen();
-  $('[data-ok]', s).onclick = async () => {
-    const f = $('[data-file]', s).files[0];
-    if (!f) { toast('Keine Datei gewählt.'); return; }
-    try {
-      GDB = gsNormalisiere(JSON.parse(await f.text()));
-      await GStore.sichern(true);
-      layerSchliessen();
-      gDrehung = 0; gGedreht = false;
-      gTabWechseln('guzi');
-      toast('Geladen.');
-    } catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); }
-  };
-}
 
 async function boot() {
   felderBeobachten();
@@ -10236,7 +10399,6 @@ function stoWerkBlatt(w) {
    Mehr: Speicher, Arten, Sicherung
    ============================================================ */
 function mehrMalen(root) {
-  const dateiModus = Store.modus === 'datei';
   root.innerHTML = `
     <div class="section">
       <div class="section-head"><h2>leselisten</h2></div>
@@ -10266,42 +10428,13 @@ function mehrMalen(root) {
       </div>
     </div>
 
-    <div class="section">
-      <div class="section-head"><h2>Speicherort</h2></div>
-      <div class="list-card">
-        <div class="rowline">
-          <span class="grow">
-            <span class="rn">${dateiModus ? esc(Store.dateiname) : 'Arbeitskopie auf diesem Gerät'}</span>
-            <span class="rm">${dateiModus
-      ? 'Die App schreibt still in diese Datei, automatisch alle ' + (DB.einstellungen.autosaveSek || 60) + ' Sekunden.'
-      : 'Automatisch alle ' + (DB.einstellungen.autosaveSek || 60) + ' Sekunden im Browser dieses Geräts. Sichere dir regelmäßig eine Datei.'}</span>
-          </span>
-        </div>
-        <div class="rowline">
-          <span class="grow"><span class="rn">Zuletzt gesichert</span><span class="rm">${Store.letzteSicherung ? relZeit(Store.letzteSicherung) : 'noch nicht'}${Store.dirty ? ' · offene Änderungen' : ''}</span></span>
-          <button class="btn btn-sm" data-save>Jetzt sichern</button>
-        </div>
-        <div class="rowline">
-          <span class="grow"><span class="rn">Automatisch sichern</span><span class="rm">Abstand in Sekunden</span></span>
-          <input type="number" data-auto value="${DB.einstellungen.autosaveSek || 60}" style="width:82px;text-align:right">
-        </div>
-        <div class="rowline">
-          <span class="grow"><span class="rn">Speicherort wechseln</span><span class="rm">Datei oder Arbeitskopie</span></span>
-          <button class="btn btn-sm" data-wechseln>Ändern</button>
-        </div>
-      </div>
-    </div>
+    ${appDatenHtml(LORT)}
 
     <div class="section">
       <div class="section-head"><h2>Listen und Sicherungen</h2></div>
       <div class="list-card">
         <div class="rowline">
-          <span class="grow"><span class="rn">Daten aus Datei laden</span><span class="rm">Ganze Liste ersetzen oder ergänzen</span></span>
-          <button class="btn btn-sm" data-import>Laden</button>
-        </div>
-        <div class="rowline">
-          <span class="grow"><span class="rn">Sicherung als Datei</span><span class="rm">${fmtZahl(Math.round(JSON.stringify(DB).length / 1024))} KB inklusive Fotos</span></span>
-          <button class="btn btn-sm" data-export>Sichern</button>
+          <span class="grow"><span class="rn">Umfang</span><span class="rm">${fmtZahl(Math.round(JSON.stringify(DB).length / 1024))} KB inklusive Fotos</span></span>
         </div>
         <div class="rowline">
           <span class="grow"><span class="rn" style="color:var(--bad)">Alles löschen</span><span class="rm">Setzt diesen Speicherort auf leer zurück</span></span>
@@ -10358,7 +10491,7 @@ function mehrMalen(root) {
     </div>
 
     <div class="section">
-      <div class="section-head"><h2>Darstellung</h2></div>
+      <div class="section-head"><h2>Lesen</h2></div>
       <div class="list-card">
         <div class="rowline">
           <span class="grow"><span class="rn">Tagesziel</span><span class="rm">${DB.einstellungen.zielSeiten ? DB.einstellungen.zielSeiten + ' Seiten pro Tag' : 'Keins gesetzt'}</span></span>
@@ -10406,18 +10539,8 @@ function mehrMalen(root) {
     aendern(() => { DB.einstellungen.timerFragen = !DB.einstellungen.timerFragen; });
     viewMalen();
   };
-  $('[data-save]', root).onclick = () => Store.alsDateiSichern(false);
-  $('[data-export]', root).onclick = () => Store.alsDateiSichern(false);
-  $('[data-import]', root).onclick = () => importDialog(false);
-  $('[data-wechseln]', root).onclick = () => setupZeigen(true);
+  appDatenBinden(LORT, root, viewMalen);
   $('[data-arten]', root).onclick = artenVerwalten;
-  $('[data-auto]', root).onchange = e => {
-    const v = clamp(Math.round(num(e.target.value) || 60), 15, 600);
-    aendern(() => { DB.einstellungen.autosaveSek = v; });
-    Store.autosaveStarten();
-    viewMalen();
-    toast('Sichert jetzt alle ' + v + ' Sekunden.');
-  };
   $('[data-reset]', root).onclick = async () => {
     const ok = await bestaetigen('Wirklich alles löschen?',
       `${DB.buecher.length} Bücher, ${alleNotizen().length} Notizen und alle Fotos an diesem Speicherort werden gelöscht. Danach beginnst du wieder bei der Wahl des Speicherorts.`,

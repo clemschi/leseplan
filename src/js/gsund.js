@@ -62,11 +62,12 @@ const GICON = {
 /* ---------- Öffnen und Speicherort ---------- */
 /* Den Weg dorthin geht appSpeicherort in speicher.js für alle Nebenapps
    gleich; hier stehen nur die Angaben von g'sund. */
-const GORT = {
-  store: GStore, name: 'g&rsquo;sund', datei: 'gsund.json',
-  lead: 'Wo soll g&rsquo;sund seine Sachen ablegen? Auch diese App führt eine eigene Datei – die anderen bleiben davon unberührt.',
-  normalisiere: gsNormalisiere, leer: leereGs, starten: () => gsStarten()
-};
+const GORT = appOrtAnmelden({
+  store: GStore, name: 'g\u2019sund', datei: 'gsund.json', format: 'mylife-gsund',
+  lead: 'Wo soll g\u2019sund seine Sachen ablegen? Auch diese App führt eine eigene Datei – die anderen bleiben davon unberührt.',
+  normalisiere: gsNormalisiere, leer: leereGs, starten: () => gsStarten(),
+  ortWechseln: () => gsSpeicherort(false)
+});
 function gsundOeffnen() { return appSpeicherOeffnen(GORT); }
 function gsSpeicherort(erneut) { appSpeicherort(GORT, erneut); }
 
@@ -602,17 +603,11 @@ function gBaldMalen(v) {
 
 /* ---------- Mehr ---------- */
 function gMehrMalen(v) {
-  const ort = GStore.modus === 'datei' ? GStore.dateiname : (GStore.modus === 'geraet' ? 'Auf diesem Gerät' : 'Nicht gewählt');
   const k = GDB.karte;
   v.innerHTML = `
-    <div class="section-head" style="padding-top:14px"><h2>Datenbasis</h2></div>
+    ${appDatenHtml(GORT)}
+    <div class="section-head" style="padding-top:14px"><h2>Karte</h2></div>
     <div class="list-card">
-      <div class="rowline"><span class="grow"><span class="rn">Speicherort</span><span class="rm">${esc(ort)}</span></span>
-        <button class="btn btn-sm" data-gwechseln>Ändern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Jetzt sichern</span><span class="rm">Als Datei ablegen</span></span>
-        <button class="btn btn-sm" data-gsave>Sichern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Daten laden</span><span class="rm">Eine gsund.json einlesen</span></span>
-        <button class="btn btn-sm" data-gimport>Laden</button></div>
       <div class="rowline"><span class="grow"><span class="rn">Karte</span>
         <span class="rm">${k.titel ? esc(k.titel) : 'leer'}${k.datum ? ' · ' + esc(kTagText(k.datum)) : ''}</span></span>
         <button class="btn btn-sm" data-gkarte>Bearbeiten</button></div>
@@ -626,9 +621,7 @@ function gMehrMalen(v) {
     <p class="hinweis" style="padding:16px 0 30px">g&rsquo;sund führt eine eigene Datei. Die anderen Apps
       dieser Datei bleiben davon unberührt.</p>`;
 
-  $('[data-gwechseln]', v).onclick = () => gsSpeicherort(false);
-  $('[data-gsave]', v).onclick = () => GStore.alsDateiSichern(false);
-  $('[data-gimport]', v).onclick = () => gImportBlatt();
+  appDatenBinden(GORT, v, gViewMalen);
   $('[data-gkarte]', v).onclick = () => gKarteBearbeiten();
   $('[data-gverg]', v).onclick = () => gVergangenOeffnen();
   $('[data-greset]', v).onclick = async () => {
@@ -642,28 +635,6 @@ function gMehrMalen(v) {
   huelleEinstellungenBinden(v, gViewMalen);
 }
 
-function gImportBlatt() {
-  const s = blatt('Daten laden', `
-    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">Eine <strong>gsund.json</strong> einlesen. Der bisherige Stand wird ersetzt.</p>
-    <input type="file" accept="application/json,.json" data-file style="width:100%">
-    <div class="btn-row" style="margin-top:14px">
-      <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
-      <button class="btn btn-ghost" data-no>Abbrechen</button>
-    </div>`, { fokus: false });
-  $('[data-no]', s).onclick = () => layerSchliessen();
-  $('[data-ok]', s).onclick = async () => {
-    const f = $('[data-file]', s).files[0];
-    if (!f) { toast('Keine Datei gewählt.'); return; }
-    try {
-      GDB = gsNormalisiere(JSON.parse(await f.text()));
-      await GStore.sichern(true);
-      layerSchliessen();
-      gDrehung = 0; gGedreht = false;
-      gTabWechseln('guzi');
-      toast('Geladen.');
-    } catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); }
-  };
-}
 
 async function boot() {
   felderBeobachten();

@@ -144,11 +144,12 @@ function frFaktor(t, pausen) {
 /* ---------- Öffnen und Speicherort ---------- */
 /* Den Weg dorthin geht appSpeicherort in speicher.js für alle Nebenapps
    gleich; hier stehen nur die Angaben des fastreaders. */
-const FRORT = {
-  store: FStore, name: 'fastreader', datei: 'fastreader.json',
+const FRORT = appOrtAnmelden({
+  store: FStore, name: 'fastreader', datei: 'fastreader.json', format: 'mylife-fastreader',
   lead: 'Wo sollen deine Texte und Lesezeichen liegen? Der fastreader führt eine eigene Datei – die anderen Apps bleiben davon unberührt.',
-  normalisiere: frNormalisiere, leer: leereFr, starten: () => frStarten()
-};
+  normalisiere: frNormalisiere, leer: leereFr, starten: () => frStarten(),
+  ortWechseln: () => frSpeicherort(false)
+});
 function fastreaderOeffnen() { return appSpeicherOeffnen(FRORT); }
 function frSpeicherort(erneut) { appSpeicherort(FRORT, erneut); }
 
@@ -873,7 +874,6 @@ function frKurve(p) {
 /* ---------- Mehr ---------- */
 function frMehrMalen(v) {
   const e = FDB.einstellungen;
-  const ort = FStore.modus === 'datei' ? FStore.dateiname : (FStore.modus === 'geraet' ? 'Auf diesem Gerät' : 'Nicht gewählt');
   const zeichen = FDB.dokumente.reduce((n, d) => n + d.text.length, 0);
   v.innerHTML = `
     <div class="section-head" style="padding-top:14px"><h2>Lesen</h2></div>
@@ -889,14 +889,9 @@ function frMehrMalen(v) {
         <button class="btn btn-sm" data-kontext>${e.kontext ? 'An' : 'Aus'}</button></div>
     </div>
 
-    <div class="section-head" style="margin-top:20px"><h2>Datenbasis</h2></div>
+    ${appDatenHtml(FRORT)}
+    <div class="section-head" style="padding-top:14px"><h2>Inhalt</h2></div>
     <div class="list-card">
-      <div class="rowline"><span class="grow"><span class="rn">Speicherort</span><span class="rm">${esc(ort)}</span></span>
-        <button class="btn btn-sm" data-fwechseln>Ändern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Jetzt sichern</span><span class="rm">Als Datei ablegen</span></span>
-        <button class="btn btn-sm" data-fsave>Sichern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Daten laden</span><span class="rm">Eine fastreader.json einlesen</span></span>
-        <button class="btn btn-sm" data-fimport>Laden</button></div>
       <div class="rowline"><span class="grow"><span class="rn">Umfang</span><span class="rm">${pl(FDB.dokumente.length, 'Text', 'Texte')} · ${fmtZahl(Math.round(zeichen / 1000))} Tausend Zeichen</span></span></div>
       <div class="rowline"><span class="grow"><span class="rn">Alles löschen</span><span class="rm">Texte, Lesezeichen und Bilanz</span></span>
         <button class="btn btn-sm btn-danger" data-freset>Zurücksetzen</button></div>
@@ -922,9 +917,7 @@ function frMehrMalen(v) {
     if (FS.marken.length) FS.norm = FS.marken.reduce((a, t) => a + frFaktor(t, FDB.einstellungen.pausen), 0) / FS.marken.length;
     fViewMalen();
   };
-  $('[data-fwechseln]', v).onclick = () => frSpeicherort(false);
-  $('[data-fsave]', v).onclick = () => FStore.alsDateiSichern(false);
-  $('[data-fimport]', v).onclick = () => frImportBlatt();
+  appDatenBinden(FRORT, v, fViewMalen);
   huelleEinstellungenBinden(v, fViewMalen);
   $('[data-freset]', v).onclick = async () => {
     if (!await bestaetigen('Wirklich alles löschen?',
@@ -938,28 +931,6 @@ function frMehrMalen(v) {
   };
 }
 
-function frImportBlatt() {
-  const s = blatt('Daten laden', `
-    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">Eine <strong>fastreader.json</strong> einlesen. Der bisherige Stand wird ersetzt.</p>
-    <input type="file" accept="application/json,.json" data-file style="width:100%">
-    <div class="btn-row" style="margin-top:14px">
-      <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
-      <button class="btn btn-ghost" data-no>Abbrechen</button>
-    </div>`, { fokus: false });
-  $('[data-no]', s).onclick = () => layerSchliessen();
-  $('[data-ok]', s).onclick = async () => {
-    const f = $('[data-file]', s).files[0];
-    if (!f) { toast('Keine Datei gewählt.'); return; }
-    try {
-      FDB = frNormalisiere(JSON.parse(await f.text()));
-      FS.doc = null; FS.marken = []; FS.i = 0;
-      await FStore.sichern(true);
-      layerSchliessen();
-      fTabWechseln('bib');
-      toast(pl(FDB.dokumente.length, 'Text', 'Texte') + ' geladen.');
-    } catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); }
-  };
-}
 
 /* Tastatur – nur, solange der Leser offen ist. */
 document.addEventListener('keydown', e => {

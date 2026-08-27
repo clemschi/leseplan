@@ -307,3 +307,219 @@ function appSpeicherort(cfg, erneut) {
     }
   };
 }
+
+/* ===== Ein Speicherblock für alle Apps =====
+   Vier Apps, vier Datenbasen – aber ein Verhalten: von selbst sichern, von
+   Hand sichern, von Hand laden, den Ort wechseln. Der Block steht darum genau
+   einmal hier und wird im „Mehr“ jeder App eingesetzt. Wer eine App dazubaut,
+   meldet ihren Ort mit `appOrtAnmelden` an und bekommt alles davon geschenkt. */
+const APPORTE = [];
+function appOrtAnmelden(cfg) { APPORTE.push(cfg); return cfg; }
+const ortText = store => store.modus === 'datei' ? store.dateiname
+  : (store.modus === 'geraet' ? 'Auf diesem Gerät' : 'Nicht gewählt');
+const ortSekunden = cfg => {
+  const e = (cfg.store.daten() || {}).einstellungen || {};
+  return clamp(+(e.autosaveSek || 60), 15, 600);
+};
+
+function appDatenHtml(cfg) {
+  const store = cfg.store;
+  const sek = ortSekunden(cfg);
+  return `
+    <div class="section">
+      <div class="section-head"><h2>Datenbasis</h2></div>
+      <div class="list-card">
+        <div class="rowline">
+          <span class="grow"><span class="rn">${esc(ortText(store))}</span>
+            <span class="rm">${store.modus === 'datei'
+      ? 'Die App schreibt still in diese Datei, von selbst alle ' + sek + ' Sekunden.'
+      : 'Von selbst alle ' + sek + ' Sekunden im Browser dieses Geräts. Sichere dir regelmäßig eine Datei.'}</span></span>
+          <button class="btn btn-sm" data-dort>Ändern</button>
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Zuletzt gesichert</span>
+            <span class="rm">${store.letzteSicherung ? relZeit(store.letzteSicherung) : 'noch nicht'}${store.dirty ? ' · offene Änderungen' : ''}</span></span>
+          <button class="btn btn-sm" data-dsave>Jetzt sichern</button>
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Von selbst sichern</span><span class="rm">Abstand in Sekunden</span></span>
+          <input type="number" data-dauto value="${sek}" style="width:82px;text-align:right">
+        </div>
+        <div class="rowline">
+          <span class="grow"><span class="rn">Daten laden</span>
+            <span class="rm">Eine ${esc(cfg.datei)} einlesen</span></span>
+          <button class="btn btn-sm" data-dimport>Laden</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function appDatenBinden(cfg, wurzel, neuMalen) {
+  const store = cfg.store;
+  const frisch = () => { if (neuMalen) neuMalen(); };
+  const o = $('[data-dort]', wurzel);
+  if (o) o.onclick = () => (cfg.ortWechseln ? cfg.ortWechseln() : appSpeicherort(cfg, false));
+  const sv = $('[data-dsave]', wurzel);
+  if (sv) sv.onclick = () => store.alsDateiSichern(false);
+  const im = $('[data-dimport]', wurzel);
+  if (im) im.onclick = () => (cfg.laden ? cfg.laden() : appImportBlatt(cfg));
+  const au = $('[data-dauto]', wurzel);
+  if (au) au.onchange = e => {
+    const v = clamp(Math.round(+e.target.value || 60), 15, 600);
+    const d = store.daten();
+    d.einstellungen = d.einstellungen || {};
+    d.einstellungen.autosaveSek = v;
+    store.aendern();
+    store.autosaveStarten();
+    frisch();
+    toast('Sichert jetzt alle ' + v + ' Sekunden.');
+  };
+}
+
+/* Eine Datei einlesen – für jede App derselbe Weg und dieselbe Prüfung. */
+function appImportBlatt(cfg) {
+  const s = blatt('Daten laden', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">Eine
+      <strong>${esc(cfg.datei)}</strong> einlesen. Der bisherige Stand dieser App wird ersetzt;
+      die anderen Apps bleiben unberührt.</p>
+    <input type="file" accept="application/json,.json" data-file style="width:100%">
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
+      <button class="btn btn-ghost" data-no>Abbrechen</button>
+    </div>`, { fokus: false });
+  $('[data-no]', s).onclick = () => layerSchliessen();
+  $('[data-ok]', s).onclick = async () => {
+    const f = $('[data-file]', s).files[0];
+    if (!f) { toast('Keine Datei gewählt.'); return; }
+    let roh = null;
+    try { roh = JSON.parse(await f.text()); }
+    catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); return; }
+    const passt = appOrtZuDaten(roh);
+    if (passt && passt !== cfg) {
+      toast('Das sind Daten für ' + passt.name + '. Dort laden.', 4200);
+      return;
+    }
+    const ok = await appDatenUebernehmen(cfg, roh);
+    if (!ok) { toast('Die Datei passt nicht zu ' + cfg.name + '.', 4000); return; }
+    layerSchliessen();
+    if (cfg.starten) cfg.starten();
+    toast('Geladen.');
+  };
+}
+
+/* Woher stammt eine Datei? Jede Datenbasis trägt ihr Format im Kopf. */
+function appOrtZuDaten(roh) {
+  if (!roh || typeof roh !== 'object') return null;
+  return APPORTE.find(o => o.format && roh.format === o.format) || null;
+}
+
+/* Übernehmen heißt: prüfen, in die Datenbasis setzen, sofort sichern. Hat die
+   App noch keinen Ort, bekommt sie die Arbeitskopie auf diesem Gerät – sonst
+   läge das Geladene nirgends. */
+async function appDatenUebernehmen(cfg, roh) {
+  if (!roh || typeof roh !== 'object') return false;
+  if (cfg.format && roh.format && roh.format !== cfg.format) return false;
+  const store = cfg.store;
+  try { store.setzen(cfg.normalisiere(roh)); } catch (e) { console.error(e); return false; }
+  if (!store.modus) {
+    store.modus = 'geraet';
+    await store.metaSchreiben();
+  }
+  await store.sichern(true);
+  return true;
+}
+
+/* Die leseliste hat ihre eigene, längere Ersteinrichtung und ihren eigenen
+   Ladedialog (ersetzen oder ergänzen) – beim Sichern, beim Takt und beim
+   Erkennen einer Datei geht sie denselben Weg wie alle anderen. */
+const LORT = appOrtAnmelden({
+  store: Store, name: 'leseliste', datei: 'leseplan.json', format: 'leseplan',
+  lead: 'Wo sollen Bücher, Notizen und Fotos liegen?',
+  normalisiere: r => normalisiere(r), leer: () => leereDb(),
+  starten: () => appStarten(),
+  ortWechseln: () => setupZeigen(true),
+  laden: () => importDialog(false)
+});
+
+/* ===== Alles auf einmal =====
+   Vier Apps, vier Dateien – zum Umziehen ist das umständlich. Darum gibt es
+   auf der Datenseite eine Sicherung über alle: eine mylife.json, in der jede
+   App ihren Teil hat. Eingelesen wird beides, die Sammeldatei wie einzelne
+   App-Dateien, auch mehrere auf einmal. */
+async function ortDatenLesen(cfg) {
+  const store = cfg.store;
+  try {
+    if (store.modus) {
+      const d = await store.ladeDaten();
+      if (d) return d;
+    }
+    const d = await IDB.get(store.datenKey);
+    if (d) return d;
+  } catch (e) { console.warn(e); }
+  try { return store.daten() || null; } catch (e) { return null; }
+}
+
+async function alleDatenSammeln() {
+  const teile = {};
+  for (const cfg of APPORTE) {
+    const d = await ortDatenLesen(cfg);
+    if (d) teile[cfg.store.id] = d;
+  }
+  return { format: 'mylife-alles', version: 1, erstellt: Date.now(), teile };
+}
+
+async function alleSichern() {
+  const alles = await alleDatenSammeln();
+  const n = Object.keys(alles.teile).length;
+  if (!n) { toast('Es liegt noch nichts zum Sichern bereit.'); return; }
+  await dateiAnbieten('mylife-' + heute() + '.json', JSON.stringify(alles), 'application/json');
+}
+
+/* Nimmt eine Sammeldatei oder einzelne App-Dateien und legt jeden Teil dort ab,
+   wo er hingehört. Gibt zurück, was angekommen ist. */
+async function alleLaden(dateien) {
+  const gelandet = [], daneben = [];
+  for (const f of dateien) {
+    let roh = null;
+    try { roh = JSON.parse(await f.text()); }
+    catch (e) { daneben.push(f.name + ' (kein JSON)'); continue; }
+    if (roh && roh.format === 'mylife-alles' && roh.teile && typeof roh.teile === 'object') {
+      for (const cfg of APPORTE) {
+        const teil = roh.teile[cfg.store.id];
+        if (!teil) continue;
+        if (await appDatenUebernehmen(cfg, teil)) gelandet.push(cfg.name);
+        else daneben.push(cfg.name);
+      }
+      continue;
+    }
+    const cfg = appOrtZuDaten(roh);
+    if (!cfg) { daneben.push(f.name + ' (unbekannt)'); continue; }
+    if (await appDatenUebernehmen(cfg, roh)) gelandet.push(cfg.name);
+    else daneben.push(f.name);
+  }
+  return { gelandet, daneben };
+}
+
+function alleLadenBlatt(fertig) {
+  const s = blatt('Alle Daten laden', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
+      Eine <strong>mylife.json</strong> mit allem darin – oder gleich mehrere einzelne
+      Dateien (leseplan, kalender, fastreader, gsund). Jeder Teil geht in seine App;
+      was dort liegt, wird ersetzt.</p>
+    <input type="file" accept="application/json,.json" data-file multiple style="width:100%">
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
+      <button class="btn btn-ghost" data-no>Abbrechen</button>
+    </div>`, { fokus: false });
+  $('[data-no]', s).onclick = () => layerSchliessen();
+  $('[data-ok]', s).onclick = async () => {
+    const fs = Array.from($('[data-file]', s).files || []);
+    if (!fs.length) { toast('Keine Datei gewählt.'); return; }
+    const { gelandet, daneben } = await alleLaden(fs);
+    layerSchliessen();
+    if (!gelandet.length) { toast('Nichts davon passte.', 4000); return; }
+    toast(gelandet.join(', ') + ' geladen'
+      + (daneben.length ? ' · nicht gepasst: ' + daneben.join(', ') : '') + '.', 4600);
+    if (fertig) fertig();
+  };
+}

@@ -2,7 +2,6 @@
    Mehr: Speicher, Arten, Sicherung
    ============================================================ */
 function mehrMalen(root) {
-  const dateiModus = Store.modus === 'datei';
   root.innerHTML = `
     <div class="section">
       <div class="section-head"><h2>leselisten</h2></div>
@@ -32,42 +31,13 @@ function mehrMalen(root) {
       </div>
     </div>
 
-    <div class="section">
-      <div class="section-head"><h2>Speicherort</h2></div>
-      <div class="list-card">
-        <div class="rowline">
-          <span class="grow">
-            <span class="rn">${dateiModus ? esc(Store.dateiname) : 'Arbeitskopie auf diesem Gerät'}</span>
-            <span class="rm">${dateiModus
-      ? 'Die App schreibt still in diese Datei, automatisch alle ' + (DB.einstellungen.autosaveSek || 60) + ' Sekunden.'
-      : 'Automatisch alle ' + (DB.einstellungen.autosaveSek || 60) + ' Sekunden im Browser dieses Geräts. Sichere dir regelmäßig eine Datei.'}</span>
-          </span>
-        </div>
-        <div class="rowline">
-          <span class="grow"><span class="rn">Zuletzt gesichert</span><span class="rm">${Store.letzteSicherung ? relZeit(Store.letzteSicherung) : 'noch nicht'}${Store.dirty ? ' · offene Änderungen' : ''}</span></span>
-          <button class="btn btn-sm" data-save>Jetzt sichern</button>
-        </div>
-        <div class="rowline">
-          <span class="grow"><span class="rn">Automatisch sichern</span><span class="rm">Abstand in Sekunden</span></span>
-          <input type="number" data-auto value="${DB.einstellungen.autosaveSek || 60}" style="width:82px;text-align:right">
-        </div>
-        <div class="rowline">
-          <span class="grow"><span class="rn">Speicherort wechseln</span><span class="rm">Datei oder Arbeitskopie</span></span>
-          <button class="btn btn-sm" data-wechseln>Ändern</button>
-        </div>
-      </div>
-    </div>
+    ${appDatenHtml(LORT)}
 
     <div class="section">
       <div class="section-head"><h2>Listen und Sicherungen</h2></div>
       <div class="list-card">
         <div class="rowline">
-          <span class="grow"><span class="rn">Daten aus Datei laden</span><span class="rm">Ganze Liste ersetzen oder ergänzen</span></span>
-          <button class="btn btn-sm" data-import>Laden</button>
-        </div>
-        <div class="rowline">
-          <span class="grow"><span class="rn">Sicherung als Datei</span><span class="rm">${fmtZahl(Math.round(JSON.stringify(DB).length / 1024))} KB inklusive Fotos</span></span>
-          <button class="btn btn-sm" data-export>Sichern</button>
+          <span class="grow"><span class="rn">Umfang</span><span class="rm">${fmtZahl(Math.round(JSON.stringify(DB).length / 1024))} KB inklusive Fotos</span></span>
         </div>
         <div class="rowline">
           <span class="grow"><span class="rn" style="color:var(--bad)">Alles löschen</span><span class="rm">Setzt diesen Speicherort auf leer zurück</span></span>
@@ -124,7 +94,7 @@ function mehrMalen(root) {
     </div>
 
     <div class="section">
-      <div class="section-head"><h2>Darstellung</h2></div>
+      <div class="section-head"><h2>Lesen</h2></div>
       <div class="list-card">
         <div class="rowline">
           <span class="grow"><span class="rn">Tagesziel</span><span class="rm">${DB.einstellungen.zielSeiten ? DB.einstellungen.zielSeiten + ' Seiten pro Tag' : 'Keins gesetzt'}</span></span>
@@ -172,18 +142,8 @@ function mehrMalen(root) {
     aendern(() => { DB.einstellungen.timerFragen = !DB.einstellungen.timerFragen; });
     viewMalen();
   };
-  $('[data-save]', root).onclick = () => Store.alsDateiSichern(false);
-  $('[data-export]', root).onclick = () => Store.alsDateiSichern(false);
-  $('[data-import]', root).onclick = () => importDialog(false);
-  $('[data-wechseln]', root).onclick = () => setupZeigen(true);
+  appDatenBinden(LORT, root, viewMalen);
   $('[data-arten]', root).onclick = artenVerwalten;
-  $('[data-auto]', root).onchange = e => {
-    const v = clamp(Math.round(num(e.target.value) || 60), 15, 600);
-    aendern(() => { DB.einstellungen.autosaveSek = v; });
-    Store.autosaveStarten();
-    viewMalen();
-    toast('Sichert jetzt alle ' + v + ' Sekunden.');
-  };
   $('[data-reset]', root).onclick = async () => {
     const ok = await bestaetigen('Wirklich alles löschen?',
       `${DB.buecher.length} Bücher, ${alleNotizen().length} Notizen und alle Fotos an diesem Speicherort werden gelöscht. Danach beginnst du wieder bei der Wahl des Speicherorts.`,

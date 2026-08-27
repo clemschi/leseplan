@@ -52,6 +52,10 @@ function themeAnwenden() {
   const [wirkt, beides] = DREI[a.id] || DREI.messing;
   document.documentElement.style.setProperty('--wirkt', hell ? wirkt[0] : wirkt[1]);
   document.documentElement.style.setProperty('--beides', hell ? beides[0] : beides[1]);
+  /* Die Leiste des Browsers bekommt denselben Grund wie die Seite – sonst
+     steht über Schwarz ein grauer Streifen. */
+  const tc = document.querySelector('meta[name=theme-color]');
+  if (tc) tc.setAttribute('content', hell ? '#eef0f3' : '#000000');
   const b = $('#btnTheme');
   if (b) b.innerHTML = hell ? ICON.moon : ICON.sun;
 }
@@ -62,9 +66,9 @@ function themeUmschalten() {
 }
 
 /* ---------- Vollbild: Browserleisten verschwinden lassen ---------- */
-/* Liegt die Seite auf dem Startbildschirm und startet ohne Browserleisten,
-   gibt es nichts mehr auszublenden – und Chrome zeigt dann auch seinen
-   Vollbild-Hinweis nicht, weil gar kein Vollbild angefordert wird. */
+/* Läuft die Seite schon ohne Browserleisten – vom Startbildschirm aus –, ist
+   das Vollbild nur noch eine Kleinigkeit obendrauf. Verlangt wird es trotzdem:
+   die Statusleiste des Geräts soll ebenfalls weg. */
 function alsAppGestartet() {
   try {
     if (navigator.standalone === true) return true;
@@ -72,8 +76,8 @@ function alsAppGestartet() {
       .some(m => matchMedia('(display-mode: ' + m + ')').matches);
   } catch (e) { return false; }
 }
-const vollbildGeht = () => !alsAppGestartet()
-  && !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+const vollbildGeht = () =>
+  !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
 const vollbildAn = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 function vollbildUmschalten() {
   const el = document.documentElement;
@@ -99,15 +103,22 @@ document.addEventListener('fullscreenchange', vollbildKnopfMalen);
 document.addEventListener('webkitfullscreenchange', vollbildKnopfMalen);
 
 /* Vollbild verlangt eine Geste des Nutzers – also bei der allerersten Berührung,
-   schon auf dem Startbildschirm. Die Einstellung wird erst beim Auslösen gelesen. */
+   schon auf dem Startbildschirm. Lehnt der Browser die erste ab, bleibt der
+   Versuch scharf: die nächste Berührung nimmt ihn wieder auf, bis das Vollbild
+   einmal steht. Wer es danach selbst beendet, wird nicht wieder hineingezogen. */
+let vollbildVersucht = false;
 function vollbildAutostart() {
   if (!vollbildGeht()) return;
   const versuch = () => {
+    if (!SHELL.vollbildStart || vollbildVersucht) { abmelden(); return; }
+    if (vollbildAn()) { vollbildVersucht = true; abmelden(); return; }
+    try { vollbildUmschalten(); } catch (e) { }
+    /* Erst wenn es wirklich sitzt, ist Ruhe. */
+    setTimeout(() => { if (vollbildAn()) { vollbildVersucht = true; abmelden(); } }, 400);
+  };
+  const abmelden = () => {
     document.removeEventListener('pointerdown', versuch, true);
     document.removeEventListener('keydown', versuch, true);
-    try {
-      if (SHELL.vollbildStart && vollbildGeht() && !vollbildAn()) vollbildUmschalten();
-    } catch (e) { }
   };
   document.addEventListener('pointerdown', versuch, true);
   document.addEventListener('keydown', versuch, true);

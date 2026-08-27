@@ -164,11 +164,15 @@ function speicherErklaerung() {
 function setupZeigen(nurWechsel, ausSplash) {
   const s = $('#setup');
   const dateiDa = Store.dateiApiDa();
+  /* Beim allerersten Start geht es nur um einen Ort für die leseliste. Wer die
+     Seite dagegen vom Startbildschirm aus öffnet, will die Daten aller Apps
+     sehen – dann steht der Sammelblock dabei. */
+  const zeigeAlle = !!(nurWechsel || ausSplash);
   s.innerHTML = `
     <div class="setup-inner">
-      <div class="mark serif">leseliste</div>
+      <div class="mark serif">mylife</div>
       ${dateiDa ? `
-        <p class="lead">Wo sollen deine Bücher, Notizen und Fotos liegen?</p>
+        <p class="lead">Wo sollen die Bücher, Notizen und Fotos der <strong>leseliste</strong> liegen?</p>
 
         <button class="opt" data-act="datei-neu">
           <span class="on">${ICON.save} Neue Datei anlegen <span class="badge">empfohlen</span></span>
@@ -185,7 +189,7 @@ function setupZeigen(nurWechsel, ausSplash) {
           <span class="od">Ohne Datei. Verschwindet mit den Website-Daten.</span>
         </button>
       ` : `
-        <p class="lead">Deine Bücher und Notizen bleiben in diesem Browser – gespeichert wird automatisch.</p>
+        <p class="lead">Bücher und Notizen der <strong>leseliste</strong> bleiben in diesem Browser – gesichert wird von selbst.</p>
 
         <button class="btn btn-primary btn-block" data-act="geraet" style="padding:14px;font-size:15px">Loslegen</button>
 
@@ -197,6 +201,23 @@ function setupZeigen(nurWechsel, ausSplash) {
           Dieser Browser lässt die Seite nicht direkt in eine Datei schreiben. Hol dir mit „Jetzt sichern“ regelmäßig eine Kopie.
         </p>
       `}
+
+      ${zeigeAlle ? `
+      <div class="section" style="margin-top:22px;text-align:left">
+        <div class="section-head"><h2>Alle Apps auf einmal</h2></div>
+        <div class="list-card">
+          <div class="rowline">
+            <span class="grow"><span class="rn">Alles laden</span>
+              <span class="rm">Eine mylife.json – oder mehrere App-Dateien zugleich. Jeder Teil geht in seine App.</span></span>
+            <button class="btn btn-sm" data-act="alle-laden">Laden</button>
+          </div>
+          <div class="rowline">
+            <span class="grow"><span class="rn">Alles sichern</span>
+              <span class="rm">${esc(APPORTE.map(o => o.name).join(', '))} in einer Datei</span></span>
+            <button class="btn btn-sm" data-act="alle-sichern">Sichern</button>
+          </div>
+        </div>
+      </div>` : ''}
 
       <button class="infobox" data-act="info" style="position:static;margin:20px 0 0;max-width:none">
         <span class="i-kopf">Wo liegen meine Daten?</span>
@@ -228,6 +249,8 @@ function setupZeigen(nurWechsel, ausSplash) {
       s.hidden = true; $('#app').hidden = false; return;
     }
     if (act === 'import') { importDialog(!nurWechsel); return; }
+    if (act === 'alle-laden') { alleLadenBlatt(() => setupZeigen(nurWechsel, ausSplash)); return; }
+    if (act === 'alle-sichern') { alleSichern(); return; }
     if (act === 'ki') { kiErstellenOeffnen(); return; }
     /* Stöbern legt am Ende selbst eine leseliste an – dafür braucht es einen
        Speicherort, also gilt hier dieselbe Arbeitskopie wie bei „Loslegen“. */

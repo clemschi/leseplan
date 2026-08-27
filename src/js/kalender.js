@@ -161,11 +161,12 @@ function kTagEinfuegen(thema, tag) {
 /* ---------- Öffnen und Speicherort ---------- */
 /* Den Weg dorthin geht appSpeicherort in speicher.js für alle Nebenapps
    gleich; hier stehen nur die Angaben des Kalenders. */
-const KORT = {
-  store: KStore, name: 'kalender', datei: 'kalender.json',
+const KORT = appOrtAnmelden({
+  store: KStore, name: 'kalender', datei: 'kalender.json', format: 'mylife-kalender',
   lead: 'Wo sollen Termine und Aufgaben liegen? Der Kalender führt eine eigene Datei – die leseliste bleibt davon unberührt.',
-  normalisiere: kalNormalisiere, leer: leereKal, starten: () => kalStarten()
-};
+  normalisiere: kalNormalisiere, leer: leereKal, starten: () => kalStarten(),
+  ortWechseln: () => kalSpeicherort(false)
+});
 function kalenderOeffnen() { return appSpeicherOeffnen(KORT); }
 function kalSpeicherort(erneut) { appSpeicherort(KORT, erneut); }
 
@@ -825,17 +826,11 @@ function kTagBearbeiten(vh, t) {
 
 /* ---------- Mehr ---------- */
 function kMehrMalen(v) {
-  const ort = KStore.modus === 'datei' ? KStore.dateiname : (KStore.modus === 'geraet' ? 'Auf diesem Gerät' : 'Nicht gewählt');
   const offen = KDB.aufgaben.filter(x => !x.done).length;
   v.innerHTML = `
-    <div class="section-head" style="padding-top:14px"><h2>Datenbasis</h2></div>
+    ${appDatenHtml(KORT)}
+    <div class="section-head" style="padding-top:14px"><h2>Inhalt</h2></div>
     <div class="list-card">
-      <div class="rowline"><span class="grow"><span class="rn">Speicherort</span><span class="rm">${esc(ort)}</span></span>
-        <button class="btn btn-sm" data-kwechseln>Ändern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Jetzt sichern</span><span class="rm">Als Datei ablegen</span></span>
-        <button class="btn btn-sm" data-ksave>Sichern</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Daten laden</span><span class="rm">Eine kalender.json einlesen</span></span>
-        <button class="btn btn-sm" data-kimport>Laden</button></div>
       <div class="rowline"><span class="grow"><span class="rn">Alles löschen</span><span class="rm">${pl(KDB.termine.length, 'Termin', 'Termine')} · ${pl(KDB.aufgaben.length, 'Thema', 'Themen')}</span></span>
         <button class="btn btn-sm btn-danger" data-kreset>Zurücksetzen</button></div>
     </div>
@@ -853,9 +848,7 @@ function kMehrMalen(v) {
     ${huelleEinstellungenHtml()}
     <p class="hinweis" style="padding:16px 0 30px">Der Kalender führt seine eigene Datei. Die leseliste bleibt davon unberührt – jede App in dieser Datei hat ihre eigene Datenbasis.</p>`;
 
-  $('[data-kwechseln]', v).onclick = () => kalSpeicherort(false);
-  $('[data-ksave]', v).onclick = () => KStore.alsDateiSichern(false);
-  $('[data-kimport]', v).onclick = () => kImportDialog();
+  appDatenBinden(KORT, v, kViewMalen);
   huelleEinstellungenBinden(v, kViewMalen);
   $('[data-kreset]', v).onclick = async () => {
     if (!await bestaetigen('Wirklich alles löschen?',
@@ -867,26 +860,4 @@ function kMehrMalen(v) {
   };
 }
 
-function kImportDialog() {
-  const s = blatt('Daten laden', `
-    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">Eine <strong>kalender.json</strong> einlesen. Der bisherige Stand wird ersetzt.</p>
-    <input type="file" accept="application/json,.json" data-file style="width:100%">
-    <div class="btn-row" style="margin-top:14px">
-      <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
-      <button class="btn btn-ghost" data-no>Abbrechen</button>
-    </div>`, { fokus: false });
-  $('[data-no]', s).onclick = () => layerSchliessen();
-  $('[data-ok]', s).onclick = async () => {
-    const f = $('[data-file]', s).files[0];
-    if (!f) { toast('Keine Datei gewählt.'); return; }
-    try {
-      const roh = JSON.parse(await f.text());
-      KDB = kalNormalisiere(roh);
-      await KStore.sichern(true);
-      layerSchliessen();
-      kViewMalen();
-      toast(pl(KDB.termine.length, 'Termin', 'Termine') + ' geladen.');
-    } catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); }
-  };
-}
 
