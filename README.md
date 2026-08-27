@@ -2,7 +2,9 @@
 
 Eine einzige HTML-Datei, in der mehrere kleine Apps wohnen. Der Startbildschirm ist ihr
 Homescreen: ein paar Namen auf dem Grund, sonst nichts. Ein Tipp öffnet eine App, das ×
-in der Kopfzeile führt zurück.
+in der Kopfzeile führt zurück – ebenso ein Wisch nach rechts, in jeder App. Nur dort, wo
+quer schon etwas anderes passiert (die Tage-Bahn im To-Do, das Monatsblatt, die Bahn im
+fastreader), bleibt er aussen vor.
 
 **Jede App hat ihre eigene Datenbasis.** Die leseliste führt eine `leseplan.json`, der
 Kalender eine `kalender.json`, der fastreader eine `fastreader.json` – getrennte Dateien,
@@ -15,8 +17,9 @@ Gebaut wird mit `node build.js` aus `mylife.src.html`.
 
 Vier Reiter in der Fussleiste:
 
-- **Heute** – die Termine des Tages, was heute fällig ist, die laufenden Vorhaben mit
-  Fortschritt und ein Ausblick auf die nächsten sieben Tage. Ohne Tagesziel führt jede
+- **Heute** – die Termine des Tages, was heute fällig ist, die laufenden Themen mit
+  Fortschritt und ein Ausblick auf die nächsten sieben Tage. Jeder fällige Eintrag lässt
+  sich aufklappen: darunter stehen die einzelnen Tätigkeiten, jede für sich abhakbar. Ohne Tagesziel führt jede
   Zeile dorthin, wo etwas einzutragen ist.
 - **Kalender** – das Monatsblatt mit Punkten für Termine und einem Ring für Fälliges.
   Ein Tipp auf einen Tag öffnet ihn als Blatt von unten; gewischt wird von Monat zu
