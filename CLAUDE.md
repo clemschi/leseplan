@@ -5,6 +5,14 @@
   (eine Datei, alles darin). `mylife.html` niemals von Hand bearbeiten.
 - Kommentare und Oberfläche auf Deutsch, im Ton des übrigen Codes.
 
+## Antworten
+- **Stichpunkte, kein Fließtext.** Was getan wurde, als kurze Liste: Sache,
+  Befund, Ergebnis. Keine ausformulierten Absätze, keine Einleitung, kein
+  Nachwort.
+- Zahlen und Messwerte gehören dazu, aber knapp – „0,0 px Abweichung“ statt
+  eines Satzes darüber.
+- Ausführlich nur, wenn ausdrücklich nach einer Erklärung gefragt wird.
+
 ## Übergabe
 - **Am Ende jeder Aufgabe, die an der App etwas ändert: `node build.js` laufen
   lassen und `mylife.html` mitgeben.** Nicht auf Nachfrage warten, nicht nur
