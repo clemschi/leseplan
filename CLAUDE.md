@@ -48,12 +48,27 @@ danach:
 6. **Übernehmen erst nach Richtungsentscheid**, quer laufende Bewegungen geben
    die Geste ab (`dx > 14 && dx > |dy|` und umgekehrt).
 
+7. **Nie schlagartig schliessen.** Was per Geste weggeht, geht am Finger weg
+   und klingt mit derselben Kurve aus (`.26s cubic-bezier(.2,.8,.3,1)`).
+   `layerSchliessen()` auf Zuruf aus einem Wisch heraus ist verboten.
+8. **Schwellen deckeln.** Eine Schwelle, die an der Höhe einer Fläche hängt,
+   bekommt eine Obergrenze (`Math.min(hoehe * 0.16, 160)`) – sonst verlangt ein
+   hohes Blatt einen Marathon.
+9. **Masse einmal messen**, beim Übernehmen, nicht in jedem `touchmove`.
+   `clientWidth` im Zug erzwingt Layout und ruckelt.
+
 Fertige Bausteine, die genau das tun:
 - `vorhangSetzen` / `vorhangLoesen` / `vorhangSchwelle` / `vorhangHochBinden` –
   eine Ebene wie ein Tuch auf- und zuziehen (Übersicht aus der Kopfzeile).
+  `unschaerfeSetzen(f)` macht dabei den Grund dahinter ansteigend unscharf.
+- `ebeneZiehen` – eine Vollbild-Ebene vom **linken Rand** (erste 30 px) nach
+  rechts wegziehen. Wird in `layerOeffnen` automatisch gebunden. Nur vom Rand,
+  damit Karten, Seiten und Bahnen in der Fläche frei bleiben.
+- `ziehenZumSchliessen` – Blatt von unten nach unten wegschieben.
 - `heimZiehen` – die App nach rechts schieben, dahinter liegt der
   Startbildschirm.
 - `ziehenBinden` im Stöbern – Karten nach links und rechts.
+- `kMonatZiehen` – das Monatsblatt von Monat zu Monat.
 
 ## Ebenen
 - Eine offene Ebene wird **getauscht, nicht geschlossen und neu geöffnet**:

@@ -551,6 +551,21 @@ body.voll .cam{padding-top:14px;}
 .splash .app:active{color:var(--accent);}
 .splash .app.aus{color:var(--text-3);opacity:.5;}
 @keyframes splashAuf{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.splash .infobox{position:absolute;left:0;right:0;bottom:calc(74px + env(safe-area-inset-bottom));
+  margin:0 22px;padding:11px 13px;border:1px solid var(--border);border-radius:12px;
+  background:var(--surface);text-align:left;cursor:pointer;
+  display:flex;flex-direction:column;gap:3px;max-width:420px;}
+.splash .infobox .i-kopf{font-size:11.5px;color:var(--text-2);font-weight:600;}
+.splash .infobox .i-text{font-size:11px;color:var(--text-3);line-height:1.5;}
+.splash .infobox .i-text b{color:var(--text-2);font-weight:600;}
+.splash .infobox:active{border-color:var(--border-strong);}
+.erklaer{display:flex;flex-direction:column;gap:12px;}
+.e-schritt{display:flex;gap:11px;align-items:flex-start;}
+.e-nr{width:22px;height:22px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  background:var(--accent-soft);color:var(--accent);font-size:11px;}
+.e-text{font-size:13px;color:var(--text-2);line-height:1.55;}
+.e-text b{color:var(--text);font-weight:600;}
+.e-text i{font-style:normal;color:var(--accent);}
 .splash .leiste{position:absolute;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom));
   display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;padding:0 16px;}
 .splash .leiste .icon-btn{background:none;border:0;color:var(--text-3);width:34px;height:34px;}
@@ -559,6 +574,7 @@ body.voll .cam{padding-top:14px;}
 /* Der Grund, der beim Ziehen nach rechts hinter der App zum Vorschein kommt:
    derselbe Homescreen, nur ohne Bedienung – angefasst wird er erst, wenn der
    Zug durchgeht. */
+.unschaerfe{position:fixed;inset:0;z-index:55;pointer-events:none;will-change:backdrop-filter;}
 .heimgrund{z-index:1;pointer-events:none;}
 .heimgrund .apps{animation:none;}
 /* Ein Schattenstreifen genau vor der Kante der App, damit sie über dem
@@ -1487,6 +1503,11 @@ function splashZeigen() {
       <div class="apps">
         ${APPS.map(x => `<button class="app ist" data-app="${x.id}">${esc(x.name)}</button>`).join('')}
       </div>
+      <button class="infobox" data-act="info">
+        <span class="i-kopf">Wo liegen meine Daten?</span>
+        <span class="i-text">Im Browser dieses Geräts, an diese Seite gebunden – nicht in einer Datei.
+          Jede App für sich. Zum Mitnehmen: <b>Mehr → Jetzt sichern</b>.</span>
+      </button>
       <div class="leiste">
         <button class="icon-btn" data-act="theme" title="Hell oder dunkel" aria-label="Hell oder dunkel"></button>
         ${vollbildGeht() ? `<button class="icon-btn" data-act="voll" title="Vollbild" aria-label="Vollbild">${ICON.voll}</button>` : ''}
@@ -1509,6 +1530,7 @@ function splashZeigen() {
       if (act === 'theme') { themeUmschalten(); themeKnopf(); return; }
       if (act === 'voll') { vollbildUmschalten(); return; }
       if (act === 'mehr') { setupZeigen(false, true); return; }
+      if (act === 'info') { speicherErklaerung(); return; }
       return;
     }
     const k = e.target.closest('[data-app]');
@@ -1518,6 +1540,35 @@ function splashZeigen() {
     const app = APPS.find(x => x.id === k.dataset.app);
     if (app) app.oeffnen();
   };
+}
+
+/* Die kurze Erklärung, einmal ausführlich. */
+function speicherErklaerung() {
+  blatt('Wo liegen meine Daten?', `
+    <div class="erklaer">
+      <div class="e-schritt">
+        <span class="e-nr num">1</span>
+        <span class="e-text"><b>Beim Tippen</b> stehen Änderungen zunächst nur im Arbeitsspeicher.
+          Der Punkt oben zeigt dann <i>offen</i>.</span>
+      </div>
+      <div class="e-schritt">
+        <span class="e-nr num">2</span>
+        <span class="e-text"><b>Sekunden später</b> schreibt die App alles in die Ablage des Browsers –
+          auf dem Gerätespeicher, aber unsichtbar im Dateimanager. Darum ist nach dem Schließen
+          alles wieder da. Jede App hat dort ihren eigenen Platz.</span>
+      </div>
+      <div class="e-schritt">
+        <span class="e-nr num">3</span>
+        <span class="e-text"><b>Eine Datei</b> entsteht nur, wenn du sie verlangst:
+          <i>Mehr → Jetzt sichern</i> legt eine JSON in die Downloads. Sie ist eine Kopie vom
+          Augenblick – sie läuft nicht mit.</span>
+      </div>
+    </div>
+    <p class="hinweis" style="padding:14px 0 0">Die Ablage hängt an dieser geöffneten Seite. Lädst du die
+      HTML neu herunter, ist die neue Kopie leer. Öffne sie darum immer über dasselbe Symbol auf dem
+      Startbildschirm des Telefons – und sichere ab und zu als Datei.</p>
+    <p class="hinweis" style="padding:10px 0 0">Auf dem Rechner (Chrome, Edge) gibt es zusätzlich
+      „Neue Datei anlegen“: dann schreibt die App still in genau diese Datei mit.</p>`, { fokus: false });
 }
 
 function setupZeigen(nurWechsel, ausSplash) {
@@ -3379,6 +3430,8 @@ function layerOeffnen(node, onClose) {
   Layers.push({ node, onClose });
   $('#layers').appendChild(node);
   globalKnoepfeEinsetzen(node);
+  /* Vollflächige Ebenen lassen sich vom linken Rand aus wegziehen. */
+  if (node.classList && (node.classList.contains('overlay') || node.classList.contains('sto'))) ebeneZiehen(node);
   try { history.pushState({ layer: Layers.length }, ''); } catch (e) { }
   return node;
 }
@@ -3488,7 +3541,11 @@ function blatt(titel, inhalt, opts) {
    Touch-Ereignisse statt Pointer, weil nur dort das Scrollen der Seite
    rechtzeitig unterbunden werden kann. */
 function ziehenZumSchliessen(sheet) {
-  let y0 = null, dy = 0, zieht = false;
+  /* Nach derselben Regel wie der Kartenstapel: 1:1 am Finger, der bis zur
+     Übernahme gelaufene Weg wird abgezogen, damit nichts hüpft; beim
+     Loslassen entscheidet eine kurze Schwelle oder der Schwung. */
+  let y0 = null, x0 = 0, ab = 0, zieht = false, hoehe = 1;
+  let letztY = 0, letztT = 0, tempo = 0, weg = 0;
 
   const inScroller = el => {
     while (el && el !== sheet) {
@@ -3502,36 +3559,55 @@ function ziehenZumSchliessen(sheet) {
   };
 
   const start = ev => {
-    if (sheet.scrollTop > 3) { y0 = null; return; }
+    if (window.__zieht || sheet.scrollTop > 3) { y0 = null; return; }
     const ziel = ev.target;
     if (ziel.closest && ziel.closest('input,textarea,select,button,pre,[data-akzent]')) { y0 = null; return; }
     if (inScroller(ziel)) { y0 = null; return; }
-    y0 = (ev.touches ? ev.touches[0] : ev).clientY;
-    dy = 0; zieht = false;
+    const t = ev.touches ? ev.touches[0] : ev;
+    y0 = t.clientY; x0 = t.clientX;
+    zieht = false; weg = 0;
+    hoehe = sheet.getBoundingClientRect().height || 400;
+    letztY = y0; letztT = Date.now(); tempo = 0;
   };
 
   const bewegen = ev => {
     if (y0 == null) return;
-    const y = (ev.touches ? ev.touches[0] : ev).clientY;
-    dy = y - y0;
-    if (dy > 8) {
-      zieht = true;
-      if (ev.cancelable) ev.preventDefault();
+    const t = ev.touches ? ev.touches[0] : ev;
+    const dy = t.clientY - y0, dx = Math.abs(t.clientX - x0);
+    if (!zieht) {
+      /* Erst nach dem Richtungsentscheid übernehmen. */
+      if (dy < -8 || (dx > 14 && dx > Math.abs(dy))) { y0 = null; sheet.style.transform = ''; return; }
+      if (dy < 10) return;
+      zieht = true; ab = dy; window.__zieht = true;
       sheet.style.transition = 'none';
-      sheet.style.transform = 'translateY(' + Math.min(dy, 460) + 'px)';
-    } else if (dy < -8) {
-      y0 = null;
-      sheet.style.transform = '';
+      sheet.style.willChange = 'transform';
     }
+    if (ev.cancelable) ev.preventDefault();
+    const jetzt = Date.now();
+    if (jetzt > letztT) { tempo = (t.clientY - letztY) / (jetzt - letztT); letztY = t.clientY; letztT = jetzt; }
+    weg = Math.max(0, dy - ab);
+    sheet.style.transform = 'translateY(' + weg.toFixed(1) + 'px)';
   };
 
   const ende = () => {
     if (y0 == null) return;
     y0 = null;
-    sheet.style.transition = 'transform .2s ease';
-    if (zieht && dy > 80) { sheet.style.transform = 'translateY(110%)'; setTimeout(layerSchliessen, 130); }
-    else sheet.style.transform = '';
+    if (!zieht) return;
     zieht = false;
+    /* Ein hohes Blatt darf nicht mehr Weg verlangen als ein niedriges –
+       darum ist die Schwelle nach oben gedeckelt. */
+    const zu = weg > Math.max(90, Math.min(hoehe * 0.16, 160)) || tempo > 0.45;
+    sheet.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
+    if (zu) {
+      sheet.style.transform = 'translateY(' + Math.ceil(hoehe + 40) + 'px)';
+      setTimeout(() => { window.__zieht = false; layerSchliessen(); }, 190);
+    } else {
+      sheet.style.transform = 'translateY(0)';
+      setTimeout(() => {
+        window.__zieht = false;
+        sheet.style.transition = ''; sheet.style.transform = ''; sheet.style.willChange = '';
+      }, 270);
+    }
   };
 
   sheet.addEventListener('touchstart', start, { passive: true });
@@ -3548,7 +3624,6 @@ function ziehenZumSchliessen(sheet) {
   });
 }
 
-/* Wischen wie in einer App: nach rechts zurück, nach links weiter. */
 function tabVerschieben(d) {
   const i = ANSICHTEN.indexOf(aktiverTab);
   if (i < 0) return;
@@ -3665,13 +3740,14 @@ function tabVerschieben(d) {
     x0 = null;
     if (gesperrt || window.__zieht || dt > 700) return;
     if (Math.abs(dx) < 70 || Math.abs(dy) > 60) return;
+    /* Offene Ebenen gehen am Finger (ebeneZiehen), nicht auf Zuruf. */
+    if (Layers.length) return;
     if (dx > 0) {
-      if (Layers.length) layerSchliessen();
       /* Ganz links angekommen führt der nächste Wisch aus der App heraus. */
-      else if (aktiverTab === ANSICHTEN[0]) zumStartbildschirm();
+      if (aktiverTab === ANSICHTEN[0]) zumStartbildschirm();
       else tabVerschieben(-1);
     }
-    else if (!Layers.length) tabVerschieben(1);
+    else tabVerschieben(1);
   }, { passive: true });
 })();
 
@@ -5347,6 +5423,35 @@ let uebersichtUnter = 'zahlen';
    Fingerkuppe, der Inhalt bleibt an seinem Platz. */
 function vorhangSchwelle(hoehe) { return Math.max(96, (hoehe || 640) * 0.14); }
 
+/* Während eine Ebene am Finger hängt, wird der Grund dahinter unscharf –
+   ansteigend mit dem Weg, damit man sieht, wie weit man ist. */
+let unschaerfeEl = null;
+function unschaerfeSetzen(f, weich) {
+  const a = clamp(f, 0, 1);
+  if (a <= 0.001) {
+    if (!unschaerfeEl) return;
+    const el = unschaerfeEl;
+    unschaerfeEl = null;
+    el.style.transition = weich ? 'backdrop-filter .2s ease,-webkit-backdrop-filter .2s ease,opacity .2s ease' : '';
+    el.style.backdropFilter = 'blur(0px)';
+    el.style.webkitBackdropFilter = 'blur(0px)';
+    el.style.opacity = '0';
+    setTimeout(() => { if (el.isConnected) el.remove(); }, weich ? 220 : 0);
+    return;
+  }
+  if (!unschaerfeEl) {
+    unschaerfeEl = document.createElement('div');
+    unschaerfeEl.className = 'unschaerfe';
+    document.body.appendChild(unschaerfeEl);
+  }
+  const px = (a * 9).toFixed(2) + 'px';
+  unschaerfeEl.style.transition = weich ? 'backdrop-filter .22s ease,-webkit-backdrop-filter .22s ease' : 'none';
+  unschaerfeEl.style.backdropFilter = 'blur(' + px + ')';
+  unschaerfeEl.style.webkitBackdropFilter = 'blur(' + px + ')';
+  unschaerfeEl.style.opacity = '1';
+}
+function unschaerfeWeg() { unschaerfeSetzen(0, true); }
+
 function vorhangSetzen(el, y) {
   const h = el.clientHeight || window.innerHeight || 640;
   const k = clamp(y, 0, h);
@@ -5358,6 +5463,7 @@ function vorhangSetzen(el, y) {
   el.style.transform = 'translateY(' + (-(1 - f) * 6).toFixed(1) + 'px)';
   el.style.filter = 'drop-shadow(0 7px 16px rgba(0,0,0,.42))';
   el.style.opacity = '1';
+  unschaerfeSetzen(f);
   return h;
 }
 
@@ -5367,12 +5473,15 @@ function vorhangLoesen(el, auf, fertig) {
     + 'transform .26s cubic-bezier(.2,.8,.3,1),opacity .2s ease';
   el.style.clipPath = auf ? 'inset(0px 0px 0px 0px)' : 'inset(0px 0px ' + h + 'px 0px)';
   el.style.transform = auf ? 'translateY(0px)' : 'translateY(-6px)';
+  unschaerfeSetzen(auf ? 1 : 0, true);
   setTimeout(() => {
     if (auf && el.isConnected) {
       el.style.transition = ''; el.style.clipPath = '';
       el.style.transform = ''; el.style.opacity = ''; el.style.filter = '';
       el.classList.remove('zieht');
     }
+    /* Liegt die Ebene ganz oben, verdeckt sie den Grund ohnehin. */
+    unschaerfeWeg();
     if (fertig) fertig();
   }, auf ? 280 : 240);
 }
@@ -5380,6 +5489,73 @@ function vorhangLoesen(el, auf, fertig) {
 /* Zurückschieben von unten nach oben. Damit das Blättern in der Liste heil
    bleibt, beginnt der Zug an der Kopfzeile oder dort, wo nichts mehr zu
    scrollen ist. */
+/* Eine Ebene vom linken Rand nach rechts wegziehen – wie das Zurückwischen
+   auf dem Telefon. Sie folgt 1:1, der Grund dahinter wird dabei wieder scharf.
+   Der Zug beginnt bewusst am Rand: mitten auf der Fläche blättern Karten,
+   Seiten und Bahnen. */
+function ebeneZiehen(node) {
+  let x0 = null, y0 = 0, zieht = false, ab = 0, breite = 1, weg = 0;
+  let letztX = 0, letztT = 0, tempo = 0;
+
+  const setzen = (x) => {
+    node.style.transition = 'none';
+    node.style.transform = 'translateX(' + x.toFixed(1) + 'px)';
+    node.style.willChange = 'transform';
+    unschaerfeSetzen(1 - clamp(x / breite, 0, 1));
+  };
+
+  node.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1 || window.__zieht) { x0 = null; return; }
+    const t = e.touches[0];
+    /* Nur vom linken Rand aus. */
+    if (t.clientX > 30) { x0 = null; return; }
+    x0 = t.clientX; y0 = t.clientY;
+    zieht = false; weg = 0;
+    breite = node.getBoundingClientRect().width || window.innerWidth || 360;
+    letztX = x0; letztT = Date.now(); tempo = 0;
+  }, { passive: true });
+
+  node.addEventListener('touchmove', e => {
+    if (x0 == null) return;
+    const t = e.touches[0], dx = t.clientX - x0, dy = Math.abs(t.clientY - y0);
+    if (!zieht) {
+      if (dx < -8 || (dy > 16 && dy > Math.abs(dx))) { x0 = null; return; }
+      if (dx < 12) return;
+      zieht = true; ab = dx; window.__zieht = true;
+      unschaerfeSetzen(1);
+    }
+    e.preventDefault();
+    const jetzt = Date.now();
+    if (jetzt > letztT) { tempo = (t.clientX - letztX) / (jetzt - letztT); letztX = t.clientX; letztT = jetzt; }
+    weg = Math.max(0, dx - ab);
+    setzen(weg);
+  }, { passive: false });
+
+  const los = () => {
+    if (x0 == null) return;
+    x0 = null;
+    if (!zieht) return;
+    zieht = false;
+    const zu = weg > Math.max(80, breite * 0.26) || tempo > 0.45;
+    node.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
+    if (zu) {
+      node.style.transform = 'translateX(' + Math.ceil(breite) + 'px)';
+      unschaerfeSetzen(0, true);
+      setTimeout(() => { window.__zieht = false; layerSchliessen(); }, 200);
+    } else {
+      node.style.transform = 'translateX(0)';
+      unschaerfeSetzen(1, true);
+      setTimeout(() => {
+        window.__zieht = false;
+        node.style.transition = ''; node.style.transform = ''; node.style.willChange = '';
+        unschaerfeWeg();
+      }, 270);
+    }
+  };
+  node.addEventListener('touchend', los, { passive: true });
+  node.addEventListener('touchcancel', los, { passive: true });
+}
+
 function vorhangHochBinden(node, koerper) {
   let y0 = null, x0 = 0, zieht = false, ab = 0, hoehe = 1, zu = false;
   let letztY = 0, letztT = 0, tempo = 0;
@@ -6782,7 +6958,32 @@ function einkaufslisteOeffnen() {
 /* ============================================================
    KI-Prompts: Leseliste erstellen oder bewerten lassen
    ============================================================ */
-function kiSchemaText(regeln, mitArtikeln, stoebern) {
+/* Die Sprachregel hängt von der Wahl im Formular ab. */
+const KI_SPRACHEN = {
+  deutsch: {
+    label: 'Deutsch',
+    kurz: 'vorzugsweise deutsche Ausgaben',
+    text: `- Bei Büchern **vorzugsweise deutsche Ausgaben**: Titel und "ausgabe" dann auf Deutsch, "jahr" bleibt aber das Original-Erscheinungsjahr.
+- Englischsprachige Werke nur, wenn sie einschlägig sind und es keine brauchbare Übersetzung gibt – dann Originaltitel verwenden.
+- Beschreibung, Kurzfassung und Biographien immer auf Deutsch.`
+  },
+  englisch: {
+    label: 'Englisch',
+    kurz: 'englische Originalausgaben',
+    text: `- Bei Büchern **die englische Ausgabe**: Originaltitel und englischer Verlag in "ausgabe", "jahr" ist das Jahr der Erstveröffentlichung.
+- Werke, die es nur auf Deutsch gibt, dürfen mit deutschem Titel dabei sein, wenn sie einschlägig sind.
+- Beschreibung, Kurzfassung und Biographien trotzdem immer auf Deutsch – gelesen wird die App auf Deutsch.`
+  },
+  gemischt: {
+    label: 'Gemischt',
+    kurz: 'deutsch und englisch nebeneinander',
+    text: `- Sprache der Ausgabe frei: nimm jeweils die Fassung, die für dieses Werk die bessere ist – deutsche Übersetzung, wo sie gut und verbreitet ist, sonst das englische Original.
+- Titel und "ausgabe" in der Sprache der gewählten Ausgabe, "jahr" bleibt das Original-Erscheinungsjahr.
+- Beschreibung, Kurzfassung und Biographien immer auf Deutsch.`
+  }
+};
+
+function kiSchemaText(regeln, mitArtikeln, stoebern, sprache) {
   /* Beim Stöbern kommt kein fertiger Plan zurück, sondern nur der Vorrat an
      Werken – Blöcke baut man danach selbst aus dem Gemerkten. */
   const aufbau = stoebern ? `{
@@ -6853,9 +7054,7 @@ ${aufbau}
 ${eigen}
 
 ## Sprache
-- Bei Büchern **vorzugsweise deutsche Ausgaben**: Titel und "ausgabe" dann auf Deutsch, "jahr" bleibt aber das Original-Erscheinungsjahr.
-- Englischsprachige Werke ausdrücklich mit aufnehmen, wenn sie einschlägig sind und es keine brauchbare Übersetzung gibt – dann Originaltitel verwenden.
-- Beschreibung, Kurzfassung und Biographien immer auf Deutsch.${mitArtikeln ? `
+${(KI_SPRACHEN[sprache] || KI_SPRACHEN.deutsch).text}${mitArtikeln ? `
 
 ## Fachartikel
 - Neben Büchern auch **wissenschaftliche Fachartikel** aufnehmen – etwa was über Google Scholar auffindbar ist.
@@ -7025,6 +7224,13 @@ function stoebernPromptOeffnen() {
     <div class="field">
       <label>Wie viele Werke insgesamt?</label>
       <input type="number" data-anzahl value="100" min="20" max="250">
+      <span class="hint" data-mengenhinweis></span>
+    </div>
+    <div class="field">
+      <label>Sprache der Bücher</label>
+      <div class="chiprow" style="padding-left:0;flex-wrap:wrap;overflow:visible" data-sprache></div>
+      <span class="hint">Beschreibungen und Biographien kommen immer auf Deutsch zurück. Bei Fachartikeln
+      zählt ohnehin nur die Qualität, nicht die Sprache.</span>
     </div>
     <div class="field">
       <label>Anteil Fachartikel</label>
@@ -7045,6 +7251,27 @@ function stoebernPromptOeffnen() {
       <textarea data-zusatz style="min-height:60px" placeholder="z. B. auch ältere Grundlagentexte, gern Gegenpositionen …"></textarea>
     </div>
     <button class="btn btn-primary btn-block" data-ok>Prompt erzeugen</button>`, { fokus: false });
+
+  /* Die Sprache der Ausgaben. */
+  let sprache = 'deutsch';
+  const spracheMalen = () => {
+    $('[data-sprache]', s).innerHTML = Object.keys(KI_SPRACHEN).map(k =>
+      `<button class="chip" data-sp="${k}" aria-pressed="${k === sprache}">${KI_SPRACHEN[k].label}</button>`).join('');
+    $$('[data-sp]', s).forEach(b => b.onclick = () => { sprache = b.dataset.sp; spracheMalen(); });
+  };
+  spracheMalen();
+
+  /* Was ein Durchgang der KI zumutbar ist, hängt am Zugang. */
+  const mengenHinweis = () => {
+    const n = Math.round(num($('[data-anzahl]', s).value) || 0);
+    const el = $('[data-mengenhinweis]', s);
+    el.innerHTML = n > 50
+      ? 'In der Claude-Basisversion kommen erfahrungsgemäß <b>höchstens etwa 50 Bücher</b> in einem Durchgang zurück. '
+      + 'Willst du mehr, lass dir den Vorrat in zwei Durchgängen erzeugen – jede Datei lädst du einzeln ins Stöbern.'
+      : 'Bis etwa 50 Werke schafft auch die Claude-Basisversion in einem Durchgang.';
+  };
+  $('[data-anzahl]', s).addEventListener('input', mengenHinweis);
+  mengenHinweis();
 
   /* Anteil in Zehnerschritten bis siebzig Prozent. */
   const STUFEN_ANTEIL = [0, 10, 20, 30, 40, 50, 60, 70];
@@ -7113,7 +7340,7 @@ Etwa ${anzahl} Werke insgesamt. ${anteilTeil} Innerhalb eines Themas soll die Sp
 
 Jedes Werk trägt das Thema, zu dem es gehört – ${themenRegel}.
 
-${kiSchemaText(jahrRegel.replace(/^\n/, ''), artikel, true)}${zusatz ? '\n\n## Außerdem\n' + zusatz : ''}`;
+${kiSchemaText(jahrRegel.replace(/^\n/, ''), artikel, true, sprache)}${zusatz ? '\n\n## Außerdem\n' + zusatz : ''}`;
     kiPromptZeigen(prompt, 'stoebern-prompt.txt', true);
   };
 }
@@ -7845,7 +8072,8 @@ function stoebernOeffnen() {
     merken();
     Store.sichern(true);
   });
-  if (wiederherstellen()) toast('Weiter, wo du aufgehört hast.');
+  /* Wiedereinstieg ohne Ansage: der Stapel liegt einfach wieder da, wo er lag. */
+  wiederherstellen();
   malen();
 }
 
