@@ -734,6 +734,14 @@ body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
   color:var(--text-3);opacity:0;transition:opacity .22s;pointer-events:none;
   font-family:"Literata",Georgia,serif;}
 .frkontext.an{opacity:1;}
+/* Der Übergang ins Versinken dauert; das Auftauchen geht sofort. */
+#fr .topbar,#fr .tabbar,#fr .frpult,#fr .frstrich,#fr .frmarke,#fr .frkontext{
+  transition:opacity .22s ease;}
+#fr.vertieft .topbar,#fr.vertieft .tabbar,#fr.vertieft .frpult,
+#fr.vertieft .frstrich,#fr.vertieft .frmarke{
+  opacity:0;transition:opacity 1.6s ease .45s;}
+#fr.vertieft .frkontext{opacity:0;transition:opacity .5s ease;}
+
 .frkontext b{color:var(--text);font-weight:600;}
 
 /* Das Pult */
@@ -3409,6 +3417,7 @@ const F_RAMPE = 45;
 function frStarten() {
   appFlaeche('fr');
   aktiverSpeicher = FStore;
+  frVertiefen(false);
   fTab = FDB.dokumente.length ? 'lesen' : 'bib';
   if (fTab === 'lesen' && !FS.doc) frDokLaden(frLetztes());
   themeAnwenden();
@@ -3419,6 +3428,16 @@ function frStarten() {
   $('#fBtnRaus').onclick = () => { frAnhalten(); zumStartbildschirm(); };
   $('#fBrand').onclick = () => { if (fTab !== 'bib') fTabWechseln('bib'); else window.scrollTo({ top: 0, behavior: 'smooth' }); };
   $('#fSaveChip').onclick = () => FStore.alsDateiSichern(false);
+  /* Solange alles versunken ist, hält jeder Tipp an – egal wohin. */
+  if (!$('#fr')._tippBereit) {
+    $('#fr')._tippBereit = true;
+    $('#fr').addEventListener('click', e => {
+      if (!$('#fr').classList.contains('vertieft')) return;
+      e.stopPropagation();
+      e.preventDefault();
+      frAnhalten();
+    }, true);
+  }
   fTabbarMalen();
   fViewMalen();
   FStore.autosaveStarten();
@@ -3442,6 +3461,7 @@ function fTabbarMalen() {
 }
 function fTabWechseln(id) {
   if (fTab === 'lesen' && id !== 'lesen') frAnhalten();
+  frVertiefen(false);
   fTab = id;
   fTabbarMalen();
   fViewMalen();
@@ -3943,6 +3963,14 @@ function frTakt() {
     frTakt();
   }, frDauer());
 }
+/* Beim Lesen tritt alles zurück: Kopfzeile, Leisten, Striche und Kontext
+   gehen langsam in den Grund über, bis nur noch das Wort dasteht. Beim
+   Anhalten sind sie sofort wieder da. */
+function frVertiefen(an) {
+  const f = $('#fr');
+  if (f) f.classList.toggle('vertieft', !!an);
+}
+
 function frLos() {
   if (FS.laeuft || !FS.marken.length) return;
   if (FS.i >= FS.marken.length - 1) FS.i = 0;
@@ -3952,6 +3980,7 @@ function frLos() {
   const p = $('[data-play]');
   if (p) p.innerHTML = FICON.halt;
   frKontext(false);
+  frVertiefen(true);
   frTakt();
 }
 function frAnhalten() {
@@ -3964,6 +3993,7 @@ function frAnhalten() {
   if (p) p.innerHTML = FICON.start;
   const w = $('[data-warm]');
   if (w) w.classList.remove('an');
+  frVertiefen(false);
   frKontext(true);
   frPultMalen();
   frMerken();
