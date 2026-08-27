@@ -4785,6 +4785,26 @@ function gKarteZiehen(karte, drehen, ablegen) {
   let x0 = null, y0 = 0, zieht = false, abX = 0, abY = 0;
   let wegX = 0, wegY = 0, breite = 1, hoehe = 1, ganzX = 0;
   let letztX = 0, letztY = 0, letztT = 0, tempoX = 0, tempoY = 0;
+  /* Eine halbe Umdrehung auf einmal, nicht mehr: solange der Ausklang läuft,
+     nimmt die Karte keinen neuen Zug an. Sonst setzt ein zweiter Wisch auf der
+     noch laufenden Drehung auf – die Karte springt auf den schon erreichten
+     Endstand und dreht sich ein zweites Mal weiter. */
+  let sperre = false, wache = 0;
+  const loesen = () => {
+    if (!sperre) return;
+    clearTimeout(wache);
+    sperre = false; window.__zieht = false; karte._gezogen = false;
+  };
+  const sperren = (ms) => {
+    sperre = true; window.__zieht = true;
+    clearTimeout(wache);
+    wache = setTimeout(loesen, ms);
+  };
+  /* Die Sperre fällt, sobald die Drehung wirklich steht – die Zeit darunter
+     ist nur die Reissleine, falls kein transitionend kommt. */
+  karte.addEventListener('transitionend', e => {
+    if (e.target === karte && e.propertyName === 'transform') loesen();
+  });
   const grund = () => gDrehung;
   const malen = () => {
     /* Eine Achse, nicht zwei nacheinander: gekippt und gedreht wird um eine
@@ -4807,7 +4827,7 @@ function gKarteZiehen(karte, drehen, ablegen) {
   const winkel = () => clamp(wegX / breite * 180, -180, 180);
 
   karte.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1 || window.__zieht) { x0 = null; return; }
+    if (e.touches.length !== 1 || window.__zieht || sperre) { x0 = null; return; }
     const t = e.touches[0];
     /* Die ersten 30 px am linken Rand bleiben dem Zug nach Hause – sonst
        fängt die Karte ihn ab, weil sie fast die ganze Fläche einnimmt. */
@@ -4862,9 +4882,14 @@ function gKarteZiehen(karte, drehen, ablegen) {
       && (Math.abs(winkel()) >= 88
         || Math.abs(ganzX) > Math.max(52, breite * 0.16)
         || Math.abs(tempoX) > 0.3);
-    if (dreht) drehen(wegX > 0 ? 1 : -1);
-    else karte.style.transform = 'rotateY(' + grund() + 'deg)';
-    setTimeout(() => { window.__zieht = false; karte._gezogen = false; }, 300);
+    if (dreht) {
+      drehen(wegX > 0 ? 1 : -1);
+      /* Erst wenn diese halbe Umdrehung steht, ist die Karte wieder frei. */
+      sperren(760);
+    } else {
+      karte.style.transform = 'rotateY(' + grund() + 'deg)';
+      setTimeout(() => { window.__zieht = false; karte._gezogen = false; }, 300);
+    }
   };
   karte.addEventListener('touchend', los, { passive: true });
   karte.addEventListener('touchcancel', los, { passive: true });
