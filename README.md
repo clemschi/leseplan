@@ -91,14 +91,18 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
   Vorhang herunter: die Kante liegt genau unter der Fingerkuppe, ein kurzer Weg oder
   ein Schwung genügt, sonst zieht sie sich wieder zurück. Wegschieben lässt sie sich
   von unten nach oben – an der Kopfzeile oder am Ende der Liste, damit das Blättern
-  darin unangetastet bleibt. Vier Rubriken: *Zahlen*
+  darin unangetastet bleibt; die Seite dahinter bleibt dabei stehen. Vier Rubriken: *Zahlen*
   (Kennzahlen und Graphen, jeder als Tabelle aufklappbar), *Zusammenfassungen* (je Block
   jedes Buch zum Auf- und Zuklappen), *Autoren* und *Tage* (Tagesziel, Seiten pro Tag,
   Protokoll jedes Lesetags).
 - **Autoren** – nach Blöcken geordnet wie die Zusammenfassungen, jeder Eintrag zum
   Aufklappen; ein Wisch zeigt die Kurzinfo. Jeder Autor führt, von wem er beeinflusst
   wurde; wer auf wen wirkt, leitet die App daraus ab und verlinkt es – in eigener Farbe,
-  damit die beiden Richtungen auseinanderzuhalten sind. Zwei Ansichten
+  damit die beiden Richtungen auseinanderzuhalten sind. Trifft beides zu, haben sich
+  also zwei aufeinander ausgewirkt, gilt eine dritte Farbe; sie steht in der Legende
+  der Vernetzung und im Steckbrief als eigene Zeile *Gegenseitig*. Die drei Farben
+  sind zu jedem Akzent so gewählt, dass sie sich unterscheiden – hell wie dunkel.
+  Zwei Ansichten
   dazu: **Vernetzung** (alle Einflusslinien, nach Geburtsjahr gereiht, ein Tipp
   zeigt nur die eines Autors; wer ohne Linie zu den anderen dasteht, wird eigens
   aufgeführt, samt Einfluss in reinem Text) und **Zeitstrahl** (Lebenszeit als Balken,
@@ -149,6 +153,10 @@ Eine App in der App, erreichbar über *Stöbern* – in der noch leeren Listenan
 *Mehr → leselisten* und unter *Mehr → Stöbern*. Sie führt in fünf Schritten von einem
 Vorrat an Werken zu einer fertigen leseliste:
 
+Die Kopfzeile ist dieselbe wie in jeder anderen Ebene: der Pfeil links führt in einem
+Schritt zurück auf die leseliste. Zwischen den fünf Schritten geht es unten im Fuss
+zurück, wo auch sonst gearbeitet wird.
+
 1. **Laden** – eine Sammlung als `.json`. Es geht auch eine gewöhnliche leseliste; dann
    werden ihre Blöcke zu Themen.
 2. **Themen wählen** – jedes Thema lässt sich aus dem Stapel nehmen. *Durchmischen* sorgt
@@ -175,7 +183,10 @@ verbraucht.
 ## Lesen und Einkaufen
 
 Über der Tableiste sitzt eine Leiste für die laufende Sitzung: Läuft eine, zeigt sie
-Buch und Uhr; läuft keine, startet sie das aktuelle Buch. Gibt es kein oder mehr als
+Buch und Uhr; läuft keine, startet sie das aktuelle Buch. Obenan steht dabei immer,
+was der Tag noch verlangt – **Heute noch X Seiten zu lesen**, mitgerechnet aus den
+Sitzungen des Tages. Ist kein Tagesziel gesetzt, sagt die Leiste das und führt mit
+einem Tipp dorthin, wo eines gesetzt wird. Gibt es kein oder mehr als
 ein angefangenes Buch, wird gewählt. Starten geht auch im Buch und über langes Drücken
 auf eine Zeile der Liste – dort finden sich außerdem *nach oben* und *nach unten*. Der
 Rand der Leiste zeigt den Zustand: Akzentfarbe, solange sie zum Start bereitsteht, rot,

@@ -79,7 +79,7 @@ p{margin:0;}
 /* ---------- Kopfzeile ---------- */
 .topbar{
   position:sticky;top:0;z-index:40;background:var(--bg);
-  border-bottom:1px solid var(--border);
+  border-bottom:1px solid var(--border);touch-action:none;
 }
 .topbar-inner{padding:12px 16px 10px;display:flex;flex-direction:column;gap:9px;}
 .topbar-row{display:flex;align-items:center;gap:10px;}
@@ -283,7 +283,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .overlay{
   position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:60;
   background:var(--bg);display:flex;flex-direction:column;
-  animation:slideIn .22s ease;
+  animation:slideIn .22s ease;overscroll-behavior:none;
 }
 @keyframes slideIn{from{transform:translateX(18px);opacity:.4}to{transform:none;opacity:1}}
 /* Am Finger hängend: keine eigene Animation, die Lage bestimmt der Zug. */
@@ -304,6 +304,9 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .ovl-head{
   display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);
   background:var(--bg);flex:0 0 auto;
+  /* Kopfzeilen scrollen nichts: sonst schiebt ein Zug hier die Seite
+     dahinter mit, während die Ebene selbst am Finger hängt. */
+  touch-action:none;
 }
 .ovl-head .grow{flex:1;min-width:0;}
 .ovl-title{font-family:"Literata",Georgia,serif;font-size:15px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -435,6 +438,13 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);
 .einfluss .wirkt .eg{color:var(--wirkt);}
 .einfluss .wirkt .en.link{border-color:color-mix(in srgb,var(--wirkt) 45%,var(--border));
   color:var(--wirkt);background:color-mix(in srgb,var(--wirkt) 9%,var(--surface-2));}
+/* Gegenseitig: steht ein Name in beiden Reihen, bekommt er die dritte Farbe. */
+.einfluss .en.link.beides,.einfluss .wirkt .en.link.beides{
+  border-color:color-mix(in srgb,var(--beides) 50%,var(--border));
+  color:var(--beides);background:color-mix(in srgb,var(--beides) 10%,var(--surface-2));}
+.netzlegende{display:flex;flex-wrap:wrap;gap:12px;padding:0 0 12px;font-size:11px;color:var(--text-3);}
+.netzlegende span{display:inline-flex;align-items:center;gap:5px;}
+.netzlegende i{width:14px;height:2px;border-radius:2px;display:block;}
 
 /* Vernetzung */
 .netz{position:relative;padding:0 0 20px;}
@@ -580,6 +590,10 @@ body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
 .sto-fort{height:3px;background:var(--surface-3);flex:0 0 auto;}
 .sto-fort i{display:block;height:100%;background:var(--accent);transition:width .3s ease;}
 .sto-body{flex:1;min-height:0;overflow-y:auto;padding:14px 14px 24px;}
+.sto-zurueck{display:flex;align-items:center;gap:6px;margin:9px auto 0;background:none;border:0;
+  color:var(--text-3);font:inherit;font-size:12px;padding:6px 10px;cursor:pointer;}
+.sto-zurueck svg{width:14px;height:14px;}
+.sto-zurueck:active{color:var(--text-2);}
 .sto-fuss{flex:0 0 auto;padding:10px 14px calc(10px + env(safe-area-inset-bottom));
   border-top:1px solid var(--border);background:var(--surface);}
 body.voll .sto-fuss{padding-bottom:calc(26px + env(safe-area-inset-bottom));}
@@ -1459,18 +1473,27 @@ const AKZENTE = [
   { id: 'grau', name: 'Grau', dark: '#c3c7cf', light: '#454d57' }
 ];
 const akzentAktiv = () => AKZENTE.find(a => a.id === DB.einstellungen.akzent) || AKZENTE[0];
+/* Nebenfarben für die Vernetzung, je [hell, dunkel]. */
+const TEAL = ['#0c766c', '#3fbfb2'], VIOLETT = ['#5344b5', '#9b8bf0'],
+  ROSE = ['#a02f75', '#d97ab0'], MESSING = ['#8a6114', '#dba43f'];
 
 function themeAnwenden() {
   const hell = DB.einstellungen.theme === 'light';
   document.documentElement.setAttribute('data-app-theme', hell ? 'light' : 'dark');
   const a = akzentAktiv();
   document.documentElement.style.setProperty('--accent', hell ? a.light : a.dark);
-  /* „Wirkt auf“ steht in einer eigenen Farbe neben dem Akzent von „Beeinflusst
-     von“. Türkis hebt sich von den meisten Akzenten ab – nur bei Grün und
-     Türkis selbst weicht es auf Violett aus. */
-  const nahDran = a.id === 'gruen' || a.id === 'tuerkis';
-  document.documentElement.style.setProperty('--wirkt',
-    nahDran ? (hell ? '#5344b5' : '#9b8bf0') : (hell ? '#0c766c' : '#3fbfb2'));
+  /* Drei Farben müssen sich in der Vernetzung auseinanderhalten lassen:
+     der Akzent für „beeinflusst von“, --wirkt für „wirkt auf“ und --beides,
+     wenn zwei Autoren aufeinander gewirkt haben. Zu jedem Akzent stehen die
+     beiden anderen darum eigens fest. */
+  const DREI = {
+    messing: [TEAL, ROSE], kupfer: [TEAL, VIOLETT], rot: [TEAL, VIOLETT],
+    magenta: [TEAL, MESSING], violett: [TEAL, ROSE], blau: [TEAL, ROSE],
+    tuerkis: [VIOLETT, MESSING], gruen: [VIOLETT, MESSING], grau: [TEAL, ROSE]
+  };
+  const [wirkt, beides] = DREI[a.id] || DREI.messing;
+  document.documentElement.style.setProperty('--wirkt', hell ? wirkt[0] : wirkt[1]);
+  document.documentElement.style.setProperty('--beides', hell ? beides[0] : beides[1]);
   const b = $('#btnTheme');
   if (b) b.innerHTML = hell ? ICON.moon : ICON.sun;
 }
@@ -2127,7 +2150,6 @@ function nowbarMalen() {
   /* Was heute noch fehlt – rechnet sich aus den Sitzungen des Tages. */
   const z = zielHeute();
   const rest = z.ziel ? Math.max(0, z.ziel - z.gelesen) : 0;
-  const offen = !z.ziel ? '' : (rest ? 'noch ' + rest + ' S.' : 'Ziel geschafft');
 
   if (t) {
     const b = buchById(t.buchId);
@@ -2135,7 +2157,7 @@ function nowbarMalen() {
     inner.innerHTML = `
       <span class="grow">
         <span class="nt serif">${esc(b ? b.titel : 'Sitzung')}</span>
-        <span class="nm">Sitzung läuft${offen ? ' · ' + offen : ''}</span>
+        <span class="nm">Sitzung läuft${z.ziel ? ' · ' + (rest ? 'heute noch ' + rest + ' S.' : 'Ziel geschafft') : ''}</span>
       </span>
       <span class="uhr" data-uhr>00:00</span>
       <button class="btn btn-sm" data-wecker title="Lese-Wecker">${DB.einstellungen.weckerMin ? DB.einstellungen.weckerMin + '′' : '⏰'}</button>
@@ -2162,20 +2184,23 @@ function nowbarMalen() {
   } else {
     const lese = DB.buecher.filter(b => b.status === 'lese');
     const eines = lese.length === 1 ? lese[0] : null;
-    const kopf = !z.ziel ? (eines ? eines.titel : 'Lesen')
+    const kopf = !z.ziel ? 'Heute noch kein Ziel'
       : rest ? 'Heute noch ' + rest + ' Seiten zu lesen'
         : 'Tagesziel geschafft';
+    const unten = !z.ziel ? 'Tagesziel setzen'
+      : eines ? esc(eines.titel)
+        : (lese.length > 1 ? lese.length + ' Bücher angefangen' : 'Buch wählen');
     inner.className = 'nowbar-inner' + (z.ziel && !rest ? ' fertig' : '');
     inner.innerHTML = `
       <span class="grow">
         <span class="nt serif">${esc(kopf)}</span>
-        <span class="nm">${eines
-        ? (z.ziel ? esc(eines.titel) : 'aktuelles Buch')
-        : (lese.length > 1 ? lese.length + ' Bücher angefangen' : 'Buch wählen')}</span>
+        <span class="nm">${unten}</span>
       </span>
       <button class="btn btn-sm btn-primary" data-start>${ICON.play} Starten</button>`;
     $('[data-start]', inner).onclick = () => eines ? sitzungStarten(eines.id) : buchWaehlenFuerSitzung();
-    if (eines) $('.grow', inner).onclick = () => buchOeffnen(eines.id);
+    /* Ohne Tagesziel führt die Zeile dorthin, wo eines gesetzt wird. */
+    $('.grow', inner).onclick = () => !z.ziel ? zielBearbeiten(() => nowbarMalen())
+      : eines ? buchOeffnen(eines.id) : buchWaehlenFuerSitzung();
   }
 }
 
@@ -4562,6 +4587,13 @@ function autorSteckbriefMalen(name, alle, inv, info, aufloesen) {
   const von = a.einfluss.filter(q => autorAufloesen(alle, q));
   const auf = inv.get(name) || [];
   const nurText = a.einfluss.filter(q => !autorAufloesen(alle, q));
+  /* Wer in beiden Reihen steht, steht in einer gegenseitigen Beziehung. */
+  const aufgeloest = von.map(q => autorAufloesen(alle, q));
+  const beide = new Set(auf.filter(n => aufgeloest.includes(n)));
+  const kl = q => {
+    const n = autorAufloesen(alle, q) || q;
+    return 'en link' + (beide.has(n) ? ' beides' : '');
+  };
   const lebt = lebensdaten(a.geb, a.gest);
   info.innerHTML = `
     <div class="section-head"><h2>${esc(name)}</h2>
@@ -4569,12 +4601,14 @@ function autorSteckbriefMalen(name, alle, inv, info, aufloesen) {
       <button class="btn btn-sm btn-ghost" data-weg>Auswahl lösen</button></div>
     <div class="einfluss">
       <div><div class="eg">Beeinflusst von</div><div class="er">${(von.length || nurText.length)
-      ? von.map(n => `<span class="en link" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
+      ? von.map(n => `<span class="${kl(n)}" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
       + nurText.map(n => `<span class="en">${esc(n)}</span>`).join('')
       : '<span class="en" style="opacity:.6">niemandem hier</span>'}</div></div>
       <div class="wirkt"><div class="eg">Wirkt auf</div><div class="er">${auf.length
-      ? auf.map(n => `<span class="en link" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
+      ? auf.map(n => `<span class="${kl(n)}" data-waehl="${esc(n)}">${esc(n)}</span>`).join('')
       : '<span class="en" style="opacity:.6">niemanden hier</span>'}</div></div>
+      ${beide.size ? `<p class="hinweis" style="padding:2px 0 0;color:var(--beides)">
+        Gegenseitig: ${Array.from(beide).map(esc).join(', ')}</p>` : ''}
     </div>
     <div class="section-head" style="margin:18px 0 9px"><h2>Werke in deinen Listen</h2><span class="eyebrow">${a.buecher.length}</span></div>
     <div data-werke></div>`;
@@ -4625,12 +4659,21 @@ function netzOeffnen() {
         Nach Geburtsjahr gereiht. Eine Linie führt von dem, der wirkt, zu dem, auf den gewirkt wird.
         Tippe einen Namen an, um nur seine Linien zu sehen.
       </p>
+      <div class="netzlegende">
+        <span><i style="background:var(--accent)"></i>beeinflusst von</span>
+        <span><i style="background:var(--wirkt)"></i>wirkt auf</span>
+        <span><i style="background:var(--beides)"></i>gegenseitig</span>
+      </div>
       <div class="netz" data-netz></div>
       <div data-info style="margin-top:14px"></div>
     </div>`;
 
   const behaelter = $('[data-netz]', node);
   const H = 28, GUT = 118;
+  /* Zwei Autoren, die einander beeinflusst haben: beide Linien gehören dann
+     zusammen und bekommen die dritte Farbe. */
+  const paare = new Set(kanten.map(k => k.von + '\u0000' + k.auf));
+  const gegenseitig = k => paare.has(k.auf + '\u0000' + k.von);
 
   const malen = () => {
     behaelter.innerHTML = '';
@@ -4662,9 +4705,11 @@ function netzOeffnen() {
       if (y1 < 0 || y2 < 0) return;
       const aktiv = gewaehlt && (k.von === gewaehlt || k.auf === gewaehlt);
       /* Dieselben Farben wie die Namenschips darunter: was auf den Gewählten
-         wirkt, im Akzent – was von ihm ausgeht, in der Gegenfarbe. */
-      const farbe = !aktiv ? 'var(--border-strong)'
-        : (k.von === gewaehlt ? 'var(--wirkt)' : 'var(--accent)');
+         wirkt, im Akzent – was von ihm ausgeht, in der Gegenfarbe. Geht es in
+         beide Richtungen, gilt die dritte Farbe. */
+      const farbe = !aktiv ? (gegenseitig(k) ? 'color-mix(in srgb,var(--beides) 55%,var(--border-strong))' : 'var(--border-strong)')
+        : gegenseitig(k) ? 'var(--beides)'
+          : (k.von === gewaehlt ? 'var(--wirkt)' : 'var(--accent)');
       const bauch = Math.min(GUT - 8, 14 + Math.abs(y2 - y1) * 0.32);
       const pfad = document.createElementNS(svgNS, 'path');
       pfad.setAttribute('d', `M 2 ${y1} Q ${bauch} ${(y1 + y2) / 2} 2 ${y2}`);
@@ -6597,22 +6642,34 @@ function stoebernOeffnen() {
     toast('„' + name + '“ angelegt: ' + pl(fertig.length, 'Block', 'Blöcke') + ', ' + pl(anzahl, 'Werk', 'Werke') + '.', 4000);
   };
 
+  /* Ein Schritt zurück gehört in den Fuss – die Kopfzeile bleibt die der App. */
+  const SCHRITT_ZURUECK = { themen: 'laden', wischen: 'themen', sammlung: 'wischen', bloecke: 'sammlung' };
+  const SCHRITT_NAME = { laden: 'Laden', themen: 'Themen', wischen: 'Karten', sammlung: 'Sammlung' };
+  const fussZurueck = () => {
+    const zu = SCHRITT_ZURUECK[schritt];
+    const fuss = $('.sto-fuss', inhalt);
+    if (!zu || !fuss) return;
+    const b = document.createElement('button');
+    b.className = 'sto-zurueck';
+    b.innerHTML = ICON.back + '<span>' + SCHRITT_NAME[zu] + '</span>';
+    b.onclick = () => { schritt = zu; malen(); };
+    fuss.appendChild(b);
+  };
+
   const malen = () => {
     if (schritt === 'laden') schrittLaden();
     else if (schritt === 'themen') schrittThemen();
     else if (schritt === 'wischen') schrittWischen();
     else if (schritt === 'sammlung') schrittSammlung();
     else schrittBloecke();
+    fussZurueck();
     zaehlerAuffrischen(false);
     merken();
   };
 
-  /* Der Pfeil oben führt einen Schritt zurück, aus dem ersten heraus. */
-  $('[data-back]', node).onclick = () => {
-    const zurueckZu = { themen: 'laden', wischen: 'themen', sammlung: 'wischen', bloecke: 'sammlung' };
-    if (zurueckZu[schritt]) { schritt = zurueckZu[schritt]; malen(); }
-    else layerSchliessen();
-  };
+  /* Der Pfeil oben tut, was er in jeder anderen Ebene tut: er schliesst sie.
+     Zwischen den Schritten geht es unten im Fuss zurück. */
+  $('[data-back]', node).onclick = () => layerSchliessen();
 
   layerOeffnen(node, () => {
     window.__zieht = false;
