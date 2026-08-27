@@ -4,7 +4,8 @@ Die Quelle liegt in Bausteinen unter `src/`. `node build.js` setzt sie in dieser
 Reihenfolge zu `mylife.html` zusammen – die Reihenfolge steht in `build.js`.
 
 **Zuerst hier nachsehen, welcher Baustein gemeint ist, dann nur den öffnen.**
-Eine ganze App sind 900–1200 Zeilen statt 10.600.
+Eine ganze App sind 800–1200 Zeilen statt 10.500. Die Zeilenzahlen sind
+Anhaltspunkte, keine Zusicherung – sie wandern mit jeder Änderung.
 
 ---
 
@@ -12,11 +13,11 @@ Eine ganze App sind 900–1200 Zeilen statt 10.600.
 
 | Datei | Zeilen | Was |
 |---|---|---|
-| `basis.css` | 583 | Farbtokens hell/dunkel, Akzente (`DREI`), Kopfzeile, Tableiste, Bausteine (`.list-card`, `.rowline`, `.chip`, `.field`, `.grid2`), Plan, Overlay/Sheets, Pager, Bilder, Diagramme, Einrichtung |
-| `kalender.css` | 123 | alles mit `k`-Präfix |
+| `basis.css` | 582 | Farbtokens hell/dunkel, Akzente (`DREI`), Kopfzeile, Tableiste, Bausteine (`.list-card`, `.rowline`, `.chip`, `.field`, `.grid2`), Plan, Overlay/Sheets, Pager, Bilder, Diagramme, Einrichtung |
+| `kalender.css` | 117 | alles mit `k`-Präfix |
 | `fastreader.css` | 91 | `.frbuehne`, `.frwort`, `.frpult`, `.frbahn` |
 | `gsund.css` | 53 | `.gbuehne`, `.gkarte`, `.gseite`, `.g-uhr`, `.gb-griff` |
-| `stoebern.css` | 132 | `.sto…` – der Kartenstapel |
+| `stoebern.css` | 129 | `.sto…` – der Kartenstapel |
 
 ## Markup
 
@@ -33,7 +34,7 @@ Grundlage – gilt für alle Apps:
 |---|---|---|
 | `grundlage.js` | 248 | `$`, `$$`, `uid`, `clamp`, `esc`, `pl`; Ruhe über der Tastatur (`felderBeobachten`, `.zeile` statt `<input>`); `toast()`; sichtbarer Bereich (`--vvh`, `--tabh`) |
 | `datenmodell.js` | 215 | `leereDb`, `normalisiere`, `DB`, Zugriffe und Statistik der leseliste |
-| `speicher.js` | 204 | `IDB`, `macheSpeicher(cfg)`, `Store` |
+| `speicher.js` | 309 | `IDB`, `macheSpeicher(cfg)`, `Store` |
 | `einrichtung.js` | 287 | `setupZeigen`, `huelleEinstellungenHtml/…Binden`, `splashZeigen`, `APPS`, `appFlaeche` |
 | `erscheinung.js` | 115 | `SHELL`, `shellSchreiben`, `themeAnwenden`, Vollbild |
 | `rahmen.js` | 234 | `TABS`, `tabbarMalen`, `viewMalen`, Kopfzeile, Einführung, `appStarten` |
@@ -44,9 +45,9 @@ Die vier Apps:
 
 | Datei | Zeilen | Was |
 |---|---|---|
-| `kalender.js` | 980 | `KDB`, `KStore`, `kalenderOeffnen` → `kViewMalen`; Tage rechnen, Heute, Monatsblatt (`kMonatZiehen`), To-Do, Mehr |
-| `fastreader.js` | 1066 | `FDB`, `FStore`, `fastreaderOeffnen`; Text aufbereiten (`frZerlegen`), Bibliothek, Hereinholen (`frDocx`, `frPdf`, `frUrl`), Lesen (`frTakt`, `frBahnZiehen`), Bilanz |
-| `gsund.js` | 907 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Vergangene; Puzzle und Bald sind leer |
+| `kalender.js` | 892 | `KDB`, `KStore`, `kalenderOeffnen` → `kViewMalen`; Tage rechnen, Heute, Monatsblatt (`kMonatZiehen`), To-Do, Mehr |
+| `fastreader.js` | 979 | `FDB`, `FStore`, `fastreaderOeffnen`; Text aufbereiten (`frZerlegen`), Bibliothek, Hereinholen (`frDocx`, `frPdf`, `frUrl`), Lesen (`frTakt`, `frBahnZiehen`), Bilanz |
+| `gsund.js` | 820 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Vergangene; Puzzle und Bald sind leer |
 
 leseliste – der Rest, nach Aufgaben getrennt:
 
@@ -86,6 +87,8 @@ folgen noch. Ebenso der dritte Reiter **Bald**.
 
 ## Zahlen zum Prüfen statt Bilder
 
-`getBoundingClientRect()` für Masse, `getComputedStyle()` für Farben und
-`transform`, `DOMMatrixReadOnly` für Winkel. Testskripte liegen im
-Scratchpad-Verzeichnis der Sitzung.
+`node pruefen/rundgang.js` geht durch alle vier Apps und meldet OK/FEHL
+(`--schnell` ohne den Klick-Teil, `--leer` mit leerer Datenbasis).
+Für einzelne Messungen: `getBoundingClientRect()` für Masse,
+`getComputedStyle()` für Farben und `transform`, `DOMMatrixReadOnly` für
+Winkel. Eigene Skripte kommen in das Scratchpad-Verzeichnis der Sitzung.

@@ -104,6 +104,7 @@ Vier Reiter in der Fussleiste:
 | `src/` | Alle Apps in Bausteinen: `kopf.html`, `rumpf.html`, `stil/*.css`, `js/*.js`. Quelle der Wahrheit. Welcher Baustein was enthält, steht in `KARTE.md`. |
 | `mylife.html` | Daraus erzeugt: eigenständige Seite zum lokalen Öffnen. **Nicht von Hand bearbeiten.** |
 | `build.js` | Setzt `src/` zu `mylife.html` zusammen: `node build.js`. Die Reihenfolge der Bausteine steht hier. |
+| `pruefen/` | Rundgang durch alle vier Apps: `node pruefen/rundgang.js` (`--schnell` ohne den Klick-Teil). |
 | `leseplan-katalog.json` | Die leseliste „Lesestart": 14 Blöcke, 66 Bücher mit Seitenzahl, Erscheinungsjahr, Autor-Lebensdaten und Beschreibung. |
 
 ## Über der Tastatur

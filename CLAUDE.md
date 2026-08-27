@@ -108,6 +108,12 @@ Fertige Bausteine, die genau das tun:
   heraus, bis die Seite ganz verschwindet.
 - Mehrere Ebenen auf einmal schliesst `alleLayerSchliessen()` (ein einziges
   `history.go(-n)`), niemals `layerSchliessen()` in einer Schleife.
+- **Nie weiter zurück als bis zur App.** `verlaufTiefe()` sagt, wie viele
+  eigene Marken über der App im Verlauf liegen; `layerSchliessen` und
+  `alleLayerSchliessen` springen höchstens so weit. Ein Sprung darüber hinaus
+  verlässt die Seite, und die App ist weg. `popstate` räumt zusätzlich bis auf
+  diese Tiefe ab – offen bleibt nie eine Ebene, die die Zurück-Taste nicht
+  mehr erreicht.
 
 ## Speichern
 - `aendern()` merkt nur vor (Selbstsicherung nach Sekunden),
@@ -134,6 +140,13 @@ Fertige Bausteine, die genau das tun:
 - Zwei Felder nebeneinander: `.grid2`. `.row2` gibt es nicht.
 
 ## Prüfen
+**Nach jeder Änderung an der App: `node pruefen/rundgang.js`.** Der Rundgang
+sät Daten in alle vier Apps, öffnet jede, malt jeden Reiter, tippt rund 400
+Bedienelemente an und prüft danach die Verlaufs-Disziplin der Ebenen. Er meldet
+`OK`/`FEHL` und endet mit einem Zählstand; er dauert etwa fünf Minuten,
+`--schnell` lässt den Klick-Teil weg (unter einer Minute). Die Saat steht in
+`pruefen/saat.js` – neue Felder in einer Datenbasis gehören dort dazu.
+
 Playwright liegt unter `/opt/pw-browsers/chromium`
 (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`,
 `require('/opt/node22/lib/node_modules/playwright')`). Gesten lassen sich nur
