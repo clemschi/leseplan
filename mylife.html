@@ -1113,6 +1113,39 @@ body.voll .sto-fuss{padding-bottom:calc(26px + env(safe-area-inset-bottom));}
 const $ = (sel, root) => (root || document).querySelector(sel);
 const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
 const uid = () => 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+/* ---------- Ruhe über der Tastatur ----------
+   Über jedem Eingabefeld blendet Chrome seine Ausfüllhilfe ein – Schlüssel,
+   Karte, Ortsnadel –, und die Tastatur legt ihre Wortvorschläge darüber. Kein
+   Feld dieser App will je ausgefüllt werden, also meldet sich jedes davon ab:
+   `autocomplete=off` nimmt Chrome die Ausfüllhilfe, `spellcheck=false` setzt
+   das Android-Merkmal „keine Vorschläge", worauf die meisten Tastaturen ihre
+   Leiste weglassen. Aus der Seite heraus geht nicht mehr – die Leiste gehört
+   der Tastatur, nicht dem Browser. */
+const RUHIG_FELD = 'input:not([type=file]):not([type=radio]):not([type=checkbox]):not([type=range]),textarea';
+function feldRuhig(el) {
+  if (!el || el.dataset.ruhig) return;
+  el.dataset.ruhig = '1';
+  el.setAttribute('autocomplete', 'off');
+  el.setAttribute('autocorrect', 'off');
+  el.setAttribute('spellcheck', 'false');
+  /* Passwortverwalter halten sich hier ebenfalls heraus. */
+  el.setAttribute('data-lpignore', 'true');
+  el.setAttribute('data-form-type', 'other');
+}
+function felderRuhigStellen(wurzel) { $$(RUHIG_FELD, wurzel || document).forEach(feldRuhig); }
+/* Auch alles, was erst später entsteht – Blätter, Ebenen, neu gezeichnete
+   Ansichten. */
+function felderBeobachten() {
+  felderRuhigStellen();
+  new MutationObserver(muts => {
+    for (const m of muts) for (const n of m.addedNodes) {
+      if (n.nodeType !== 1) continue;
+      if (n.matches && n.matches(RUHIG_FELD)) feldRuhig(n);
+      else if (n.querySelectorAll) felderRuhigStellen(n);
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+}
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
@@ -5045,6 +5078,7 @@ function gImportBlatt() {
 }
 
 async function boot() {
+  felderBeobachten();
   vollbildKnopfMalen();
   $('#btnVoll').onclick = vollbildUmschalten;
   $('#btnTheme').onclick = () => { themeUmschalten(); viewMalen(); };

@@ -100,6 +100,16 @@ Vier Reiter in der Fussleiste:
 | `build.js` | Erzeugt `mylife.html` aus `mylife.src.html`: `node build.js` |
 | `leseplan-katalog.json` | Die leseliste „Lesestart": 14 Blöcke, 66 Bücher mit Seitenzahl, Erscheinungsjahr, Autor-Lebensdaten und Beschreibung. |
 
+## Über der Tastatur
+
+Jedes Eingabefeld meldet sich von Chromes Ausfüllhilfe ab (`autocomplete="off"`)
+und trägt das Merkmal „keine Vorschläge" (`spellcheck="false"`) – damit fällt die
+Leiste mit Schlüssel, Karte und Ortsnadel weg, und die meisten Tastaturen lassen
+auch ihre Wortvorschläge aus. Gestempelt wird das nicht von Hand: `felderBeobachten()`
+nimmt sich beim Start jedes Feld vor und jedes neue, sobald es entsteht. Was eine
+Tastatur darüber hinaus einblendet, gehört ihr – das lässt sich nur in ihren
+eigenen Einstellungen abstellen.
+
 ## Ebenen
 
 `leseliste → Block → Buch → Notiz`. Es kann mehrere leselisten nebeneinander geben;

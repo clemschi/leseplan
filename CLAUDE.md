@@ -103,6 +103,13 @@ Fertige Bausteine, die genau das tun:
 - Eine Ebene mit eigenem Stand (Stöbern) steigt dort wieder ein, wo gearbeitet
   wurde, nicht dort, wo der Zurück-Pfeil zuletzt stand.
 
+## Eingabefelder
+- Kein Feld bekommt von Hand `autocomplete`/`spellcheck`. `felderBeobachten()`
+  stellt beim Start jedes Feld ruhig und jedes neue gleich mit – Chrome lässt
+  dann seine Ausfüllhilfe weg, die Tastatur meist ihre Vorschlagsleiste.
+- Die Vorschlagsleiste selbst gehört der Tastatur. Was sie trotzdem zeigt,
+  lässt sich nur in deren Einstellungen abstellen, nicht aus der Seite.
+
 ## Prüfen
 Playwright liegt unter `/opt/pw-browsers/chromium`
 (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`,
