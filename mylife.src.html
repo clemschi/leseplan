@@ -721,19 +721,15 @@ body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
 .frmarke.an{opacity:1;}
 .frzeiger{width:100%;max-width:680px;position:relative;}
 .frstrich{display:block;height:1px;background:var(--border);position:relative;}
-.frstrich::after{content:'';position:absolute;left:38%;top:-6px;width:1px;height:6px;background:var(--bad);}
+.frstrich::after{content:'';position:absolute;left:50%;top:-6px;width:1px;height:6px;background:var(--bad);}
 .frstrich.unten::after{top:0;}
-.frwort{display:grid;grid-template-columns:38% min-content 1fr;align-items:center;
-  padding:24px 0;line-height:1.06;white-space:pre;
+/* Ein Schriftgrad für alle Wörter, immer mittig. Der Buchstabe am Blickpunkt
+   bleibt rot – er markiert die Stelle, nicht die Ausrichtung. */
+.frwort{display:block;text-align:center;padding:24px 0;line-height:1.1;
+  white-space:normal;overflow-wrap:break-word;word-break:break-word;
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:-.015em;}
-.frwort .w-vor{justify-self:end;text-align:right;}
-.frwort .w-punkt{justify-self:center;min-width:1ch;text-align:center;color:var(--bad);}
-.frwort .w-nach{justify-self:start;text-align:left;}
-/* Ein Wort, das selbst geschrumpft nicht zwischen die Striche passt, steht
-   mittig über die ganze Breite – ganz zu sehen ist wichtiger als der Fixpunkt. */
-.frwort.eng{display:block;text-align:center;white-space:normal;word-break:break-word;
-  line-height:1.12;}
-.frwort.eng .w-vor,.frwort.eng .w-punkt,.frwort.eng .w-nach{display:inline;}
+.frwort .w-vor,.frwort .w-punkt,.frwort .w-nach{display:inline;}
+.frwort .w-punkt{color:var(--bad);}
 .frkontext{max-width:56ch;margin:20px auto 0;text-align:center;font-size:13.5px;line-height:1.65;
   color:var(--text-3);opacity:0;transition:opacity .22s;pointer-events:none;
   font-family:"Literata",Georgia,serif;}
@@ -3170,7 +3166,7 @@ function leereFr() {
     einstellungen: {
       autosaveSek: 60,
       tempo: 350,        // Wörter je Minute
-      groesse: 44,       // Schriftgrad der Wortanzeige
+      groesse: 30,       // Schriftgrad der Wortanzeige
       aufwaermen: true,  // die ersten Wörter langsamer
       pausen: true,      // an Satzzeichen länger stehen bleiben
       kontext: true      // beim Anhalten den Satz zeigen
@@ -3188,7 +3184,7 @@ function frNormalisiere(roh) {
   f.erstellt = +d.erstellt || Date.now();
   f.einstellungen = Object.assign(f.einstellungen, d.einstellungen || {});
   f.einstellungen.tempo = clamp(+f.einstellungen.tempo || 350, 100, 1000);
-  f.einstellungen.groesse = clamp(+f.einstellungen.groesse || 44, 20, 120);
+  f.einstellungen.groesse = clamp(+f.einstellungen.groesse || 30, 14, 72);
   f.dokumente = (Array.isArray(d.dokumente) ? d.dokumente : []).map(x => ({
     id: x.id || uid(),
     name: String(x.name || 'Ohne Titel').trim().slice(0, 160),
@@ -3809,7 +3805,6 @@ function frDokLaden(d) {
   const summe = FS.marken.reduce((a, t) => a + frFaktor(t, FDB.einstellungen.pausen), 0);
   FS.norm = summe / Math.max(FS.marken.length, 1);
   FS.warmZaehler = 0;
-  frMasse.clear();
 }
 
 function frLesenMalen(v) {
@@ -3878,10 +3873,6 @@ function frLesenMalen(v) {
   if (!FS.laeuft) frMarke('Antippen startet');
 }
 
-/* Ein langes Wort darf nicht aus dem Bild laufen: passt es bei der gewählten
-   Grösse nicht zwischen die Striche, wird es für dieses eine Wort kleiner
-   gesetzt. Der Fixpunkt bleibt dabei, wo er ist. */
-const frMasse = new Map();
 function frWortMalen() {
   const t = FS.marken[FS.i];
   if (!t) return;
@@ -3892,38 +3883,9 @@ function frWortMalen() {
   vor.textContent = t.w.slice(0, k);
   punkt.textContent = t.w[k] || '';
   nach.textContent = t.w.slice(k + 1);
-
-  const grund = FDB.einstellungen.groesse;
-  const breite = wort.clientWidth || 320;
-  const schluessel = t.w + '|' + grund + '|' + Math.round(breite);
-  let mass = frMasse.get(schluessel);
-  if (!mass) {
-    wort.classList.remove('eng');
-    wort.style.fontSize = grund + 'px';
-    const bv = vor.getBoundingClientRect().width;
-    const bp = punkt.getBoundingClientRect().width;
-    const bn = nach.getBoundingClientRect().width;
-    /* Links steht der Anlauf in 38 % der Breite, rechts der Rest. */
-    const links = breite * 0.38 - 2;
-    const rechts = breite * 0.62 - bp - 2;
-    const f = Math.min(1, bv > 1 ? links / bv : 1, bn > 1 ? rechts / bn : 1);
-    let grad = Math.floor(grund * f);
-    let eng = false;
-    /* Riesenwörter passen auch geschrumpft nicht in die Spalten. Dann zählt,
-       dass man sie ganz sieht: mittig über die volle Breite. */
-    if (grad < 20) {
-      /* Über zwei Zeilen gebrochen bleibt auch ein Wortungetüm lesbar. */
-      const ganz = bv + bp + bn;
-      grad = Math.max(14, Math.min(grund, Math.floor(grund * (breite - 10) * 2 / Math.max(ganz, 1))));
-      eng = true;
-    }
-    mass = { grad: Math.max(14, grad), eng };
-    frMasse.set(schluessel, mass);
-    if (frMasse.size > 4000) frMasse.clear();
-  }
-  wort.classList.toggle('eng', mass.eng);
-  wort.style.fontSize = mass.grad + 'px';
+  wort.style.fontSize = FDB.einstellungen.groesse + 'px';
 }
+
 function frPultMalen() {
   const n = FS.marken.length;
   const f = $('[data-fuell]');
@@ -4123,9 +4085,9 @@ function frMehrMalen(v) {
   v.innerHTML = `
     <div class="section-head" style="padding-top:14px"><h2>Lesen</h2></div>
     <div class="list-card">
-      <div class="rowline"><span class="grow"><span class="rn">Schriftgröße</span><span class="rm">${e.groesse} px</span>
-        <span class="rm">Lange Wörter werden von allein kleiner gesetzt, damit sie zwischen die Striche passen.</span></span></div>
-      <div class="rowline" style="padding-top:0"><input type="range" data-groesse min="20" max="120" step="2" value="${e.groesse}" style="width:100%" aria-label="Schriftgröße"></div>
+      <div class="rowline"><span class="grow"><span class="rn">Schriftgröße</span><span class="rm" data-groessewert>${e.groesse} px</span>
+        <span class="rm">Gilt für jedes Wort gleich.</span></span></div>
+      <div class="rowline" style="padding-top:0"><input type="range" data-groesse min="14" max="72" step="1" value="${e.groesse}" style="width:100%" aria-label="Schriftgröße"></div>
       <div class="rowline"><span class="grow"><span class="rn">Aufwärmen</span><span class="rm">Die ersten 45 Wörter langsamer</span></span>
         <button class="btn btn-sm" data-warm>${e.aufwaermen ? 'An' : 'Aus'}</button></div>
       <div class="rowline"><span class="grow"><span class="rn">Pausen bei Satzzeichen</span><span class="rm">Komma, Punkt und Absatz halten auf</span></span>
@@ -4153,9 +4115,8 @@ function frMehrMalen(v) {
 
   const gr = $('[data-groesse]', v);
   gr.oninput = () => {
-    FDB.einstellungen.groesse = clamp(+gr.value, 20, 120);
-    frMasse.clear();
-    gr.closest('.list-card').querySelector('.rm').textContent = FDB.einstellungen.groesse + ' px';
+    FDB.einstellungen.groesse = clamp(+gr.value, 14, 72);
+    $('[data-groessewert]', v).textContent = FDB.einstellungen.groesse + ' px';
   };
   gr.onchange = () => { fAendern(); };
   const um = (feld, knopf) => {

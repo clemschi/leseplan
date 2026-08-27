@@ -44,16 +44,16 @@ Wort für Wort an einem festen Punkt: das Auge bleibt stehen, der Text läuft. V
   holt sich dafür einmalig eine fremde Bibliothek – ohne Verbindung geht nur Einfügen.
   Zeilenumbrüche aus Dateien werden als Layout behandelt: getrennte Wörter wachsen wieder
   zusammen, Kopf- und Fusszeilen fliegen raus.
-- **Lesen** – ein Wort zwischen zwei Strichen, der Blickpunkt darin rot. Er sitzt nicht in
-  der Mitte, sondern etwas davor, wo das Auge ein Wort tatsächlich erfasst. Lange Wörter
+- **Lesen** – ein Wort zwischen zwei Strichen, mittig, in immer derselben Größe. Der
+  Buchstabe am Blickpunkt ist rot – er sitzt nicht in der Wortmitte, sondern etwas davor,
+  wo das Auge ein Wort tatsächlich erfasst. Lange Wörter
   stehen länger, Komma, Punkt und Absatz halten auf, und die ersten fünfundvierzig Wörter
   laufen langsamer an. Antippen startet und hält an, die Bahn darunter folgt dem Finger,
   beim Anhalten erscheint der Satz um das Wort.
 - **Bilanz** – gelesene Wörter, Lesezeit, Durchschnittstempo, der Verlauf über die letzten
   Sitzungen und der Stand jedes Textes.
 - **Mehr** – Schriftgröße, Aufwärmen, Pausen, Kontext, Speicherort und Sicherung. Die
-  Schriftgröße ist der Ausgangswert: lange Wörter werden von allein kleiner gesetzt, damit
-  sie zwischen die Striche passen; Wortungetüme stehen mittig und über zwei Zeilen.
+  Schriftgröße gilt für jedes Wort gleich, einstellbar zwischen 14 und 72 px.
 
 Mit Tastatur: **Leertaste** startet und hält an, **↑ ↓** ändern das Tempo, **← →** springen
 zehn Wörter, mit **Umschalt** einen Satz.
