@@ -1,5 +1,9 @@
 # Arbeitsregeln für diese Datei
 
+**Vor dem ersten Suchen in `mylife.src.html`: `KARTE.md` lesen.** Dort steht,
+welcher Abschnitt wo liegt und wie er heisst – das erspart das Durchsuchen von
+10.000 Zeilen.
+
 ## Aufbau
 - Quelle ist immer `mylife.src.html`. `node build.js` schreibt daraus `mylife.html`
   (eine Datei, alles darin). `mylife.html` niemals von Hand bearbeiten.
