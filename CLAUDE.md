@@ -25,14 +25,15 @@
   `APPS`) ist ihr Homescreen; jede App wird erst beim Antippen geweckt.
 - **Jede App führt ihre eigene Datenbasis.** Eine Ausfertigung von
   `macheSpeicher(...)` je App, eigener IDB-Schlüssel, eigene JSON-Datei
-  (`leseplan.json`, `kalender.json`). Nie Daten zweier Apps in eine Datei
+  (`leseplan.json`, `kalender.json`, `fastreader.json`). Nie Daten zweier Apps in eine Datei
   mischen. Die App ohne gewählten Speicherort fragt beim ersten Öffnen danach.
 - Was allen gemeinsam ist – Hell/Dunkel, Akzent, Vollbild – liegt in `SHELL`
   und wird über `shellSchreiben()` gesichert, nicht in den Daten einer App.
 - `aktiverSpeicher` zeigt auf den Speicher der offenen App; der Chip in der
   Kopfzeile liest ihn.
 - Neue App: Eintrag in `APPS`, eigener `macheSpeicher`, eigener Rumpf im
-  Markup, eigene Fussleiste. Design und Bausteine kommen aus dem Bestand
+  Markup mit Klasse `appflaeche`, eigene Fussleiste; geöffnet wird über
+  `appFlaeche('<id>')`. Design und Bausteine kommen aus dem Bestand
   (`.list-card`, `.rowline`, `.chip`, `.section-head`, `blatt`, `toast`).
 
 ## Wischen – so und nicht anders
