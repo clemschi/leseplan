@@ -75,9 +75,12 @@ Vier Reiter in der Fussleiste:
   Akzentfarbe, darunter Datum und wahlweise Uhrzeit, dann der Countdown im
   Sekundentakt – in Tagen, sonst als `HH:MM:SS`, nach dem Zeitpunkt mit Vorzeichen
   weiter. Hinten freier Text. **Ein Tipp öffnet die Karte zum Ändern**, gedreht wird
-  nur mit dem Finger: quer eine halbe Umdrehung je halber Kartenbreite, dabei kippt
+  nur mit dem Finger: quer eine halbe Umdrehung je halber Kartenbreite, dort ist
+  Schluss – ein weiter Zug dreht sie nicht über die Rückseite hinaus. Dabei kippt
   sie auch längs mit, bis 26°, so dass ein Zug von rechts oben nach links unten die
-  Karte wirklich in der Hand liegen lässt. Ein **schneller Zug nach oben** legt sie zu
+  Karte wirklich in der Hand liegen lässt. Umgeblättert wird höchstens einmal je
+  Zug: über die Hälfte gedreht, gut 50 px Fingerweg oder ein Schwung genügen, dann
+  liegt die andere Seite oben – nicht mehr und nicht weniger. Ein **schneller Zug nach oben** legt sie zu
   den Vergangenen; sie fliegt weg, vorn bleibt eine leere Karte. Die ersten 30 px am
   linken Rand bleiben dem Zug zur Startseite.
 - **Vergangen** – die Kopfzeile ist zugleich der Griff: **herunterziehen** (oder

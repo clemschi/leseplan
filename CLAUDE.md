@@ -14,6 +14,9 @@
 - Ausführlich nur, wenn ausdrücklich nach einer Erklärung gefragt wird.
 
 ## Übergabe
+- **In der Regel reicht die neue `mylife.html` als ganze Antwort.** Stichpunkte
+  nur, wenn etwas wirklich Wichtiges dazugehört – ein Befund, eine Grenze, eine
+  Entscheidung, die der Nutzer kennen muss.
 - **Am Ende jeder Aufgabe, die an der App etwas ändert: `node build.js` laufen
   lassen und `mylife.html` mitgeben.** Nicht auf Nachfrage warten, nicht nur
   darauf verweisen – die Datei gehört zur Antwort. Hat sich an der App nichts

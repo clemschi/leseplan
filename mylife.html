@@ -4722,7 +4722,7 @@ function gKarteAblegen(karte) {
    Loslassen entscheiden Weg und Schwung, welche der drei Wege es wird. */
 function gKarteZiehen(karte, drehen, ablegen) {
   let x0 = null, y0 = 0, zieht = false, abX = 0, abY = 0;
-  let wegX = 0, wegY = 0, breite = 1, hoehe = 1;
+  let wegX = 0, wegY = 0, breite = 1, hoehe = 1, ganzX = 0;
   let letztX = 0, letztY = 0, letztT = 0, tempoX = 0, tempoY = 0;
   const grund = () => gDrehung;
   const malen = () => {
@@ -4730,8 +4730,12 @@ function gKarteZiehen(karte, drehen, ablegen) {
        gleich, auch wenn die Rückseite oben liegt. */
     const kipp = clamp(-wegY / hoehe * 90, -26, 26);
     karte.style.transform = 'rotateX(' + kipp.toFixed(2) + 'deg) '
-      + 'rotateY(' + (grund() + wegX / breite * 180).toFixed(2) + 'deg)';
+      + 'rotateY(' + (grund() + winkel()).toFixed(2) + 'deg)';
   };
+  /* Eine halbe Kartenbreite ist eine halbe Umdrehung – und dort ist Schluss.
+     Ein weiter Zug dreht die Karte sonst über die Rückseite hinaus, und beim
+     Loslassen schnappt sie sichtbar zurück. */
+  const winkel = () => clamp(wegX / breite * 180, -180, 180);
 
   karte.addEventListener('touchstart', e => {
     if (e.touches.length !== 1 || window.__zieht) { x0 = null; return; }
@@ -4740,7 +4744,7 @@ function gKarteZiehen(karte, drehen, ablegen) {
        fängt die Karte ihn ab, weil sie fast die ganze Fläche einnimmt. */
     if (t.clientX < 30) { x0 = null; return; }
     x0 = t.clientX; y0 = t.clientY;
-    zieht = false; wegX = 0; wegY = 0;
+    zieht = false; wegX = 0; wegY = 0; ganzX = 0;
     const r = karte.getBoundingClientRect();
     breite = r.width || 300; hoehe = r.height || 400;
     letztX = x0; letztY = y0; letztT = Date.now(); tempoX = 0; tempoY = 0;
@@ -4763,7 +4767,7 @@ function gKarteZiehen(karte, drehen, ablegen) {
       tempoY = (t.clientY - letztY) / (jetzt - letztT);
       letztX = t.clientX; letztY = t.clientY; letztT = jetzt;
     }
-    wegX = dx - abX; wegY = dy - abY;
+    wegX = dx - abX; wegY = dy - abY; ganzX = dx;
     malen();
   }, { passive: false });
 
@@ -4779,8 +4783,16 @@ function gKarteZiehen(karte, drehen, ablegen) {
     const weg = hoch > Math.abs(wegX)
       && (tempoY < -0.55 || hoch > Math.max(120, hoehe * 0.4));
     if (weg && ablegen && ablegen()) { setTimeout(() => { window.__zieht = false; }, 300); return; }
+    /* Umgeblättert wird höchstens einmal je Zug: über die Hälfte gedreht,
+       ein kurzer Weg oder ein Schwung genügen – dann liegt die andere Seite
+       oben, nicht mehr und nicht weniger. */
+    /* Gemessen wird am Weg des Fingers, nicht am gedrehten Rest – die
+       Strecke bis zur Übernahme ist mitgelaufen und soll nicht gegen den
+       Zug zählen. */
     const dreht = Math.abs(wegX) > Math.abs(wegY)
-      && (Math.abs(wegX) > Math.max(60, breite * 0.22) || Math.abs(tempoX) > 0.45);
+      && (Math.abs(winkel()) >= 88
+        || Math.abs(ganzX) > Math.max(52, breite * 0.16)
+        || Math.abs(tempoX) > 0.3);
     if (dreht) drehen(wegX > 0 ? 1 : -1);
     else karte.style.transform = 'rotateY(' + grund() + 'deg)';
     setTimeout(() => { window.__zieht = false; karte._gezogen = false; }, 300);
