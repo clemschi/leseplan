@@ -85,6 +85,8 @@ Fertige Bausteine, die genau das tun:
 - `ziehenBinden` im Stöbern – Karten nach links und rechts.
 - `kMonatZiehen` – das Monatsblatt von Monat zu Monat.
 - `gKarteZiehen` – die Guzi-Karte umdrehen; der linke Rand bleibt frei für `heimZiehen`.
+  Schräge Züge drehen um **eine** Achse (`rotate3d`), nie um zwei nacheinander –
+  sonst rollt die Fläche und eine Richtung fühlt sich verkehrt an.
 
 ## Ebenen
 - Eine offene Ebene wird **getauscht, nicht geschlossen und neu geöffnet**:

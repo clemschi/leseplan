@@ -78,7 +78,10 @@ Vier Reiter in der Fussleiste:
   nur mit dem Finger: quer eine halbe Umdrehung je halber Kartenbreite, dort ist
   Schluss – ein weiter Zug dreht sie nicht über die Rückseite hinaus. Dabei kippt
   sie auch längs mit, bis 26°, so dass ein Zug von rechts oben nach links unten die
-  Karte wirklich in der Hand liegen lässt. Umgeblättert wird höchstens einmal je
+  Karte wirklich in der Hand liegen lässt. Gedreht wird um **eine** Achse quer zur
+  Zugrichtung, nicht um zwei nacheinander – sonst legt sich eine Rollbewegung
+  obendrauf, die nach rechts und nach links gleich herum läuft, und eine der beiden
+  Richtungen fühlt sich verkehrt an. Umgeblättert wird höchstens einmal je
   Zug: über die Hälfte gedreht, gut 50 px Fingerweg oder ein Schwung genügen, dann
   liegt die andere Seite oben – nicht mehr und nicht weniger. Ein **schneller Zug nach oben** legt sie zu
   den Vergangenen; sie fliegt weg, vorn bleibt eine leere Karte. Die ersten 30 px am

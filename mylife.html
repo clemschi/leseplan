@@ -222,12 +222,18 @@ main{padding:18px 0 0;}
 .field > label.optzeile input{width:auto;margin-top:3px;flex:0 0 auto;}
 .field > label.optzeile strong{color:var(--text);font-weight:600;}
 .field .hint{font-size:11.5px;color:var(--text-3);}
-input[type=text],input[type=number],input[type=date],input[type=time],textarea,select{
+input[type=text],input[type=number],input[type=date],input[type=time],textarea,select,.zeile{
   width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
   color:var(--text);padding:10px 11px;font-size:15px;font-family:inherit;
 }
 textarea{resize:vertical;min-height:88px;line-height:1.55;}
-input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);background:var(--surface-3);}
+input:focus,textarea:focus,select:focus,.zeile:focus{outline:none;border-color:var(--accent);background:var(--surface-3);}
+/* Die beschreibbare Zeile tritt an die Stelle einzeiliger Eingabefelder.
+   Eine Zeile, kein Umbruch, langer Text schiebt sich seitlich durch. */
+.zeile{display:block;white-space:pre;overflow-x:auto;overflow-y:hidden;line-height:1.4;
+  min-height:1.4em;caret-color:var(--accent);-webkit-user-select:text;user-select:text;}
+.zeile::-webkit-scrollbar{display:none;}
+.zeile.leer::before{content:attr(data-ph);color:var(--text-3);pointer-events:none;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
 
@@ -1133,6 +1139,59 @@ const uid = () => 'x' + Date.now().toString(36) + Math.random().toString(36).sli
 
    Die Rechtschreibprüfung bleibt an – die Vorschlagsleiste der Tastatur
    gehört ihr selbst und lässt sich nur dort abstellen. */
+/* Einzeilige Textfelder sind gar keine <input> mehr: über einem <input>
+   bietet Chrome seine Ausfüllhilfe an – über einem Textfeld ohne <input> nie.
+   Genau daran liegt es, dass die Leiste im Titel erscheint und in der
+   Rückseite (einem <textarea>) nicht. Datum, Uhrzeit und Zahlen bleiben echte
+   Felder, die brauchen ihre eigene Tastatur. */
+const ZEILE_FELD = 'input[type=text],input[type=url],input:not([type])';
+function feldZuZeile(inp) {
+  const z = document.createElement('div');
+  z.className = 'zeile' + (inp.className ? ' ' + inp.className : '');
+  /* „plaintext-only" hält Formatierung und Umbrüche heraus; wo es das nicht
+     gibt, tut es „true" mit eigener Einfüge-Regel. */
+  z.setAttribute('contenteditable', 'plaintext-only');
+  if (z.contentEditable !== 'plaintext-only') z.setAttribute('contenteditable', 'true');
+  z.setAttribute('role', 'textbox');
+  z.setAttribute('enterkeyhint', 'done');
+  z.dataset.ruhig = '1';
+  for (const a of Array.from(inp.attributes)) {
+    if (a.name.startsWith('data-') || a.name === 'id' || a.name === 'style'
+      || a.name === 'inputmode' || a.name === 'aria-label') z.setAttribute(a.name, a.value);
+  }
+  z.dataset.ph = inp.getAttribute('placeholder') || '';
+  /* Nach aussen verhält sie sich wie ein Feld: .value lesen und setzen. */
+  Object.defineProperty(z, 'value', {
+    get() { return this.textContent; },
+    set(v) { this.textContent = v == null ? '' : String(v); leerPflegen(this); }
+  });
+  z.value = inp.value || inp.getAttribute('value') || '';
+  z.addEventListener('input', () => leerPflegen(z));
+  z.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+  z.addEventListener('paste', e => {
+    if (z.getAttribute('contenteditable') === 'plaintext-only') return;
+    e.preventDefault();
+    const t = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/\s+/g, ' ');
+    document.execCommand('insertText', false, t);
+  });
+  inp.replaceWith(z);
+  return z;
+}
+function leerPflegen(z) { z.classList.toggle('leer', !z.textContent); }
+function zeilenMachen(wurzel) { $$(ZEILE_FELD, wurzel || document).forEach(feldZuZeile); }
+
+/* Frisch gesetztes Markup wird sofort umgebaut – nicht erst, wenn der
+   Beobachter drankommt. Sonst hängen die Handler, die gleich nach dem
+   Zeichnen gesetzt werden, am alten Feld. */
+(() => {
+  const b = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+  Object.defineProperty(Element.prototype, 'innerHTML', {
+    configurable: true,
+    get() { return b.get.call(this); },
+    set(v) { b.set.call(this, v); if (this.querySelector) zeilenMachen(this); }
+  });
+})();
+
 const RUHIG_FELD = 'input:not([type=file]):not([type=radio]):not([type=checkbox]):not([type=range]),textarea';
 function feldRuhig(el) {
   if (!el || el.dataset.ruhig) return;
@@ -1150,7 +1209,10 @@ function feldRuhig(el) {
     f.appendChild(el);
   }
 }
-function felderRuhigStellen(wurzel) { $$(RUHIG_FELD, wurzel || document).forEach(feldRuhig); }
+function felderRuhigStellen(wurzel) {
+  zeilenMachen(wurzel);
+  $$(RUHIG_FELD, wurzel || document).forEach(feldRuhig);
+}
 /* Auch alles, was erst später entsteht – Blätter, Ebenen, neu gezeichnete
    Ansichten. */
 function felderBeobachten() {
@@ -1291,7 +1353,7 @@ function toast(msg, ms) {
 /* Das gerade beschriebene Feld in den sichtbaren Bereich holen. */
 document.addEventListener('focusin', e => {
   const feld = e.target;
-  if (!feld.matches || !feld.matches('input,textarea,select')) return;
+  if (!feld.matches || !feld.matches('input,textarea,select,.zeile')) return;
   if (!feld.closest('.sheet,.overlay')) return;
   setTimeout(() => {
     try { feld.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (err) { }
@@ -4726,11 +4788,19 @@ function gKarteZiehen(karte, drehen, ablegen) {
   let letztX = 0, letztY = 0, letztT = 0, tempoX = 0, tempoY = 0;
   const grund = () => gDrehung;
   const malen = () => {
-    /* Erst kippen, dann drehen – so bleibt die Neigung zum Bildschirm hin
-       gleich, auch wenn die Rückseite oben liegt. */
-    const kipp = clamp(-wegY / hoehe * 90, -26, 26);
-    karte.style.transform = 'rotateX(' + kipp.toFixed(2) + 'deg) '
-      + 'rotateY(' + (grund() + winkel()).toFixed(2) + 'deg)';
+    /* Eine Achse, nicht zwei nacheinander: gekippt und gedreht wird um eine
+       einzige Achse quer zur Zugrichtung – wie wenn man eine Platte am Rand
+       anhebt. Zwei Drehungen hintereinander (erst kippen, dann drehen) legen
+       eine Rollbewegung obendrauf, die sich beim Zug nach rechts und nach
+       links gleich herum dreht – schräg gezogen fühlt sich dann eine der
+       beiden Richtungen verkehrt an. Um eine Achse gibt es kein Rollen, und
+       die Spiegelung stimmt in jede Richtung. */
+    const y = winkel();                              /* um die Senkrechte */
+    const x = clamp(-wegY / hoehe * 90, -26, 26);    /* um die Waagerechte */
+    const stark = Math.hypot(x, y);
+    karte.style.transform = (stark < 0.01 ? ''
+      : 'rotate3d(' + x.toFixed(3) + ',' + y.toFixed(3) + ',0,' + stark.toFixed(2) + 'deg) ')
+      + 'rotateY(' + grund() + 'deg)';
   };
   /* Eine halbe Kartenbreite ist eine halbe Umdrehung – und dort ist Schluss.
      Ein weiter Zug dreht die Karte sonst über die Rückseite hinaus, und beim
@@ -5669,7 +5739,7 @@ function blatt(titel, inhalt, opts) {
   (opts.ersetzen ? layerErsetzen : layerOeffnen)(scrim, opts.onClose);
   /* Nicht von selbst ins erste Feld springen – sonst fährt bei jedem Blatt
      die Tastatur hoch. Wer tippen will, tippt hinein. */
-  const erstes = $('input,textarea,select', body);
+  const erstes = $('input,textarea,select,.zeile', body);
   if (erstes && opts.fokus === true) setTimeout(() => erstes.focus(), 80);
   ziehenZumSchliessen($('.sheet', scrim));
   return scrim;
@@ -5699,7 +5769,7 @@ function ziehenZumSchliessen(sheet) {
   const start = ev => {
     if (window.__zieht || sheet.scrollTop > 3) { y0 = null; return; }
     const ziel = ev.target;
-    if (ziel.closest && ziel.closest('input,textarea,select,button,pre,[data-akzent]')) { y0 = null; return; }
+    if (ziel.closest && ziel.closest('input,textarea,select,.zeile,button,pre,[data-akzent]')) { y0 = null; return; }
     if (inScroller(ziel)) { y0 = null; return; }
     const t = ev.touches ? ev.touches[0] : ev;
     y0 = t.clientY; x0 = t.clientX;
@@ -5777,7 +5847,7 @@ function tabVerschieben(d) {
   /* Flächen, auf denen quer schon etwas anderes passiert – dort bleibt der
      Zug nach Hause aussen vor. */
   const tabu = '.book,.arow,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,'
-    + '.nowbar,.zsRahmen,.netz,.sto,input,textarea,select,.sheet,.akk,'
+    + '.nowbar,.zsRahmen,.netz,.sto,input,textarea,select,.zeile,.sheet,.akk,'
     + '.kbahn,.kgitterrahmen,.frpult,.frbahn';
   /* In welcher App stehen wir gerade? */
   const flaeche = () => {
