@@ -23,12 +23,17 @@ Vier Reiter in der Fussleiste:
   Monat, am Finger, mit derselben Mechanik wie die Karten beim Stöbern. Termine tragen
   Uhrzeit, Dauer, Ort, Notiz, Farbe und wahlweise eine Wiederholung (täglich bis
   jährlich).
-- **To-Do** – Aufgaben in drei Ebenen als Flussbild: **Vorhaben** → quer die
-  **Schritte** → in jedem die einzelnen **Handgriffe**. Abgehakt wird von unten nach
-  oben: sind alle Handgriffe erledigt, gilt der Schritt als erledigt, sind alle Schritte
-  erledigt, das Vorhaben. Umsortieren mit den Pfeilen, Fristen an Vorhaben und Schritten –
-  was eine Frist hat, taucht unter *Heute* und im Monatsblatt auf.
-- **Mehr** – Speicherort, Sichern, Laden, Zurücksetzen, Ansicht.
+- **To-Do** – Aufgaben in drei Ebenen als Flussbild: **Thema** → quer die **Tage** → an
+  jedem Tag die einzelnen **Tätigkeiten**. Der Tag ist zugleich die Frist: beim Anlegen
+  wählst du das Datum, und was daran hängt, taucht unter *Heute* und im Monatsblatt auf.
+  Neue Tage rutschen von selbst an ihren Platz in der Reihe. Abgehakt wird von unten nach
+  oben: sind alle Tätigkeiten erledigt, gilt der Tag als erledigt, sind alle Tage
+  erledigt, das Thema. **Langes Drücken hebt an** – Themen untereinander, Tage
+  nebeneinander, Tätigkeiten innerhalb ihres Tages; das angehobene Thema schrumpft dabei
+  auf seine Kopfzeile.
+- **Mehr** – Speicherort, Sichern, Laden, Zurücksetzen. Darunter, wie in jeder App,
+  derselbe Block **Darstellung**: Hell/Dunkel, Akzentfarbe, Vollbild und der Weg zur
+  Startseite. Diese Einstellungen gehören der Hülle und gelten überall.
 
 ## fastreader
 

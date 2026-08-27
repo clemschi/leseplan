@@ -71,7 +71,10 @@
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;}
-body{
+/* Kein Zurückblättern und kein Nachziehen durch Überziehen: waagerechte
+   Bahnen (Tage im To-Do, Karten, Seiten) laufen sonst aus der Seite heraus. */
+html{overscroll-behavior:none;}
+body{overscroll-behavior:none;
   background:var(--bg);
   color:var(--text);
   font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -551,14 +554,13 @@ body.voll .cam{padding-top:14px;}
 .splash .app:active{color:var(--accent);}
 .splash .app.aus{color:var(--text-3);opacity:.5;}
 @keyframes splashAuf{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-.splash .infobox{position:absolute;left:0;right:0;bottom:calc(74px + env(safe-area-inset-bottom));
-  margin:0 22px;padding:11px 13px;border:1px solid var(--border);border-radius:12px;
-  background:var(--surface);text-align:left;cursor:pointer;
-  display:flex;flex-direction:column;gap:3px;max-width:420px;}
-.splash .infobox .i-kopf{font-size:11.5px;color:var(--text-2);font-weight:600;}
-.splash .infobox .i-text{font-size:11px;color:var(--text-3);line-height:1.5;}
-.splash .infobox .i-text b{color:var(--text-2);font-weight:600;}
-.splash .infobox:active{border-color:var(--border-strong);}
+.infobox{padding:11px 13px;border:1px solid var(--border);border-radius:12px;
+  background:var(--surface);text-align:left;cursor:pointer;width:100%;
+  display:flex;flex-direction:column;gap:3px;}
+.infobox .i-kopf{font-size:11.5px;color:var(--text-2);font-weight:600;}
+.infobox .i-text{font-size:11px;color:var(--text-3);line-height:1.5;}
+.infobox .i-text b{color:var(--text-2);font-weight:600;}
+.infobox:active{border-color:var(--border-strong);}
 .erklaer{display:flex;flex-direction:column;gap:12px;}
 .e-schritt{display:flex;gap:11px;align-items:flex-start;}
 .e-nr{width:22px;height:22px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
@@ -632,6 +634,14 @@ body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
 .kneu .btn{flex:0 0 auto;padding:0 16px;}
 .kzahl{margin-left:auto;font-size:11px;color:var(--text-3);align-self:center;}
 .kfluss{margin-bottom:22px;}
+.kfluss.zieht .kv-kopf,.kspalte.zieht .kt-kasten,.kh.zieht{
+  box-shadow:0 12px 28px rgba(0,0,0,.45);border-color:var(--accent);}
+.kfluss.zieht .kbahn,.kfluss.zieht .kpfeil{display:none;}
+.kspalte.zieht .kt-liste,.kspalte.zieht .kzeile{display:none;}
+.kspalte.zieht,.kfluss.zieht,.kh.zieht{opacity:.96;}
+/* Kein touch-action hier: das Anheben muss das Scrollen im ersten
+   touchmove unterbinden dürfen, und das geht nur bei „auto“. */
+.kt-kopf{cursor:grab;}
 .kv-kopf{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:14px;
   background:var(--surface);border:1.5px solid var(--accent);}
 .kv-kopf.fertig{border-color:var(--good);}
@@ -645,7 +655,7 @@ body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
 .kpfeil::before{content:'';position:absolute;left:26px;top:0;bottom:5px;width:1.5px;background:var(--border-strong);}
 .kpfeil::after{content:'';position:absolute;left:22px;bottom:0;border-left:4px solid transparent;
   border-right:4px solid transparent;border-top:5px solid var(--border-strong);}
-.kbahn{display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding:0 2px 8px;
+.kbahn{display:flex;align-items:flex-start;gap:0;overflow-x:auto;overscroll-behavior-x:contain;padding:0 2px 8px;
   -webkit-overflow-scrolling:touch;scrollbar-width:thin;}
 .kbahn::-webkit-scrollbar{height:3px;}
 .kbahn::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:9px;}
@@ -663,7 +673,9 @@ body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
 .kt-kopf .icon-btn svg{width:11px;height:11px;}
 .kt-text{font-size:13px;color:var(--text);line-height:1.35;margin-top:3px;word-break:break-word;}
 .kt-kasten.fertig .kt-text{color:var(--text-3);text-decoration:line-through;}
+.kt-notiz{font-size:11.5px;color:var(--text-3);margin-top:3px;line-height:1.35;}
 .kt-frist{font-size:10px;color:var(--text-3);margin-top:3px;}
+.kspalte.anfuegen .kzeile input[type=date]{font-size:12px;}
 .kt-liste{display:flex;flex-direction:column;gap:4px;margin-top:8px;}
 .kh{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);
   border-radius:8px;padding:5px 6px;}
@@ -690,7 +702,7 @@ body.heimzug #view{position:relative;z-index:2;background:var(--bg);}
 .kfarben{display:flex;gap:8px;}
 .kfarbe{width:30px;height:30px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;}
 .kfarbe.an{border-color:var(--text);}
-#kview{padding:18px 14px calc(var(--tabh, 58px) + 24px);}
+#kview{padding:18px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
 @media (min-width:520px){
   .kspalte{width:242px;}
   .kspalte.anfuegen{width:220px;}
@@ -769,7 +781,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:0;}
 .frkurve{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;}
 .frkurve svg{display:block;width:100%;height:56px;overflow:visible;}
-#fview{padding:18px 14px calc(var(--tabh, 58px) + 18px);}
+#fview{padding:18px 14px calc(var(--tabh, 58px) + 18px);overscroll-behavior-x:contain;}
 .toast{
   position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom));transform:translateX(-50%);
   z-index:120;background:var(--surface-3);border:1px solid var(--border-strong);color:var(--text);
@@ -1584,6 +1596,67 @@ function zumStartbildschirm() {
   splashZeigen();
 }
 
+/* ===== Was allen Apps gemeinsam ist =====
+   Hell/Dunkel, Akzentfarbe und Vollbild gehören der Hülle, nicht einer App.
+   Damit sie nirgends fehlen, kommen sie überall aus demselben Baustein. */
+function huelleEinstellungenHtml(titel) {
+  return `
+    <div class="section-head" style="margin-top:20px"><h2>${esc(titel || 'Darstellung')}</h2>
+      <span class="eyebrow">gilt für alle Apps</span></div>
+    <div class="list-card">
+      <div class="rowline">
+        <span class="grow"><span class="rn">${SHELL.theme === 'light' ? 'Hell' : 'Dunkel'}</span>
+          <span class="rm">Auch über das Symbol in der Kopfzeile</span></span>
+        <button class="btn btn-sm" data-htheme>Umschalten</button>
+      </div>
+      <div class="rowline" style="flex-direction:column;align-items:stretch;gap:10px">
+        <span><span class="rn">Akzentfarbe</span>
+          <span class="rm">${esc(akzentAktiv().name)} – gilt für Knöpfe, Fortschritt und Markierungen</span></span>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          ${AKZENTE.map(a => {
+            const farbe = SHELL.theme === 'light' ? a.light : a.dark;
+            const ist = a.id === akzentAktiv().id;
+            return `<button data-hakzent="${a.id}" title="${esc(a.name)}" aria-label="${esc(a.name)}"
+              style="width:30px;height:30px;border-radius:50%;background:${farbe};flex:0 0 auto;
+                     border:2px solid ${ist ? 'var(--text)' : 'transparent'};box-shadow:0 0 0 1px var(--border)"></button>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="rowline">
+        <span class="grow"><span class="rn">Vollbild</span><span class="rm">${vollbildGeht()
+          ? 'Blendet die Leisten des Browsers aus'
+          : 'Dieser Browser kann das nicht auf Zuruf. Am iPhone: Teilen-Menü → „Zum Home-Bildschirm“.'}</span></span>
+        ${vollbildGeht() ? `<button class="btn btn-sm" data-hvoll>${vollbildAn() ? 'Beenden' : 'Einschalten'}</button>` : ''}
+      </div>
+      <div class="rowline">
+        <span class="grow"><span class="rn">Beim Start ins Vollbild</span>
+          <span class="rm">Greift bei der ersten Berührung, wo der Browser es zulässt</span></span>
+        <button class="btn btn-sm" data-hvollstart>${SHELL.vollbildStart ? 'An' : 'Aus'}</button>
+      </div>
+      <div class="rowline">
+        <span class="grow"><span class="rn">Zur Startseite</span><span class="rm">Alle Apps dieser Datei</span></span>
+        <button class="btn btn-sm" data-hheim>Öffnen</button>
+      </div>
+    </div>`;
+}
+function huelleEinstellungenBinden(wurzel, neuMalen) {
+  const frisch = () => { if (neuMalen) neuMalen(); };
+  const t = $('[data-htheme]', wurzel);
+  if (t) t.onclick = () => { themeUmschalten(); frisch(); };
+  $$('[data-hakzent]', wurzel).forEach(b => b.onclick = () => {
+    SHELL.akzent = b.dataset.hakzent;
+    shellSchreiben();
+    themeAnwenden();
+    frisch();
+  });
+  const v = $('[data-hvoll]', wurzel);
+  if (v) v.onclick = () => { vollbildUmschalten(); setTimeout(frisch, 140); };
+  const vs = $('[data-hvollstart]', wurzel);
+  if (vs) vs.onclick = () => { SHELL.vollbildStart = !SHELL.vollbildStart; shellSchreiben(); frisch(); };
+  const h = $('[data-hheim]', wurzel);
+  if (h) h.onclick = () => zumStartbildschirm();
+}
+
 /* ===== Startbildschirm =====
    Der Homescreen dieser Datei: ein paar Namen auf dem Grund, sonst nichts.
    Jede App bringt ihre eigene Datenbasis mit und wird erst beim Antippen
@@ -1607,11 +1680,6 @@ function splashZeigen() {
       <div class="apps">
         ${APPS.map(x => `<button class="app ist" data-app="${x.id}">${esc(x.name)}</button>`).join('')}
       </div>
-      <button class="infobox" data-act="info">
-        <span class="i-kopf">Wo liegen meine Daten?</span>
-        <span class="i-text">Im Browser dieses Geräts, an diese Seite gebunden – nicht in einer Datei.
-          Jede App für sich. Zum Mitnehmen: <b>Mehr → Jetzt sichern</b>.</span>
-      </button>
       <div class="leiste">
         <button class="icon-btn" data-act="theme" title="Hell oder dunkel" aria-label="Hell oder dunkel"></button>
         ${vollbildGeht() ? `<button class="icon-btn" data-act="voll" title="Vollbild" aria-label="Vollbild">${ICON.voll}</button>` : ''}
@@ -1633,7 +1701,6 @@ function splashZeigen() {
       if (act === 'theme') { themeUmschalten(); themeKnopf(); return; }
       if (act === 'voll') { vollbildUmschalten(); return; }
       if (act === 'mehr') { setupZeigen(false, true); return; }
-      if (act === 'info') { speicherErklaerung(); return; }
       return;
     }
     const k = e.target.closest('[data-app]');
@@ -1711,6 +1778,12 @@ function setupZeigen(nurWechsel, ausSplash) {
         </p>
       `}
 
+      <button class="infobox" data-act="info" style="position:static;margin:20px 0 0;max-width:none">
+        <span class="i-kopf">Wo liegen meine Daten?</span>
+        <span class="i-text">Im Browser dieses Geräts, an diese Seite gebunden – nicht in einer Datei.
+          Jede App für sich. Zum Mitnehmen: <b>Mehr → Jetzt sichern</b>. Tippen für die lange Fassung.</span>
+      </button>
+
       <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
         ${dateiDa ? '<button class="btn btn-sm" data-act="import">Daten aus Datei laden</button>' : ''}
         ${nurWechsel ? '' : '<button class="btn btn-sm" data-act="stoebern">' + ICON.herz + ' Stöbern</button>'}
@@ -1729,6 +1802,7 @@ function setupZeigen(nurWechsel, ausSplash) {
     const act = b.dataset.act;
     if (act === 'theme') { themeUmschalten(); return; }
     if (act === 'voll') { vollbildUmschalten(); return; }
+    if (act === 'info') { speicherErklaerung(); return; }
     if (act === 'abbrechen') {
       if (ausSplash) { splashZeigen(); return; }
       s.hidden = true; $('#app').hidden = false; return;
@@ -2167,20 +2241,30 @@ function kalNormalisiere(roh) {
     farbe: KFARBEN.includes(t.farbe) ? t.farbe : KFARBEN[0],
     wdh: KWDH[t.wdh] ? t.wdh : 'keine'
   }));
-  const schritt = x => ({ id: x.id || uid(), text: String(x.text || '').trim(), done: !!x.done });
-  k.aufgaben = (Array.isArray(d.aufgaben) ? d.aufgaben : []).map(v => ({
-    id: v.id || uid(),
-    text: String(v.text || '').trim() || 'Ohne Titel',
-    done: !!v.done,
-    faellig: /^\d{4}-\d{2}-\d{2}$/.test(v.faellig) ? v.faellig : null,
-    teile: (Array.isArray(v.teile) ? v.teile : []).map(t => ({
+  /* Drei Ebenen: Thema → Tag → Tätigkeit. Ältere Stände hiessen Vorhaben,
+     Schritt und Handgriff; ihre Felder werden hier übernommen. */
+  const taetigkeit = x => ({ id: x.id || uid(), text: String(x.text || '').trim(), done: !!x.done });
+  k.aufgaben = (Array.isArray(d.aufgaben) ? d.aufgaben : []).map(v => {
+    const tage = (Array.isArray(v.tage) ? v.tage : (Array.isArray(v.teile) ? v.teile : [])).map(t => ({
       id: t.id || uid(),
-      text: String(t.text || '').trim(),
+      datum: /^\d{4}-\d{2}-\d{2}$/.test(t.datum) ? t.datum
+        : (/^\d{4}-\d{2}-\d{2}$/.test(t.faellig) ? t.faellig : null),
+      notiz: String(t.notiz != null ? t.notiz : (t.text || '')).trim(),
       done: !!t.done,
-      faellig: /^\d{4}-\d{2}-\d{2}$/.test(t.faellig) ? t.faellig : null,
-      schritte: (Array.isArray(t.schritte) ? t.schritte : []).map(schritt).filter(x => x.text)
-    })).filter(t => t.text)
-  }));
+      taetigkeiten: (Array.isArray(t.taetigkeiten) ? t.taetigkeiten
+        : (Array.isArray(t.schritte) ? t.schritte : [])).map(taetigkeit).filter(x => x.text)
+    })).filter(t => t.datum || t.notiz || t.taetigkeiten.length);
+    /* Hatte ein Thema früher selbst eine Frist und noch keinen Tag, wird daraus einer. */
+    if (!tage.length && /^\d{4}-\d{2}-\d{2}$/.test(v.faellig)) {
+      tage.push({ id: uid(), datum: v.faellig, notiz: '', done: !!v.done, taetigkeiten: [] });
+    }
+    return {
+      id: v.id || uid(),
+      text: String(v.text || '').trim() || 'Ohne Titel',
+      done: !!v.done,
+      tage
+    };
+  });
   return k;
 }
 
@@ -2249,27 +2333,34 @@ function kTermineAm(iso) {
   return KDB.termine.filter(t => kFaelltAuf(t, iso))
     .sort((x, y) => (x.zeit || '99:99').localeCompare(y.zeit || '99:99') || x.titel.localeCompare(y.titel));
 }
-/* Alles, was an diesem Tag fällig ist – Vorhaben wie einzelne Schritte. */
+/* Was an diesem Tag ansteht: jeder Tag eines Themas mit seinem Datum. */
 function kFaelligAm(iso) {
   const raus = [];
   KDB.aufgaben.forEach(v => {
-    if (v.faellig === iso && !v.done) raus.push({ art: 'vorhaben', vorhaben: v, text: v.text });
-    v.teile.forEach(t => {
-      if (t.faellig === iso && !t.done) raus.push({ art: 'teil', vorhaben: v, teil: t, text: t.text });
+    v.tage.forEach(t => {
+      if (t.datum !== iso || t.done) return;
+      const offen = t.taetigkeiten.filter(x => !x.done);
+      raus.push({ thema: v, tag: t, text: t.notiz || v.text, offen: offen.length, taetigkeiten: offen });
     });
   });
   return raus;
 }
 function kFortschritt(v) {
   const alle = [];
-  v.teile.forEach(t => { alle.push(t.done); t.schritte.forEach(x => alle.push(x.done)); });
+  v.tage.forEach(t => { alle.push(t.done); t.taetigkeiten.forEach(x => alle.push(x.done)); });
   if (!alle.length) return { fertig: v.done ? 1 : 0, ganz: 1 };
   return { fertig: alle.filter(Boolean).length, ganz: alle.length };
 }
-/* Ein Elternteil gilt als erledigt, wenn alle darunter erledigt sind. */
+/* Ein Elternteil gilt als erledigt, wenn alles darunter erledigt ist. */
 function kElternPruefen(v) {
-  v.teile.forEach(t => { if (t.schritte.length) t.done = t.schritte.every(x => x.done); });
-  if (v.teile.length) v.done = v.teile.every(t => t.done);
+  v.tage.forEach(t => { if (t.taetigkeiten.length) t.done = t.taetigkeiten.every(x => x.done); });
+  if (v.tage.length) v.done = v.tage.every(t => t.done);
+}
+/* Tage stehen in der Reihenfolge, in der sie liegen – neue rutschen an ihren Platz. */
+function kTagEinfuegen(thema, tag) {
+  if (!tag.datum) { thema.tage.push(tag); return; }
+  const i = thema.tage.findIndex(t => t.datum && t.datum > tag.datum);
+  if (i < 0) thema.tage.push(tag); else thema.tage.splice(i, 0, tag);
 }
 
 /* ---------- Öffnen und Speicherort ---------- */
@@ -2473,19 +2564,21 @@ function kHeuteMalen(v) {
       ${f.length ? `<span class="eyebrow">${f.length}</span>` : ''}</div>
     ${f.length ? `<div class="list-card">${f.map(x => `
         <div class="rowline">
-          <button class="status-btn" data-fertig="${x.art === 'teil' ? x.teil.id : x.vorhaben.id}" aria-label="Erledigt">${ICON.check}</button>
-          <span class="grow"><span class="rn">${esc(x.text)}</span>
-            <span class="rm">${x.art === 'teil' ? esc(x.vorhaben.text) : 'Vorhaben'}</span></span>
+          <button class="status-btn" data-fertig="${x.tag.id}" aria-label="Erledigt">${ICON.check}</button>
+          <span class="grow"><span class="rn">${esc(x.thema.text)}</span>
+            <span class="rm">${x.taetigkeiten.length
+        ? x.taetigkeiten.map(t => esc(t.text)).join(' · ')
+        : (x.tag.notiz ? esc(x.tag.notiz) : 'ohne Tätigkeit')}</span></span>
         </div>`).join('')}</div>`
-      : `<p class="hinweis" style="padding:0">Nichts fällig. Termine im Kalender, Vorhaben unter To-Do.</p>`}
+      : `<p class="hinweis" style="padding:0">Nichts fällig. Termine im Kalender, Themen unter To-Do.</p>`}
 
     ${offen.length ? `
-      <div class="section-head" style="margin-top:20px"><h2>Läuft gerade</h2><span class="eyebrow">${offen.length}</span></div>
+      <div class="section-head" style="margin-top:20px"><h2>Themen</h2><span class="eyebrow">${offen.length} offen</span></div>
       <div class="list-card">${offen.slice(0, 5).map(x => {
         const fs = kFortschritt(x);
         return `<button class="rowline" data-vorhaben="${x.id}" style="width:100%;text-align:left">
           <span class="grow"><span class="rn">${esc(x.text)}</span>
-            <span class="rm">${fs.fertig} von ${fs.ganz} erledigt${x.faellig ? ' · bis ' + esc(kTagText(x.faellig)) : ''}</span></span>
+            <span class="rm">${fs.fertig} von ${fs.ganz} erledigt${x.tage.length ? ' · ' + pl(x.tage.length, 'Tag', 'Tage') : ''}</span></span>
           <span class="kfort"><i style="width:${Math.round(fs.fertig / fs.ganz * 100)}%"></i></span>
           <span class="chev">${ICON.chev}</span></button>`;
       }).join('')}</div>` : ''}
@@ -2504,7 +2597,7 @@ function kHeuteMalen(v) {
   $('[data-neuertermin]', v).onclick = () => kTerminBearbeiten(null, h);
   $$('[data-termin]', v).forEach(b => b.onclick = () => kTerminBearbeiten(KDB.termine.find(x => x.id === b.dataset.termin), h));
   $$('[data-tag]', v).forEach(b => b.onclick = () => kTagBlatt(b.dataset.tag));
-  $$('[data-vorhaben]', v).forEach(b => b.onclick = () => { kTabWechseln('todo'); setTimeout(() => kZuVorhaben(b.dataset.vorhaben), 60); });
+  $$('[data-vorhaben]', v).forEach(b => b.onclick = () => { kTabWechseln('todo'); setTimeout(() => kZuThema(b.dataset.vorhaben), 60); });
   $$('[data-fertig]', v).forEach(b => b.onclick = () => { kAbhaken(b.dataset.fertig); kViewMalen(); });
 }
 
@@ -2522,10 +2615,14 @@ function kTerminZeile(x, iso) {
 function kAbhaken(id) {
   kAendern(() => {
     KDB.aufgaben.forEach(v => {
-      if (v.id === id) { v.done = !v.done; v.teile.forEach(t => { t.done = v.done; t.schritte.forEach(x => { x.done = v.done; }); }); return; }
-      v.teile.forEach(t => {
-        if (t.id === id) { t.done = !t.done; t.schritte.forEach(x => { x.done = t.done; }); }
-        t.schritte.forEach(x => { if (x.id === id) x.done = !x.done; });
+      if (v.id === id) {
+        v.done = !v.done;
+        v.tage.forEach(t => { t.done = v.done; t.taetigkeiten.forEach(x => { x.done = v.done; }); });
+        return;
+      }
+      v.tage.forEach(t => {
+        if (t.id === id) { t.done = !t.done; t.taetigkeiten.forEach(x => { x.done = t.done; }); }
+        t.taetigkeiten.forEach(x => { if (x.id === id) x.done = !x.done; });
       });
       kElternPruefen(v);
     });
@@ -2667,12 +2764,14 @@ function kTagBlatt(iso) {
       ${nahe ? `<p class="muted" style="font-size:12.5px;margin:-6px 0 12px">${esc(kTagText(iso, true))}</p>` : ''}
       ${t.length ? `<div class="list-card" style="margin-bottom:12px">${t.map(x => kTerminZeile(x, iso)).join('')}</div>`
         : `<p class="hinweis" style="padding:0 0 12px">Keine Termine an diesem Tag.</p>`}
-      ${f.length ? `<div class="section-head" style="padding:0;margin:0 0 8px"><h2>Fällig</h2></div>
+      ${f.length ? `<div class="section-head" style="padding:0;margin:0 0 8px"><h2>Zu tun</h2></div>
         <div class="list-card" style="margin-bottom:12px">${f.map(x => `
           <div class="rowline">
-            <button class="status-btn" data-fertig="${x.art === 'teil' ? x.teil.id : x.vorhaben.id}" aria-label="Erledigt">${ICON.check}</button>
-            <span class="grow"><span class="rn">${esc(x.text)}</span>
-              <span class="rm">${x.art === 'teil' ? esc(x.vorhaben.text) : 'Vorhaben'}</span></span>
+            <button class="status-btn" data-fertig="${x.tag.id}" aria-label="Erledigt">${ICON.check}</button>
+            <span class="grow"><span class="rn">${esc(x.thema.text)}</span>
+              <span class="rm">${x.taetigkeiten.length
+        ? x.taetigkeiten.map(t => esc(t.text)).join(' · ')
+        : (x.tag.notiz ? esc(x.tag.notiz) : 'ohne Tätigkeit')}</span></span>
           </div>`).join('')}</div>` : ''}
       <button class="btn btn-primary btn-block" data-neu>${ICON.plus} Termin an diesem Tag</button>`, { fokus: false });
 
@@ -2757,7 +2856,7 @@ function kTodoMalen(v) {
   const liste = kNurOffen ? alle.filter(x => !x.done) : alle;
   v.innerHTML = `
     <div class="kneu">
-      <input type="text" data-neu placeholder="Neues Vorhaben …">
+      <input type="text" data-neu placeholder="Neues Thema …">
       <button class="btn btn-primary" data-add>${ICON.plus}</button>
     </div>
     <div class="chiprow" style="margin-bottom:4px">
@@ -2765,17 +2864,17 @@ function kTodoMalen(v) {
       <button class="chip" data-filter="offen" aria-pressed="${kNurOffen}">Offen</button>
       ${alle.length ? `<span class="kzahl num">${alle.filter(x => x.done).length} / ${alle.length} erledigt</span>` : ''}
     </div>
-    ${liste.length ? liste.map(vh => kVorhabenHtml(vh)).join('')
-      : `<div class="empty" style="margin-top:26px"><strong>${alle.length ? 'Nichts Offenes mehr' : 'Noch keine Vorhaben'}</strong>
+    ${liste.length ? liste.map(vh => kThemaHtml(vh)).join('')
+      : `<div class="empty" style="margin-top:26px"><strong>${alle.length ? 'Nichts Offenes mehr' : 'Noch keine Themen'}</strong>
           ${alle.length ? 'Alles abgehakt. Schalte oben auf „Alle“, um das Erledigte zu sehen.'
-        : 'Vorhaben oben anlegen, darunter die Schritte, darin die einzelnen Handgriffe.'}</div>`}
+        : 'Ein Thema oben anlegen, darunter die Tage, an jedem Tag die einzelnen Tätigkeiten.'}</div>`}
     <div style="height:26px"></div>`;
 
   const eingabe = $('[data-neu]', v);
   const anlegen = () => {
     const text = eingabe.value.trim();
     if (!text) return;
-    kAendern(() => KDB.aufgaben.push({ id: uid(), text, done: false, faellig: null, teile: [] }));
+    kAendern(() => KDB.aufgaben.push({ id: uid(), text, done: false, tage: [] }));
     eingabe.value = '';
     kViewMalen();
   };
@@ -2790,206 +2889,211 @@ function kTodoMalen(v) {
   }
 }
 
-function kZuVorhaben(id) { kZuletztVorhaben = id; kViewMalen(); }
+function kZuThema(id) { kZuletztVorhaben = id; kViewMalen(); }
 
-function kVorhabenHtml(vh) {
+function kThemaHtml(vh) {
   const fs = kFortschritt(vh);
   const prozent = Math.round(fs.fertig / fs.ganz * 100);
   return `
-  <div class="kfluss" data-vh="${vh.id}">
-    <div class="kv-kopf${vh.done ? ' fertig' : ''}">
+  <div class="kfluss" data-vh="${vh.id}" data-sortthema="${vh.id}">
+    <div class="kv-kopf${vh.done ? ' fertig' : ''}" data-griff-thema="${vh.id}">
       <button class="status-btn${vh.done ? ' an' : ''}" data-vhcheck="${vh.id}" aria-label="Erledigt">${vh.done ? ICON.check : ''}</button>
       <span class="grow">
         <span class="kv-titel serif">${esc(vh.text)}</span>
-        <span class="kv-meta">${fs.fertig} / ${fs.ganz}${vh.faellig ? ' · bis ' + esc(kTagText(vh.faellig)) : ''}</span>
+        <span class="kv-meta">${pl(vh.tage.length, 'Tag', 'Tage')} · ${fs.fertig} / ${fs.ganz}</span>
       </span>
       <span class="kfort"><i style="width:${prozent}%"></i></span>
       <span class="kctrl">
         <button class="icon-btn" data-vhedit="${vh.id}" aria-label="Ändern">${ICON.edit}</button>
-        <button class="icon-btn" data-vhup="${vh.id}" aria-label="Nach oben">${ICON.up}</button>
-        <button class="icon-btn" data-vhdown="${vh.id}" aria-label="Nach unten">${ICON.down}</button>
         <button class="icon-btn" data-vhdel="${vh.id}" aria-label="Löschen">${ICON.trash}</button>
       </span>
     </div>
     <div class="kpfeil" aria-hidden="true"></div>
-    <div class="kbahn">
-      ${vh.teile.map((t, i) => `
+    <div class="kbahn" data-bahn="${vh.id}">
+      ${vh.tage.map((t, i) => `
         ${i ? '<div class="kverbinder" aria-hidden="true"></div>' : ''}
-        <div class="kspalte">
+        <div class="kspalte" data-sorttag="${t.id}">
           <div class="kt-kasten${t.done ? ' fertig' : ''}">
-            <div class="kt-kopf">
+            <div class="kt-kopf" data-griff-tag="${t.id}">
               <button class="status-btn klein${t.done ? ' an' : ''}" data-tcheck="${t.id}" aria-label="Erledigt">${t.done ? ICON.check : ''}</button>
-              <span class="kt-marke">Schritt ${i + 1}</span>
+              <span class="kt-marke">${t.datum ? esc(kTagKurz(t.datum)) : 'Ohne Datum'}</span>
+              <button class="icon-btn" data-tedit="${t.id}" aria-label="Tag ändern">${ICON.edit}</button>
               <button class="icon-btn" data-tdel="${t.id}" aria-label="Löschen">${ICON.trash}</button>
             </div>
-            <div class="kt-text">${esc(t.text)}</div>
-            ${t.faellig ? `<div class="kt-frist num">bis ${esc(kTagText(t.faellig))}</div>` : ''}
-            ${t.schritte.length ? `<div class="kt-liste">${t.schritte.map(x => `
-              <div class="kh${x.done ? ' fertig' : ''}">
+            ${t.datum ? `<div class="kt-text">${esc(kTagText(t.datum))}</div>` : ''}
+            ${t.notiz ? `<div class="kt-notiz">${esc(t.notiz)}</div>` : ''}
+            ${t.taetigkeiten.length ? `<div class="kt-liste" data-liste="${t.id}">${t.taetigkeiten.map(x => `
+              <div class="kh${x.done ? ' fertig' : ''}" data-sorttat="${x.id}" data-griff-tat="${x.id}">
                 <button class="status-btn winzig${x.done ? ' an' : ''}" data-scheck="${x.id}" aria-label="Erledigt">${x.done ? ICON.check : ''}</button>
                 <span class="kh-text">${esc(x.text)}</span>
                 <button class="icon-btn" data-sdel="${x.id}" aria-label="Löschen">${ICON.x}</button>
               </div>`).join('')}</div>` : ''}
             <div class="kzeile">
-              <input type="text" data-sneu="${t.id}" placeholder="Handgriff …">
+              <input type="text" data-sneu="${t.id}" placeholder="Tätigkeit …">
               <button class="btn btn-sm" data-sadd="${t.id}">${ICON.plus}</button>
-            </div>
-            <div class="kt-fuss">
-              <button class="icon-btn" data-tfrist="${t.id}" aria-label="Frist setzen" title="Frist">${KICON.frist}</button>
-              <button class="icon-btn" data-tlinks="${t.id}" aria-label="Nach links">${ICON.up}</button>
-              <button class="icon-btn" data-trechts="${t.id}" aria-label="Nach rechts">${ICON.down}</button>
             </div>
           </div>
         </div>`).join('')}
-      ${vh.teile.length ? '<div class="kverbinder" aria-hidden="true"></div>' : ''}
+      ${vh.tage.length ? '<div class="kverbinder" aria-hidden="true"></div>' : ''}
       <div class="kspalte anfuegen">
         <div class="kzeile">
-          <input type="text" data-tneu="${vh.id}" placeholder="Schritt …">
+          <input type="date" data-tneu="${vh.id}" value="${esc(heute())}" aria-label="Tag">
           <button class="btn btn-sm" data-tadd="${vh.id}">${ICON.plus}</button>
         </div>
+        <p class="hinweis" style="padding:6px 0 0;font-size:10px">Tag anlegen</p>
       </div>
     </div>
   </div>`;
+}
+
+/* Kurzform für die Marke über dem Tag: „Fr · 4.9.“ */
+function kTagKurz(iso) {
+  const d = kDatum(iso);
+  const h = heute();
+  const nahe = kNaheText(iso);
+  if (nahe) return nahe;
+  return KTAGE[kWochentag(iso)] + ' · ' + d.getDate() + '.' + (d.getMonth() + 1) + '.'
+    + (d.getFullYear() !== kDatum(h).getFullYear() ? d.getFullYear() : '');
 }
 
 function kTodoBinden(v) {
   const finde = id => {
     for (const vh of KDB.aufgaben) {
       if (vh.id === id) return { vh };
-      for (const t of vh.teile) {
+      for (const t of vh.tage) {
         if (t.id === id) return { vh, t };
-        for (const x of t.schritte) if (x.id === id) return { vh, t, x };
+        for (const x of t.taetigkeiten) if (x.id === id) return { vh, t, x };
       }
     }
     return null;
   };
   const neuMalen = () => kViewMalen();
 
-  $$('[data-vhcheck]', v).forEach(b => b.onclick = () => { kAbhaken(b.dataset.vhcheck); neuMalen(); });
-  $$('[data-tcheck]', v).forEach(b => b.onclick = () => { kAbhaken(b.dataset.tcheck); neuMalen(); });
-  $$('[data-scheck]', v).forEach(b => b.onclick = () => { kAbhaken(b.dataset.scheck); neuMalen(); });
+  $$('[data-vhcheck]', v).forEach(b => b.onclick = () => { if (!b._langGedrueckt) { kAbhaken(b.dataset.vhcheck); neuMalen(); } });
+  $$('[data-tcheck]', v).forEach(b => b.onclick = () => { if (!b._langGedrueckt) { kAbhaken(b.dataset.tcheck); neuMalen(); } });
+  $$('[data-scheck]', v).forEach(b => b.onclick = () => { if (!b._langGedrueckt) { kAbhaken(b.dataset.scheck); neuMalen(); } });
 
   $$('[data-vhdel]', v).forEach(b => b.onclick = async () => {
     const f = finde(b.dataset.vhdel);
     if (!f) return;
-    if (!await bestaetigen('Vorhaben löschen?', esc(f.vh.text) + ' samt allem darunter.', 'Löschen', true)) return;
+    if (!await bestaetigen('Thema löschen?', esc(f.vh.text) + ' samt allen Tagen darunter.', 'Löschen', true)) return;
     kAendern(() => { KDB.aufgaben = KDB.aufgaben.filter(x => x.id !== f.vh.id); });
     neuMalen();
   });
   $$('[data-tdel]', v).forEach(b => b.onclick = () => {
     const f = finde(b.dataset.tdel);
     if (!f) return;
-    kAendern(() => { f.vh.teile = f.vh.teile.filter(x => x.id !== f.t.id); kElternPruefen(f.vh); });
+    kAendern(() => { f.vh.tage = f.vh.tage.filter(x => x.id !== f.t.id); kElternPruefen(f.vh); });
     neuMalen();
   });
   $$('[data-sdel]', v).forEach(b => b.onclick = () => {
     const f = finde(b.dataset.sdel);
     if (!f) return;
-    kAendern(() => { f.t.schritte = f.t.schritte.filter(x => x.id !== f.x.id); kElternPruefen(f.vh); });
+    kAendern(() => { f.t.taetigkeiten = f.t.taetigkeiten.filter(x => x.id !== f.x.id); kElternPruefen(f.vh); });
     neuMalen();
-  });
-
-  const schieben = (arr, id, richtung) => {
-    const i = arr.findIndex(x => x.id === id), j = i + richtung;
-    if (i < 0 || j < 0 || j >= arr.length) return false;
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-    return true;
-  };
-  $$('[data-vhup]', v).forEach(b => b.onclick = () => { if (schieben(KDB.aufgaben, b.dataset.vhup, -1)) { kAendern(); neuMalen(); } });
-  $$('[data-vhdown]', v).forEach(b => b.onclick = () => { if (schieben(KDB.aufgaben, b.dataset.vhdown, 1)) { kAendern(); neuMalen(); } });
-  $$('[data-tlinks]', v).forEach(b => b.onclick = () => {
-    const f = finde(b.dataset.tlinks);
-    if (f && schieben(f.vh.teile, f.t.id, -1)) { kAendern(); neuMalen(); }
-  });
-  $$('[data-trechts]', v).forEach(b => b.onclick = () => {
-    const f = finde(b.dataset.trechts);
-    if (f && schieben(f.vh.teile, f.t.id, 1)) { kAendern(); neuMalen(); }
   });
 
   $$('[data-vhedit]', v).forEach(b => b.onclick = () => {
     const f = finde(b.dataset.vhedit);
-    if (f) kVorhabenBearbeiten(f.vh);
+    if (f) kThemaBearbeiten(f.vh);
   });
-  $$('[data-tfrist]', v).forEach(b => b.onclick = () => {
-    const f = finde(b.dataset.tfrist);
-    if (f) kFristSetzen(f.t, 'Frist für „' + f.t.text + '“', () => { kElternPruefen(f.vh); neuMalen(); });
+  $$('[data-tedit]', v).forEach(b => b.onclick = () => {
+    const f = finde(b.dataset.tedit);
+    if (f) kTagBearbeiten(f.vh, f.t);
   });
 
-  const anhaengen = (feld, tun) => {
-    const el = $(feld, v);
-    if (!el) return;
-    el.addEventListener('keydown', e => { if (e.key === 'Enter') tun(el); });
-  };
-  $$('[data-tadd]', v).forEach(b => b.onclick = () => {
-    const eingabe = $('[data-tneu="' + b.dataset.tadd + '"]', v);
-    kTeilAnlegen(b.dataset.tadd, eingabe);
-  });
-  $$('[data-tneu]', v).forEach(el => el.addEventListener('keydown', e => {
-    if (e.key === 'Enter') kTeilAnlegen(el.dataset.tneu, el);
-  }));
-  $$('[data-sadd]', v).forEach(b => b.onclick = () => {
-    const eingabe = $('[data-sneu="' + b.dataset.sadd + '"]', v);
-    kHandgriffAnlegen(b.dataset.sadd, eingabe);
-  });
-  $$('[data-sneu]', v).forEach(el => el.addEventListener('keydown', e => {
-    if (e.key === 'Enter') kHandgriffAnlegen(el.dataset.sneu, el);
-  }));
-
-  function kTeilAnlegen(vhId, eingabe) {
-    if (!eingabe) return;
-    const text = eingabe.value.trim();
-    if (!text) return;
+  const tagAnlegen = (vhId, feld) => {
+    if (!feld) return;
+    const datum = feld.value;
     const vh = KDB.aufgaben.find(x => x.id === vhId);
     if (!vh) return;
-    kAendern(() => { vh.teile.push({ id: uid(), text, done: false, faellig: null, schritte: [] }); kElternPruefen(vh); });
+    if (vh.tage.some(t => t.datum === datum)) { toast('Diesen Tag gibt es hier schon.'); return; }
+    kAendern(() => {
+      kTagEinfuegen(vh, { id: uid(), datum: /^\d{4}-\d{2}-\d{2}$/.test(datum) ? datum : null, notiz: '', done: false, taetigkeiten: [] });
+      kElternPruefen(vh);
+    });
     neuMalen();
-  }
-  function kHandgriffAnlegen(tId, eingabe) {
-    if (!eingabe) return;
-    const text = eingabe.value.trim();
+  };
+  const tatAnlegen = (tId, feld) => {
+    if (!feld) return;
+    const text = feld.value.trim();
     if (!text) return;
     const f = finde(tId);
     if (!f) return;
-    kAendern(() => { f.t.schritte.push({ id: uid(), text, done: false }); kElternPruefen(f.vh); });
+    kAendern(() => { f.t.taetigkeiten.push({ id: uid(), text, done: false }); kElternPruefen(f.vh); });
     neuMalen();
-  }
+  };
+  $$('[data-tadd]', v).forEach(b => b.onclick = () => tagAnlegen(b.dataset.tadd, $('[data-tneu="' + b.dataset.tadd + '"]', v)));
+  $$('[data-sadd]', v).forEach(b => b.onclick = () => tatAnlegen(b.dataset.sadd, $('[data-sneu="' + b.dataset.sadd + '"]', v)));
+  $$('[data-sneu]', v).forEach(el => el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') tatAnlegen(el.dataset.sneu, el);
+  }));
+
+  /* Langes Drücken hebt an – Themen untereinander, Tage nebeneinander,
+     Tätigkeiten innerhalb ihres Tages. */
+  $$('[data-sortthema]', v).forEach(node => {
+    node._sortId = node.dataset.sortthema;
+    const griff = $('[data-griff-thema]', node);
+    if (griff) ziehenZumSortieren(node, griff, {
+      auswahl: '[data-sortthema]',
+      neuMalen: kViewMalen,
+      fertig: reihe => kAendern(() => { KDB.aufgaben = reihe.map(id => KDB.aufgaben.find(x => x.id === id)).filter(Boolean); })
+    });
+  });
+  $$('[data-sorttag]', v).forEach(node => {
+    node._sortId = node.dataset.sorttag;
+    const griff = $('[data-griff-tag]', node);
+    const f = finde(node.dataset.sorttag);
+    if (griff && f) ziehenZumSortieren(node, griff, {
+      auswahl: '[data-sorttag]', waagerecht: true,
+      neuMalen: kViewMalen,
+      fertig: reihe => kAendern(() => { f.vh.tage = reihe.map(id => f.vh.tage.find(x => x.id === id)).filter(Boolean); })
+    });
+  });
+  $$('[data-sorttat]', v).forEach(node => {
+    node._sortId = node.dataset.sorttat;
+    const f = finde(node.dataset.sorttat);
+    if (f) ziehenZumSortieren(node, node, {
+      auswahl: '[data-sorttat]',
+      neuMalen: kViewMalen,
+      fertig: reihe => kAendern(() => { f.t.taetigkeiten = reihe.map(id => f.t.taetigkeiten.find(x => x.id === id)).filter(Boolean); })
+    });
+  });
 }
 
-function kVorhabenBearbeiten(vh) {
-  const s = blatt('Vorhaben', `
+function kThemaBearbeiten(vh) {
+  const s = blatt('Thema', `
     <div class="field"><label>Name</label><input type="text" data-t value="${esc(vh.text)}"></div>
-    <div class="field"><label>Frist</label><input type="date" data-f value="${vh.faellig || ''}">
-      <span class="hint">Leer lassen, wenn kein Datum gilt. Was fällig ist, steht unter „Heute“.</span></div>
     <button class="btn btn-primary btn-block" data-ok>Sichern</button>`);
   $('[data-ok]', s).onclick = () => {
     const text = $('[data-t]', s).value.trim();
     if (!text) { toast('Ohne Namen geht es nicht.'); return; }
-    const f = $('[data-f]', s).value;
-    kAendern(() => { vh.text = text; vh.faellig = /^\d{4}-\d{2}-\d{2}$/.test(f) ? f : null; });
+    kAendern(() => { vh.text = text; });
     KStore.sichern(true);
     layerSchliessen();
     kViewMalen();
   };
 }
 
-function kFristSetzen(obj, titel, nachher) {
-  const s = blatt(titel, `
-    <div class="field"><label>Frist</label><input type="date" data-f value="${obj.faellig || ''}"></div>
-    <div class="btn-row">
-      <button class="btn btn-primary" data-ok style="flex:1">Sichern</button>
-      <button class="btn btn-ghost" data-weg>Ohne Frist</button>
-    </div>`);
-  const setzen = (wert) => {
-    kAendern(() => { obj.faellig = wert; });
+function kTagBearbeiten(vh, t) {
+  const s = blatt('Tag', `
+    <div class="field"><label>Datum</label><input type="date" data-d value="${t.datum || ''}">
+      <span class="hint">Der Tag ist zugleich die Frist: Was hier steht, taucht unter „Heute“ und im Kalender auf.</span></div>
+    <div class="field"><label>Notiz (optional)</label><input type="text" data-n value="${esc(t.notiz)}" placeholder="z.B. vormittags"></div>
+    <button class="btn btn-primary btn-block" data-ok>Sichern</button>`);
+  $('[data-ok]', s).onclick = () => {
+    const d = $('[data-d]', s).value;
+    kAendern(() => {
+      t.datum = /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : null;
+      t.notiz = $('[data-n]', s).value.trim();
+      /* Nach einer Datumsänderung rutscht der Tag an seinen Platz. */
+      vh.tage = vh.tage.filter(x => x.id !== t.id);
+      kTagEinfuegen(vh, t);
+    });
     KStore.sichern(true);
     layerSchliessen();
-    if (nachher) nachher();
+    kViewMalen();
   };
-  $('[data-ok]', s).onclick = () => {
-    const f = $('[data-f]', s).value;
-    setzen(/^\d{4}-\d{2}-\d{2}$/.test(f) ? f : null);
-  };
-  $('[data-weg]', s).onclick = () => setzen(null);
 }
 
 /* ---------- Mehr ---------- */
@@ -3005,7 +3109,7 @@ function kMehrMalen(v) {
         <button class="btn btn-sm" data-ksave>Sichern</button></div>
       <div class="rowline"><span class="grow"><span class="rn">Daten laden</span><span class="rm">Eine kalender.json einlesen</span></span>
         <button class="btn btn-sm" data-kimport>Laden</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Alles löschen</span><span class="rm">${pl(KDB.termine.length, 'Termin', 'Termine')} · ${pl(KDB.aufgaben.length, 'Vorhaben', 'Vorhaben')}</span></span>
+      <div class="rowline"><span class="grow"><span class="rn">Alles löschen</span><span class="rm">${pl(KDB.termine.length, 'Termin', 'Termine')} · ${pl(KDB.aufgaben.length, 'Thema', 'Themen')}</span></span>
         <button class="btn btn-sm btn-danger" data-kreset>Zurücksetzen</button></div>
     </div>
 
@@ -3013,33 +3117,22 @@ function kMehrMalen(v) {
     <div class="list-card">
       <div class="rowline"><span class="grow"><span class="rn">Termine</span><span class="rm">insgesamt eingetragen</span></span>
         <span class="num">${KDB.termine.length}</span></div>
-      <div class="rowline"><span class="grow"><span class="rn">Vorhaben offen</span><span class="rm">von ${KDB.aufgaben.length}</span></span>
+      <div class="rowline"><span class="grow"><span class="rn">Themen offen</span><span class="rm">von ${KDB.aufgaben.length}</span></span>
         <span class="num">${offen}</span></div>
-      <div class="rowline"><span class="grow"><span class="rn">Handgriffe</span><span class="rm">über alle Schritte</span></span>
-        <span class="num">${KDB.aufgaben.reduce((n, x) => n + x.teile.reduce((m, t) => m + t.schritte.length, 0), 0)}</span></div>
+      <div class="rowline"><span class="grow"><span class="rn">Tätigkeiten</span><span class="rm">über alle Tage</span></span>
+        <span class="num">${KDB.aufgaben.reduce((n, x) => n + x.tage.reduce((m, t) => m + t.taetigkeiten.length, 0), 0)}</span></div>
     </div>
 
-    <div class="section-head" style="margin-top:20px"><h2>Ansicht</h2></div>
-    <div class="list-card">
-      <div class="rowline"><span class="grow"><span class="rn">${SHELL.theme === 'light' ? 'Hell' : 'Dunkel'}</span><span class="rm">Gilt für alle Apps dieser Datei</span></span>
-        <button class="btn btn-sm" data-ktheme>Umschalten</button></div>
-      ${vollbildGeht() ? `<div class="rowline"><span class="grow"><span class="rn">Vollbild</span><span class="rm">${vollbildAn() ? 'An' : 'Aus'}</span></span>
-        <button class="btn btn-sm" data-kvoll>${vollbildAn() ? 'Beenden' : 'Starten'}</button></div>` : ''}
-      <div class="rowline"><span class="grow"><span class="rn">Zur Startseite</span><span class="rm">Alle Apps dieser Datei</span></span>
-        <button class="btn btn-sm" data-kheim>Öffnen</button></div>
-    </div>
+    ${huelleEinstellungenHtml()}
     <p class="hinweis" style="padding:16px 0 30px">Der Kalender führt seine eigene Datei. Die leseliste bleibt davon unberührt – jede App in dieser Datei hat ihre eigene Datenbasis.</p>`;
 
   $('[data-kwechseln]', v).onclick = () => kalSpeicherort(false);
   $('[data-ksave]', v).onclick = () => KStore.alsDateiSichern(false);
   $('[data-kimport]', v).onclick = () => kImportDialog();
-  $('[data-ktheme]', v).onclick = () => { themeUmschalten(); kViewMalen(); };
-  const voll = $('[data-kvoll]', v);
-  if (voll) voll.onclick = () => { vollbildUmschalten(); setTimeout(kViewMalen, 120); };
-  $('[data-kheim]', v).onclick = zumStartbildschirm;
+  huelleEinstellungenBinden(v, kViewMalen);
   $('[data-kreset]', v).onclick = async () => {
     if (!await bestaetigen('Wirklich alles löschen?',
-      KDB.termine.length + ' Termine und ' + KDB.aufgaben.length + ' Vorhaben werden entfernt.', 'Alles löschen', true)) return;
+      KDB.termine.length + ' Termine und ' + KDB.aufgaben.length + ' Themen werden entfernt.', 'Alles löschen', true)) return;
     KDB = leereKal();
     await KStore.sichern(true);
     kViewMalen();
@@ -4026,13 +4119,7 @@ function frMehrMalen(v) {
         <button class="btn btn-sm btn-danger" data-freset>Zurücksetzen</button></div>
     </div>
 
-    <div class="section-head" style="margin-top:20px"><h2>Ansicht</h2></div>
-    <div class="list-card">
-      <div class="rowline"><span class="grow"><span class="rn">${SHELL.theme === 'light' ? 'Hell' : 'Dunkel'}</span><span class="rm">Gilt für alle Apps dieser Datei</span></span>
-        <button class="btn btn-sm" data-ftheme>Umschalten</button></div>
-      <div class="rowline"><span class="grow"><span class="rn">Zur Startseite</span><span class="rm">Alle Apps dieser Datei</span></span>
-        <button class="btn btn-sm" data-fheim>Öffnen</button></div>
-    </div>
+    ${huelleEinstellungenHtml()}
     <p class="hinweis" style="padding:16px 0 30px">Mit Tastatur: <b>Leertaste</b> startet und hält an,
       <b>↑ ↓</b> ändern das Tempo, <b>← →</b> springen zehn Wörter, mit <b>Umschalt</b> einen Satz.</p>`;
 
@@ -4052,8 +4139,7 @@ function frMehrMalen(v) {
   $('[data-fwechseln]', v).onclick = () => frSpeicherort(false);
   $('[data-fsave]', v).onclick = () => FStore.alsDateiSichern(false);
   $('[data-fimport]', v).onclick = () => frImportBlatt();
-  $('[data-ftheme]', v).onclick = () => { themeUmschalten(); fViewMalen(); };
-  $('[data-fheim]', v).onclick = () => { frAnhalten(); zumStartbildschirm(); };
+  huelleEinstellungenBinden(v, fViewMalen);
   $('[data-freset]', v).onclick = async () => {
     if (!await bestaetigen('Wirklich alles löschen?',
       FDB.dokumente.length + ' Texte samt Lesezeichen und Bilanz werden entfernt.', 'Alles löschen', true)) return;
@@ -4862,7 +4948,9 @@ function tabVerschieben(d) {
   const tabu = '.book,.arow,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,'
     + '.nowbar,.zsRahmen,.netz,.sto,input,textarea,select,.sheet,.akk';
   document.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1 || window.__zieht) { x0 = null; return; }
+    /* Nur in der leseliste – der Kalender und der fastreader haben eigene
+       Flächen, auf denen quer gewischt wird. */
+    if (e.touches.length !== 1 || window.__zieht || $('#app').hidden) { x0 = null; return; }
     const t = e.touches[0];
     gesperrt = !!(e.target.closest && e.target.closest(tabu));
     x0 = t.clientX; y0 = t.clientY; zeit = Date.now();
@@ -5114,19 +5202,23 @@ function ziehenZumSortieren(node, griff, opts) {
     zieht = true;
     window.__zieht = true;
     node._langGedrueckt = true;
+    $$('button', node).forEach(b => { b._langGedrueckt = true; });
     node.classList.add('zieht');
     document.body.style.userSelect = 'none';
     if (navigator.vibrate) { try { navigator.vibrate(14); } catch (e) { } }
   };
 
-  const einsortieren = y => {
+  /* Waagerecht liegende Reihen (die Tage im To-Do) messen an der Breite. */
+  const quer = !!opts.waagerecht;
+  const einsortieren = (x, y) => {
+    const wert = quer ? x : y;
     for (const g of Array.from(wrap.querySelectorAll(auswahl))) {
       if (g === node) continue;
       const r = g.getBoundingClientRect();
-      const mitte = r.top + r.height / 2;
+      const mitte = quer ? r.left + r.width / 2 : r.top + r.height / 2;
       const nodeFolgt = !!(g.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
-      if (y < mitte && nodeFolgt) { wrap.insertBefore(node, g); return; }
-      if (y > mitte && !nodeFolgt) { wrap.insertBefore(node, g.nextSibling); return; }
+      if (wert < mitte && nodeFolgt) { wrap.insertBefore(node, g); return; }
+      if (wert > mitte && !nodeFolgt) { wrap.insertBefore(node, g.nextSibling); return; }
     }
   };
 
@@ -5137,9 +5229,13 @@ function ziehenZumSortieren(node, griff, opts) {
       return;
     }
     if (ev.cancelable) ev.preventDefault();
-    einsortieren(p.clientY);
+    einsortieren(p.clientX, p.clientY);
     const rand = 100;
-    if (p.clientY < rand) window.scrollBy(0, -14);
+    if (quer) {
+      const r = wrap.getBoundingClientRect();
+      if (p.clientX < r.left + 60) wrap.scrollBy(-14, 0);
+      else if (p.clientX > r.right - 60) wrap.scrollBy(14, 0);
+    } else if (p.clientY < rand) window.scrollBy(0, -14);
     else if (p.clientY > window.innerHeight - rand) window.scrollBy(0, 14);
   };
 
@@ -5150,8 +5246,11 @@ function ziehenZumSortieren(node, griff, opts) {
     window.__zieht = false;
     node.classList.remove('zieht');
     document.body.style.userSelect = '';
+    setTimeout(() => { $$('button', node).forEach(b => { b._langGedrueckt = false; }); }, 60);
     opts.fertig(Array.from(wrap.querySelectorAll(auswahl)).map(x => x._sortId));
-    viewMalen();
+    (opts.neuMalen || viewMalen)();
+    /* Der Klick, der auf das Loslassen folgt, gehört noch zum Zug. */
+    setTimeout(() => { node._langGedrueckt = false; }, 60);
   };
 
   const start = ev => {
@@ -9356,10 +9455,6 @@ function mehrMalen(root) {
       <div class="section-head"><h2>Darstellung</h2></div>
       <div class="list-card">
         <div class="rowline">
-          <span class="grow"><span class="rn">${SHELL.theme === 'light' ? 'Hell' : 'Dunkel'}</span><span class="rm">Auch über das Symbol in der Kopfzeile</span></span>
-          <button class="btn btn-sm" data-theme>Umschalten</button>
-        </div>
-        <div class="rowline">
           <span class="grow"><span class="rn">Tagesziel</span><span class="rm">${DB.einstellungen.zielSeiten ? DB.einstellungen.zielSeiten + ' Seiten pro Tag' : 'Keins gesetzt'}</span></span>
           <button class="btn btn-sm" data-zielx>${DB.einstellungen.zielSeiten ? 'Ändern' : 'Setzen'}</button>
         </div>
@@ -9380,29 +9475,8 @@ function mehrMalen(root) {
           <span class="grow"><span class="rn">Einführung</span><span class="rm">Die vier Schritte vom Anfang noch einmal</span></span>
           <button class="btn btn-sm" data-einf>Zeigen</button>
         </div>
-        <div class="rowline" style="flex-direction:column;align-items:stretch;gap:10px">
-          <span><span class="rn">Akzentfarbe</span><span class="rm">${esc(akzentAktiv().name)} – gilt für Knöpfe, Fortschritt und Markierungen</span></span>
-          <div style="display:flex;gap:9px;flex-wrap:wrap" data-akzente>
-            ${AKZENTE.map(a => {
-      const farbe = SHELL.theme === 'light' ? a.light : a.dark;
-      const ist = a.id === akzentAktiv().id;
-      return `<button data-akzent="${a.id}" title="${esc(a.name)}" aria-label="${esc(a.name)}"
-                style="width:30px;height:30px;border-radius:50%;background:${farbe};flex:0 0 auto;
-                       border:2px solid ${ist ? 'var(--text)' : 'transparent'};box-shadow:0 0 0 1px var(--border)"></button>`;
-    }).join('')}
-          </div>
-        </div>
-        <div class="rowline">
-          <span class="grow"><span class="rn">Vollbild</span><span class="rm">${vollbildGeht()
-      ? 'Blendet die Leisten des Browsers aus'
-      : 'Dieser Browser kann das nicht auf Zuruf. Am iPhone: Teilen-Menü → „Zum Home-Bildschirm“, von dort startet die App ohne Leisten.'}</span></span>
-          ${vollbildGeht() ? `<button class="btn btn-sm" data-voll>${vollbildAn() ? 'Beenden' : 'Einschalten'}</button>` : ''}
-        </div>
-        <div class="rowline">
-          <span class="grow"><span class="rn">Beim Start ins Vollbild</span><span class="rm">Greift bei der ersten Berührung, wo der Browser es zulässt</span></span>
-          <button class="btn btn-sm" data-vollstart>${SHELL.vollbildStart ? 'An' : 'Aus'}</button>
-        </div>
       </div>
+      ${huelleEinstellungenHtml()}
     </div>
 
     <div class="section">
@@ -9412,17 +9486,7 @@ function mehrMalen(root) {
       </p>
     </div>`;
 
-  const vollBtn = $('[data-voll]', root);
-  if (vollBtn) vollBtn.onclick = () => { vollbildUmschalten(); setTimeout(viewMalen, 300); };
-  $('[data-vollstart]', root).onclick = () => {
-    SHELL.vollbildStart = !SHELL.vollbildStart; shellSchreiben();
-    viewMalen();
-  };
-  $$('[data-akzent]', root).forEach(b => b.onclick = () => {
-    SHELL.akzent = b.dataset.akzent; shellSchreiben();
-    themeAnwenden();
-    viewMalen();
-  });
+  huelleEinstellungenBinden(root, viewMalen);
   $('[data-plaene]', root).onclick = planWechsler;
   $('[data-ki-erstellen]', root).onclick = kiErstellenOeffnen;
   $('[data-ki-bewerten]', root).onclick = kiBewertenOeffnen;
@@ -9440,7 +9504,6 @@ function mehrMalen(root) {
   $('[data-export]', root).onclick = () => Store.alsDateiSichern(false);
   $('[data-import]', root).onclick = () => importDialog(false);
   $('[data-wechseln]', root).onclick = () => setupZeigen(true);
-  $('[data-theme]', root).onclick = () => { themeUmschalten(); viewMalen(); };
   $('[data-arten]', root).onclick = artenVerwalten;
   $('[data-auto]', root).onchange = e => {
     const v = clamp(Math.round(num(e.target.value) || 60), 15, 600);

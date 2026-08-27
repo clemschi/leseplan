@@ -29,6 +29,9 @@
   mischen. Die App ohne gewählten Speicherort fragt beim ersten Öffnen danach.
 - Was allen gemeinsam ist – Hell/Dunkel, Akzent, Vollbild – liegt in `SHELL`
   und wird über `shellSchreiben()` gesichert, nicht in den Daten einer App.
+  Angezeigt wird es **überall aus demselben Baustein**:
+  `huelleEinstellungenHtml()` + `huelleEinstellungenBinden(wurzel, neuMalen)`
+  im „Mehr“ jeder App. Nie eine dieser Einstellungen einzeln nachbauen.
 - `aktiverSpeicher` zeigt auf den Speicher der offenen App; der Chip in der
   Kopfzeile liest ihn.
 - Neue App: Eintrag in `APPS`, eigener `macheSpeicher`, eigener Rumpf im
