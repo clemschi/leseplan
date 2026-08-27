@@ -25,7 +25,7 @@
   `APPS`) ist ihr Homescreen; jede App wird erst beim Antippen geweckt.
 - **Jede App führt ihre eigene Datenbasis.** Eine Ausfertigung von
   `macheSpeicher(...)` je App, eigener IDB-Schlüssel, eigene JSON-Datei
-  (`leseplan.json`, `kalender.json`, `fastreader.json`). Nie Daten zweier Apps in eine Datei
+  (`leseplan.json`, `kalender.json`, `fastreader.json`, `gsund.json`). Nie Daten zweier Apps in eine Datei
   mischen. Die App ohne gewählten Speicherort fragt beim ersten Öffnen danach.
 - Was allen gemeinsam ist – Hell/Dunkel, Akzent, Vollbild – liegt in `SHELL`
   und wird über `shellSchreiben()` gesichert, nicht in den Daten einer App.
@@ -81,6 +81,7 @@ Fertige Bausteine, die genau das tun:
   Startbildschirm.
 - `ziehenBinden` im Stöbern – Karten nach links und rechts.
 - `kMonatZiehen` – das Monatsblatt von Monat zu Monat.
+- `gKarteZiehen` – die Guzi-Karte umdrehen; der linke Rand bleibt frei für `heimZiehen`.
 
 ## Ebenen
 - Eine offene Ebene wird **getauscht, nicht geschlossen und neu geöffnet**:

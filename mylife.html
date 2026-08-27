@@ -584,14 +584,14 @@ body.voll .cam{padding-top:14px;}
 .heimgrund::after{content:'';position:fixed;top:0;bottom:0;left:0;width:26px;
   transform:translateX(calc(var(--heimzug,0px) - 26px));
   background:linear-gradient(to right,rgba(0,0,0,0),rgba(0,0,0,.4));}
-body.heimzug .topbar,body.heimzug #view,body.heimzug #kview,body.heimzug #fview,
+body.heimzug .topbar,body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview,
 body.heimzug .nowbar,body.heimzug .tabbar,body.heimzug .frbuehne,body.heimzug .frpult{
   transform:translateX(var(--heimzug,0px));will-change:transform;}
 body.heimzug.federt .topbar,body.heimzug.federt #view,body.heimzug.federt #kview,
-body.heimzug.federt #fview,body.heimzug.federt .nowbar,body.heimzug.federt .tabbar,
+body.heimzug.federt #fview,body.heimzug.federt #gview,body.heimzug.federt .nowbar,body.heimzug.federt .tabbar,
 body.heimzug.federt .frbuehne,body.heimzug.federt .frpult{
   transition:transform .26s cubic-bezier(.2,.8,.3,1);}
-body.heimzug #view,body.heimzug #kview,body.heimzug #fview{
+body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview{
   position:relative;z-index:2;background:var(--bg);}
 
 /* ===== Kalender: die zweite App =====
@@ -805,6 +805,42 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .frkurve{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;}
 .frkurve svg{display:block;width:100%;height:56px;overflow:visible;}
 #fview{padding:18px 14px calc(var(--tabh, 58px) + 18px);overscroll-behavior-x:contain;}
+/* ---------- g'sund ---------- */
+#gview{padding:18px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
+/* Die Bühne gibt der Karte Tiefe; ohne Perspektive bliebe die Drehung flach. */
+.gbuehne{max-width:560px;margin:8px auto 0;perspective:1400px;}
+.gkarte{position:relative;width:100%;min-height:min(62vh,430px);
+  transform-style:preserve-3d;transform-origin:50% 50%;
+  transition:transform .55s cubic-bezier(.2,.8,.25,1);
+  touch-action:pan-y;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.gseite{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;gap:6px;
+  padding:30px 22px 38px;border-radius:22px;border:1px solid var(--border);
+  background:var(--surface);box-shadow:var(--shadow);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;}
+.gseite.hinten{transform:rotateY(180deg);
+  background:linear-gradient(160deg,var(--accent-soft),var(--surface) 55%);}
+/* Ein feiner Schimmer, damit die Seiten beim Drehen auseinanderzuhalten sind. */
+.gseite::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.65;}
+.g-titel{font-size:24px;line-height:1.25;font-weight:500;color:var(--text);
+  max-width:22ch;overflow-wrap:break-word;}
+.g-datum{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);
+  margin-top:2px;}
+.g-uhr{margin-top:16px;font-size:42px;line-height:1.05;font-weight:300;letter-spacing:-.015em;
+  color:var(--accent);font-variant-numeric:tabular-nums;}
+.g-uhr.vorbei{color:var(--text-3);}
+.g-uhrsub{font-size:12.5px;color:var(--text-2);font-variant-numeric:tabular-nums;margin-top:4px;}
+.g-ohne{margin-top:14px;font-size:13px;color:var(--text-3);}
+.g-rueck{font-size:15px;line-height:1.7;color:var(--text);text-align:left;
+  max-width:44ch;overflow-wrap:break-word;
+  max-height:100%;overflow:auto;font-family:"Literata",Georgia,serif;}
+.g-leer{font-size:13.5px;line-height:1.7;color:var(--text-3);max-width:34ch;}
+.g-leer strong{display:block;font-size:15px;color:var(--text-2);font-weight:500;margin-bottom:6px;}
+.g-marke{position:absolute;left:0;right:0;bottom:14px;font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text-3);opacity:.7;}
+.gdreher{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:18px;}
+.gdreher .spiegel svg{transform:scaleX(-1);}
 .toast{
   position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom));transform:translateX(-50%);
   z-index:120;background:var(--surface-3);border:1px solid var(--border-strong);color:var(--text);
@@ -1036,6 +1072,29 @@ body.voll .sto-fuss{padding-bottom:calc(26px + env(safe-area-inset-bottom));}
 
   <nav class="tabbar">
     <div class="tabbar-inner" id="ftabbar"></div>
+  </nav>
+</div>
+
+<div id="gs" class="appflaeche" hidden>
+  <header class="topbar">
+    <div class="topbar-inner shell">
+      <div class="topbar-row">
+        <button class="brand" id="gBrand" title="Zu Guzi" aria-label="Zu Guzi">
+          <h1>g&rsquo;sund</h1>
+        </button>
+        <button class="savechip" id="gSaveChip" data-state="clean" title="Jetzt sichern"><span class="dot"></span><span class="st">gesichert</span></button>
+        <button class="icon-btn" id="gBtnTheme" title="Hell oder dunkel" aria-label="Hell oder dunkel umschalten"></button>
+        <button class="icon-btn" id="gBtnVoll" title="Vollbild" aria-label="Vollbild ein oder aus" hidden></button>
+        <button class="icon-btn" id="gBtnRaus" title="Zur Startseite" aria-label="Zur Startseite"></button>
+      </div>
+      <div class="kbanner" id="gBanner"></div>
+    </div>
+  </header>
+
+  <main id="gview" class="shell"></main>
+
+  <nav class="tabbar">
+    <div class="tabbar-inner" id="gtabbar"></div>
   </nav>
 </div>
 
@@ -1687,7 +1746,8 @@ function huelleEinstellungenBinden(wurzel, neuMalen) {
 const APPS = [
   { id: 'leseliste', name: 'leseliste', oeffnen: () => leselisteOeffnen() },
   { id: 'kalender', name: 'kalender', oeffnen: () => kalenderOeffnen() },
-  { id: 'fastreader', name: 'fastreader', oeffnen: () => fastreaderOeffnen() }
+  { id: 'fastreader', name: 'fastreader', oeffnen: () => fastreaderOeffnen() },
+  { id: 'gsund', name: 'g\u2019sund', oeffnen: () => gsundOeffnen() }
 ];
 
 /* Genau eine App-Fläche liegt offen. */
@@ -4272,6 +4332,494 @@ document.addEventListener('keydown', e => {
 /* Wandert die Seite in den Hintergrund, läuft nichts weiter. */
 document.addEventListener('visibilitychange', () => { if (document.hidden) frAnhalten(); });
 
+/* ============================================================
+   g’sund – die vierte App
+   Guzi · Puzzle · Bald · Mehr
+   ============================================================ */
+
+let GDB = leereGs();
+
+function leereGs() {
+  return {
+    format: 'mylife-gsund',
+    version: 1,
+    erstellt: Date.now(),
+    geaendert: Date.now(),
+    einstellungen: { autosaveSek: 60 },
+    /* Die Karte: vorn ein Titel mit Datum, hinten freier Text. */
+    karte: { titel: '', datum: '', zeit: '', rueckseite: '' },
+    /* Für Puzzle, sobald klar ist, was dort hingehört. */
+    puzzle: {}
+  };
+}
+
+function gsNormalisiere(roh) {
+  const d = (roh && typeof roh === 'object') ? roh : {};
+  const g = leereGs();
+  g.erstellt = +d.erstellt || Date.now();
+  g.einstellungen = Object.assign(g.einstellungen, d.einstellungen || {});
+  const k = d.karte || {};
+  g.karte = {
+    titel: String(k.titel || '').slice(0, 200),
+    datum: /^\d{4}-\d{2}-\d{2}$/.test(k.datum) ? k.datum : '',
+    zeit: /^\d{2}:\d{2}$/.test(k.zeit) ? k.zeit : '',
+    rueckseite: String(k.rueckseite || '').slice(0, 4000)
+  };
+  g.puzzle = (d.puzzle && typeof d.puzzle === 'object') ? d.puzzle : {};
+  return g;
+}
+
+const GStore = macheSpeicher({
+  id: 'gsund', metaKey: 'meta-gsund', datenKey: 'daten-gsund', dateiname: 'gsund.json',
+  daten: () => GDB, setzen: d => { GDB = d; }
+});
+
+function gAendern(fn) { if (fn) fn(); GStore.aendern(); }
+
+const GICON = {
+  karte: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M12 5v14"/><path d="M6.5 9.5h2M15.5 9.5h2"/></svg>',
+  puzzle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5h4a1 1 0 0 1 1 1v1.2a1.8 1.8 0 1 0 3.6 0V4.5h.9a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-1.2a1.8 1.8 0 1 0 0 3.6h1.2a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-1.2a1.8 1.8 0 1 0-3.6 0V19.5a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-4"/><path d="M4.5 15.5V4.5a1 1 0 0 1 1-1H10"/></svg>',
+  bald: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12h7M12 8.5v7"/></svg>',
+  drehen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5A8 8 0 0 0 6.3 6.3L4 8.5"/><path d="M4 4.5v4h4"/><path d="M4 12.5A8 8 0 0 0 17.7 17.7L20 15.5"/><path d="M20 19.5v-4h-4"/></svg>'
+};
+
+/* ---------- Öffnen ---------- */
+async function gsundOeffnen() {
+  aktiverSpeicher = GStore;
+  let meta = null;
+  try { meta = await GStore.metaLesen(); } catch (e) { console.warn(e); }
+
+  if (meta && meta.modus === 'datei' && meta.handle) {
+    GStore.modus = 'datei'; GStore.handle = meta.handle; GStore.dateiname = meta.dateiname || 'gsund.json';
+    if (await GStore.rechtePruefen(meta.handle, false)) {
+      try { GDB = gsNormalisiere(await GStore.ladeDaten()); gsStarten(); return; }
+      catch (e) { console.error(e); }
+    }
+    gsSpeicherort(true);
+    return;
+  }
+  if (meta && meta.modus === 'geraet') {
+    GStore.modus = 'geraet';
+    GDB = gsNormalisiere(await IDB.get('daten-gsund'));
+    gsStarten();
+    return;
+  }
+  gsSpeicherort(false);
+}
+
+function gsSpeicherort(erneut) {
+  const s = $('#setup');
+  const dateiDa = GStore.dateiApiDa();
+  s.innerHTML = `
+    <div class="setup-inner">
+      <div class="mark serif">g&rsquo;sund</div>
+      ${erneut ? `<p class="lead">Der Browser hat den Zugriff auf <strong>${esc(GStore.dateiname)}</strong> zurückgesetzt. Einmal bestätigen, dann geht es weiter.</p>`
+      : `<p class="lead">Wo soll g&rsquo;sund seine Sachen ablegen? Auch diese App führt eine eigene Datei – die anderen bleiben davon unberührt.</p>`}
+      ${dateiDa ? `
+        <button class="opt" data-gact="datei-neu">
+          <span class="on">${ICON.save} Neue Datei anlegen <span class="badge">empfohlen</span></span>
+          <span class="od">Einmal den Ort wählen – danach speichert die App still in gsund.json.</span>
+        </button>
+        <button class="opt" data-gact="datei-oeffnen">
+          <span class="on">${ICON.books} Bestehende Datei öffnen</span>
+          <span class="od">Eine gsund.json weiterführen.</span>
+        </button>` : ''}
+      <button class="opt" data-gact="geraet">
+        <span class="on">${ICON.check} Auf diesem Gerät speichern</span>
+        <span class="od">Ohne Datei-Dialog. Jederzeit als Datei sicherbar.</span>
+      </button>
+      <div style="margin-top:10px"><button class="btn btn-block btn-ghost" data-gact="zurueck">Zurück zur Startseite</button></div>
+    </div>`;
+  s.hidden = false;
+  $$('.appflaeche').forEach(x => { x.hidden = true; });
+
+  s.onclick = async (e) => {
+    const b = e.target.closest('[data-gact]');
+    if (!b || b.disabled) return;
+    const act = b.dataset.gact;
+    if (act === 'zurueck') { splashZeigen(); return; }
+    b.disabled = true;
+    try {
+      if (act === 'datei-neu' || act === 'datei-oeffnen') {
+        let handle = null;
+        if (act === 'datei-neu') {
+          handle = await window.showSaveFilePicker({
+            suggestedName: 'gsund.json',
+            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+          });
+        } else {
+          const [h] = await window.showOpenFilePicker({
+            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+          });
+          handle = h;
+        }
+        if (!handle) { b.disabled = false; return; }
+        GStore.modus = 'datei'; GStore.handle = handle; GStore.dateiname = handle.name || 'gsund.json';
+        if (act === 'datei-oeffnen') {
+          try { GDB = gsNormalisiere(await GStore.ladeDaten()); } catch (err) { GDB = leereGs(); }
+        } else { GDB = leereGs(); }
+        await GStore.metaSchreiben();
+        await GStore.sichern(true);
+        gsStarten();
+        return;
+      }
+      if (act === 'geraet') {
+        GStore.modus = 'geraet'; GStore.handle = null;
+        await GStore.metaSchreiben();
+        GDB = gsNormalisiere(await IDB.get('daten-gsund'));
+        await GStore.sichern(true);
+        gsStarten();
+        return;
+      }
+    } catch (err) {
+      console.warn(err);
+      if (err && err.name === 'AbortError') { b.disabled = false; return; }
+      if (err && err.name === 'SecurityError') { GStore.dateiGesperrt = true; gsSpeicherort(false); return; }
+      toast('Das hat nicht geklappt.', 3500);
+      b.disabled = false;
+    }
+  };
+}
+
+/* ---------- Gerüst ---------- */
+const GTABS = [
+  { id: 'guzi', label: 'Guzi', icon: GICON.karte },
+  { id: 'puzzle', label: 'Puzzle', icon: GICON.puzzle },
+  { id: 'bald', label: 'Bald', icon: GICON.bald },
+  { id: 'gmehr', label: 'Mehr', icon: ICON.more }
+];
+let gTab = 'guzi';
+let gTakt = null;          // die Uhr des Countdowns
+let gGedreht = false;      // liegt die Rückseite oben?
+let gDrehung = 0;          // aufsummierter Winkel, damit beide Richtungen gehen
+
+function gsStarten() {
+  appFlaeche('gs');
+  aktiverSpeicher = GStore;
+  gTab = 'guzi';
+  gGedreht = false; gDrehung = 0;
+  themeAnwenden();
+  gKnoepfeMalen();
+  $('#gBtnTheme').onclick = () => { themeUmschalten(); gKnoepfeMalen(); gViewMalen(); };
+  $('#gBtnVoll').onclick = vollbildUmschalten;
+  $('#gBtnRaus').innerHTML = ICON.x;
+  $('#gBtnRaus').onclick = () => { clearInterval(gTakt); zumStartbildschirm(); };
+  $('#gBrand').onclick = () => { if (gTab !== 'guzi') gTabWechseln('guzi'); else window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  $('#gSaveChip').onclick = () => GStore.alsDateiSichern(false);
+  gTabbarMalen();
+  gViewMalen();
+  GStore.autosaveStarten();
+  saveChipMalen();
+}
+
+function gKnoepfeMalen() {
+  const t = $('#gBtnTheme'), v = $('#gBtnVoll');
+  if (t) t.innerHTML = SHELL.theme === 'light' ? ICON.moon : ICON.sun;
+  if (!v) return;
+  v.hidden = !vollbildGeht();
+  v.innerHTML = vollbildAn() ? ICON.vollAus : ICON.voll;
+}
+function gTabbarMalen() {
+  $('#gtabbar').innerHTML = GTABS.map(t =>
+    `<button data-gtab="${t.id}" aria-selected="${t.id === gTab}">${t.icon}<span>${t.label}</span></button>`).join('');
+  $('#gtabbar').onclick = e => {
+    const b = e.target.closest('[data-gtab]');
+    if (b) gTabWechseln(b.dataset.gtab);
+  };
+}
+function gTabWechseln(id) {
+  gTab = id;
+  gTabbarMalen();
+  gViewMalen();
+  window.scrollTo(0, 0);
+}
+function gViewMalen() {
+  leistenHoeheMessen();
+  clearInterval(gTakt);
+  const v = $('#gview');
+  gBannerMalen();
+  if (gTab === 'guzi') gGuziMalen(v);
+  else if (gTab === 'puzzle') gPuzzleMalen(v);
+  else if (gTab === 'bald') gBaldMalen(v);
+  else gMehrMalen(v);
+  gKnoepfeMalen();
+  saveChipMalen();
+}
+
+function gBannerMalen() {
+  const b = $('#gBanner');
+  const k = GDB.karte;
+  const r = gRest(k);
+  b.innerHTML = `
+    <span class="kb-tag">${k.titel ? esc(k.titel) : 'Noch keine Karte'}</span>
+    <span class="kb-zahlen">${r ? `<span class="num">${esc(r.kurz)}</span>` : '<span>ohne Datum</span>'}</span>`;
+}
+
+/* ---------- Der Countdown ---------- */
+/* Gibt Rest­zeit und Text zurück – auch, wenn der Tag schon vorbei ist. */
+function gZiel(k) {
+  if (!k.datum) return null;
+  const t = k.zeit && /^\d{2}:\d{2}$/.test(k.zeit) ? k.zeit : '00:00';
+  const d = kDatum(k.datum);
+  const [st, mi] = t.split(':').map(Number);
+  d.setHours(st, mi, 0, 0);
+  return d.getTime();
+}
+function gRest(k) {
+  const ziel = gZiel(k);
+  if (!ziel) return null;
+  const ms = ziel - Date.now();
+  const weg = Math.abs(ms);
+  const sek = Math.floor(weg / 1000);
+  const teile = {
+    tage: Math.floor(sek / 86400),
+    std: Math.floor(sek / 3600) % 24,
+    min: Math.floor(sek / 60) % 60,
+    sek: sek % 60
+  };
+  const kurz = teile.tage
+    ? teile.tage + ' T ' + String(teile.std).padStart(2, '0') + ':' + String(teile.min).padStart(2, '0')
+    : String(teile.std).padStart(2, '0') + ':' + String(teile.min).padStart(2, '0') + ':' + String(teile.sek).padStart(2, '0');
+  return Object.assign(teile, { ms, vorbei: ms < 0, kurz: (ms < 0 ? '+' : '') + kurz });
+}
+
+/* ---------- Guzi: die Karte ---------- */
+function gGuziMalen(v) {
+  const k = GDB.karte;
+  const leer = !k.titel && !k.datum && !k.rueckseite;
+  v.innerHTML = `
+    <div class="gbuehne">
+      <div class="gkarte" data-karte style="transform:rotateY(${gDrehung}deg)">
+        <div class="gseite vorn">
+          ${leer ? `<div class="g-leer"><strong>Noch nichts auf der Karte</strong>
+              Ein Titel, ein Datum – und der Countdown läuft. Die Rückseite nimmt auf, was sonst noch dazugehört.</div>`
+      : `<div class="g-titel serif">${esc(k.titel) || 'Ohne Titel'}</div>
+             ${k.datum ? `<div class="g-datum num">${esc(kTagText(k.datum, true))}${k.zeit ? ' · ' + esc(k.zeit) + ' Uhr' : ''}</div>` : ''}
+             ${k.datum ? `<div class="g-uhr" data-uhr></div>
+                <div class="g-uhrsub" data-uhrsub></div>` : '<div class="g-ohne">ohne Datum</div>'}`}
+          <span class="g-marke">Vorderseite</span>
+        </div>
+        <div class="gseite hinten">
+          ${k.rueckseite ? `<div class="g-rueck">${esc(k.rueckseite).replace(/\n/g, '<br>')}</div>`
+      : `<div class="g-leer"><strong>Rückseite ist leer</strong>Platz für alles, was nicht auf die Vorderseite passt.</div>`}
+          <span class="g-marke">Rückseite</span>
+        </div>
+      </div>
+      <div class="gdreher">
+        <button class="icon-btn" data-links aria-label="Nach links drehen">${GICON.drehen}</button>
+        <button class="btn btn-sm" data-bearbeiten>${ICON.edit} Karte bearbeiten</button>
+        <button class="icon-btn spiegel" data-rechts aria-label="Nach rechts drehen">${GICON.drehen}</button>
+      </div>
+      <p class="hinweis" style="text-align:center;padding:8px 0 0">Antippen oder wischen dreht die Karte.</p>
+    </div>`;
+
+  const karte = $('[data-karte]', v);
+  const drehen = (richtung) => {
+    gDrehung += richtung * 180;
+    gGedreht = !gGedreht;
+    karte.style.transform = 'rotateY(' + gDrehung + 'deg)';
+  };
+  $('[data-links]', v).onclick = () => drehen(-1);
+  $('[data-rechts]', v).onclick = () => drehen(1);
+  $('[data-bearbeiten]', v).onclick = () => gKarteBearbeiten();
+  /* Ein Tipp dreht in die Richtung, auf deren Hälfte man tippt. */
+  karte.onclick = e => {
+    if (karte._gezogen) { karte._gezogen = false; return; }
+    const r = karte.getBoundingClientRect();
+    drehen(e.clientX < r.left + r.width / 2 ? -1 : 1);
+  };
+  gKarteZiehen(karte, drehen);
+  if (k.datum) gUhrLaufen(v);
+}
+
+/* Wischen dreht mit: die Karte folgt dem Finger, beim Loslassen entscheidet
+   der Weg – dieselbe Mechanik wie überall. */
+function gKarteZiehen(karte, drehen) {
+  let x0 = null, y0 = 0, zieht = false, ab = 0, weg = 0, breite = 1;
+  let letztX = 0, letztT = 0, tempo = 0;
+  const grund = () => gDrehung;
+
+  karte.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1 || window.__zieht) { x0 = null; return; }
+    const t = e.touches[0];
+    /* Die ersten 30 px am linken Rand bleiben dem Zug nach Hause – sonst
+       fängt die Karte ihn ab, weil sie fast die ganze Fläche einnimmt. */
+    if (t.clientX < 30) { x0 = null; return; }
+    x0 = t.clientX; y0 = t.clientY;
+    zieht = false; weg = 0;
+    breite = karte.getBoundingClientRect().width || 300;
+    letztX = x0; letztT = Date.now(); tempo = 0;
+  }, { passive: true });
+
+  karte.addEventListener('touchmove', e => {
+    if (x0 == null) return;
+    const t = e.touches[0], dx = t.clientX - x0, dy = Math.abs(t.clientY - y0);
+    if (!zieht) {
+      if (dy > 16 && dy > Math.abs(dx)) { x0 = null; return; }
+      if (Math.abs(dx) < 12) return;
+      zieht = true; ab = dx; window.__zieht = true;
+      karte.style.transition = 'none';
+      karte._gezogen = true;
+    }
+    e.preventDefault();
+    const jetzt = Date.now();
+    if (jetzt > letztT) { tempo = (t.clientX - letztX) / (jetzt - letztT); letztX = t.clientX; letztT = jetzt; }
+    weg = dx - ab;
+    /* Die halbe Kartenbreite entspricht einer halben Umdrehung. */
+    karte.style.transform = 'rotateY(' + (grund() + weg / breite * 180) + 'deg)';
+  }, { passive: false });
+
+  const los = () => {
+    if (x0 == null) return;
+    x0 = null;
+    if (!zieht) return;
+    zieht = false;
+    karte.style.transition = '';
+    const durch = Math.abs(weg) > Math.max(60, breite * 0.22) || Math.abs(tempo) > 0.45;
+    if (durch) drehen(weg > 0 ? 1 : -1);
+    else karte.style.transform = 'rotateY(' + grund() + 'deg)';
+    setTimeout(() => { window.__zieht = false; karte._gezogen = false; }, 260);
+  };
+  karte.addEventListener('touchend', los, { passive: true });
+  karte.addEventListener('touchcancel', los, { passive: true });
+}
+
+/* Der Countdown zählt im Sekundentakt. */
+function gUhrLaufen(v) {
+  const malen = () => {
+    const r = gRest(GDB.karte);
+    const u = $('[data-uhr]', v), us = $('[data-uhrsub]', v);
+    if (!u || !r) return;
+    u.textContent = r.tage
+      ? r.tage + (r.tage === 1 ? ' Tag' : ' Tage')
+      : String(r.std).padStart(2, '0') + ':' + String(r.min).padStart(2, '0') + ':' + String(r.sek).padStart(2, '0');
+    us.textContent = r.vorbei
+      ? (r.tage ? 'seit ' + r.tage + (r.tage === 1 ? ' Tag' : ' Tagen') + ' vorbei'
+        : 'vor ' + String(r.std).padStart(2, '0') + ':' + String(r.min).padStart(2, '0') + ':' + String(r.sek).padStart(2, '0') + ' erreicht')
+      : (r.tage
+        ? 'und ' + String(r.std).padStart(2, '0') + ':' + String(r.min).padStart(2, '0') + ':' + String(r.sek).padStart(2, '0')
+        : 'bis dahin');
+    u.classList.toggle('vorbei', r.vorbei);
+    gBannerMalen();
+  };
+  malen();
+  clearInterval(gTakt);
+  gTakt = setInterval(malen, 1000);
+}
+
+function gKarteBearbeiten() {
+  const k = GDB.karte;
+  const s = blatt('Karte', `
+    <div class="field"><label>Titel (Vorderseite)</label>
+      <input type="text" data-t value="${esc(k.titel)}" placeholder="z.B. Halbmarathon"></div>
+    <div class="row2">
+      <div class="field"><label>Datum</label><input type="date" data-d value="${esc(k.datum)}"></div>
+      <div class="field"><label>Uhrzeit</label><input type="time" data-z value="${esc(k.zeit)}"></div>
+    </div>
+    <span class="hint" style="display:block;margin:-6px 0 12px">Ohne Uhrzeit zählt der Countdown auf Mitternacht.</span>
+    <div class="field"><label>Rückseite</label>
+      <textarea data-r style="min-height:130px" placeholder="Freier Text">${esc(k.rueckseite)}</textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" data-ok style="flex:1">Sichern</button>
+      <button class="btn btn-ghost" data-leeren>Leeren</button>
+    </div>`);
+  $('[data-ok]', s).onclick = () => {
+    const d = $('[data-d]', s).value, z = $('[data-z]', s).value;
+    gAendern(() => {
+      GDB.karte = {
+        titel: $('[data-t]', s).value.trim().slice(0, 200),
+        datum: /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : '',
+        zeit: /^\d{2}:\d{2}$/.test(z) ? z : '',
+        rueckseite: $('[data-r]', s).value.trim().slice(0, 4000)
+      };
+    });
+    GStore.sichern(true);
+    layerSchliessen();
+    gViewMalen();
+  };
+  $('[data-leeren]', s).onclick = async () => {
+    if (!await bestaetigen('Karte leeren?', 'Vorder- und Rückseite werden geleert.', 'Leeren', true)) return;
+    gAendern(() => { GDB.karte = { titel: '', datum: '', zeit: '', rueckseite: '' }; });
+    GStore.sichern(true);
+    layerSchliessen();
+    gDrehung = 0; gGedreht = false;
+    gViewMalen();
+  };
+}
+
+/* ---------- Puzzle und Bald ---------- */
+function gPuzzleMalen(v) {
+  v.innerHTML = `
+    <div class="empty" style="margin-top:40px"><strong>Puzzle</strong>
+      Hier ist noch nichts eingebaut – die Anweisungen dafür folgen.</div>`;
+}
+function gBaldMalen(v) {
+  v.innerHTML = `
+    <div class="empty" style="margin-top:40px"><strong>Platz für später</strong>
+      Der dritte Reiter steht bereit, sobald klar ist, was hier hingehört.</div>`;
+}
+
+/* ---------- Mehr ---------- */
+function gMehrMalen(v) {
+  const ort = GStore.modus === 'datei' ? GStore.dateiname : (GStore.modus === 'geraet' ? 'Auf diesem Gerät' : 'Nicht gewählt');
+  const k = GDB.karte;
+  v.innerHTML = `
+    <div class="section-head" style="padding-top:14px"><h2>Datenbasis</h2></div>
+    <div class="list-card">
+      <div class="rowline"><span class="grow"><span class="rn">Speicherort</span><span class="rm">${esc(ort)}</span></span>
+        <button class="btn btn-sm" data-gwechseln>Ändern</button></div>
+      <div class="rowline"><span class="grow"><span class="rn">Jetzt sichern</span><span class="rm">Als Datei ablegen</span></span>
+        <button class="btn btn-sm" data-gsave>Sichern</button></div>
+      <div class="rowline"><span class="grow"><span class="rn">Daten laden</span><span class="rm">Eine gsund.json einlesen</span></span>
+        <button class="btn btn-sm" data-gimport>Laden</button></div>
+      <div class="rowline"><span class="grow"><span class="rn">Karte</span>
+        <span class="rm">${k.titel ? esc(k.titel) : 'leer'}${k.datum ? ' · ' + esc(kTagText(k.datum)) : ''}</span></span>
+        <button class="btn btn-sm" data-gkarte>Bearbeiten</button></div>
+      <div class="rowline"><span class="grow"><span class="rn">Alles löschen</span><span class="rm">Karte und alles Weitere</span></span>
+        <button class="btn btn-sm btn-danger" data-greset>Zurücksetzen</button></div>
+    </div>
+    ${huelleEinstellungenHtml()}
+    <p class="hinweis" style="padding:16px 0 30px">g&rsquo;sund führt eine eigene Datei. Die anderen Apps
+      dieser Datei bleiben davon unberührt.</p>`;
+
+  $('[data-gwechseln]', v).onclick = () => gsSpeicherort(false);
+  $('[data-gsave]', v).onclick = () => GStore.alsDateiSichern(false);
+  $('[data-gimport]', v).onclick = () => gImportBlatt();
+  $('[data-gkarte]', v).onclick = () => gKarteBearbeiten();
+  $('[data-greset]', v).onclick = async () => {
+    if (!await bestaetigen('Wirklich alles löschen?', 'Die Karte und alles Weitere werden entfernt.', 'Alles löschen', true)) return;
+    GDB = leereGs();
+    gDrehung = 0; gGedreht = false;
+    await GStore.sichern(true);
+    gTabWechseln('guzi');
+    toast('Zurückgesetzt.');
+  };
+  huelleEinstellungenBinden(v, gViewMalen);
+}
+
+function gImportBlatt() {
+  const s = blatt('Daten laden', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">Eine <strong>gsund.json</strong> einlesen. Der bisherige Stand wird ersetzt.</p>
+    <input type="file" accept="application/json,.json" data-file style="width:100%">
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
+      <button class="btn btn-ghost" data-no>Abbrechen</button>
+    </div>`, { fokus: false });
+  $('[data-no]', s).onclick = () => layerSchliessen();
+  $('[data-ok]', s).onclick = async () => {
+    const f = $('[data-file]', s).files[0];
+    if (!f) { toast('Keine Datei gewählt.'); return; }
+    try {
+      GDB = gsNormalisiere(JSON.parse(await f.text()));
+      await GStore.sichern(true);
+      layerSchliessen();
+      gDrehung = 0; gGedreht = false;
+      gTabWechseln('guzi');
+      toast('Geladen.');
+    } catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); }
+  };
+}
+
 async function boot() {
   vollbildKnopfMalen();
   $('#btnVoll').onclick = vollbildUmschalten;
@@ -4947,6 +5495,7 @@ function tabVerschieben(d) {
     if (!$('#app').hidden) return 'app';
     if (!$('#kal').hidden) return 'kal';
     if (!$('#fr').hidden) return 'fr';
+    if (!$('#gs').hidden) return 'gs';
     return null;
   };
   let x0 = null, y0 = 0, zieht = false, ab = 0, raus = false, grund = null;

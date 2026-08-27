@@ -7,7 +7,8 @@ quer schon etwas anderes passiert (die Tage-Bahn im To-Do, das Monatsblatt, die 
 fastreader), bleibt er aussen vor.
 
 **Jede App hat ihre eigene Datenbasis.** Die leseliste führt eine `leseplan.json`, der
-Kalender eine `kalender.json`, der fastreader eine `fastreader.json` – getrennte Dateien,
+Kalender eine `kalender.json`, der fastreader eine `fastreader.json`, g’sund eine
+`gsund.json` – getrennte Dateien,
 getrennte Speicherorte, getrennte Sicherung. Was allen gemeinsam ist, sind Hell/Dunkel, Akzentfarbe und Vollbild; die
 gehören der Hülle und gelten überall.
 
@@ -65,6 +66,23 @@ Wort für Wort an einem festen Punkt: das Auge bleibt stehen, der Text läuft. V
 
 Mit Tastatur: **Leertaste** startet und hält an, **↑ ↓** ändern das Tempo, **← →** springen
 zehn Wörter, mit **Umschalt** einen Satz.
+
+## g’sund
+
+Vier Reiter in der Fussleiste:
+
+- **Guzi** – eine einzige Karte, die sich in beide Richtungen umdrehen lässt. Vorne
+  steht ein frei gewählter Titel mit Datum und wahlweise Uhrzeit; darunter läuft der
+  Countdown im Sekundentakt, in Tagen, sonst als `HH:MM:SS`. Ist der Zeitpunkt vorbei,
+  zählt er mit Vorzeichen weiter. Hinten steht freier Text. Gedreht wird per Tipp (die
+  Hälfte, auf die getippt wird, bestimmt die Richtung), über die beiden Pfeile oder am
+  Finger: die Karte folgt der Hand, eine halbe Kartenbreite entspricht einer halben
+  Umdrehung, und beim Loslassen entscheiden Weg und Schwung. Die ersten 30 px am linken
+  Rand bleiben dem Zug zur Startseite.
+- **Puzzle** – noch leer, die Anweisungen dazu folgen.
+- **Bald** – Platz für den dritten Reiter.
+- **Mehr** – Speicherort, Sichern, Laden, Karte bearbeiten, Zurücksetzen, dazu derselbe
+  Block **Darstellung** wie in jeder App.
 
 ## leseliste
 
