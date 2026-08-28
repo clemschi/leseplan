@@ -1,8 +1,9 @@
 /* ============================================================
    Puzzle – der zweite Reiter in g'sund
-   Ein Bild, in Teile zerlegt: oben der leere Rahmen, unten die losen
-   Teile. Ein Teil antippen, dann die Stelle im Rahmen antippen – sitzt
-   es richtig, bleibt es liegen.
+   Ein Bild, in Teile zerlegt: oben der leere Rahmen, darunter die losen
+   Teile. Jedes Teil lässt sich frei über den Tisch schieben und bleibt
+   liegen, wo man es loslässt. Kommt es dabei nahe genug an seinen Platz
+   im Rahmen, rastet es ein und liegt fest.
 
    Die Teile sind echte Puzzleteile: jede innere Kante bekommt eine Nase
    in die eine und dieselbe Nase als Kerbe in die andere Richtung. Beide
@@ -22,10 +23,9 @@ function pzLeer() {
     anzahl: 12,          /* gewünschte Teilezahl */
     spalten: 0, zeilen: 0,
     kanten: null,        /* { waag, senk } – die Nasen, damit die Form bleibt */
-    gelegt: [],          /* Nummern der Teile, die schon im Rahmen liegen */
-    reihe: [],           /* die losen Teile in ihrer gemischten Reihenfolge */
-    hand: null,          /* Teil in der Hand */
-    seite: 0,            /* welche Seite der losen Teile gezeigt wird */
+    bildB: 0, bildH: 0,  /* Maße des Bildes, für das Seitenverhältnis */
+    gelegt: [],          /* Nummern der Teile, die schon eingerastet sind */
+    lose: {},            /* die übrigen: Lage auf dem Tisch, in Bruchteilen */
     sekunden: 0, begonnen: false, fertig: false,
     geloest: 0,
     beste: {}            /* je Teilezahl die schnellste Zeit */
@@ -39,6 +39,8 @@ function pzNormalisiere(roh) {
   p.anzahl = PZANZAHL.some(a => a.teile === +d.anzahl) ? +d.anzahl : 12;
   p.spalten = Math.max(0, Math.round(+d.spalten || 0));
   p.zeilen = Math.max(0, Math.round(+d.zeilen || 0));
+  p.bildB = Math.max(0, Math.round(+d.bildB || 0));
+  p.bildH = Math.max(0, Math.round(+d.bildH || 0));
   const n = p.spalten * p.zeilen;
   if (n > 0 && d.kanten && Array.isArray(d.kanten.waag) && Array.isArray(d.kanten.senk)) {
     p.kanten = { waag: d.kanten.waag.map(z => z.map(x => (+x > 0 ? 1 : -1))),
@@ -46,15 +48,16 @@ function pzNormalisiere(roh) {
   }
   const gueltig = x => Number.isInteger(x) && x >= 0 && x < n;
   p.gelegt = Array.isArray(d.gelegt) ? d.gelegt.map(x => +x).filter(gueltig) : [];
-  p.reihe = Array.isArray(d.reihe) ? d.reihe.map(x => +x).filter(gueltig) : [];
-  /* Was weder liegt noch in der Reihe steht, kommt hinten dazu – so geht
-     durch einen halben Stand kein Teil verloren. */
+  const lose = (d.lose && typeof d.lose === 'object') ? d.lose : {};
   for (let i = 0; i < n; i++) {
-    if (!p.gelegt.includes(i) && !p.reihe.includes(i)) p.reihe.push(i);
+    if (p.gelegt.includes(i)) continue;
+    const l = lose[i];
+    /* Was keine Lage hat – oder aus einem älteren Stand kommt –, bekommt
+       gleich eine: kein Teil geht durch einen halben Stand verloren. */
+    p.lose[i] = (l && isFinite(+l.x) && isFinite(+l.y))
+      ? { x: clamp(+l.x, 0, 1), y: clamp(+l.y, 0, 1), dreh: Math.round(+l.dreh || 0) }
+      : pzLage(i, n);
   }
-  p.reihe = p.reihe.filter(x => !p.gelegt.includes(x));
-  p.hand = gueltig(+d.hand) && !p.gelegt.includes(+d.hand) ? +d.hand : null;
-  p.seite = Math.max(0, Math.round(+d.seite || 0));
   p.sekunden = Math.max(0, Math.round(+d.sekunden || 0));
   p.begonnen = !!d.begonnen;
   p.geloest = Math.max(0, Math.round(+d.geloest || 0));
@@ -66,6 +69,26 @@ function pzNormalisiere(roh) {
   }
   p.fertig = n > 0 && p.gelegt.length === n;
   return p;
+}
+
+/* Wo ein loses Teil zu liegen kommt: verteilt über den unteren Teil des
+   Tisches, mit etwas Streuung, damit nichts deckungsgleich übereinander
+   liegt. Die Werte sind Bruchteile der Tischfläche – so bleibt die Lage
+   auch bei anderer Bildschirmgröße dieselbe. */
+function pzLage(i, n) {
+  const proReihe = Math.max(3, Math.ceil(Math.sqrt(n * 1.6)));
+  const reihen = Math.ceil(n / proReihe);
+  const s = i % proReihe, z = Math.floor(i / proReihe);
+  /* Immer dieselbe Streuung für dieselbe Nummer, aber ohne Muster. Der
+     Nachkommateil muss über Math.floor genommen werden – `% 1` behält bei
+     negativen Zahlen das Vorzeichen. */
+  const bruch = x => x - Math.floor(x);
+  const streu = (k, w) => (bruch(Math.sin(k * 12.9898) * 43758.5453) - 0.5) * 2 * w;
+  return {
+    x: clamp(0.10 + (s + 0.5) / proReihe * 0.80 + streu(i + 1, 0.03), 0.06, 0.94),
+    y: clamp(0.56 + (z + 0.5) / reihen * 0.40 + streu(i + 7, 0.025), 0.50, 0.97),
+    dreh: Math.round(streu(i + 3, 8))
+  };
 }
 
 /* ---------- Die Form ---------- */
@@ -223,14 +246,19 @@ async function pzNeuLegen(p, still) {
   const img = await pzBildLaden(p.bild);
   const t = pzTeilung(p.anzahl, img.naturalWidth / img.naturalHeight);
   p.spalten = t.spalten; p.zeilen = t.zeilen;
+  p.bildB = img.naturalWidth; p.bildH = img.naturalHeight;
   p.kanten = pzKantenBauen(p.spalten, p.zeilen);
   p.gelegt = [];
-  p.reihe = Array.from({ length: p.spalten * p.zeilen }, (_, i) => i);
-  for (let i = p.reihe.length - 1; i > 0; i--) {
+  /* Alle Teile auf den Tisch, in gemischter Reihenfolge: so liegt nicht
+     Teil 1 links oben und Teil 2 daneben. */
+  const n = p.spalten * p.zeilen;
+  const plaetze = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [p.reihe[i], p.reihe[j]] = [p.reihe[j], p.reihe[i]];
+    [plaetze[i], plaetze[j]] = [plaetze[j], plaetze[i]];
   }
-  p.hand = null; p.seite = 0;
+  p.lose = {};
+  plaetze.forEach((teil, platz) => { p.lose[teil] = pzLage(platz, n); });
   p.sekunden = 0; p.begonnen = false; p.fertig = false;
   pzVorratBauen(p, img);
   if (!still) { GStore.sichern(true); gViewMalen(); }
@@ -251,15 +279,13 @@ function pzUhrAus() { clearInterval(pzTakt); pzTakt = null; }
 const pzZeit = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 
 /* ---------- Die Ansicht ---------- */
-const PZ_PRO_SEITE = 6;
-
 function gPuzzleMalen(v) {
   const p0 = GDB.puzzle;
   if (!p0 || typeof p0 !== 'object') GDB.puzzle = pzNormalisiere(p0);
   const p = GDB.puzzle;
 
-  /* Beim ersten Öffnen gibt es noch keine Aufteilung – dann erst bauen und
-     danach neu malen. */
+  /* Beim ersten Öffnen gibt es noch keine Aufteilung – dann erst zerlegen
+     und danach neu malen. */
   if (!p.spalten || !p.kanten) {
     v.innerHTML = '<p class="hinweis" style="text-align:center;padding:40px 0">Wird zerlegt …</p>';
     pzNeuLegen(p);
@@ -274,24 +300,27 @@ function gPuzzleMalen(v) {
   }
 
   const anzahl = p.spalten * p.zeilen;
-  const offen = p.reihe.length;
-  const seiten = Math.max(1, Math.ceil(offen / PZ_PRO_SEITE));
-  p.seite = clamp(p.seite, 0, seiten - 1);
-  const start = p.seite * PZ_PRO_SEITE;
-  const zeigen = p.reihe.slice(start, start + PZ_PRO_SEITE);
   const best = p.beste[p.anzahl];
-  /* Der Überstand der Nasen, in Prozent einer Zelle – so liegt jedes Teil
-     im Rahmen genau über seiner Zelle. */
+  /* Der Überstand der Nasen als Bruchteil einer Zelle: damit ist ein Teil
+     etwas größer als sein Platz und beginnt etwas davor. */
   const fx = vorrat.stuecke[0].k / vorrat.stuecke[0].zelle.b;
   const fy = vorrat.stuecke[0].k / vorrat.stuecke[0].zelle.h;
+  const tb = (1 + 2 * fx).toFixed(4), th = (1 + 2 * fy).toFixed(4);
+  const masse = `width:calc(var(--zb) * ${tb});height:calc(var(--zh) * ${th})`;
 
-  const teilHtml = (i, klasse) => {
+  const liegtHtml = i => {
     const s = i % p.spalten, z = Math.floor(i / p.spalten);
-    return `<img class="${klasse}" src="${vorrat.stuecke[i].url}" alt="Teil ${i + 1}" data-teil="${i}"
-      style="left:calc(${s} * var(--zb) - var(--zb) * ${fx.toFixed(4)});
-             top:calc(${z} * var(--zh) - var(--zh) * ${fy.toFixed(4)});
-             width:calc(var(--zb) * ${(1 + 2 * fx).toFixed(4)});
-             height:calc(var(--zh) * ${(1 + 2 * fy).toFixed(4)})">`;
+    return `<img class="pzliegt" src="${vorrat.stuecke[i].url}" alt="Teil ${i + 1}"
+      draggable="false" style="left:calc(${s} * var(--zb) - var(--zb) * ${fx.toFixed(4)});
+             top:calc(${z} * var(--zh) - var(--zh) * ${fy.toFixed(4)});${masse}">`;
+  };
+  const losHtml = i => {
+    const l = p.lose[i];
+    /* draggable=false: sonst startet der Browser sein eigenes Ziehen von
+       Bildern, und der Zeiger kommt bei uns nicht mehr an. */
+    return `<img class="pzlose" src="${vorrat.stuecke[i].url}" alt="Teil" data-teil="${i}" draggable="false"
+      style="left:${(l.x * 100).toFixed(3)}%;top:${(l.y * 100).toFixed(3)}%;
+             --dreh:${l.dreh}deg;${masse}">`;
   };
 
   v.innerHTML = `
@@ -301,65 +330,35 @@ function gPuzzleMalen(v) {
       <button class="btn btn-sm" data-pzneu>Neu</button>
     </div>
 
-    <div class="pzbrett${p.fertig ? ' fertig' : ''}" data-pzbrett
-      style="--sp:${p.spalten};--ze:${p.zeilen};aspect-ratio:${p.spalten} / ${p.zeilen}">
-      ${Array.from({ length: anzahl }, (_, i) => p.gelegt.includes(i) ? '' : `
-        <button class="pzloch" data-loch="${i}"
-          style="left:calc(${i % p.spalten} * var(--zb));top:calc(${Math.floor(i / p.spalten)} * var(--zh))"
-          aria-label="Platz ${i + 1}"></button>`).join('')}
-      ${p.gelegt.map(i => teilHtml(i, 'pzliegt')).join('')}
+    <div class="pztisch" data-tisch style="--sp:${p.spalten};--ze:${p.zeilen};--bb:${p.bildB || 4};--bh:${p.bildH || 3}">
+      <div class="pzbrett${p.fertig ? ' fertig' : ''}" data-pzbrett>
+        ${Array.from({ length: anzahl }, (_, i) => p.gelegt.includes(i) ? '' : `
+          <span class="pzloch" data-loch="${i}"
+            style="left:calc(${i % p.spalten} * var(--zb));top:calc(${Math.floor(i / p.spalten)} * var(--zh))"></span>`).join('')}
+        ${p.gelegt.map(liegtHtml).join('')}
+      </div>
+      ${Object.keys(p.lose).map(i => losHtml(+i)).join('')}
     </div>
 
     <div class="pzstand">
-      <div><b>${p.gelegt.length}<span class="von">/${anzahl}</span></b><span>Teile</span></div>
+      <div><b data-pzgelegt>${p.gelegt.length}<span class="von">/${anzahl}</span></b><span>Teile</span></div>
       <div><b data-pzzeit>${pzZeit(p.sekunden)}</b><span>Zeit</span></div>
       <div><b>${best ? pzZeit(best) : '–'}</b><span>Bestzeit</span></div>
     </div>
 
     ${p.fertig ? `<p class="pzfertig"><b>Fertig.</b>
         ${anzahl} Teile in ${pzZeit(p.sekunden)}${best === p.sekunden ? ' – deine beste Zeit.' : ''}</p>`
-      : `<div class="pzstreu">
-        <button class="pzpfeil" data-pzlinks aria-label="Vorige Teile" ${seiten < 2 ? 'disabled' : ''}>${ICON.back}</button>
-        <div class="pzhaufen" data-pzhaufen>
-          ${p.hand != null ? `<img class="pzhand" src="${vorrat.stuecke[p.hand].url}" data-teil="${p.hand}" alt="Teil in der Hand">`
-        : zeigen.map((i, k) => `<img class="pzlose" src="${vorrat.stuecke[i].url}" data-teil="${i}"
-              style="--dreh:${((i * 47) % 40) - 20}deg" alt="Teil">`).join('')}
-        </div>
-        <button class="pzpfeil spiegel" data-pzrechts aria-label="Nächste Teile" ${seiten < 2 ? 'disabled' : ''}>${ICON.back}</button>
-      </div>
-      <p class="hinweis" style="text-align:center;padding:6px 0 30px">
-        ${p.hand != null ? 'Jetzt die Stelle im Rahmen antippen. Noch einmal auf das Teil tippt es zurück.'
-        : 'Ein Teil antippen, dann seinen Platz im Rahmen. Die Pfeile blättern durch die Teile.'}</p>`}
-    ${p.fertig ? `<p class="hinweis" style="text-align:center;padding:10px 0 30px">
-        ${p.geloest ? pl(p.geloest, 'Bild', 'Bilder') + ' fertig gelegt' : ''}</p>` : ''}`;
+      : `<p class="hinweis" style="text-align:center;padding:12px 0 0">
+        Teile lassen sich frei verschieben. Nah genug an ihrem Platz rasten sie ein.</p>`}
+    <p class="hinweis" style="text-align:center;padding:10px 0 30px">
+      ${p.geloest ? pl(p.geloest, 'Bild', 'Bilder') + ' fertig gelegt' : ''}</p>`;
 
   const zeitMalen = () => { const t = $('[data-pzzeit]', v); if (t) t.textContent = pzZeit(p.sekunden); };
 
-  /* Ein Teil in die Hand nehmen oder wieder zurücklegen. */
-  const haufen = $('[data-pzhaufen]', v);
-  if (haufen) haufen.onclick = e => {
-    const el = e.target.closest('[data-teil]');
-    if (!el) return;
-    const i = +el.dataset.teil;
-    p.hand = (p.hand === i) ? null : i;
-    gAendern();
-    gViewMalen();
-  };
-
-  const brett = $('[data-pzbrett]', v);
-  brett.onclick = e => {
-    const loch = e.target.closest('[data-loch]');
-    if (!loch || p.hand == null) return;
-    const ziel = +loch.dataset.loch;
-    if (ziel !== p.hand) {
-      loch.classList.remove('daneben');
-      void loch.offsetWidth;
-      loch.classList.add('daneben');
-      return;
-    }
-    p.gelegt.push(p.hand);
-    p.reihe = p.reihe.filter(x => x !== p.hand);
-    p.hand = null;
+  pzSchiebenBinden($('[data-tisch]', v), $('[data-pzbrett]', v), p, i => {
+    /* Ein Teil ist eingerastet. */
+    delete p.lose[i];
+    p.gelegt.push(i);
     p.begonnen = true;
     if (p.gelegt.length === anzahl) {
       p.fertig = true;
@@ -371,12 +370,7 @@ function gPuzzleMalen(v) {
       gAendern();
     }
     gViewMalen();
-  };
-
-  const blaettern = d => { p.seite = (p.seite + d + seiten) % seiten; gViewMalen(); };
-  const links = $('[data-pzlinks]', v), rechts = $('[data-pzrechts]', v);
-  if (links) links.onclick = () => blaettern(-1);
-  if (rechts) rechts.onclick = () => blaettern(1);
+  });
 
   $$('[data-pza]', v).forEach(b => b.onclick = () => {
     const a = +b.dataset.pza;
@@ -388,6 +382,76 @@ function gPuzzleMalen(v) {
   $('[data-pzbild]', v).onclick = () => pzBildBlatt(p);
 
   pzUhrAn(zeitMalen);
+}
+
+/* ---------- Schieben ----------
+   Am Zeiger statt an Berührungen: `setPointerCapture` gibt dem angefassten
+   Teil den Zug bis zum Loslassen, egal was der Browser sonst vorhätte.
+   1:1 am Finger, ohne Schwelle – ein Puzzleteil folgt der Hand sofort. */
+function pzSchiebenBinden(tisch, brett, p, eingerastet) {
+  let el = null, nr = -1, abx = 0, aby = 0, tr = null, bewegt = false;
+  let randX = 0, randY = 0;
+
+  /* Die Mitte darf so weit an den Rand, dass noch gut zwei Drittel des Teils
+     auf dem Tisch liegen – sonst ließe es sich nicht mehr anfassen. */
+  const lage = (e) => ({
+    x: clamp((e.clientX - abx - tr.left) / tr.width, randX, 1 - randX),
+    y: clamp((e.clientY - aby - tr.top) / tr.height, randY, 1 - randY)
+  });
+
+  tisch.addEventListener('pointerdown', e => {
+    const t = e.target.closest('.pzlose');
+    if (!t || el) return;
+    el = t; nr = +t.dataset.teil; bewegt = false;
+    tr = tisch.getBoundingClientRect();
+    const r = t.getBoundingClientRect();
+    abx = e.clientX - (r.left + r.width / 2);
+    aby = e.clientY - (r.top + r.height / 2);
+    randX = 0.3 * r.width / tr.width;
+    randY = 0.3 * r.height / tr.height;
+    el.setPointerCapture(e.pointerId);
+    el.classList.add('zieht');
+    /* Angefasst heißt obenauf: das Teil wandert ans Ende und bleibt danach
+       über den anderen liegen. */
+    tisch.appendChild(el);
+    window.__zieht = true;
+    e.preventDefault();
+  });
+
+  tisch.addEventListener('pointermove', e => {
+    if (!el) return;
+    bewegt = true;
+    const l = lage(e);
+    el.style.left = (l.x * 100).toFixed(3) + '%';
+    el.style.top = (l.y * 100).toFixed(3) + '%';
+  });
+
+  const los = (e) => {
+    if (!el) return;
+    const teil = el, i = nr;
+    el = null; nr = -1;
+    teil.classList.remove('zieht');
+    window.__zieht = false;
+    if (!bewegt) return;
+    const l = lage(e);
+    /* Die Neigung bleibt, wie sie war: ein Teil, das sich beim Loslassen
+       aufrichtet, springt unter dem Finger weg. */
+    p.lose[i] = { x: l.x, y: l.y, dreh: (p.lose[i] || {}).dreh || 0 };
+
+    /* Nah genug an seinem Platz? Gemessen wird von Mitte zu Mitte, die
+       Schwelle ist ein gutes Drittel einer Zelle. */
+    const br = brett.getBoundingClientRect();
+    const zb = brett.clientWidth / p.spalten, zh = brett.clientHeight / p.zeilen;
+    const innenL = br.left + brett.clientLeft, innenO = br.top + brett.clientTop;
+    const zielX = innenL + ((i % p.spalten) + 0.5) * zb;
+    const zielY = innenO + (Math.floor(i / p.spalten) + 0.5) * zh;
+    const r = teil.getBoundingClientRect();
+    const weg = Math.hypot((r.left + r.width / 2) - zielX, (r.top + r.height / 2) - zielY);
+    if (weg <= Math.min(zb, zh) * 0.42) { eingerastet(i); return; }
+    gAendern();
+  };
+  tisch.addEventListener('pointerup', los);
+  tisch.addEventListener('pointercancel', los);
 }
 
 /* Ein eigenes Bild wählen – oder zurück zum gezeichneten. */

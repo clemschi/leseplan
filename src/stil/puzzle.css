@@ -1,51 +1,49 @@
-/* ---------- Puzzle: Rahmen, Teile, Haufen ---------- */
-/* Der Rahmen rechnet in Zellen: --zb und --zh sind Breite und Höhe eines
-   Platzes. Jedes Teil liegt über seiner Zelle und ragt ringsum um seine
-   Nasen hinaus – darum ist es etwas größer als die Zelle und beginnt etwas
-   davor. */
+/* ---------- Puzzle: Tisch, Rahmen, Teile ---------- */
+/* Der Tisch ist die Fläche, über die geschoben wird: oben der Rahmen,
+   darunter Platz für die losen Teile. Er rechnet in Zellen – --zb und --zh
+   sind Breite und Höhe eines Platzes im Rahmen, und ein Teil ist überall
+   gleich groß, im Rahmen wie daneben. Nur so lässt sich mit dem Auge
+   entscheiden, wohin es gehört. */
+.pztisch{
+  --brett:min(92vw,420px);
+  --innen:calc(var(--brett) - 6px);
+  --zb:calc(var(--innen) / var(--sp));
+  --zh:calc(var(--innen) * var(--bh) / var(--bb) / var(--ze));
+  position:relative;width:100%;
+  min-height:calc(var(--vvh,100dvh) - var(--tabh,58px) - 210px);
+  touch-action:none;user-select:none;-webkit-user-select:none;
+}
 .pzbrett{
-  position:relative;width:min(92vw,420px);margin:0 auto;
-  --zb:calc(100% / var(--sp));
-  --zh:calc(100% / var(--ze));
+  position:absolute;left:50%;top:0;transform:translateX(-50%);
+  width:var(--brett);aspect-ratio:var(--bb) / var(--bh);
   background:#05070a;border:3px solid var(--text);border-radius:3px;
-  overflow:hidden;touch-action:manipulation;
 }
 .pzbrett.fertig{border-color:var(--accent);}
-.pzloch{position:absolute;width:var(--zb);height:var(--zh);
-  background:none;border:0;padding:0;}
+.pzloch{position:absolute;width:var(--zb);height:var(--zh);}
 .pzloch::after{content:'';position:absolute;inset:6%;border-radius:6px;
   border:1px dashed rgba(255,255,255,.10);}
-.pzloch.daneben{animation:pzdaneben .32s ease;}
-.pzloch.daneben::after{border-color:var(--bad);}
-@keyframes pzdaneben{
-  0%,100%{transform:translateX(0)}
-  25%{transform:translateX(-5px)}
-  75%{transform:translateX(5px)}
-}
 .pzliegt{position:absolute;pointer-events:none;animation:pzrein .22s ease;}
-@keyframes pzrein{from{opacity:0;transform:scale(1.12)}to{opacity:1;transform:none}}
+@keyframes pzrein{
+  from{opacity:.4;transform:scale(1.14)}
+  to{opacity:1;transform:none}
+}
+
+/* Ein loses Teil hängt mit seiner Mitte am angegebenen Punkt. */
+.pzlose{
+  position:absolute;
+  transform:translate(-50%,-50%) rotate(var(--dreh,0deg));
+  filter:drop-shadow(0 6px 14px rgba(0,0,0,.55));
+  cursor:grab;touch-action:none;
+  -webkit-user-drag:none;user-drag:none;
+}
+.pzlose.zieht{
+  transform:translate(-50%,-50%) rotate(var(--dreh,0deg)) scale(1.05);
+  filter:drop-shadow(0 14px 26px rgba(0,0,0,.6));
+  z-index:5;cursor:grabbing;
+}
 
 .pzkopf{display:flex;align-items:center;gap:8px;justify-content:center;
   flex-wrap:wrap;margin:4px 0 16px;}
-
-/* Der Haufen unter dem Rahmen: die losen Teile, leicht verdreht wie
-   hingeworfen. Ist eines in der Hand, steht es allein und groß da. */
-.pzstreu{display:flex;align-items:center;gap:4px;margin-top:24px;}
-.pzhaufen{flex:1;min-width:0;min-height:200px;display:flex;flex-wrap:wrap;
-  align-items:center;justify-content:center;gap:10px 14px;}
-.pzlose{width:84px;height:84px;object-fit:contain;cursor:pointer;
-  transform:rotate(var(--dreh,0deg));
-  filter:drop-shadow(0 6px 14px rgba(0,0,0,.5));
-  transition:transform .16s ease;}
-.pzlose:active{transform:rotate(var(--dreh,0deg)) scale(1.08);}
-.pzhand{width:min(58vw,220px);height:auto;object-fit:contain;cursor:pointer;
-  filter:drop-shadow(0 10px 22px rgba(0,0,0,.55));}
-.pzpfeil{flex:0 0 auto;width:40px;height:76px;display:grid;place-items:center;
-  color:var(--text-2);}
-.pzpfeil[disabled]{opacity:.25;}
-.pzpfeil svg{width:26px;height:26px;}
-.pzpfeil.spiegel svg{transform:scaleX(-1);}
-
 .pzstand{display:flex;justify-content:center;gap:24px;margin-top:18px;text-align:center;}
 .pzstand div{display:flex;flex-direction:column;gap:2px;}
 .pzstand b{font-size:19px;font-weight:500;font-variant-numeric:tabular-nums;}

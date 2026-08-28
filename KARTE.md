@@ -17,7 +17,7 @@ Anhaltspunkte, keine Zusicherung – sie wandern mit jeder Änderung.
 | `kalender.css` | 117 | alles mit `k`-Präfix |
 | `fastreader.css` | 91 | `.frbuehne`, `.frwort`, `.frpult`, `.frbahn` |
 | `gsund.css` | 60 | `.gbuehne`, `.gkarte`, `.gseite`, `.g-uhr`, `.gb-griff` |
-| `puzzle.css` | 56 | `.pzbrett` (rechnet in Zellen: `--zb`/`--zh`), `.pzloch`, `.pzliegt`, `.pzlose`, `.pzhand` |
+| `puzzle.css` | 55 | `.pztisch` (rechnet in Zellen: `--zb`/`--zh`), `.pzbrett`, `.pzloch`, `.pzliegt`, `.pzlose` |
 | `stoebern.css` | 129 | `.sto…` – der Kartenstapel |
 
 ## Markup
@@ -49,7 +49,7 @@ Die vier Apps:
 | `kalender.js` | 892 | `KDB`, `KStore`, `kalenderOeffnen` → `kViewMalen`; Tage rechnen, Heute, Monatsblatt (`kMonatZiehen`), To-Do, Mehr |
 | `fastreader.js` | 979 | `FDB`, `FStore`, `fastreaderOeffnen`; Text aufbereiten (`frZerlegen`), Bibliothek, Hereinholen (`frDocx`, `frPdf`, `frUrl`), Lesen (`frTakt`, `frBahnZiehen`), Bilanz |
 | `gsund.js` | 820 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Vergangene; „Bald“ ist noch leer |
-| `puzzle.js` | 330 | Das Bilderpuzzle im Reiter Puzzle: `pzKante`/`pzUmriss` (die Form der Teile), `pzVorratBauen` (jedes Teil einmal als Bild), `pzTeilung`, `gPuzzleMalen` |
+| `puzzle.js` | 400 | Das Bilderpuzzle im Reiter Puzzle: `pzKante`/`pzUmriss` (die Form der Teile), `pzVorratBauen` (jedes Teil einmal als Bild), `pzTeilung`, `pzLage` (wo ein loses Teil liegt), `pzSchiebenBinden` (Ziehen am Zeiger, Einrasten), `gPuzzleMalen` |
 
 leseliste – der Rest, nach Aufgaben getrennt:
 

@@ -89,15 +89,18 @@ Vier Reiter in der Fussleiste:
   derselbe Vorhang wie die Übersicht in der leseliste. Von selbst landet man dort nie.
   Jede Karte lässt sich ansehen, zurückholen (liegt vorn schon etwas, wandert das im
   selben Zug nach hinten) oder löschen.
-- **Puzzle** – ein Bild, in Teile zerlegt: oben der Rahmen, unten die losen Teile.
-  Ein Teil antippen, dann seinen Platz im Rahmen – sitzt es richtig, bleibt es
-  liegen, sonst ruckelt der Platz kurz. Die Pfeile links und rechts blättern
-  durch den Haufen, sechs Teile auf einmal. **Leicht, Mittel, Schwer** sind 6, 12
-  oder 24 Teile; wie viele Spalten und Zeilen daraus werden, richtet sich nach dem
-  Seitenverhältnis des Bildes, damit die Teile möglichst quadratisch bleiben.
+- **Puzzle** – ein Bild, in Teile zerlegt: oben der Rahmen, darunter der Tisch mit
+  den losen Teilen. **Jedes Teil lässt sich frei verschieben** und bleibt liegen, wo
+  man loslässt – am Finger 1:1, ohne Schwelle. Kommt es dabei nah genug an seinen
+  Platz im Rahmen (ein gutes Drittel einer Zelle), **rastet es ein** und liegt fest.
+  Ein angefasstes Teil hebt sich leicht und wandert nach oben über die anderen.
+  **Leicht, Mittel, Schwer** sind 6, 12 oder 24 Teile; wie viele Spalten und Zeilen
+  daraus werden, richtet sich nach dem Seitenverhältnis des Bildes, damit die Teile
+  möglichst quadratisch bleiben. Ein Teil ist überall gleich groß, im Rahmen wie
+  daneben – nur so lässt sich mit dem Auge entscheiden, wohin es gehört.
   Das Bild kommt aus der Galerie (*Bild → Foto wählen*) oder ist eines, das die App
   selbst zeichnet. Zeit und gelegte Teile laufen mit, die Bestzeit je Stufe bleibt
-  stehen, der halbe Stand übersteht das Schliessen.
+  stehen, und die Lage jedes einzelnen Teils übersteht das Schliessen.
   Die Teile sind echte Puzzleteile: jede innere Kante bekommt eine Nase, und der
   Nachbar zeichnet dieselbe Kurve von seiner Seite – gemessen greifen sie
   lückenlos ineinander (0 durchsichtige Pixel auf 900×675).

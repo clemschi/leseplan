@@ -233,7 +233,7 @@ function tabVerschieben(d) {
      Zug nach Hause aussen vor. */
   const tabu = '.book,.arow,.pager,.chiprow,.gal,.chart-scroll,.pagertabs,.cam,.lightbox,'
     + '.nowbar,.zsRahmen,.netz,.sto,input,textarea,select,.zeile,.sheet,.akk,'
-    + '.kbahn,.kgitterrahmen,.frpult,.frbahn,.gkarte';
+    + '.kbahn,.kgitterrahmen,.frpult,.frbahn,.gkarte,.pztisch';
   /* In welcher App stehen wir gerade? */
   const flaeche = () => {
     if (!$('#app').hidden) return 'app';
