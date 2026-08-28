@@ -4,7 +4,7 @@
 .gbuehne{max-width:560px;margin:8px auto 0;perspective:1400px;}
 .gkarte{position:relative;width:100%;min-height:min(58vh,404px);
   transform-style:preserve-3d;transform-origin:50% 50%;
-  transition:transform .55s cubic-bezier(.2,.8,.25,1),opacity .28s ease;
+  transition:transform .42s cubic-bezier(.2,.8,.25,1),opacity .28s ease;
   touch-action:none;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .gseite{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;text-align:center;gap:6px;

@@ -249,7 +249,11 @@ function gKarteAblegen(karte) {
    Loslassen entscheiden Weg und Schwung, welche der drei Wege es wird. */
 function gKarteZiehen(karte, drehen, ablegen) {
   let x0 = null, y0 = 0, zieht = false, abX = 0, abY = 0;
-  let wegX = 0, wegY = 0, breite = 1, hoehe = 1, ganzX = 0;
+  let wegX = 0, wegY = 0, breite = 1, hoehe = 1, ganzX = 0, ganzY = 0;
+  /* Jeder Zug bekommt eine Nummer. Gedreht wird für eine Nummer genau einmal –
+     was danach noch an Ereignissen nachkommt (ein zweites touchend, ein
+     touchcancel hinterher), läuft ins Leere. */
+  let zugNr = 0, gedrehtIn = -1;
   let letztX = 0, letztY = 0, letztT = 0, tempoX = 0, tempoY = 0;
   /* Eine halbe Umdrehung auf einmal, nicht mehr: solange der Ausklang läuft,
      nimmt die Karte keinen neuen Zug an. Sonst setzt ein zweiter Wisch auf der
@@ -260,6 +264,16 @@ function gKarteZiehen(karte, drehen, ablegen) {
     if (!sperre) return;
     clearTimeout(wache);
     sperre = false; window.__zieht = false; karte._gezogen = false;
+    /* Den Winkel klein halten: 540° und 180° sehen gleich aus, aber nur mit
+       kleinen Zahlen bleibt die nächste Drehung berechenbar. */
+    const rund = ((gDrehung % 360) + 360) % 360;
+    if (rund !== gDrehung) {
+      gDrehung = rund;
+      karte.style.transition = 'none';
+      karte.style.transform = 'rotateY(' + gDrehung + 'deg)';
+      void karte.offsetWidth;
+      karte.style.transition = '';
+    }
   };
   const sperren = (ms) => {
     sperre = true; window.__zieht = true;
@@ -299,7 +313,8 @@ function gKarteZiehen(karte, drehen, ablegen) {
        fängt die Karte ihn ab, weil sie fast die ganze Fläche einnimmt. */
     if (t.clientX < 30) { x0 = null; return; }
     x0 = t.clientX; y0 = t.clientY;
-    zieht = false; wegX = 0; wegY = 0; ganzX = 0;
+    zieht = false; wegX = 0; wegY = 0; ganzX = 0; ganzY = 0;
+    zugNr++;
     const r = karte.getBoundingClientRect();
     breite = r.width || 300; hoehe = r.height || 400;
     letztX = x0; letztY = y0; letztT = Date.now(); tempoX = 0; tempoY = 0;
@@ -311,6 +326,9 @@ function gKarteZiehen(karte, drehen, ablegen) {
     if (!zieht) {
       /* Kein Richtungsentscheid: quer wie längs gehört beides der Karte. */
       if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
+      /* Der bis hierher gelaufene Weg wird abgezogen, damit nichts springt.
+         Entschieden wird trotzdem am ganzen Fingerweg (ganzX) – sonst ginge
+         ein Wisch verloren, der in einem einzigen Ereignis ankommt. */
       zieht = true; abX = dx; abY = dy; window.__zieht = true;
       karte.style.transition = 'none';
       karte._gezogen = true;
@@ -322,7 +340,7 @@ function gKarteZiehen(karte, drehen, ablegen) {
       tempoY = (t.clientY - letztY) / (jetzt - letztT);
       letztX = t.clientX; letztY = t.clientY; letztT = jetzt;
     }
-    wegX = dx - abX; wegY = dy - abY; ganzX = dx;
+    wegX = dx - abX; wegY = dy - abY; ganzX = dx; ganzY = dy;
     malen();
   }, { passive: false });
 
@@ -344,12 +362,14 @@ function gKarteZiehen(karte, drehen, ablegen) {
     /* Gemessen wird am Weg des Fingers, nicht am gedrehten Rest – die
        Strecke bis zur Übernahme ist mitgelaufen und soll nicht gegen den
        Zug zählen. */
-    const dreht = Math.abs(wegX) > Math.abs(wegY)
+    const dreht = gedrehtIn !== zugNr
+      && Math.abs(ganzX) > Math.abs(ganzY)
       && (Math.abs(winkel()) >= 88
         || Math.abs(ganzX) > Math.max(52, breite * 0.16)
         || Math.abs(tempoX) > 0.3);
     if (dreht) {
-      drehen(wegX > 0 ? 1 : -1);
+      gedrehtIn = zugNr;
+      drehen(ganzX > 0 ? 1 : -1);
       /* Erst wenn diese halbe Umdrehung steht, ist die Karte wieder frei. */
       sperren(760);
     } else {
