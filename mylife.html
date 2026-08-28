@@ -924,14 +924,36 @@ form.feldrahmen{display:contents;}
 
 .pzkopf{display:flex;align-items:center;gap:8px;justify-content:center;
   flex-wrap:wrap;margin:4px 0 16px;}
-.pzstand{display:flex;justify-content:center;gap:24px;margin-top:18px;text-align:center;}
-.pzstand div{display:flex;flex-direction:column;gap:2px;}
-.pzstand b{font-size:19px;font-weight:500;font-variant-numeric:tabular-nums;}
-.pzstand b .von{font-size:13px;color:var(--text-3);}
-.pzstand span{font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--text-3);}
-.pzfertig{text-align:center;margin-top:18px;font-size:14px;color:var(--accent);}
-.pzfertig b{display:block;font-size:17px;font-weight:500;margin-bottom:2px;
-  font-family:"Literata",Georgia,serif;}
+/* ---------- Der Satz zum Bild ----------
+   Zwei Augenblicke haben Worte: einer, wenn nur noch ein altes Teil fehlt,
+   und einer, wenn alles liegt. Der Satz kommt aus der Unschärfe, steht kurz
+   und geht wieder. */
+.pzspruch{
+  position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);
+  display:grid;place-items:center;padding:0 30px;text-align:center;
+  z-index:60;pointer-events:none;
+}
+.pzspruch::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(closest-side,rgba(0,0,0,.78),rgba(0,0,0,.35) 62%,rgba(0,0,0,0));
+  animation:pzgrund var(--dauer,3s) ease forwards;
+}
+.pzspruch span{
+  position:relative;
+  font-family:"Literata",Georgia,"Times New Roman",serif;
+  font-size:clamp(23px,7.4vw,36px);line-height:1.34;font-weight:400;
+  color:var(--accent);text-wrap:balance;
+  animation:pzsatz var(--dauer,3s) cubic-bezier(.2,.8,.3,1) forwards;
+}
+@keyframes pzsatz{
+  0%{opacity:0;transform:translateY(16px) scale(.965);filter:blur(7px);letter-spacing:.08em}
+  22%{opacity:1;transform:none;filter:blur(0);letter-spacing:0}
+  74%{opacity:1;transform:none;filter:blur(0)}
+  100%{opacity:0;transform:translateY(-12px) scale(1.02);filter:blur(4px)}
+}
+@keyframes pzgrund{
+  0%{opacity:0} 22%{opacity:1} 74%{opacity:1} 100%{opacity:0}
+}
 /* ===== Stöbern: Werke sichten, merken, zu Blöcken ordnen ===== */
 .sto{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:60;
   background:var(--bg);display:flex;flex-direction:column;animation:slideIn .22s ease;}
@@ -5796,7 +5818,6 @@ function pzUhrAn(malen) {
   }, 1000);
 }
 function pzUhrAus() { clearInterval(pzTakt); pzTakt = null; }
-const pzZeit = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 
 /* ---------- Die Ansicht ---------- */
 function gPuzzleMalen(v) {
@@ -5820,7 +5841,6 @@ function gPuzzleMalen(v) {
   }
 
   const anzahl = p.spalten * p.zeilen;
-  const best = p.beste;
   /* Der Überstand der Nasen als Bruchteil einer Zelle: damit ist ein Teil
      etwas größer als sein Platz und beginnt etwas davor. */
   const fx = vorrat.stuecke[0].k / vorrat.stuecke[0].zelle.b;
@@ -5861,20 +5881,7 @@ function gPuzzleMalen(v) {
       ${Object.keys(p.lose).map(i => losHtml(+i)).join('')}
     </div>
 
-    <div class="pzstand">
-      <div><b data-pzgelegt>${p.gelegt.length}<span class="von">/${anzahl}</span></b><span>Teile</span></div>
-      <div><b data-pzzeit>${pzZeit(p.sekunden)}</b><span>Zeit</span></div>
-      <div><b>${best ? pzZeit(best) : '–'}</b><span>Bestzeit</span></div>
-    </div>
-
-    ${p.fertig ? `<p class="pzfertig"><b>Fertig.</b>
-        ${anzahl} Teile in ${pzZeit(p.sekunden)}${best === p.sekunden ? ' – deine beste Zeit.' : ''}</p>`
-      : `<p class="hinweis" style="text-align:center;padding:12px 0 0">
-        Teile lassen sich frei verschieben. Nah genug an ihrem Platz rasten sie ein.</p>`}
-    <p class="hinweis" style="text-align:center;padding:10px 0 30px">
-      ${p.geloest ? pl(p.geloest, 'Bild', 'Bilder') + ' fertig gelegt' : ''}</p>`;
-
-  const zeitMalen = () => { const t = $('[data-pzzeit]', v); if (t) t.textContent = pzZeit(p.sekunden); };
+`;
 
   pzSchiebenBinden($('[data-tisch]', v), $('[data-pzbrett]', v), p, i => {
     /* Ein Teil ist eingerastet. */
@@ -5892,13 +5899,48 @@ function gPuzzleMalen(v) {
     } else {
       gAendern();
     }
+    pzStandPruefen(p);
     gViewMalen();
   });
 
   $('[data-pzneu]', v).onclick = () => pzNeuLegen(p);
   $('[data-pzbild]', v).onclick = () => pzBildBlatt(p);
 
-  pzUhrAn(zeitMalen);
+  pzUhrAn(null);
+  pzStandPruefen(p, true);
+}
+
+/* ---------- Zwei Sätze ----------
+   Liegt alles bis auf ein altes Teil, fragt das Bild nach dem Warum. Liegt
+   alles, sagt es, dass gerade das nicht nötig gewesen wäre. Jeder Satz
+   kommt nur beim Übergang – nicht bei jedem Neuzeichnen. */
+let pzZuletzt = '';
+function pzStandPruefen(p, nurMerken) {
+  const anzahl = p.spalten * p.zeilen;
+  const fehlt = [];
+  for (let i = 0; i < anzahl; i++) if (!p.gelegt.includes(i)) fehlt.push(i);
+  let marke = '';
+  if (!fehlt.length) marke = 'fertig';
+  else if (fehlt.length === 1 && p.alt.includes(fehlt[0])) marke = 'warum';
+  if (!nurMerken && marke && marke !== pzZuletzt) {
+    if (marke === 'fertig') pzSpruch('A beautiful thing is never perfect', 5200);
+    else pzSpruch('Why?', 3000);
+  }
+  pzZuletzt = marke;
+}
+
+let pzSpruchWeg = null;
+function pzSpruch(text, dauer) {
+  const alt = $('.pzspruch');
+  if (alt) alt.remove();
+  clearTimeout(pzSpruchWeg);
+  const d = document.createElement('div');
+  d.className = 'pzspruch';
+  d.style.setProperty('--dauer', (dauer / 1000).toFixed(2) + 's');
+  d.setAttribute('aria-hidden', 'true');
+  d.innerHTML = '<span>' + esc(text) + '</span>';
+  document.body.appendChild(d);
+  pzSpruchWeg = setTimeout(() => d.remove(), dauer + 120);
 }
 
 /* ---------- Schieben ----------
@@ -5959,9 +6001,8 @@ function pzSchiebenBinden(tisch, brett, p, eingerastet) {
     t.style.top = (y * 100).toFixed(3) + '%';
     t.style.setProperty('--dreh', '0deg');
     tisch.appendChild(t);
-    const stand = tisch.parentNode && tisch.parentNode.querySelector('[data-pzgelegt]');
-    if (stand) stand.firstChild.textContent = p.gelegt.length;
     gAendern();
+    pzStandPruefen(p);
   };
 
   const los = (e) => {

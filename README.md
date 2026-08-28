@@ -105,8 +105,12 @@ Vier Reiter in der Fussleiste:
   Foto; darunter bleibt Platz für die Teile, und **die Seite lässt sich scrollen** –
   senkrecht gehört der Zug der Seite, ein Teil nimmt ihn sich selbst.
   Das Bild kommt aus der Galerie (*Bild wählen*) oder ist eines, das die App selbst
-  zeichnet. Zeit und gelegte Teile laufen mit, die Bestzeit bleibt stehen, und die
-  Lage jedes einzelnen Teils übersteht das Schliessen.
+  zeichnet. Die Lage jedes einzelnen Teils übersteht das Schliessen; Zahlen stehen
+  keine dabei, das Bild spricht für sich.
+  **Zwei Augenblicke haben Worte.** Liegt alles bis auf ein altes Teil, fragt das
+  Bild *Why?*. Liegt alles, sagt es *A beautiful thing is never perfect*. Der Satz
+  kommt aus der Unschärfe, steht kurz und geht wieder – und nur beim Übergang, nicht
+  bei jedem Neuzeichnen.
   Die Teile sind echte Puzzleteile: jede innere Kante bekommt eine Nase, und der
   Nachbar zeichnet dieselbe Kurve von seiner Seite – gemessen greifen sie
   lückenlos ineinander (0 durchsichtige Pixel auf 900×675).

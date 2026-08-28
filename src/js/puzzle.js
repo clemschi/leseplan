@@ -339,7 +339,6 @@ function pzUhrAn(malen) {
   }, 1000);
 }
 function pzUhrAus() { clearInterval(pzTakt); pzTakt = null; }
-const pzZeit = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 
 /* ---------- Die Ansicht ---------- */
 function gPuzzleMalen(v) {
@@ -363,7 +362,6 @@ function gPuzzleMalen(v) {
   }
 
   const anzahl = p.spalten * p.zeilen;
-  const best = p.beste;
   /* Der Überstand der Nasen als Bruchteil einer Zelle: damit ist ein Teil
      etwas größer als sein Platz und beginnt etwas davor. */
   const fx = vorrat.stuecke[0].k / vorrat.stuecke[0].zelle.b;
@@ -404,20 +402,7 @@ function gPuzzleMalen(v) {
       ${Object.keys(p.lose).map(i => losHtml(+i)).join('')}
     </div>
 
-    <div class="pzstand">
-      <div><b data-pzgelegt>${p.gelegt.length}<span class="von">/${anzahl}</span></b><span>Teile</span></div>
-      <div><b data-pzzeit>${pzZeit(p.sekunden)}</b><span>Zeit</span></div>
-      <div><b>${best ? pzZeit(best) : '–'}</b><span>Bestzeit</span></div>
-    </div>
-
-    ${p.fertig ? `<p class="pzfertig"><b>Fertig.</b>
-        ${anzahl} Teile in ${pzZeit(p.sekunden)}${best === p.sekunden ? ' – deine beste Zeit.' : ''}</p>`
-      : `<p class="hinweis" style="text-align:center;padding:12px 0 0">
-        Teile lassen sich frei verschieben. Nah genug an ihrem Platz rasten sie ein.</p>`}
-    <p class="hinweis" style="text-align:center;padding:10px 0 30px">
-      ${p.geloest ? pl(p.geloest, 'Bild', 'Bilder') + ' fertig gelegt' : ''}</p>`;
-
-  const zeitMalen = () => { const t = $('[data-pzzeit]', v); if (t) t.textContent = pzZeit(p.sekunden); };
+`;
 
   pzSchiebenBinden($('[data-tisch]', v), $('[data-pzbrett]', v), p, i => {
     /* Ein Teil ist eingerastet. */
@@ -435,13 +420,48 @@ function gPuzzleMalen(v) {
     } else {
       gAendern();
     }
+    pzStandPruefen(p);
     gViewMalen();
   });
 
   $('[data-pzneu]', v).onclick = () => pzNeuLegen(p);
   $('[data-pzbild]', v).onclick = () => pzBildBlatt(p);
 
-  pzUhrAn(zeitMalen);
+  pzUhrAn(null);
+  pzStandPruefen(p, true);
+}
+
+/* ---------- Zwei Sätze ----------
+   Liegt alles bis auf ein altes Teil, fragt das Bild nach dem Warum. Liegt
+   alles, sagt es, dass gerade das nicht nötig gewesen wäre. Jeder Satz
+   kommt nur beim Übergang – nicht bei jedem Neuzeichnen. */
+let pzZuletzt = '';
+function pzStandPruefen(p, nurMerken) {
+  const anzahl = p.spalten * p.zeilen;
+  const fehlt = [];
+  for (let i = 0; i < anzahl; i++) if (!p.gelegt.includes(i)) fehlt.push(i);
+  let marke = '';
+  if (!fehlt.length) marke = 'fertig';
+  else if (fehlt.length === 1 && p.alt.includes(fehlt[0])) marke = 'warum';
+  if (!nurMerken && marke && marke !== pzZuletzt) {
+    if (marke === 'fertig') pzSpruch('A beautiful thing is never perfect', 5200);
+    else pzSpruch('Why?', 3000);
+  }
+  pzZuletzt = marke;
+}
+
+let pzSpruchWeg = null;
+function pzSpruch(text, dauer) {
+  const alt = $('.pzspruch');
+  if (alt) alt.remove();
+  clearTimeout(pzSpruchWeg);
+  const d = document.createElement('div');
+  d.className = 'pzspruch';
+  d.style.setProperty('--dauer', (dauer / 1000).toFixed(2) + 's');
+  d.setAttribute('aria-hidden', 'true');
+  d.innerHTML = '<span>' + esc(text) + '</span>';
+  document.body.appendChild(d);
+  pzSpruchWeg = setTimeout(() => d.remove(), dauer + 120);
 }
 
 /* ---------- Schieben ----------
@@ -502,9 +522,8 @@ function pzSchiebenBinden(tisch, brett, p, eingerastet) {
     t.style.top = (y * 100).toFixed(3) + '%';
     t.style.setProperty('--dreh', '0deg');
     tisch.appendChild(t);
-    const stand = tisch.parentNode && tisch.parentNode.querySelector('[data-pzgelegt]');
-    if (stand) stand.firstChild.textContent = p.gelegt.length;
     gAendern();
+    pzStandPruefen(p);
   };
 
   const los = (e) => {
