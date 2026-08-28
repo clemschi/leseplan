@@ -24,7 +24,7 @@ function pzLeer() {
     alt: [],             /* drei Teile, die alt und zerkratzt aussehen */
     gelegt: [],          /* Nummern der Teile, die schon eingerastet sind */
     lose: {},            /* die übrigen: Lage auf dem Tisch, in Bruchteilen */
-    sekunden: 0, begonnen: false, fertig: false,
+    sekunden: 0, begonnen: false, fertig: false, gezaehlt: false,
     geloest: 0,
     beste: 0             /* die schnellste Zeit */
   };
@@ -46,6 +46,12 @@ function pzNormalisiere(roh) {
   }
   const gueltig = x => Number.isInteger(x) && x >= 0 && x < n;
   p.alt = Array.isArray(d.alt) ? d.alt.map(x => +x).filter(gueltig).slice(0, 3) : [];
+  /* Ein Stand von früher kennt die alten Teile noch nicht – dann werden sie
+     jetzt ausgewürfelt, damit auch ein angefangenes Bild welche hat. */
+  while (n > 0 && p.alt.length < 3) {
+    const w = Math.floor(Math.random() * n);
+    if (!p.alt.includes(w)) p.alt.push(w);
+  }
   p.gelegt = Array.isArray(d.gelegt) ? d.gelegt.map(x => +x).filter(gueltig) : [];
   const lose = (d.lose && typeof d.lose === 'object') ? d.lose : {};
   for (let i = 0; i < n; i++) {
@@ -59,6 +65,7 @@ function pzNormalisiere(roh) {
   }
   p.sekunden = Math.max(0, Math.round(+d.sekunden || 0));
   p.begonnen = !!d.begonnen;
+  p.gezaehlt = !!d.gezaehlt;
   p.geloest = Math.max(0, Math.round(+d.geloest || 0));
   /* Früher stand je Stufe eine Bestzeit; davon bleibt die beste übrig. */
   p.beste = +d.beste > 0 ? Math.round(+d.beste)
@@ -180,7 +187,7 @@ function pzVorratBauen(p, img) {
     ctx.clip(pf);
     /* Ein altes Teil ist vergilbt und flauer – das macht der Filter beim
        Zeichnen, nicht eine Schicht darüber. */
-    if (gealtert) ctx.filter = 'sepia(.55) contrast(.88) brightness(.92) saturate(.8)';
+    if (gealtert) ctx.filter = 'sepia(.85) contrast(.82) brightness(.86) saturate(.55)';
     ctx.drawImage(gross, k - s * zelle.b, k - z * zelle.h);
     ctx.filter = 'none';
     if (gealtert) pzAltern(ctx, c.width, c.height, i);
@@ -215,7 +222,7 @@ function pzAltern(ctx, w, h, nr) {
   }
   /* Kratzer: helle Risse, dazwischen dunkle Linien. */
   ctx.lineCap = 'round';
-  for (let s = 0; s < 9; s++) {
+  for (let s = 0; s < 14; s++) {
     const x0 = zuf() * w, y0 = zuf() * h;
     const laenge = (0.2 + zuf() * 0.5) * w, winkel = zuf() * Math.PI * 2;
     ctx.beginPath();
@@ -225,16 +232,16 @@ function pzAltern(ctx, w, h, nr) {
       y0 + Math.sin(winkel) * laenge * 0.5 + (zuf() - 0.5) * 12,
       x0 + Math.cos(winkel) * laenge, y0 + Math.sin(winkel) * laenge);
     ctx.strokeStyle = s % 3 === 0
-      ? 'rgba(60,44,26,' + (0.16 + zuf() * 0.16).toFixed(3) + ')'
-      : 'rgba(255,248,232,' + (0.18 + zuf() * 0.26).toFixed(3) + ')';
-    ctx.lineWidth = 0.6 + zuf() * 1.8;
+      ? 'rgba(48,34,18,' + (0.22 + zuf() * 0.22).toFixed(3) + ')'
+      : 'rgba(255,248,232,' + (0.26 + zuf() * 0.34).toFixed(3) + ')';
+    ctx.lineWidth = 0.8 + zuf() * 2.4;
     ctx.stroke();
   }
   /* Abgegriffen: zum Rand hin hellt es auf. */
   const rand = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.28,
     w / 2, h / 2, Math.max(w, h) * 0.62);
-  rand.addColorStop(0, 'rgba(235,222,196,0)');
-  rand.addColorStop(1, 'rgba(235,222,196,.30)');
+  rand.addColorStop(0, 'rgba(228,210,176,0)');
+  rand.addColorStop(1, 'rgba(228,210,176,.42)');
   ctx.fillStyle = rand;
   ctx.fillRect(0, 0, w, h);
 }
@@ -315,7 +322,7 @@ async function pzNeuLegen(p, still) {
   }
   p.lose = {};
   plaetze.forEach((teil, platz) => { p.lose[teil] = pzLage(platz, n); });
-  p.sekunden = 0; p.begonnen = false; p.fertig = false;
+  p.sekunden = 0; p.begonnen = false; p.fertig = false; p.gezaehlt = false;
   pzVorratBauen(p, img);
   if (!still) { GStore.sichern(true); gViewMalen(); }
 }
@@ -366,8 +373,10 @@ function gPuzzleMalen(v) {
 
   const liegtHtml = i => {
     const s = i % p.spalten, z = Math.floor(i / p.spalten);
-    return `<img class="pzliegt" src="${vorrat.stuecke[i].url}" alt="Teil ${i + 1}"
-      draggable="false" style="left:calc(${s} * var(--zb) - var(--zb) * ${fx.toFixed(4)});
+    /* Die drei alten Teile bleiben anfassbar: nur sie lassen sich wieder
+       herausnehmen, wenn sie einmal sitzen. */
+    return `<img class="pzliegt${p.alt.includes(i) ? ' altteil' : ''}" src="${vorrat.stuecke[i].url}"
+      alt="Teil ${i + 1}" data-teil="${i}" draggable="false" style="left:calc(${s} * var(--zb) - var(--zb) * ${fx.toFixed(4)});
              top:calc(${z} * var(--zh) - var(--zh) * ${fy.toFixed(4)});${masse}">`;
   };
   const losHtml = i => {
@@ -417,8 +426,11 @@ function gPuzzleMalen(v) {
     p.begonnen = true;
     if (p.gelegt.length === anzahl) {
       p.fertig = true;
-      p.geloest++;
-      if (!p.beste || p.sekunden < p.beste) p.beste = p.sekunden;
+      if (!p.gezaehlt) {
+        p.gezaehlt = true;
+        p.geloest++;
+        if (!p.beste || p.sekunden < p.beste) p.beste = p.sekunden;
+      }
       GStore.sichern(true);
     } else {
       gAendern();
@@ -448,10 +460,13 @@ function pzSchiebenBinden(tisch, brett, p, eingerastet) {
   });
 
   tisch.addEventListener('pointerdown', e => {
-    const t = e.target.closest('.pzlose');
+    const t = e.target.closest('.pzlose,.pzliegt.altteil');
     if (!t || el) return;
-    el = t; nr = +t.dataset.teil; bewegt = false;
     tr = tisch.getBoundingClientRect();
+    /* Ein altes Teil, das schon im Rahmen sitzt, wird beim Anfassen wieder
+       lose – an derselben Stelle, an der es liegt, damit nichts springt. */
+    if (t.classList.contains('pzliegt')) herausnehmen(t, +t.dataset.teil);
+    el = t; nr = +t.dataset.teil; bewegt = false;
     const r = t.getBoundingClientRect();
     abx = e.clientX - (r.left + r.width / 2);
     aby = e.clientY - (r.top + r.height / 2);
@@ -473,6 +488,24 @@ function pzSchiebenBinden(tisch, brett, p, eingerastet) {
     el.style.left = (l.x * 100).toFixed(3) + '%';
     el.style.top = (l.y * 100).toFixed(3) + '%';
   });
+
+  const herausnehmen = (t, i) => {
+    const r = t.getBoundingClientRect();
+    const x = (r.left + r.width / 2 - tr.left) / tr.width;
+    const y = (r.top + r.height / 2 - tr.top) / tr.height;
+    p.gelegt = p.gelegt.filter(v => v !== i);
+    p.lose[i] = { x, y, dreh: 0 };
+    p.fertig = false;
+    t.classList.remove('pzliegt', 'altteil');
+    t.classList.add('pzlose');
+    t.style.left = (x * 100).toFixed(3) + '%';
+    t.style.top = (y * 100).toFixed(3) + '%';
+    t.style.setProperty('--dreh', '0deg');
+    tisch.appendChild(t);
+    const stand = tisch.parentNode && tisch.parentNode.querySelector('[data-pzgelegt]');
+    if (stand) stand.firstChild.textContent = p.gelegt.length;
+    gAendern();
+  };
 
   const los = (e) => {
     if (!el) return;

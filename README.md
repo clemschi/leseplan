@@ -96,8 +96,11 @@ Vier Reiter in der Fussleiste:
   Ein angefasstes Teil hebt sich leicht und wandert nach oben über die anderen.
   Ein Teil ist überall gleich groß, im Rahmen wie daneben – nur so lässt sich mit
   dem Auge entscheiden, wohin es gehört. **Drei Teile je Bild sind alt**: vergilbt,
-  fleckig, zerkratzt, mit stumpfem Rand – welche drei, wird bei jedem neuen Bild
-  neu ausgewürfelt.
+  fleckig, zerkratzt, mit stumpfem Rand und einem warmen Schimmer. Welche drei,
+  wird bei jedem neuen Bild neu ausgewürfelt – und **nur sie lassen sich wieder
+  herausnehmen**, wenn sie einmal eingerastet sind; alle anderen liegen dann fest.
+  Ein herausgenommenes Teil bleibt genau dort, wo es lag, und wandert von da aus
+  mit dem Finger.
   Der Rahmen wird nie höher als 44 % des Bildschirms, auch bei einem hochkanten
   Foto; darunter bleibt Platz für die Teile, und **die Seite lässt sich scrollen** –
   senkrecht gehört der Zug der Seite, ein Teil nimmt ihn sich selbst.

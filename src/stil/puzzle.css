@@ -30,6 +30,10 @@
 .pzloch::after{content:'';position:absolute;inset:6%;border-radius:6px;
   border:1px dashed rgba(255,255,255,.10);}
 .pzliegt{position:absolute;pointer-events:none;animation:pzrein .22s ease;}
+/* Nur die drei alten Teile lassen sich wieder herausnehmen – ein warmer
+   Schimmer sagt, dass sie noch beweglich sind. */
+.pzliegt.altteil{pointer-events:auto;cursor:grab;
+  filter:drop-shadow(0 0 5px rgba(219,164,63,.55));}
 @keyframes pzrein{
   from{opacity:.4;transform:scale(1.14)}
   to{opacity:1;transform:none}
