@@ -101,14 +101,16 @@ Vier Reiter in der Fussleiste:
   herausnehmen**, wenn sie einmal eingerastet sind; alle anderen liegen dann fest.
   Ein herausgenommenes Teil bleibt genau dort, wo es lag, und wandert von da aus
   mit dem Finger.
-  Der Rahmen wird nie höher als 44 % des Bildschirms, auch bei einem hochkanten
-  Foto; darunter bleibt Platz für die Teile, und **die Seite lässt sich scrollen** –
-  senkrecht gehört der Zug der Seite, ein Teil nimmt ihn sich selbst.
+  Der Rahmen wird nie höher als 36 % des Bildschirms, auch bei einem hochkanten
+  Foto; der Tisch darunter nimmt genau den Platz bis zur Fussleiste – **es gibt
+  nichts zu scrollen**. Die Teile sind Flächen mit dem Bild im Rücken, keine
+  `<img>`: so bietet langes Drücken kein „Bild speichern" an.
   Das Bild kommt aus der Galerie (*Bild wählen*) oder ist eines, das die App selbst
   zeichnet. Die Lage jedes einzelnen Teils übersteht das Schliessen; Zahlen stehen
   keine dabei, das Bild spricht für sich.
-  **Zwei Augenblicke haben Worte.** Liegt alles bis auf ein altes Teil, fragt das
-  Bild *Why?*. Liegt alles, sagt es *A beautiful thing is never perfect*. Der Satz
+  **Zwei Augenblicke haben Worte.** Liegt alles, sagt das Bild *A beautiful thing is
+  never perfect*. Wer danach ein altes Teil wieder herauszieht, wird gefragt: *Why?* –
+  der Satz gehört dem Aufmachen, nicht dem letzten fehlenden Teil auf dem Weg dorthin. Der Satz
   kommt aus der Unschärfe, steht kurz und geht wieder – und nur beim Übergang, nicht
   bei jedem Neuzeichnen.
   Die Teile sind echte Puzzleteile: jede innere Kante bekommt eine Nase, und der

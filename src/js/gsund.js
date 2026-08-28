@@ -130,6 +130,9 @@ function gViewMalen() {
   leistenHoeheMessen();
   clearInterval(gTakt);
   const v = $('#gview');
+  /* Das Puzzle braucht die Fläche bis zur Fussleiste – ohne den Rand, den die
+     anderen Reiter unten stehen lassen. */
+  v.classList.toggle('pzansicht', gTab === 'puzzle');
   gBannerMalen();
   if (gTab === 'guzi') gGuziMalen(v);
   else if (gTab === 'puzzle') gPuzzleMalen(v);

@@ -4,21 +4,23 @@
    sind Breite und Höhe eines Platzes im Rahmen, und ein Teil ist überall
    gleich groß, im Rahmen wie daneben. Nur so lässt sich mit dem Auge
    entscheiden, wohin es gehört. */
+/* Im Puzzle steht unter dem Tisch nichts mehr – also auch kein Rand. */
+#gview.pzansicht{padding-bottom:0;}
 .pztisch{
   /* Der Rahmen darf nie höher werden als 44 % des Bildschirms – ein
      hochkantes Foto nähme sonst die ganze Fläche und der Tisch bliebe leer.
      Darum begrenzt die Höhe die Breite mit. */
-  --brett:min(92vw, 420px, calc(44vh * var(--bb) / var(--bh)));
+  --brett:min(92vw, 420px, calc(36vh * var(--bb) / var(--bh)));
   --brettH:calc(var(--brett) * var(--bh) / var(--bb));
   --innen:calc(var(--brett) - 6px);
   --zb:calc(var(--innen) / var(--sp));
   --zh:calc(var(--innen) * var(--bh) / var(--bb) / var(--ze));
   position:relative;width:100%;
-  /* Platz für den Rahmen und darunter für zwei Dutzend Teile. Wird es mehr,
-     als auf den Schirm passt, scrollt die Seite – darum pan-y: senkrecht
-     gehört der Zug der Seite, ein Teil nimmt ihn sich selbst (siehe unten). */
-  min-height:calc(var(--brettH) + 420px);
-  touch-action:pan-y;user-select:none;-webkit-user-select:none;
+  /* Die Höhe setzt das Skript: genau der Platz zwischen Kopf und Fussleiste.
+     Darunter kommt nichts, also scrollt auch nichts. */
+  min-height:280px;
+  touch-action:none;user-select:none;-webkit-user-select:none;
+  -webkit-touch-callout:none;
 }
 .pzbrett{
   position:absolute;left:50%;top:0;transform:translateX(-50%);
@@ -29,7 +31,8 @@
 .pzloch{position:absolute;width:var(--zb);height:var(--zh);}
 .pzloch::after{content:'';position:absolute;inset:6%;border-radius:6px;
   border:1px dashed rgba(255,255,255,.10);}
-.pzliegt{position:absolute;pointer-events:none;animation:pzrein .22s ease;}
+.pzliegt{position:absolute;pointer-events:none;animation:pzrein .22s ease;
+  background-size:100% 100%;background-repeat:no-repeat;}
 /* Nur die drei alten Teile lassen sich wieder herausnehmen – ein warmer
    Schimmer sagt, dass sie noch beweglich sind. */
 .pzliegt.altteil{pointer-events:auto;cursor:grab;
@@ -42,10 +45,12 @@
 /* Ein loses Teil hängt mit seiner Mitte am angegebenen Punkt. */
 .pzlose{
   position:absolute;
+  background-size:100% 100%;background-repeat:no-repeat;
   transform:translate(-50%,-50%) rotate(var(--dreh,0deg));
   filter:drop-shadow(0 6px 14px rgba(0,0,0,.55));
   cursor:grab;touch-action:none;
-  -webkit-user-drag:none;user-drag:none;
+  /* Kein Bild, kein Langdruck-Menü, kein eigenes Ziehen des Browsers. */
+  -webkit-touch-callout:none;-webkit-user-drag:none;user-drag:none;
 }
 .pzlose.zieht{
   transform:translate(-50%,-50%) rotate(var(--dreh,0deg)) scale(1.05);

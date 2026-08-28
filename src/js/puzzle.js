@@ -90,8 +90,8 @@ function pzLage(i, n) {
   const bruch = x => x - Math.floor(x);
   const streu = (k, w) => (bruch(Math.sin(k * 12.9898) * 43758.5453) - 0.5) * 2 * w;
   return {
-    x: clamp(0.10 + (s + 0.5) / proReihe * 0.80 + streu(i + 1, 0.03), 0.06, 0.94),
-    y: clamp(0.56 + (z + 0.5) / reihen * 0.40 + streu(i + 7, 0.025), 0.50, 0.97),
+    x: clamp(0.09 + (s + 0.5) / proReihe * 0.82 + streu(i + 1, 0.03), 0.06, 0.94),
+    y: clamp(0.64 + (z + 0.5) / reihen * 0.33 + streu(i + 7, 0.02), 0.60, 0.98),
     dreh: Math.round(streu(i + 3, 8))
   };
 }
@@ -373,17 +373,20 @@ function gPuzzleMalen(v) {
     const s = i % p.spalten, z = Math.floor(i / p.spalten);
     /* Die drei alten Teile bleiben anfassbar: nur sie lassen sich wieder
        herausnehmen, wenn sie einmal sitzen. */
-    return `<img class="pzliegt${p.alt.includes(i) ? ' altteil' : ''}" src="${vorrat.stuecke[i].url}"
-      alt="Teil ${i + 1}" data-teil="${i}" draggable="false" style="left:calc(${s} * var(--zb) - var(--zb) * ${fx.toFixed(4)});
-             top:calc(${z} * var(--zh) - var(--zh) * ${fy.toFixed(4)});${masse}">`;
+    return `<div class="pzliegt${p.alt.includes(i) ? ' altteil' : ''}" data-teil="${i}"
+      role="img" aria-label="Teil ${i + 1}"
+      style="background-image:url(${vorrat.stuecke[i].url});
+             left:calc(${s} * var(--zb) - var(--zb) * ${fx.toFixed(4)});
+             top:calc(${z} * var(--zh) - var(--zh) * ${fy.toFixed(4)});${masse}"></div>`;
   };
   const losHtml = i => {
     const l = p.lose[i];
-    /* draggable=false: sonst startet der Browser sein eigenes Ziehen von
-       Bildern, und der Zeiger kommt bei uns nicht mehr an. */
-    return `<img class="pzlose" src="${vorrat.stuecke[i].url}" alt="Teil" data-teil="${i}" draggable="false"
-      style="left:${(l.x * 100).toFixed(3)}%;top:${(l.y * 100).toFixed(3)}%;
-             --dreh:${l.dreh}deg;${masse}">`;
+    /* Eine Fläche mit Bild im Rücken, kein <img>: sonst bietet das lange
+       Drücken „Bild speichern" an, und der Browser will es selbst ziehen. */
+    return `<div class="pzlose" data-teil="${i}" role="img" aria-label="Teil"
+      style="background-image:url(${vorrat.stuecke[i].url});
+             left:${(l.x * 100).toFixed(3)}%;top:${(l.y * 100).toFixed(3)}%;
+             --dreh:${l.dreh}deg;${masse}"></div>`;
   };
 
   v.innerHTML = `
@@ -404,7 +407,22 @@ function gPuzzleMalen(v) {
 
 `;
 
-  pzSchiebenBinden($('[data-tisch]', v), $('[data-pzbrett]', v), p, i => {
+  const tisch = $('[data-tisch]', v);
+  /* Der Tisch nimmt genau den Platz, der da ist: vom oberen Rand bis über die
+     Fussleiste. Darunter kommt nichts mehr, also gibt es auch nichts zu
+     scrollen. */
+  const hoeheSetzen = () => {
+    const oben = tisch.getBoundingClientRect().top + window.scrollY;
+    const sicht = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+    const leiste = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tabh')) || 58;
+    tisch.style.height = Math.max(280, Math.round(sicht - oben - leiste - 8)) + 'px';
+  };
+  hoeheSetzen();
+  requestAnimationFrame(hoeheSetzen);
+  /* Langes Drücken soll nichts anbieten. */
+  tisch.addEventListener('contextmenu', e => e.preventDefault());
+
+  pzSchiebenBinden(tisch, $('[data-pzbrett]', v), p, i => {
     /* Ein Teil ist eingerastet. */
     delete p.lose[i];
     p.gelegt.push(i);
@@ -444,8 +462,10 @@ function pzStandPruefen(p, nurMerken) {
   if (!fehlt.length) marke = 'fertig';
   else if (fehlt.length === 1 && p.alt.includes(fehlt[0])) marke = 'warum';
   if (!nurMerken && marke && marke !== pzZuletzt) {
+    /* „Why?" gehört dem Augenblick, in dem jemand ein fertiges Bild wieder
+       aufmacht – nicht dem letzten fehlenden Teil auf dem Weg dorthin. */
     if (marke === 'fertig') pzSpruch('A beautiful thing is never perfect', 5200);
-    else pzSpruch('Why?', 3000);
+    else if (pzZuletzt === 'fertig') pzSpruch('Why?', 3000);
   }
   pzZuletzt = marke;
 }
