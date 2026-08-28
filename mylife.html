@@ -874,17 +874,24 @@ form.feldrahmen{display:contents;}
    gleich groß, im Rahmen wie daneben. Nur so lässt sich mit dem Auge
    entscheiden, wohin es gehört. */
 .pztisch{
-  --brett:min(92vw,420px);
+  /* Der Rahmen darf nie höher werden als 44 % des Bildschirms – ein
+     hochkantes Foto nähme sonst die ganze Fläche und der Tisch bliebe leer.
+     Darum begrenzt die Höhe die Breite mit. */
+  --brett:min(92vw, 420px, calc(44vh * var(--bb) / var(--bh)));
+  --brettH:calc(var(--brett) * var(--bh) / var(--bb));
   --innen:calc(var(--brett) - 6px);
   --zb:calc(var(--innen) / var(--sp));
   --zh:calc(var(--innen) * var(--bh) / var(--bb) / var(--ze));
   position:relative;width:100%;
-  min-height:calc(var(--vvh,100dvh) - var(--tabh,58px) - 210px);
-  touch-action:none;user-select:none;-webkit-user-select:none;
+  /* Platz für den Rahmen und darunter für zwei Dutzend Teile. Wird es mehr,
+     als auf den Schirm passt, scrollt die Seite – darum pan-y: senkrecht
+     gehört der Zug der Seite, ein Teil nimmt ihn sich selbst (siehe unten). */
+  min-height:calc(var(--brettH) + 420px);
+  touch-action:pan-y;user-select:none;-webkit-user-select:none;
 }
 .pzbrett{
   position:absolute;left:50%;top:0;transform:translateX(-50%);
-  width:var(--brett);aspect-ratio:var(--bb) / var(--bh);
+  width:var(--brett);height:var(--brettH);
   background:#05070a;border:3px solid var(--text);border-radius:3px;
 }
 .pzbrett.fertig{border-color:var(--accent);}
@@ -5457,24 +5464,22 @@ function zugriffFreigebenZeigen() {
    passen sie ineinander.
    ============================================================ */
 
-const PZANZAHL = [
-  { id: 6, name: 'Leicht', teile: 6 },
-  { id: 12, name: 'Mittel', teile: 12 },
-  { id: 24, name: 'Schwer', teile: 24 }
-];
+/* Eine Stufe, und die ist schwer: 24 Teile. */
+const PZTEILE = 24;
 
 function pzLeer() {
   return {
     bild: '',            /* Data-URL des Bildes */
-    anzahl: 12,          /* gewünschte Teilezahl */
+    anzahl: PZTEILE,     /* gewünschte Teilezahl */
     spalten: 0, zeilen: 0,
     kanten: null,        /* { waag, senk } – die Nasen, damit die Form bleibt */
     bildB: 0, bildH: 0,  /* Maße des Bildes, für das Seitenverhältnis */
+    alt: [],             /* drei Teile, die alt und zerkratzt aussehen */
     gelegt: [],          /* Nummern der Teile, die schon eingerastet sind */
     lose: {},            /* die übrigen: Lage auf dem Tisch, in Bruchteilen */
     sekunden: 0, begonnen: false, fertig: false,
     geloest: 0,
-    beste: {}            /* je Teilezahl die schnellste Zeit */
+    beste: 0             /* die schnellste Zeit */
   };
 }
 
@@ -5482,7 +5487,7 @@ function pzNormalisiere(roh) {
   const d = (roh && typeof roh === 'object') ? roh : {};
   const p = pzLeer();
   p.bild = typeof d.bild === 'string' && d.bild.startsWith('data:image') ? d.bild : '';
-  p.anzahl = PZANZAHL.some(a => a.teile === +d.anzahl) ? +d.anzahl : 12;
+  p.anzahl = PZTEILE;
   p.spalten = Math.max(0, Math.round(+d.spalten || 0));
   p.zeilen = Math.max(0, Math.round(+d.zeilen || 0));
   p.bildB = Math.max(0, Math.round(+d.bildB || 0));
@@ -5493,6 +5498,7 @@ function pzNormalisiere(roh) {
       senk: d.kanten.senk.map(z => z.map(x => (+x > 0 ? 1 : -1))) };
   }
   const gueltig = x => Number.isInteger(x) && x >= 0 && x < n;
+  p.alt = Array.isArray(d.alt) ? d.alt.map(x => +x).filter(gueltig).slice(0, 3) : [];
   p.gelegt = Array.isArray(d.gelegt) ? d.gelegt.map(x => +x).filter(gueltig) : [];
   const lose = (d.lose && typeof d.lose === 'object') ? d.lose : {};
   for (let i = 0; i < n; i++) {
@@ -5507,12 +5513,11 @@ function pzNormalisiere(roh) {
   p.sekunden = Math.max(0, Math.round(+d.sekunden || 0));
   p.begonnen = !!d.begonnen;
   p.geloest = Math.max(0, Math.round(+d.geloest || 0));
-  if (d.beste && typeof d.beste === 'object') {
-    for (const a of PZANZAHL) {
-      const b = +d.beste[a.teile];
-      if (b > 0) p.beste[a.teile] = Math.round(b);
-    }
-  }
+  /* Früher stand je Stufe eine Bestzeit; davon bleibt die beste übrig. */
+  p.beste = +d.beste > 0 ? Math.round(+d.beste)
+    : (d.beste && typeof d.beste === 'object'
+      ? Math.min(...Object.values(d.beste).map(x => +x).filter(x => x > 0), Infinity) : 0);
+  if (!isFinite(p.beste)) p.beste = 0;
   p.fertig = n > 0 && p.gelegt.length === n;
   return p;
 }
@@ -5596,7 +5601,10 @@ function pzUmriss(p, i, zelle, k) {
    Bild und an der Teilung; ändert sich eine von beiden, wird er verworfen. */
 let PZVORRAT = { schluessel: '', bild: null, stuecke: [] };
 
-function pzSchluessel(p) { return p.spalten + 'x' + p.zeilen + ':' + p.bild.length + ':' + p.bild.slice(-24); }
+function pzSchluessel(p) {
+  return p.spalten + 'x' + p.zeilen + ':' + (p.alt || []).join(',')
+    + ':' + p.bild.length + ':' + p.bild.slice(-24);
+}
 
 const PZ_ARBEITSKANTE = 1100;
 function pzVorratBauen(p, img) {
@@ -5620,12 +5628,19 @@ function pzVorratBauen(p, img) {
     c.width = Math.round(zelle.b + 2 * k); c.height = Math.round(zelle.h + 2 * k);
     const ctx = c.getContext('2d');
     const pf = pzUmriss(p, i, zelle, k);
+    const gealtert = (p.alt || []).includes(i);
     ctx.save();
     ctx.clip(pf);
+    /* Ein altes Teil ist vergilbt und flauer – das macht der Filter beim
+       Zeichnen, nicht eine Schicht darüber. */
+    if (gealtert) ctx.filter = 'sepia(.55) contrast(.88) brightness(.92) saturate(.8)';
     ctx.drawImage(gross, k - s * zelle.b, k - z * zelle.h);
+    ctx.filter = 'none';
+    if (gealtert) pzAltern(ctx, c.width, c.height, i);
     ctx.restore();
-    /* Der helle Rand macht die Form auch auf dunklem Grund lesbar. */
-    ctx.strokeStyle = 'rgba(255,255,255,.92)';
+    /* Der helle Rand macht die Form auch auf dunklem Grund lesbar; ein altes
+       Teil hat einen stumpfen. */
+    ctx.strokeStyle = gealtert ? 'rgba(214,196,160,.72)' : 'rgba(255,255,255,.92)';
     ctx.lineWidth = Math.max(2, zelle.b * 0.018);
     ctx.lineJoin = 'round';
     ctx.stroke(pf);
@@ -5633,6 +5648,48 @@ function pzVorratBauen(p, img) {
   }
   PZVORRAT = { schluessel: pzSchluessel(p), bild: img, stuecke };
   return PZVORRAT;
+}
+
+/* Kratzer, Flecken und abgegriffene Ränder. Alles hängt an der Nummer des
+   Teils – dasselbe Teil sieht nach dem Neuladen wieder gleich aus. */
+function pzAltern(ctx, w, h, nr) {
+  let saat = (nr + 1) * 9301;
+  const zuf = () => { saat = (saat * 9301 + 49297) % 233280; return saat / 233280; };
+
+  /* Flecken: warme, weiche Schatten. */
+  for (let f = 0; f < 5; f++) {
+    const r = (0.08 + zuf() * 0.22) * w;
+    const mx = zuf() * w, my = zuf() * h;
+    const g = ctx.createRadialGradient(mx, my, 0, mx, my, r);
+    g.addColorStop(0, 'rgba(120,88,44,' + (0.10 + zuf() * 0.14).toFixed(3) + ')');
+    g.addColorStop(1, 'rgba(120,88,44,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+  }
+  /* Kratzer: helle Risse, dazwischen dunkle Linien. */
+  ctx.lineCap = 'round';
+  for (let s = 0; s < 9; s++) {
+    const x0 = zuf() * w, y0 = zuf() * h;
+    const laenge = (0.2 + zuf() * 0.5) * w, winkel = zuf() * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.quadraticCurveTo(
+      x0 + Math.cos(winkel) * laenge * 0.5 + (zuf() - 0.5) * 12,
+      y0 + Math.sin(winkel) * laenge * 0.5 + (zuf() - 0.5) * 12,
+      x0 + Math.cos(winkel) * laenge, y0 + Math.sin(winkel) * laenge);
+    ctx.strokeStyle = s % 3 === 0
+      ? 'rgba(60,44,26,' + (0.16 + zuf() * 0.16).toFixed(3) + ')'
+      : 'rgba(255,248,232,' + (0.18 + zuf() * 0.26).toFixed(3) + ')';
+    ctx.lineWidth = 0.6 + zuf() * 1.8;
+    ctx.stroke();
+  }
+  /* Abgegriffen: zum Rand hin hellt es auf. */
+  const rand = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.28,
+    w / 2, h / 2, Math.max(w, h) * 0.62);
+  rand.addColorStop(0, 'rgba(235,222,196,0)');
+  rand.addColorStop(1, 'rgba(235,222,196,.30)');
+  ctx.fillStyle = rand;
+  ctx.fillRect(0, 0, w, h);
 }
 
 function pzVorrat(p) {
@@ -5694,6 +5751,12 @@ async function pzNeuLegen(p, still) {
   p.spalten = t.spalten; p.zeilen = t.zeilen;
   p.bildB = img.naturalWidth; p.bildH = img.naturalHeight;
   p.kanten = pzKantenBauen(p.spalten, p.zeilen);
+  /* Drei Teile bekommen ihre Jahre – jedes Mal andere. */
+  const alle = Array.from({ length: p.spalten * p.zeilen }, (_, i) => i);
+  p.alt = [];
+  while (p.alt.length < 3 && alle.length) {
+    p.alt.push(alle.splice(Math.floor(Math.random() * alle.length), 1)[0]);
+  }
   p.gelegt = [];
   /* Alle Teile auf den Tisch, in gemischter Reihenfolge: so liegt nicht
      Teil 1 links oben und Teil 2 daneben. */
@@ -5746,7 +5809,7 @@ function gPuzzleMalen(v) {
   }
 
   const anzahl = p.spalten * p.zeilen;
-  const best = p.beste[p.anzahl];
+  const best = p.beste;
   /* Der Überstand der Nasen als Bruchteil einer Zelle: damit ist ein Teil
      etwas größer als sein Platz und beginnt etwas davor. */
   const fx = vorrat.stuecke[0].k / vorrat.stuecke[0].zelle.b;
@@ -5771,9 +5834,8 @@ function gPuzzleMalen(v) {
 
   v.innerHTML = `
     <div class="pzkopf">
-      ${PZANZAHL.map(a => `<button class="chip" data-pza="${a.teile}" aria-pressed="${a.teile === p.anzahl}">${a.name}</button>`).join('')}
-      <button class="btn btn-sm" data-pzbild>Bild</button>
-      <button class="btn btn-sm" data-pzneu>Neu</button>
+      <button class="btn btn-sm" data-pzbild>Bild wählen</button>
+      <button class="btn btn-sm" data-pzneu>Neu mischen</button>
     </div>
 
     <div class="pztisch" data-tisch style="--sp:${p.spalten};--ze:${p.zeilen};--bb:${p.bildB || 4};--bh:${p.bildH || 3}">
@@ -5809,8 +5871,7 @@ function gPuzzleMalen(v) {
     if (p.gelegt.length === anzahl) {
       p.fertig = true;
       p.geloest++;
-      const alt = p.beste[p.anzahl];
-      if (!alt || p.sekunden < alt) p.beste[p.anzahl] = p.sekunden;
+      if (!p.beste || p.sekunden < p.beste) p.beste = p.sekunden;
       GStore.sichern(true);
     } else {
       gAendern();
@@ -5818,12 +5879,6 @@ function gPuzzleMalen(v) {
     gViewMalen();
   });
 
-  $$('[data-pza]', v).forEach(b => b.onclick = () => {
-    const a = +b.dataset.pza;
-    if (a === p.anzahl) return;
-    p.anzahl = a;
-    pzNeuLegen(p);
-  });
   $('[data-pzneu]', v).onclick = () => pzNeuLegen(p);
   $('[data-pzbild]', v).onclick = () => pzBildBlatt(p);
 

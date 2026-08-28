@@ -5,17 +5,24 @@
    gleich groß, im Rahmen wie daneben. Nur so lässt sich mit dem Auge
    entscheiden, wohin es gehört. */
 .pztisch{
-  --brett:min(92vw,420px);
+  /* Der Rahmen darf nie höher werden als 44 % des Bildschirms – ein
+     hochkantes Foto nähme sonst die ganze Fläche und der Tisch bliebe leer.
+     Darum begrenzt die Höhe die Breite mit. */
+  --brett:min(92vw, 420px, calc(44vh * var(--bb) / var(--bh)));
+  --brettH:calc(var(--brett) * var(--bh) / var(--bb));
   --innen:calc(var(--brett) - 6px);
   --zb:calc(var(--innen) / var(--sp));
   --zh:calc(var(--innen) * var(--bh) / var(--bb) / var(--ze));
   position:relative;width:100%;
-  min-height:calc(var(--vvh,100dvh) - var(--tabh,58px) - 210px);
-  touch-action:none;user-select:none;-webkit-user-select:none;
+  /* Platz für den Rahmen und darunter für zwei Dutzend Teile. Wird es mehr,
+     als auf den Schirm passt, scrollt die Seite – darum pan-y: senkrecht
+     gehört der Zug der Seite, ein Teil nimmt ihn sich selbst (siehe unten). */
+  min-height:calc(var(--brettH) + 420px);
+  touch-action:pan-y;user-select:none;-webkit-user-select:none;
 }
 .pzbrett{
   position:absolute;left:50%;top:0;transform:translateX(-50%);
-  width:var(--brett);aspect-ratio:var(--bb) / var(--bh);
+  width:var(--brett);height:var(--brettH);
   background:#05070a;border:3px solid var(--text);border-radius:3px;
 }
 .pzbrett.fertig{border-color:var(--accent);}

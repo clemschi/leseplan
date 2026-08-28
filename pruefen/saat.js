@@ -66,9 +66,8 @@ const SAAT = {
       { id: 'v1', titel: 'Zahnarzt', datum: tag(-20), zeit: '08:00', rueckseite: '', abgelegt: Date.now() - 9e8 },
       { id: 'v2', titel: 'Prüfung', datum: tag(-60), zeit: '', rueckseite: 'bestanden', abgelegt: Date.now() - 5e9 }
     ],
-    /* Das Puzzle baut sich sein Bild beim ersten Oeffnen selbst; hier steht
-       nur, wie fein es zerlegt sein soll. */
-    puzzle: { anzahl: 6 }
+    /* Das Puzzle baut sich Bild und Teilung beim ersten Oeffnen selbst. */
+    puzzle: {}
   }
 };
 
