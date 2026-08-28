@@ -75,6 +75,7 @@ leseliste – der Rest, nach Aufgaben getrennt:
 | Warum springt die Tastatur auf? | `js/ebenen.js`, `blatt(` – Fokus nur bei `{ fokus: true }` |
 | Wie kommt eine App in die Fussleiste? | `TABS` in `js/rahmen.js`, `KTABS`/`FTABS`/`GTABS` in der jeweiligen App |
 | Wo hängt ein Wisch? | `window.__zieht` – wer ihn setzt, hat den Zug |
+| Wisch geht heim statt zu wirken? | die Tabu-Liste in `heimZiehen` (`js/ebenen.js`) – Flächen, die quer selbst etwas tun, stehen dort |
 | Warum sieht ein Knopf überall gleich aus? | `globalKnoepfeHtml`, `saveChipMalen` |
 | Warum verschwindet die Seite beim Zurück? | `verlaufTiefe()` in `js/ebenen.js` – weiter zurück als bis zur App darf niemand |
 | Neue App anlegen? | `APPS` und `appFlaeche` in `js/einrichtung.js`, ein `macheSpeicher`, ein Rumpf in `rumpf.html`, eine neue Datei unter `js/` und ein Eintrag in `build.js` |

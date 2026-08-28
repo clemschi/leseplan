@@ -309,9 +309,10 @@ function gKarteZiehen(karte, drehen, ablegen) {
   karte.addEventListener('touchstart', e => {
     if (e.touches.length !== 1 || window.__zieht || sperre) { x0 = null; return; }
     const t = e.touches[0];
-    /* Die ersten 30 px am linken Rand bleiben dem Zug nach Hause – sonst
-       fängt die Karte ihn ab, weil sie fast die ganze Fläche einnimmt. */
-    if (t.clientX < 30) { x0 = null; return; }
+    /* Die ganze Karte gehört dem Zug, auch der linke Rand: nach links wie
+       nach rechts soll sich gleich anfühlen. Der Weg zur Startseite steht
+       darum in der Tabu-Liste von heimZiehen und läuft neben der Karte –
+       darunter, darüber, in der Kopfzeile. */
     x0 = t.clientX; y0 = t.clientY;
     zieht = false; wegX = 0; wegY = 0; ganzX = 0; ganzY = 0;
     zugNr++;
