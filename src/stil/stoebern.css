@@ -50,6 +50,11 @@ body.voll .sto-fuss{padding-bottom:calc(26px + env(safe-area-inset-bottom));}
   padding:5px 13px;border-radius:9px;border:3px solid;opacity:0;pointer-events:none;}
 .stoKarte .kJa{left:22px;transform:rotate(-15deg);color:var(--good);border-color:var(--good);}
 .stoKarte .kNein{right:22px;transform:rotate(15deg);color:var(--bad);border-color:var(--bad);}
+/* Der dritte Stempel steht oben in der Mitte: nach oben gewischt heißt
+   unbedingt, und das ist blau. */
+.stoKarte .kSuper{left:50%;transform:translateX(-50%) rotate(-4deg);
+  color:var(--s1);border-color:var(--s1);}
+.stoHerz.blau{color:var(--s1);}
 .stoHerz{position:absolute;left:50%;top:42%;opacity:0;pointer-events:none;z-index:40;color:var(--good);
   transform:translate(-50%,-50%) scale(.4);}
 .stoHerz svg{width:76px;height:76px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.45));}
@@ -68,6 +73,9 @@ body.voll .sto-fuss{padding-bottom:calc(26px + env(safe-area-inset-bottom));}
 .stoKnoepfe button svg{width:25px;height:25px;}
 .stoKnoepfe .nein{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 50%,var(--border));}
 .stoKnoepfe .ja{color:var(--good);border-color:color-mix(in srgb,var(--good) 50%,var(--border));}
+.stoKnoepfe .super{color:var(--s1);border-color:color-mix(in srgb,var(--s1) 55%,var(--border));
+  width:48px;height:48px;}
+.stoKnoepfe .super svg{width:22px;height:22px;}
 .stoKnoepfe .rueck{width:44px;height:44px;}
 .stoKnoepfe .rueck svg{width:19px;height:19px;}
 .stoKnoepfe button:disabled{opacity:.32;cursor:default;}
@@ -127,3 +135,7 @@ body.voll .sto-fuss{padding-bottom:calc(26px + env(safe-area-inset-bottom));}
 .gal .cap{position:absolute;left:0;right:0;bottom:0;padding:4px 6px;text-align:left;
   background:linear-gradient(transparent,rgba(0,0,0,.75));color:#fff;font-size:10px;
   font-family:"IBM Plex Mono",monospace;}
+
+/* Ein Werk, das nach oben gewischt wurde, trägt seinen Stern mit. */
+.stoWerk.super .wn{color:var(--s1);display:flex;align-items:center;gap:6px;}
+.stoWerk.super .wn svg{width:14px;height:14px;flex:0 0 auto;}

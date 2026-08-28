@@ -312,10 +312,15 @@ zurück, wo auch sonst gearbeitet wird.
 2. **Themen wählen** – jedes Thema lässt sich aus dem Stapel nehmen. *Durchmischen* sorgt
    dafür, dass die Themen sich abwechseln, statt blockweise zu kommen.
 3. **Wischen** – ein Werk je Karte, mit Thema, Autor, Kurzfassung, Beschreibung und
-   Schwierigkeit. Nach rechts heißt merken, nach links weg; die Karte folgt dem Finger,
-   kippt und stempelt sich. Ein Tipp öffnet den ganzen Text, der Pfeil nimmt die letzte
-   Entscheidung zurück. Wer lieber tippt, nimmt die drei Knöpfe darunter.
-4. **Sammlung** – das Gemerkte nach Themen geordnet, einzeln wieder verwerfbar.
+   Schwierigkeit. Nach rechts heißt merken, nach links weg, **nach oben unbedingt** – das
+   Superlike, blau gestempelt und mit einem blauen Stern quittiert. Es ist ein Merken mit
+   Nachdruck: das Werk landet ganz normal in der Sammlung, trägt dort aber seinen Stern
+   und steht in seinem Thema obenan. Die Karte folgt dem Finger, kippt und stempelt sich;
+   nach oben zählt nur, was auch wirklich nach oben geht. Ein Tipp öffnet den ganzen Text,
+   der Pfeil nimmt die letzte Entscheidung zurück – samt Stern. Wer lieber tippt, nimmt
+   die vier Knöpfe darunter.
+4. **Sammlung** – das Gemerkte nach Themen geordnet, Superlikes zuerst, einzeln wieder
+   verwerfbar.
 5. **Blöcke ordnen** – jedes Thema wird als Block vorgeschlagen. Blöcke lassen sich
    umbenennen, verschieben, anlegen und auflösen; einzelne Werke wandern per Knopf in
    einen anderen Block. Was ohne Block bleibt, kommt als Block *Weitere* mit. Ein Name

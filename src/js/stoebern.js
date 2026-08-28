@@ -1,6 +1,11 @@
 /* ============================================================
    Stöbern, Teil 1: der Prompt für eine Werke-Sammlung
    ============================================================ */
+/* Der Stern des Superlikes – blau, damit er sich vom Herzen abhebt. */
+const STOSTERN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"'
+  + ' stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9'
+  + '-5.3-2.9-5.3 2.9 1.1-5.9L3.5 9.8l5.9-.8z"/></svg>';
+
 function stoebernPromptOeffnen() {
   const s = blatt('Sammlung zum Stöbern', `
     <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
@@ -224,6 +229,9 @@ function stoWerkZeile(w, ohneJahr) {
 function stoebernOeffnen() {
   let werke = [], themen = [], gewaehlteThemen = new Set();
   let stapel = [], zeiger = 0, gemerkt = [], verlauf = [];
+  /* Ein Superlike ist ein Merken mit Nachdruck: das Werk steht ganz normal
+     in `gemerkt`, seine Nummer zusätzlich hier. */
+  let superIds = new Set();
   let bloecke = [], frei = [], listenName = '';
   let schritt = 'laden';
 
@@ -240,7 +248,8 @@ function stoebernOeffnen() {
         stapel: stapel.map(w => w.id),
         zeiger,
         gemerkt: gemerkt.map(w => w.id),
-        verlauf: verlauf.map(v => ({ id: v.werk.id, mochte: v.mochte })),
+        super: Array.from(superIds),
+        verlauf: verlauf.map(v => ({ id: v.werk.id, mochte: v.mochte, hoch: !!v.hoch })),
         bloecke: bloecke.map(b => ({ id: b.id, name: b.name, werke: b.werke.map(w => w.id) })),
         frei: frei.map(w => w.id),
         name: listenName,
@@ -257,7 +266,9 @@ function stoebernOeffnen() {
     stapel = (g.stapel || []).map(nachId).filter(Boolean);
     zeiger = clamp(+g.zeiger || 0, 0, stapel.length);
     gemerkt = (g.gemerkt || []).map(nachId).filter(Boolean);
-    verlauf = (g.verlauf || []).map(v => ({ werk: nachId(v.id), mochte: !!v.mochte })).filter(v => v.werk);
+    superIds = new Set((g.super || []).filter(id => gemerkt.some(w => w.id === id)));
+    verlauf = (g.verlauf || []).map(v => ({ werk: nachId(v.id), mochte: !!v.mochte, hoch: !!v.hoch }))
+      .filter(v => v.werk);
     bloecke = (g.bloecke || []).map(b => ({
       id: b.id || uid(), name: b.name || '', werke: (b.werke || []).map(nachId).filter(Boolean)
     }));
@@ -341,7 +352,7 @@ function stoebernOeffnen() {
       themen = [];
       werke.forEach(w => { if (!themen.includes(w.thema)) themen.push(w.thema); });
       gewaehlteThemen = new Set(themen);
-      stapel = []; zeiger = 0; gemerkt = []; verlauf = [];
+      stapel = []; zeiger = 0; gemerkt = []; verlauf = []; superIds = new Set();
       bloecke = []; frei = []; listenName = '';
       schritt = 'themen';
       merken();
@@ -400,7 +411,7 @@ function stoebernOeffnen() {
     $('[data-los]', inhalt).onclick = () => {
       stapel = werke.filter(w => gewaehlteThemen.has(w.thema));
       if ($('[data-mischen]', inhalt).checked) stapel = stoMischen(stapel);
-      zeiger = 0; gemerkt = []; verlauf = [];
+      zeiger = 0; gemerkt = []; verlauf = []; superIds = new Set();
       schritt = 'wischen';
       malen();
     };
@@ -439,6 +450,7 @@ function stoebernOeffnen() {
         <div class="stoKnoepfe">
           <button class="nein" data-nein aria-label="Weg">${ICON.x}</button>
           <button class="rueck" data-rueck aria-label="Zurück">${ICON.rueck}</button>
+          <button class="super" data-super aria-label="Unbedingt">${STOSTERN}</button>
           <button class="ja" data-ja aria-label="Merken">${ICON.herz}</button>
         </div>
         <button class="btn btn-block btn-ghost btn-sm" style="margin-top:10px" data-fertig></button>
@@ -471,6 +483,7 @@ function stoebernOeffnen() {
       el.innerHTML = `
         <span class="kStempel kJa">MERKEN</span>
         <span class="kStempel kNein">WEG</span>
+        <span class="kStempel kSuper">UNBEDINGT</span>
         <div class="kKopf">
           <span class="kThema">${esc(w.thema)}</span>
           <span class="kJahr num">${w.jahr != null ? esc(jahrText(w.jahr)) : ''}</span>
@@ -507,33 +520,40 @@ function stoebernOeffnen() {
     };
 
     /* Die Entscheidung festhalten und zur nächsten Karte gehen. */
-    const entscheiden = (mochte) => {
+    const entscheiden = (mochte, hoch) => {
       const w = stapel[zeiger];
       if (!w) return;
-      verlauf.push({ werk: w, mochte });
+      verlauf.push({ werk: w, mochte, hoch: !!hoch });
       if (mochte) { gemerkt.push(w); zaehlerAuffrischen(true); }
+      if (hoch) superIds.add(w.id);
       zeiger++;
       deckMalen();
       merken();
     };
 
+    /* richtung: -1 weg, 1 merken, 0 nach oben – das Superlike. */
     const wegfliegen = (richtung) => {
       if (sperre || !karten[0]) return;
       sperre = true;
       const el = karten[0].el;
-      const b = deck.clientWidth || 320;
+      const b = deck.clientWidth || 320, h = deck.clientHeight || 460;
+      const hoch = richtung === 0;
       el.style.transition = 'transform .38s cubic-bezier(.3,.6,.4,1),opacity .38s ease';
-      el.style.transform = `translate(${richtung * b * 1.5}px,${richtung * 40}px) rotate(${richtung * 26}deg)`;
+      el.style.transform = hoch
+        ? `translate(0,${-h * 1.25}px) rotate(-4deg) scale(.94)`
+        : `translate(${richtung * b * 1.5}px,${richtung * 40}px) rotate(${richtung * 26}deg)`;
       el.style.opacity = '0';
-      const st = $('.' + (richtung > 0 ? 'kJa' : 'kNein'), el);
+      const st = $('.' + (hoch ? 'kSuper' : richtung > 0 ? 'kJa' : 'kNein'), el);
       if (st) st.style.opacity = '1';
-      if (richtung > 0) {
+      if (richtung >= 0) {
+        herz.classList.toggle('blau', hoch);
+        herz.innerHTML = hoch ? STOSTERN : ICON.herz;
         herz.classList.remove('los');
         void herz.offsetWidth;
         herz.classList.add('los');
       }
       if (karten[1]) tiefeSetzen(karten[1].el, 1, 1);
-      setTimeout(() => { sperre = false; entscheiden(richtung > 0); }, 300);
+      setTimeout(() => { sperre = false; entscheiden(richtung >= 0, hoch); }, 300);
     };
 
     const zurueck = () => {
@@ -544,6 +564,7 @@ function stoebernOeffnen() {
         if (i >= 0) gemerkt.splice(i, 1);
         zaehlerAuffrischen(false);
       }
+      if (letzt.hoch) superIds.delete(letzt.werk.id);
       zeiger = Math.max(0, zeiger - 1);
       deckMalen();
       merken();
@@ -552,7 +573,9 @@ function stoebernOeffnen() {
       if (el) {
         const b = deck.clientWidth || 320;
         el.style.transition = 'none';
-        el.style.transform = `translate(${(letzt.mochte ? 1 : -1) * b * 1.2}px,0) rotate(${(letzt.mochte ? 1 : -1) * 18}deg)`;
+        el.style.transform = letzt.hoch
+          ? `translate(0,${-(deck.clientHeight || 460) * 1.1}px) scale(.94)`
+          : `translate(${(letzt.mochte ? 1 : -1) * b * 1.2}px,0) rotate(${(letzt.mochte ? 1 : -1) * 18}deg)`;
         void el.offsetWidth;
         el.style.transition = 'transform .34s cubic-bezier(.2,.7,.3,1)';
         tiefeSetzen(el, 0, 0);
@@ -562,14 +585,21 @@ function stoebernOeffnen() {
     /* Ziehen mit dem Finger: die Karte folgt, kippt und stempelt sich. */
     const ziehenBinden = (el) => {
       let x0 = 0, y0 = 0, dx = 0, dy = 0, zieht = false, zeigerId = null;
-      const stJa = $('.kJa', el), stNein = $('.kNein', el);
+      const stJa = $('.kJa', el), stNein = $('.kNein', el), stSuper = $('.kSuper', el);
       const schwelle = () => Math.max(70, (deck.clientWidth || 320) * 0.26);
+      const schwelleHoch = () => Math.max(80, (deck.clientHeight || 460) * 0.18);
+      /* Nach oben zählt nur, was auch wirklich nach oben geht. */
+      const hochZug = () => -dy > Math.abs(dx) * 1.2 && dy < 0;
 
       const setzen = () => {
-        el.style.transform = `translate(${dx}px,${dy * 0.35}px) rotate(${dx * 0.05}deg)`;
-        const f = clamp(Math.abs(dx) / schwelle(), 0, 1);
-        if (stJa) stJa.style.opacity = dx > 0 ? String(f) : '0';
-        if (stNein) stNein.style.opacity = dx < 0 ? String(f) : '0';
+        const hoch = hochZug();
+        el.style.transform = hoch
+          ? `translate(${dx * 0.4}px,${dy}px) rotate(${dx * 0.02}deg)`
+          : `translate(${dx}px,${dy * 0.35}px) rotate(${dx * 0.05}deg)`;
+        const f = hoch ? clamp(-dy / schwelleHoch(), 0, 1) : clamp(Math.abs(dx) / schwelle(), 0, 1);
+        if (stJa) stJa.style.opacity = !hoch && dx > 0 ? String(f) : '0';
+        if (stNein) stNein.style.opacity = !hoch && dx < 0 ? String(f) : '0';
+        if (stSuper) stSuper.style.opacity = hoch ? String(f) : '0';
         if (karten[1]) tiefeSetzen(karten[1].el, 1, f);
       };
 
@@ -592,24 +622,27 @@ function stoebernOeffnen() {
         window.__zieht = false;
         try { el.releasePointerCapture(zeigerId); } catch (err) { }
         el.style.transition = '';
+        if (hochZug() && -dy > schwelleHoch()) { wegfliegen(0); return; }
         if (Math.abs(dx) > schwelle()) { wegfliegen(dx > 0 ? 1 : -1); return; }
         el.style.transition = 'transform .3s cubic-bezier(.2,.8,.3,1)';
         tiefeSetzen(el, 0, 0);
         if (stJa) stJa.style.opacity = '0';
         if (stNein) stNein.style.opacity = '0';
+        if (stSuper) stSuper.style.opacity = '0';
         if (karten[1]) tiefeSetzen(karten[1].el, 1, 0);
       };
       el.addEventListener('pointerup', loslassen);
       el.addEventListener('pointercancel', loslassen);
       /* Ein Tipp öffnet die ganze Beschreibung. */
       el.addEventListener('click', e => {
-        if (Math.abs(dx) > 6 || (e.target.closest && e.target.closest('[data-mehr]'))) return;
+        if (Math.abs(dx) > 6 || Math.abs(dy) > 6 || (e.target.closest && e.target.closest('[data-mehr]'))) return;
         const w = karten[0] && karten[0].werk;
         if (w) stoWerkBlatt(w);
       });
     };
 
     $('[data-nein]', inhalt).onclick = () => wegfliegen(-1);
+    $('[data-super]', inhalt).onclick = () => wegfliegen(0);
     $('[data-ja]', inhalt).onclick = () => wegfliegen(1);
     $('[data-rueck]', inhalt).onclick = zurueck;
     $('[data-fertig]', inhalt).onclick = () => { schritt = 'sammlung'; malen(); };
@@ -635,7 +668,10 @@ function stoebernOeffnen() {
       return;
     }
     const nachThema = [];
-    gemerkt.forEach(w => {
+    /* Was nach oben gewischt wurde, steht in seinem Thema ganz oben. */
+    const sortiert = gemerkt.slice().sort((a, b) =>
+      (superIds.has(b.id) ? 1 : 0) - (superIds.has(a.id) ? 1 : 0));
+    sortiert.forEach(w => {
       let g = nachThema.find(x => x.thema === w.thema);
       if (!g) { g = { thema: w.thema, werke: [] }; nachThema.push(g); }
       g.werke.push(w);
@@ -646,8 +682,8 @@ function stoebernOeffnen() {
           <div class="section-head" style="padding:0"><h2>${esc(g.thema)}</h2>
             <span class="eyebrow">${g.werke.length}</span></div>
           <div class="list-card" style="margin-bottom:16px">${g.werke.map(w => `
-            <div class="stoWerk">
-              <span class="grow"><span class="wn">${esc(w.titel)}</span>
+            <div class="stoWerk${superIds.has(w.id) ? ' super' : ''}">
+              <span class="grow"><span class="wn">${superIds.has(w.id) ? STOSTERN : ''}${esc(w.titel)}</span>
                 <span class="wm">${esc(stoWerkZeile(w))}</span></span>
               <button class="icon-btn" data-raus="${w.id}" aria-label="Verwerfen">${ICON.x}</button>
             </div>`).join('')}</div>`).join('')}
@@ -836,6 +872,7 @@ function stoebernOeffnen() {
     /* Das Gemerkte ist verbraucht; der Vorrat und der Stand im Stapel
        bleiben, damit man später weiterstöbern kann. */
     gemerkt = []; verlauf = []; bloecke = []; frei = []; listenName = '';
+    superIds = new Set();
     schritt = zeiger < stapel.length ? 'wischen' : 'themen';
     merken();
     layerSchliessen();
