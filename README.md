@@ -8,7 +8,7 @@ fastreader), bleibt er aussen vor.
 
 **Jede App hat ihre eigene Datenbasis.** Die leseliste führt eine `leseplan.json`, der
 Kalender eine `kalender.json`, der fastreader eine `fastreader.json`, g’sund eine
-`gsund.json`, minimal eine `minimal.json` – getrennte Dateien,
+`gsund.json`, minimal eine `minimal.json`, cashflow eine `cashflow.json` – getrennte Dateien,
 getrennte Speicherorte, getrennte Sicherung. Was allen gemeinsam ist, sind Hell/Dunkel, Akzentfarbe und Vollbild; die
 gehören der Hülle und gelten überall.
 
@@ -144,6 +144,30 @@ später nicht mehr sagen, wie es einmal war. Vier Reiter:
   Stand am Ende des Monats. Darunter alles der Reihe nach, das Neueste zuerst.
 - **Mehr** – Ziel, Bereiche, Speicherort und Sicherung, dazu wie überall der Block
   *Darstellung*.
+
+## cashflow
+
+Eine Frage: **wie viel ist an einem bestimmten Tag noch da?** Dafür braucht es einen
+bekannten Stand, die Regelmässigkeiten und die Posten dazwischen; den Rest rechnet die
+App Tag für Tag vorwärts. Gerechnet wird in **Cent, ganzzahlig** – Kommazahlen verlieren
+beim Addieren Stellen, und bei Geld fällt das auf. Vier Reiter:
+
+- **Stand** – oben die Zahl für den gewählten Tag, darunter der **Zeitstrahl**: die
+  Kurve des Standes über den ganzen Horizont, mit den Monatsnamen darunter. Der Zeiger
+  ist ein Regler, kein Wisch – er sitzt ohne Schwelle dort, wo der Finger ist, und die
+  Zahl darüber rechnet mit. Gemalt wird dabei nur, was am Tag hängt; die Kurve selbst
+  bleibt stehen, damit sie unter dem Finger nicht wegreisst. Wer lieber tippt, nimmt
+  *Heute*, das Datumsfeld oder den Sprung ans Ende. Darunter, was bis dahin hereinkommt
+  und hinausgeht, und die Ereignisse der Reihe nach.
+- **Routine** – alles Wiederkehrende, **monatlich, wöchentlich oder jährlich**, getrennt
+  nach *kommt herein* und *geht hinaus*. Minus heisst hinaus. Jede Routine kann ab einem
+  Tag laufen, bis zu einem enden oder **ruhen** – eine ruhende zählt nicht mit. Oben
+  steht, was im Schnitt je Monat übrig bleibt.
+- **Posten** – das Einzelne: eine **spontane Ausgabe** (heute, schnell eingetragen) oder
+  eine **geplante** (mit Datum in der Zukunft, zieht den Stand ab dem Tag mit). Getrennt
+  nach *kommt noch* und *war*.
+- **Mehr** – Speicherort und Sicherung, der Stand zum Berichtigen, wie weit der
+  Zeitstrahl reicht (1–60 Monate), die Währung, dazu wie überall der Block *Darstellung*.
 
 ## leseliste
 

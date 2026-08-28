@@ -28,7 +28,8 @@ const APPS = {
   kalender: { rumpf: 'kal', attr: 'data-ktab', tabs: ['heute', 'monat', 'todo', 'kmehr'] },
   fastreader: { rumpf: 'fr', attr: 'data-ftab', tabs: ['bib', 'lesen', 'bilanz', 'fmehr'] },
   gsund: { rumpf: 'gs', attr: 'data-gtab', tabs: ['guzi', 'puzzle', 'bald', 'gmehr'] },
-  minimal: { rumpf: 'mi', attr: 'data-mitab', tabs: ['stand', 'dinge', 'verlauf', 'mimehr'] }
+  minimal: { rumpf: 'mi', attr: 'data-mitab', tabs: ['stand', 'dinge', 'verlauf', 'mimehr'] },
+  cash: { rumpf: 'ca', attr: 'data-catab', tabs: ['stand', 'routinen', 'posten', 'camehr'] }
 };
 
 (async () => {

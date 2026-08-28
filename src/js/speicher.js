@@ -504,7 +504,8 @@ function alleLadenBlatt(fertig) {
   const s = blatt('Alle Daten laden', `
     <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
       Eine <strong>mylife.json</strong> mit allem darin – oder gleich mehrere einzelne
-      Dateien (leseplan, kalender, fastreader, gsund). Jeder Teil geht in seine App;
+      Dateien (leseplan, kalender, fastreader, gsund, minimal, cashflow). Jeder Teil geht in
+      seine App;
       was dort liegt, wird ersetzt.</p>
     <input type="file" accept="application/json,.json" data-file multiple style="width:100%">
     <div class="btn-row" style="margin-top:14px">

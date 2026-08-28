@@ -18,6 +18,7 @@ Anhaltspunkte, keine Zusicherung – sie wandern mit jeder Änderung.
 | `fastreader.css` | 91 | `.frbuehne`, `.frwort`, `.frpult`, `.frbahn` |
 | `gsund.css` | 60 | `.gbuehne`, `.gkarte`, `.gseite`, `.g-uhr`, `.gb-griff` |
 | `minimal.css` | 47 | `.mizahl`, `.mikauf`, `.miding`, `.mimonat` – die beiden Zahlen und die Listen |
+| `cash.css` | 66 | `.cazahl`, `.cabahn` (der Zeitstrahl mit Kurve, Marke, Griff), `.casumme`, `.capunkt` |
 | `puzzle.css` | 87 | `.pztisch` (rechnet in Zellen: `--zb`/`--zh`), `.pzbrett`, `.pzloch`, `.pzliegt`, `.pzlose` |
 | `stoebern.css` | 129 | `.sto…` – der Kartenstapel |
 
@@ -26,7 +27,7 @@ Anhaltspunkte, keine Zusicherung – sie wandern mit jeder Änderung.
 | Datei | Zeilen | Was |
 |---|---|---|
 | `kopf.html` | 4 | Titel und Schriften |
-| `rumpf.html` | 133 | `#setup` und die fünf Rümpfe `#app`, `#kal`, `#fr`, `#gs`, `#mi`, dazu `#layers` |
+| `rumpf.html` | 156 | `#setup` und die sechs Rümpfe `#app`, `#kal`, `#fr`, `#gs`, `#mi`, `#ca`, dazu `#layers` |
 
 ## Skript (`src/js/`, wird zu einem `<script>`)
 
@@ -43,7 +44,7 @@ Grundlage – gilt für alle Apps:
 | `ebenen.js` | 380 | `layerOeffnen/…Schliessen/alleLayerSchliessen/layerErsetzen`, `verlaufTiefe`, `blatt`, `bestaetigen`, `ziehenZumSchliessen`, `ebeneZiehen`, `vorhang…`, `heimZiehen`, `globalKnoepfe…` |
 | `start.js` | 11 | `boot()` |
 
-Die fünf Apps:
+Die sechs Apps:
 
 | Datei | Zeilen | Was |
 |---|---|---|
@@ -51,6 +52,7 @@ Die fünf Apps:
 | `fastreader.js` | 979 | `FDB`, `FStore`, `fastreaderOeffnen`; Text aufbereiten (`frZerlegen`), Bibliothek, Hereinholen (`frDocx`, `frPdf`, `frUrl`), Lesen (`frTakt`, `frBahnZiehen`), Bilanz |
 | `gsund.js` | 820 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Vergangene; „Bald“ ist noch leer |
 | `minimal.js` | 507 | `MDB`, `MStore`, `minimalOeffnen`; Stand (die zwei Zahlen), Dinge (Liste, anlegen, abgeben), Verlauf (Monate und Ereignisse), Mehr |
+| `cash.js` | 675 | `CDB`, `CStore`, `cashOeffnen`; in Cent rechnen (`cGeld`, `cCent`), Termine einer Routine (`caTermine`), Fortschreiben (`caBis`, `caStandAm`), Stand mit Zeitstrahl (`caStandMalen` malt das Feste, `caZielMalen` den Zeiger, `caBahnBinden` zieht ihn), Routinen, Posten, Mehr |
 | `puzzle.js` | 480 | Das Bilderpuzzle im Reiter Puzzle: `pzKante`/`pzUmriss` (die Form der Teile), `pzVorratBauen` (jedes Teil einmal als Bild), `pzTeilung`, `pzLage` (wo ein loses Teil liegt), `pzSchiebenBinden` (Ziehen am Zeiger, Einrasten), `gPuzzleMalen` |
 
 leseliste – der Rest, nach Aufgaben getrennt:
@@ -77,7 +79,7 @@ leseliste – der Rest, nach Aufgaben getrennt:
 |---|---|
 | Wo wird gespeichert? | `js/speicher.js`, Schlüssel `daten-*` / `meta-*` |
 | Warum springt die Tastatur auf? | `js/ebenen.js`, `blatt(` – Fokus nur bei `{ fokus: true }` |
-| Wie kommt eine App in die Fussleiste? | `TABS` in `js/rahmen.js`, `KTABS`/`FTABS`/`GTABS` in der jeweiligen App |
+| Wie kommt eine App in die Fussleiste? | `TABS` in `js/rahmen.js`, `KTABS`/`FTABS`/`GTABS`/`MTABS`/`CTABS` in der jeweiligen App |
 | Wo hängt ein Wisch? | `window.__zieht` – wer ihn setzt, hat den Zug |
 | Wisch geht heim statt zu wirken? | die Tabu-Liste in `heimZiehen` (`js/ebenen.js`) – Flächen, die quer selbst etwas tun, stehen dort |
 | Warum sieht ein Knopf überall gleich aus? | `globalKnoepfeHtml`, `saveChipMalen` |
@@ -86,12 +88,12 @@ leseliste – der Rest, nach Aufgaben getrennt:
 
 ## Stand
 
-Fünf Apps laufen: leseliste, kalender, fastreader, g'sund, minimal. Offen ist einzig der
-dritte Reiter **Bald** in g'sund – dort steht ein Platzhalter.
+Sechs Apps laufen: leseliste, kalender, fastreader, g'sund, minimal, cashflow. Offen ist
+einzig der dritte Reiter **Bald** in g'sund – dort steht ein Platzhalter.
 
 ## Zahlen zum Prüfen statt Bilder
 
-`node pruefen/rundgang.js` geht durch alle fünf Apps und meldet OK/FEHL
+`node pruefen/rundgang.js` geht durch alle sechs Apps und meldet OK/FEHL
 (`--schnell` ohne den Klick-Teil, `--leer` mit leerer Datenbasis).
 Für einzelne Messungen: `getBoundingClientRect()` für Masse,
 `getComputedStyle()` für Farben und `transform`, `DOMMatrixReadOnly` für

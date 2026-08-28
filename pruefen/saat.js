@@ -73,6 +73,25 @@ const SAAT = {
       { id: 'd6', name: 'Buecherregal', bereich: 'Wohnen', anzahl: 1, rein: '', weg: 'ka', raus: '', wohin: '', notiz: '' }
     ]
   },
+  'meta-cash': { modus: 'geraet', handle: null, dateiname: 'cashflow.json' },
+  'daten-cash': {
+    format: 'mylife-cash', version: 1, erstellt: Date.now(),
+    einstellungen: { autosaveSek: 60, waehrung: '\u20ac', horizont: 12 },
+    stand: { cent: 248050, tag: tag(-3) },
+    routinen: [
+      { id: 'r1', name: 'Gehalt', cent: 265000, takt: 'monat', tag: 28, monat: 1, ab: '', bis: '', aktiv: true },
+      { id: 'r2', name: 'Miete', cent: -98000, takt: 'monat', tag: 1, monat: 1, ab: '', bis: '', aktiv: true },
+      { id: 'r3', name: 'Wocheneinkauf', cent: -8500, takt: 'woche', tag: 6, monat: 1, ab: '', bis: '', aktiv: true },
+      { id: 'r4', name: 'Versicherung', cent: -42000, takt: 'jahr', tag: 15, monat: 11, ab: '', bis: '', aktiv: true },
+      /* Eine ruhende Routine zaehlt nicht mit - der Fall gehoert dazu. */
+      { id: 'r5', name: 'Fitnessstudio', cent: -3900, takt: 'monat', tag: 5, monat: 1, ab: '', bis: '', aktiv: false }
+    ],
+    posten: [
+      { id: 'p1', name: 'Kaffee unterwegs', cent: -420, datum: tag(-1), art: 'spontan', notiz: '' },
+      { id: 'p2', name: 'Winterreifen', cent: -46000, datum: tag(24), art: 'geplant', notiz: 'vier Stueck' },
+      { id: 'p3', name: 'Steuerrueckzahlung', cent: 71000, datum: tag(52), art: 'geplant', notiz: '' }
+    ]
+  },
   'meta-gsund': { modus: 'geraet', handle: null, dateiname: 'gsund.json' },
   'daten-gsund': {
     format: 'mylife-gsund', version: 1, erstellt: Date.now(),
