@@ -89,13 +89,18 @@ Vier Reiter in der Fussleiste:
   derselbe Vorhang wie die Übersicht in der leseliste. Von selbst landet man dort nie.
   Jede Karte lässt sich ansehen, zurückholen (liegt vorn schon etwas, wandert das im
   selben Zug nach hinten) oder löschen.
-- **Puzzle** – ein Schiebefeld, 3×3, 4×4 oder 5×5. Die Zahlen der Reihe nach, ein
-  Platz bleibt leer. Angetippt wird ein Stein in der Reihe oder Spalte der Lücke –
-  alles dazwischen rutscht mit, und jeder gewanderte Stein zählt als Zug. Gemischt
-  wird nicht durch Auswürfeln, sondern durch hunderte erlaubte Züge vom fertigen
-  Feld aus: so ist jede Aufgabe mit Sicherheit lösbar. Steine, die schon an ihrem
-  Platz liegen, färben sich ein. Züge und Zeit laufen mit, das beste Ergebnis je
-  Größe bleibt stehen, und der halbfertige Stand übersteht das Schliessen.
+- **Puzzle** – ein Bild, in Teile zerlegt: oben der Rahmen, unten die losen Teile.
+  Ein Teil antippen, dann seinen Platz im Rahmen – sitzt es richtig, bleibt es
+  liegen, sonst ruckelt der Platz kurz. Die Pfeile links und rechts blättern
+  durch den Haufen, sechs Teile auf einmal. **Leicht, Mittel, Schwer** sind 6, 12
+  oder 24 Teile; wie viele Spalten und Zeilen daraus werden, richtet sich nach dem
+  Seitenverhältnis des Bildes, damit die Teile möglichst quadratisch bleiben.
+  Das Bild kommt aus der Galerie (*Bild → Foto wählen*) oder ist eines, das die App
+  selbst zeichnet. Zeit und gelegte Teile laufen mit, die Bestzeit je Stufe bleibt
+  stehen, der halbe Stand übersteht das Schliessen.
+  Die Teile sind echte Puzzleteile: jede innere Kante bekommt eine Nase, und der
+  Nachbar zeichnet dieselbe Kurve von seiner Seite – gemessen greifen sie
+  lückenlos ineinander (0 durchsichtige Pixel auf 900×675).
 - **Bald** – Platz für den dritten Reiter.
 - **Mehr** – Speicherort, Sichern, Laden, Karte bearbeiten, Zurücksetzen, dazu derselbe
   Block **Darstellung** wie in jeder App.
