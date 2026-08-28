@@ -18,6 +18,7 @@ const STIL = [
   'stil/fastreader.css',
   'stil/gsund.css',
   'stil/puzzle.css',
+  'stil/minimal.css',
   'stil/stoebern.css'
 ];
 const MARKUP = ['rumpf.html'];
@@ -32,6 +33,7 @@ const SKRIPT = [
   'js/fastreader.js',
   'js/gsund.js',
   'js/puzzle.js',
+  'js/minimal.js',
   'js/sitzungen.js',
   'js/ebenen.js',
   'js/plan.js',

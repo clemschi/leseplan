@@ -27,7 +27,8 @@ const APPS = {
   leseliste: { rumpf: 'app', attr: 'data-tab', tabs: ['plan', 'themen', 'mehr'] },
   kalender: { rumpf: 'kal', attr: 'data-ktab', tabs: ['heute', 'monat', 'todo', 'kmehr'] },
   fastreader: { rumpf: 'fr', attr: 'data-ftab', tabs: ['bib', 'lesen', 'bilanz', 'fmehr'] },
-  gsund: { rumpf: 'gs', attr: 'data-gtab', tabs: ['guzi', 'puzzle', 'bald', 'gmehr'] }
+  gsund: { rumpf: 'gs', attr: 'data-gtab', tabs: ['guzi', 'puzzle', 'bald', 'gmehr'] },
+  minimal: { rumpf: 'mi', attr: 'data-mitab', tabs: ['stand', 'dinge', 'verlauf', 'mimehr'] }
 };
 
 (async () => {

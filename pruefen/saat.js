@@ -58,6 +58,19 @@ const SAAT = {
     ],
     bilanz: { worte: 1200, ms: 300000, proben: [320, 355, 401, 380] }
   },
+  'meta-minimal': { modus: 'geraet', handle: null, dateiname: 'minimal.json' },
+  'daten-minimal': {
+    format: 'mylife-minimal', version: 1, erstellt: Date.now(),
+    einstellungen: { autosaveSek: 60, ziel: 120 },
+    bereiche: ['Wohnen', 'Kueche', 'Kleidung', 'Arbeit', 'Draussen', 'Sonstiges'],
+    dinge: [
+      { id: 'd1', name: 'Winterjacke', bereich: 'Kleidung', anzahl: 1, rein: tag(-140), weg: 'gekauft', raus: '', wohin: '', notiz: '' },
+      { id: 'd2', name: 'Teller', bereich: 'Kueche', anzahl: 6, rein: tag(-420), weg: 'geerbt', raus: '', wohin: '', notiz: 'von der Oma' },
+      { id: 'd3', name: 'Schreibtischlampe', bereich: 'Arbeit', anzahl: 1, rein: tag(-38), weg: 'gekauft', raus: '', wohin: '', notiz: '' },
+      { id: 'd4', name: 'Kaffeemaschine', bereich: 'Kueche', anzahl: 1, rein: tag(-900), weg: 'gekauft', raus: tag(-30), wohin: 'verschenkt', notiz: '' },
+      { id: 'd5', name: 'Zelt', bereich: 'Draussen', anzahl: 1, rein: tag(-260), weg: 'geschenkt', raus: '', wohin: '', notiz: '' }
+    ]
+  },
   'meta-gsund': { modus: 'geraet', handle: null, dateiname: 'gsund.json' },
   'daten-gsund': {
     format: 'mylife-gsund', version: 1, erstellt: Date.now(),

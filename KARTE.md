@@ -17,7 +17,8 @@ Anhaltspunkte, keine Zusicherung – sie wandern mit jeder Änderung.
 | `kalender.css` | 117 | alles mit `k`-Präfix |
 | `fastreader.css` | 91 | `.frbuehne`, `.frwort`, `.frpult`, `.frbahn` |
 | `gsund.css` | 60 | `.gbuehne`, `.gkarte`, `.gseite`, `.g-uhr`, `.gb-griff` |
-| `puzzle.css` | 55 | `.pztisch` (rechnet in Zellen: `--zb`/`--zh`), `.pzbrett`, `.pzloch`, `.pzliegt`, `.pzlose` |
+| `minimal.css` | 47 | `.mizahl`, `.mikauf`, `.miding`, `.mimonat` – die beiden Zahlen und die Listen |
+| `puzzle.css` | 87 | `.pztisch` (rechnet in Zellen: `--zb`/`--zh`), `.pzbrett`, `.pzloch`, `.pzliegt`, `.pzlose` |
 | `stoebern.css` | 129 | `.sto…` – der Kartenstapel |
 
 ## Markup
@@ -25,7 +26,7 @@ Anhaltspunkte, keine Zusicherung – sie wandern mit jeder Änderung.
 | Datei | Zeilen | Was |
 |---|---|---|
 | `kopf.html` | 4 | Titel und Schriften |
-| `rumpf.html` | 109 | `#setup` und die vier Rümpfe `#app`, `#kal`, `#fr`, `#gs`, dazu `#layers` |
+| `rumpf.html` | 133 | `#setup` und die fünf Rümpfe `#app`, `#kal`, `#fr`, `#gs`, `#mi`, dazu `#layers` |
 
 ## Skript (`src/js/`, wird zu einem `<script>`)
 
@@ -42,14 +43,15 @@ Grundlage – gilt für alle Apps:
 | `ebenen.js` | 380 | `layerOeffnen/…Schliessen/alleLayerSchliessen/layerErsetzen`, `verlaufTiefe`, `blatt`, `bestaetigen`, `ziehenZumSchliessen`, `ebeneZiehen`, `vorhang…`, `heimZiehen`, `globalKnoepfe…` |
 | `start.js` | 11 | `boot()` |
 
-Die vier Apps:
+Die fünf Apps:
 
 | Datei | Zeilen | Was |
 |---|---|---|
 | `kalender.js` | 892 | `KDB`, `KStore`, `kalenderOeffnen` → `kViewMalen`; Tage rechnen, Heute, Monatsblatt (`kMonatZiehen`), To-Do, Mehr |
 | `fastreader.js` | 979 | `FDB`, `FStore`, `fastreaderOeffnen`; Text aufbereiten (`frZerlegen`), Bibliothek, Hereinholen (`frDocx`, `frPdf`, `frUrl`), Lesen (`frTakt`, `frBahnZiehen`), Bilanz |
 | `gsund.js` | 820 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Vergangene; „Bald“ ist noch leer |
-| `puzzle.js` | 400 | Das Bilderpuzzle im Reiter Puzzle: `pzKante`/`pzUmriss` (die Form der Teile), `pzVorratBauen` (jedes Teil einmal als Bild), `pzTeilung`, `pzLage` (wo ein loses Teil liegt), `pzSchiebenBinden` (Ziehen am Zeiger, Einrasten), `gPuzzleMalen` |
+| `minimal.js` | 507 | `MDB`, `MStore`, `minimalOeffnen`; Stand (die zwei Zahlen), Dinge (Liste, anlegen, abgeben), Verlauf (Monate und Ereignisse), Mehr |
+| `puzzle.js` | 480 | Das Bilderpuzzle im Reiter Puzzle: `pzKante`/`pzUmriss` (die Form der Teile), `pzVorratBauen` (jedes Teil einmal als Bild), `pzTeilung`, `pzLage` (wo ein loses Teil liegt), `pzSchiebenBinden` (Ziehen am Zeiger, Einrasten), `gPuzzleMalen` |
 
 leseliste – der Rest, nach Aufgaben getrennt:
 
@@ -84,12 +86,12 @@ leseliste – der Rest, nach Aufgaben getrennt:
 
 ## Stand
 
-Vier Apps laufen: leseliste, kalender, fastreader, g'sund. Offen ist einzig der
+Fünf Apps laufen: leseliste, kalender, fastreader, g'sund, minimal. Offen ist einzig der
 dritte Reiter **Bald** in g'sund – dort steht ein Platzhalter.
 
 ## Zahlen zum Prüfen statt Bilder
 
-`node pruefen/rundgang.js` geht durch alle vier Apps und meldet OK/FEHL
+`node pruefen/rundgang.js` geht durch alle fünf Apps und meldet OK/FEHL
 (`--schnell` ohne den Klick-Teil, `--leer` mit leerer Datenbasis).
 Für einzelne Messungen: `getBoundingClientRect()` für Masse,
 `getComputedStyle()` für Farben und `transform`, `DOMMatrixReadOnly` für

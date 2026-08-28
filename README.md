@@ -8,7 +8,7 @@ fastreader), bleibt er aussen vor.
 
 **Jede App hat ihre eigene Datenbasis.** Die leseliste führt eine `leseplan.json`, der
 Kalender eine `kalender.json`, der fastreader eine `fastreader.json`, g’sund eine
-`gsund.json` – getrennte Dateien,
+`gsund.json`, minimal eine `minimal.json` – getrennte Dateien,
 getrennte Speicherorte, getrennte Sicherung. Was allen gemeinsam ist, sind Hell/Dunkel, Akzentfarbe und Vollbild; die
 gehören der Hülle und gelten überall.
 
@@ -117,6 +117,27 @@ Vier Reiter in der Fussleiste:
 - **Bald** – Platz für den dritten Reiter.
 - **Mehr** – Speicherort, Sichern, Laden, Karte bearbeiten, Zurücksetzen, dazu derselbe
   Block **Darstellung** wie in jeder App.
+
+## minimal
+
+Zwei Fragen, sonst nichts: **Wie viele Dinge sind es?** Und **wann kam zuletzt etwas
+Neues dazu?** Jedes Ding steht einmal in der Liste, mit dem Tag, an dem es kam. Geht es
+wieder, bekommt es den Tag, an dem es ging – gelöscht wird nichts, sonst liesse sich
+später nicht mehr sagen, wie es einmal war. Vier Reiter:
+
+- **Stand** – die Zahl gross, darunter die Tage seit dem letzten Kauf; ab einem Monat
+  ohne Kauf färbt sich das Feld grün. Wer ein Ziel gesetzt hat, sieht, wie viele Plätze
+  noch frei sind – oder wie viele Dinge darüber. Darunter, wo die Dinge liegen, als
+  Balken je Bereich, und was zuletzt dazukam.
+- **Dinge** – die Liste nach Bereichen, filterbar; ein Tipp öffnet den Eintrag. Ein Ding
+  trägt Bereich, Anzahl, den Tag seines Kommens und den Weg: **gekauft, geschenkt,
+  übernommen oder schon da** – nur *gekauft* zählt für die Frage nach dem letzten Kauf.
+  Wer etwas abgibt, wählt Tag und Weg (verschenkt, verkauft, entsorgt, verloren); der
+  Eintrag bleibt stehen, durchgestrichen, und zählt nicht mehr mit.
+- **Verlauf** – Monat für Monat: links, was kam, rechts, was ging, rechts aussen der
+  Stand am Ende des Monats. Darunter alles der Reihe nach, das Neueste zuerst.
+- **Mehr** – Ziel, Bereiche, Speicherort und Sicherung, dazu wie überall der Block
+  *Darstellung*.
 
 ## leseliste
 

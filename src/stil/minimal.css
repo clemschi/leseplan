@@ -1,0 +1,47 @@
+/* ---------- minimal: die beiden Zahlen und die Liste ---------- */
+#miview{padding:18px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
+
+/* Die Antwort auf die erste Frage steht gross da, sonst nichts. */
+.mizahl{text-align:center;padding:26px 0 8px;}
+.mizahl b{display:block;font-size:64px;line-height:1;font-weight:300;letter-spacing:-.02em;
+  color:var(--accent);}
+.mizahl span{display:block;margin-top:8px;font-size:12.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--text-3);}
+.mizahl i{display:inline-block;margin-top:12px;font-style:normal;font-size:12.5px;
+  padding:4px 11px;border-radius:99px;border:1px solid var(--border);color:var(--text-2);}
+.mizahl i.gut{color:var(--good);border-color:color-mix(in srgb,var(--good) 45%,var(--border));}
+.mizahl i.drueber{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,var(--border));}
+
+/* Die zweite Frage: wie lange nichts Neues kam. */
+.mikauf{text-align:center;margin-top:18px;padding:16px 12px;border-radius:16px;
+  border:1px solid var(--border);background:var(--surface);}
+.mikauf b{display:block;font-size:34px;line-height:1;font-weight:300;color:var(--text);}
+.mikauf span{display:block;margin-top:6px;font-size:12.5px;color:var(--text-2);}
+.mikauf i{display:block;margin-top:4px;font-style:normal;font-size:11.5px;color:var(--text-3);}
+.mikauf.lang{border-color:color-mix(in srgb,var(--good) 45%,var(--border));
+  background:linear-gradient(160deg,var(--good-soft),var(--surface) 60%);}
+.mikauf.lang b{color:var(--good);}
+
+.mibereich{width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);}
+.mibereich:last-child{border-bottom:0;}
+.balken{display:block;height:4px;margin-top:7px;border-radius:99px;background:var(--surface-3);
+  overflow:hidden;}
+.balken > i{display:block;height:100%;background:var(--accent);border-radius:99px;}
+
+.miding{width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);}
+.miding:last-child{border-bottom:0;}
+.miding.weg .rn{color:var(--text-3);text-decoration:line-through;}
+.mimenge{font-style:normal;font-size:12px;color:var(--text-3);}
+.mitage{font-size:11.5px;color:var(--text-3);flex:0 0 auto;}
+
+/* Verlauf: was kam nach links, was ging nach rechts. */
+.mimonat{gap:10px;}
+.mimon{flex:0 0 52px;font-size:11.5px;color:var(--text-3);
+  font-family:"IBM Plex Mono",monospace;}
+.mibalken{display:flex;align-items:center;justify-content:center;height:10px;}
+.mibalken > i{display:block;height:8px;}
+.mibalken .rein{background:var(--accent);border-radius:99px 0 0 99px;margin-left:auto;}
+.mibalken .raus{background:var(--text-3);border-radius:0 99px 99px 0;margin-right:auto;}
+.mistand{flex:0 0 auto;font-size:12.5px;color:var(--text-2);}
+.mipunkt{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:var(--text-3);}
+.mipunkt.rein{background:var(--accent);}
