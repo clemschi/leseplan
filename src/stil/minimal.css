@@ -45,3 +45,11 @@
 .mistand{flex:0 0 auto;font-size:12.5px;color:var(--text-2);}
 .mipunkt{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:var(--text-3);}
 .mipunkt.rein{background:var(--accent);}
+
+/* Ein Foto je Ding: klein in der Liste, gross im Blatt. */
+.mifoto{flex:0 0 auto;width:34px;height:34px;border-radius:8px;
+  background-size:cover;background-position:center;border:1px solid var(--border);}
+.mifotozeile{display:flex;align-items:stretch;gap:10px;}
+.mifotogross{flex:0 0 84px;height:84px;border-radius:12px;border:1px dashed var(--border-strong);
+  background-color:var(--surface-2);background-size:cover;background-position:center;
+  padding:0;cursor:pointer;}

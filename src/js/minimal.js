@@ -22,6 +22,9 @@ function leereMin() {
 }
 
 const MIWEGE = [
+  /* Ohne Angabe ist der Normalfall: wer hundert Dinge einträgt, weiss bei den
+     wenigsten noch, woher sie kamen. */
+  { id: 'ka', name: 'k.A.' },
   { id: 'gekauft', name: 'gekauft' },
   { id: 'geschenkt', name: 'geschenkt' },
   { id: 'geerbt', name: 'übernommen' },
@@ -49,10 +52,11 @@ function minNormalisiere(roh) {
     name: String(x.name || '').trim().slice(0, 120),
     bereich: String(x.bereich || 'Sonstiges').trim() || 'Sonstiges',
     anzahl: clamp(Math.round(+x.anzahl || 1), 1, 9999),
-    rein: tag(x.rein) || heute(),
-    weg: String(x.weg || 'gekauft'),
+    rein: tag(x.rein),
+    weg: MIWEGE.some(w => w.id === x.weg) ? String(x.weg) : 'ka',
     raus: tag(x.raus),
     wohin: String(x.wohin || ''),
+    foto: typeof x.foto === 'string' && x.foto.startsWith('data:image') ? x.foto : '',
     notiz: String(x.notiz || '').slice(0, 600)
   })).filter(x => x.name) : [];
   return m;
@@ -84,8 +88,9 @@ const MICON = {
 const mDa = () => MDB.dinge.filter(d => !d.raus);
 const mAnzahl = () => mDa().reduce((n, d) => n + d.anzahl, 0);
 const mLetzteAnschaffung = () => {
-  /* „Neu" heisst gekauft – geschenkt oder schon da zählt nicht als Kauf. */
-  const k = MDB.dinge.filter(d => d.weg === 'gekauft').map(d => d.rein).sort();
+  /* „Neu" heisst gekauft – geschenkt oder ohne Angabe zählt nicht als Kauf,
+     und ohne Datum lässt sich nichts zählen. */
+  const k = MDB.dinge.filter(d => d.weg === 'gekauft' && d.rein).map(d => d.rein).sort();
   return k.length ? k[k.length - 1] : '';
 };
 const mTageSeit = (datum) => {
@@ -181,7 +186,8 @@ function mStandMalen(v) {
   const ziel = MDB.einstellungen.ziel;
   const bereiche = mNachBereich();
   const groesste = bereiche.length ? bereiche[0].n : 1;
-  const letzte = MDB.dinge.filter(d => !d.raus).slice().sort((a, b) => (a.rein < b.rein ? 1 : -1)).slice(0, 3);
+  const letzte = MDB.dinge.filter(d => !d.raus && d.rein).slice()
+    .sort((a, b) => (a.rein < b.rein ? 1 : -1)).slice(0, 3);
 
   v.innerHTML = `
     <div class="mizahl">
@@ -216,8 +222,9 @@ function mStandMalen(v) {
       <div class="section-head" style="margin-top:22px"><h2>Zuletzt dazugekommen</h2></div>
       <div class="list-card">
         ${letzte.map(d => `
-          <div class="rowline"><span class="grow"><span class="rn">${esc(d.name)}</span>
-            <span class="rm">${esc(mWegText(d))} · ${esc(kTagText(d.rein))}</span></span>
+          <div class="rowline">${d.foto ? `<span class="mifoto" style="background-image:url(${d.foto})"></span>` : ''}
+            <span class="grow"><span class="rn">${esc(d.name)}</span>
+            <span class="rm">${esc(mZeile(d))}</span></span>
             ${d.anzahl > 1 ? `<span class="num">${d.anzahl}×</span>` : ''}</div>`).join('')}
       </div>` : ''}
 
@@ -233,6 +240,10 @@ function mStandMalen(v) {
 }
 
 const mWegText = d => (MIWEGE.find(w => w.id === d.weg) || MIWEGE[0]).name;
+/* Ein Ding ohne Datum sagt das auch so. */
+const mSeitText = d => d.rein ? kTagText(d.rein) : 'k.A.';
+const mZeile = d => d.weg === 'ka' && !d.rein ? 'k.A.'
+  : (d.weg === 'ka' ? 'seit ' + mSeitText(d) : mWegText(d) + (d.rein ? ' am ' + mSeitText(d) : ' · k.A.'));
 const mRausText = d => (MIRAUS.find(w => w.id === d.wohin) || { name: 'weg' }).name;
 
 /* ---------- Dinge ---------- */
@@ -240,7 +251,7 @@ function mDingeMalen(v) {
   const alle = MDB.dinge.filter(d => mZeigeWeg || !d.raus);
   const gezeigt = mFilter ? alle.filter(d => d.bereich === mFilter) : alle;
   const nachBereich = [];
-  gezeigt.slice().sort((a, b) => (a.rein < b.rein ? 1 : -1)).forEach(d => {
+  gezeigt.slice().sort((a, b) => (a.rein || '') < (b.rein || '') ? 1 : -1).forEach(d => {
     let g = nachBereich.find(x => x.bereich === d.bereich);
     if (!g) { g = { bereich: d.bereich, dinge: [] }; nachBereich.push(g); }
     g.dinge.push(d);
@@ -262,11 +273,12 @@ function mDingeMalen(v) {
       <div class="list-card">
         ${g.dinge.map(d => `
           <button class="rowline miding${d.raus ? ' weg' : ''}" data-miding="${d.id}">
+            ${d.foto ? `<span class="mifoto" style="background-image:url(${d.foto})"></span>` : ''}
             <span class="grow"><span class="rn">${esc(d.name)}${d.anzahl > 1 ? ' <i class="mimenge">' + d.anzahl + '×</i>' : ''}</span>
               <span class="rm">${d.raus
       ? esc(mRausText(d)) + ' am ' + esc(kTagText(d.raus))
-      : esc(mWegText(d)) + ' am ' + esc(kTagText(d.rein))}</span></span>
-            ${d.raus ? '' : `<span class="mitage num">${mTageSeit(d.rein)} T</span>`}
+      : esc(mZeile(d))}</span></span>
+            ${d.raus || !d.rein ? '' : `<span class="mitage num">${mTageSeit(d.rein)} T</span>`}
           </button>`).join('')}
       </div>`).join('')
       : `<div class="empty" style="margin-top:30px"><strong>Hier ist nichts</strong>
@@ -284,7 +296,10 @@ function mDingeMalen(v) {
 /* Ein Ding anlegen oder ändern. */
 function mDingBlatt(ding) {
   const neu = !ding;
-  const d = ding || { id: uid(), name: '', bereich: mFilter || MDB.bereiche[0] || 'Sonstiges', anzahl: 1, rein: heute(), weg: 'gekauft', raus: '', wohin: '', notiz: '' };
+  const d = ding || {
+    id: uid(), name: '', bereich: mFilter || MDB.bereiche[0] || 'Sonstiges', anzahl: 1,
+    rein: '', weg: 'ka', raus: '', wohin: '', foto: '', notiz: ''
+  };
   const s = blatt(neu ? 'Ding eintragen' : 'Ding', `
     <div class="field"><label>Was ist es?</label>
       <input type="text" data-name value="${esc(d.name)}" placeholder="z.B. Winterjacke"></div>
@@ -300,6 +315,21 @@ function mDingBlatt(ding) {
       <div class="field"><label>Wie gekommen</label>
         <select data-weg>${MIWEGE.map(w => `<option value="${w.id}"${w.id === d.weg ? ' selected' : ''}>${w.name}</option>`).join('')}</select></div>
     </div>
+    <span class="hint" style="display:block;margin:-6px 0 14px">Beides darf offen bleiben –
+      dann steht dort k.A. Nur ein <b>gekauft</b> mit Datum zählt für die Frage nach dem
+      letzten Kauf.</span>
+
+    <div class="field"><label>Foto</label>
+      <div class="mifotozeile">
+        <button class="mifotogross" data-fotobild ${d.foto ? `style="background-image:url(${d.foto})"` : ''}
+          aria-label="Foto"></button>
+        <div class="btn-row" style="flex:1;flex-direction:column">
+          <button class="btn btn-sm btn-block" data-fotoneu>${ICON.cam} ${d.foto ? 'Anderes Foto' : 'Foto wählen'}</button>
+          ${d.foto ? '<button class="btn btn-sm btn-ghost btn-block" data-fotoweg>Foto entfernen</button>' : ''}
+        </div>
+      </div>
+    </div>
+
     <div class="field"><label>Notiz</label>
       <textarea data-notiz style="min-height:70px" placeholder="Muss nicht">${esc(d.notiz)}</textarea></div>
 
@@ -324,15 +354,32 @@ function mDingBlatt(ding) {
       d.name = name.slice(0, 120);
       d.bereich = $('[data-dbereich]', s).value;
       d.anzahl = clamp(Math.round(+$('[data-anzahl]', s).value || 1), 1, 9999);
-      d.rein = /^\d{4}-\d{2}-\d{2}$/.test(rein) ? rein : heute();
+      d.rein = /^\d{4}-\d{2}-\d{2}$/.test(rein) ? rein : '';
       d.weg = $('[data-weg]', s).value;
       d.notiz = $('[data-notiz]', s).value.trim().slice(0, 600);
+      d.foto = foto;
       if (neu) MDB.dinge.push(d);
     });
     MStore.sichern(true);
     layerSchliessen();
     mViewMalen();
   };
+  /* Das Foto hängt am Blatt, bis gesichert wird – so lässt sich ein Griff
+     daneben mit „Abbrechen“ noch zurücknehmen. */
+  let foto = d.foto || '';
+  const fotoMalen = () => {
+    const b = $('[data-fotobild]', s);
+    if (b) b.style.backgroundImage = foto ? 'url(' + foto + ')' : '';
+    const neu = $('[data-fotoneu]', s);
+    if (neu) neu.innerHTML = ICON.cam + ' ' + (foto ? 'Anderes Foto' : 'Foto wählen');
+    const weg = $('[data-fotoweg]', s);
+    if (weg) weg.hidden = !foto;
+  };
+  $('[data-fotoneu]', s).onclick = () => mFotoWaehlen(url => { foto = url; fotoMalen(); });
+  const fotoWeg = $('[data-fotoweg]', s);
+  if (fotoWeg) fotoWeg.onclick = () => { foto = ''; fotoMalen(); };
+  $('[data-fotobild]', s).onclick = () => { if (foto) bildGross([foto], 0, null); };
+
   const rausKnopf = $('[data-mirausx]', s);
   if (rausKnopf) rausKnopf.onclick = () => {
     if (d.raus) {
@@ -400,7 +447,7 @@ function mVerlaufMalen(v) {
 
   const ereignisse = [];
   MDB.dinge.forEach(d => {
-    ereignisse.push({ datum: d.rein, art: 'rein', ding: d });
+    if (d.rein) ereignisse.push({ datum: d.rein, art: 'rein', ding: d });
     if (d.raus) ereignisse.push({ datum: d.raus, art: 'raus', ding: d });
   });
   ereignisse.sort((a, b) => (a.datum < b.datum ? 1 : -1));
@@ -504,4 +551,34 @@ function mBereicheBlatt() {
     layerSchliessen();
     mViewMalen();
   };
+}
+
+/* Ein Foto je Ding – kleiner als in der leseliste, es geht um Wiedererkennen,
+   nicht um die Aufnahme. */
+const MI_FOTOKANTE = 900;
+function mFotoWaehlen(fertig) {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*'; inp.style.display = 'none';
+  document.body.appendChild(inp);
+  inp.onchange = () => {
+    const f = inp.files && inp.files[0];
+    inp.remove();
+    if (!f) return;
+    const leser = new FileReader();
+    leser.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, MI_FOTOKANTE / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        fertig(c.toDataURL('image/jpeg', 0.72));
+      };
+      img.onerror = () => toast('Das Bild ließ sich nicht lesen.', 3500);
+      img.src = leser.result;
+    };
+    leser.onerror = () => toast('Das Bild ließ sich nicht lesen.', 3500);
+    leser.readAsDataURL(f);
+  };
+  inp.click();
 }

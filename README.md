@@ -132,8 +132,12 @@ später nicht mehr sagen, wie es einmal war. Vier Reiter:
   noch frei sind – oder wie viele Dinge darüber. Darunter, wo die Dinge liegen, als
   Balken je Bereich, und was zuletzt dazukam.
 - **Dinge** – die Liste nach Bereichen, filterbar; ein Tipp öffnet den Eintrag. Ein Ding
-  trägt Bereich, Anzahl, den Tag seines Kommens und den Weg: **gekauft, geschenkt,
-  übernommen oder schon da** – nur *gekauft* zählt für die Frage nach dem letzten Kauf.
+  trägt Bereich, Anzahl, ein **Foto**, den Tag seines Kommens und den Weg: **k.A.,
+  gekauft, geschenkt, übernommen oder schon da**. Beides ist von Haus aus **k.A.** –
+  wer hundert Dinge einträgt, weiss bei den wenigsten noch, woher sie kamen; nur ein
+  *gekauft* mit Datum zählt für die Frage nach dem letzten Kauf. Das Foto kommt aus
+  Kamera oder Galerie, wird auf 900 px gebracht (rund 20–80 KB) und liegt in der
+  Datenbasis; in der Liste steht es als kleines Quadrat, im Eintrag gross und antippbar.
   Wer etwas abgibt, wählt Tag und Weg (verschenkt, verkauft, entsorgt, verloren); der
   Eintrag bleibt stehen, durchgestrichen, und zählt nicht mehr mit.
 - **Verlauf** – Monat für Monat: links, was kam, rechts, was ging, rechts aussen der

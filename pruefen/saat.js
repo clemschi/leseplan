@@ -68,7 +68,9 @@ const SAAT = {
       { id: 'd2', name: 'Teller', bereich: 'Kueche', anzahl: 6, rein: tag(-420), weg: 'geerbt', raus: '', wohin: '', notiz: 'von der Oma' },
       { id: 'd3', name: 'Schreibtischlampe', bereich: 'Arbeit', anzahl: 1, rein: tag(-38), weg: 'gekauft', raus: '', wohin: '', notiz: '' },
       { id: 'd4', name: 'Kaffeemaschine', bereich: 'Kueche', anzahl: 1, rein: tag(-900), weg: 'gekauft', raus: tag(-30), wohin: 'verschenkt', notiz: '' },
-      { id: 'd5', name: 'Zelt', bereich: 'Draussen', anzahl: 1, rein: tag(-260), weg: 'geschenkt', raus: '', wohin: '', notiz: '' }
+      { id: 'd5', name: 'Zelt', bereich: 'Draussen', anzahl: 1, rein: tag(-260), weg: 'geschenkt', raus: '', wohin: '', notiz: '' },
+      /* Der Normalfall: weder Datum noch Herkunft bekannt. */
+      { id: 'd6', name: 'Buecherregal', bereich: 'Wohnen', anzahl: 1, rein: '', weg: 'ka', raus: '', wohin: '', notiz: '' }
     ]
   },
   'meta-gsund': { modus: 'geraet', handle: null, dateiname: 'gsund.json' },
