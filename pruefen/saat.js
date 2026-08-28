@@ -66,7 +66,15 @@ const SAAT = {
       { id: 'v1', titel: 'Zahnarzt', datum: tag(-20), zeit: '08:00', rueckseite: '', abgelegt: Date.now() - 9e8 },
       { id: 'v2', titel: 'Prüfung', datum: tag(-60), zeit: '', rueckseite: 'bestanden', abgelegt: Date.now() - 5e9 }
     ],
-    puzzle: {}
+    /* Ein halbfertiges 3x3: ein Zug fehlt, damit auch das Loesen im Rundgang
+       vorkommt. */
+    puzzle: {
+      groesse: 3,
+      felder: [1, 2, 3, 4, 5, 6, 7, 0, 8],
+      zuege: 12, sekunden: 47, begonnen: true, fertig: false,
+      beste: { 3: { zuege: 31, sekunden: 58 } },
+      geloest: 2
+    }
   }
 };
 

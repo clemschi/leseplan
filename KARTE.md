@@ -16,7 +16,8 @@ Anhaltspunkte, keine Zusicherung – sie wandern mit jeder Änderung.
 | `basis.css` | 582 | Farbtokens hell/dunkel, Akzente (`DREI`), Kopfzeile, Tableiste, Bausteine (`.list-card`, `.rowline`, `.chip`, `.field`, `.grid2`), Plan, Overlay/Sheets, Pager, Bilder, Diagramme, Einrichtung |
 | `kalender.css` | 117 | alles mit `k`-Präfix |
 | `fastreader.css` | 91 | `.frbuehne`, `.frwort`, `.frpult`, `.frbahn` |
-| `gsund.css` | 53 | `.gbuehne`, `.gkarte`, `.gseite`, `.g-uhr`, `.gb-griff` |
+| `gsund.css` | 60 | `.gbuehne`, `.gkarte`, `.gseite`, `.g-uhr`, `.gb-griff` |
+| `puzzle.css` | 45 | `.pzfeld`, `.pzstein` – die Steine liegen absolut und rutschen per `translate` |
 | `stoebern.css` | 129 | `.sto…` – der Kartenstapel |
 
 ## Markup
@@ -47,7 +48,8 @@ Die vier Apps:
 |---|---|---|
 | `kalender.js` | 892 | `KDB`, `KStore`, `kalenderOeffnen` → `kViewMalen`; Tage rechnen, Heute, Monatsblatt (`kMonatZiehen`), To-Do, Mehr |
 | `fastreader.js` | 979 | `FDB`, `FStore`, `fastreaderOeffnen`; Text aufbereiten (`frZerlegen`), Bibliothek, Hereinholen (`frDocx`, `frPdf`, `frUrl`), Lesen (`frTakt`, `frBahnZiehen`), Bilanz |
-| `gsund.js` | 820 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Vergangene; Puzzle und Bald sind leer |
+| `gsund.js` | 820 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Vergangene; „Bald“ ist noch leer |
+| `puzzle.js` | 210 | Das Schiebefeld im Reiter Puzzle: `pzMischen` (nur lösbare Felder), `pzSchieben` (ganze Reihen), `gPuzzleMalen` |
 
 leseliste – der Rest, nach Aufgaben getrennt:
 
@@ -83,8 +85,7 @@ leseliste – der Rest, nach Aufgaben getrennt:
 ## Stand
 
 Vier Apps laufen: leseliste, kalender, fastreader, g'sund. Offen ist einzig der
-Reiter **Puzzle** in g'sund – dort steht ein Platzhalter, die Anweisungen dazu
-folgen noch. Ebenso der dritte Reiter **Bald**.
+dritte Reiter **Bald** in g'sund – dort steht ein Platzhalter.
 
 ## Zahlen zum Prüfen statt Bilder
 

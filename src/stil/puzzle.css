@@ -1,0 +1,42 @@
+/* ---------- Puzzle: das Schiebefeld ---------- */
+/* Die Steine liegen absolut im Feld und werden über translate an ihren Platz
+   gerückt – in Prozent ihrer eigenen Größe, damit dieselbe Regel für 3×3 wie
+   für 5×5 gilt. Verschoben wird dann nur der Wert, nicht das Markup: das
+   Rutschen macht der Übergang. */
+.pzrahmen{max-width:360px;margin:0 auto;}
+.pzfeld{
+  --n:4;
+  --pzkante:min(84vw,340px);
+  --pzschrift:calc(var(--pzkante) / var(--n) * 0.4);
+  position:relative;width:var(--pzkante);height:var(--pzkante);margin:0 auto;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:18px;
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;
+}
+.pzstein{
+  position:absolute;left:0;top:0;padding:3px;
+  width:calc(100% / var(--n));height:calc(100% / var(--n));
+  transform:translate(calc(var(--x) * 100%), calc(var(--y) * 100%));
+  transition:transform .16s cubic-bezier(.2,.8,.3,1);
+}
+.pzstein > i{
+  display:grid;place-items:center;width:100%;height:100%;border-radius:12px;
+  background:var(--surface-3);border:1px solid var(--border);
+  font-style:normal;font-weight:500;font-size:var(--pzschrift);
+  font-variant-numeric:tabular-nums;color:var(--text);
+  transition:color .2s,border-color .2s,background .2s;
+}
+/* Ein Stein, der schon an seinem Platz liegt, färbt sich ein. */
+.pzstein.sitzt > i{color:var(--accent);
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--border));}
+.pzfeld.fertig .pzstein > i{background:var(--accent-soft);
+  border-color:color-mix(in srgb,var(--accent) 55%,var(--border));}
+
+.pzkopf{display:flex;align-items:center;gap:8px;justify-content:center;
+  flex-wrap:wrap;margin:4px 0 14px;}
+.pzstand{display:flex;justify-content:center;gap:22px;margin-top:16px;text-align:center;}
+.pzstand div{display:flex;flex-direction:column;gap:2px;}
+.pzstand b{font-size:19px;font-weight:500;font-variant-numeric:tabular-nums;}
+.pzstand span{font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--text-3);}
+.pzfertig{text-align:center;margin-top:16px;font-size:14px;color:var(--accent);}
+.pzfertig b{display:block;font-size:17px;font-weight:500;margin-bottom:2px;
+  font-family:"Literata",Georgia,serif;}

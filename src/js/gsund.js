@@ -16,7 +16,7 @@ function leereGs() {
     karte: { titel: '', datum: '', zeit: '', rueckseite: '' },
     /* Abgelegte Karten, die neueste zuerst. */
     vergangen: [],
-    /* Für Puzzle, sobald klar ist, was dort hingehört. */
+    /* Das Schiebefeld – Aufbau in js/puzzle.js. */
     puzzle: {}
   };
 }
@@ -41,7 +41,7 @@ function gsNormalisiere(roh) {
     rueckseite: String(k.rueckseite || '').slice(0, 4000),
     abgelegt: +k.abgelegt || Date.now()
   })).slice(0, 400) : [];
-  g.puzzle = (d.puzzle && typeof d.puzzle === 'object') ? d.puzzle : {};
+  g.puzzle = pzNormalisiere(d.puzzle);
   return g;
 }
 
@@ -120,6 +120,7 @@ function gTabbarMalen() {
   };
 }
 function gTabWechseln(id) {
+  if (id !== 'puzzle') pzUhrAus();
   gTab = id;
   gTabbarMalen();
   gViewMalen();
@@ -611,12 +612,8 @@ function gKarteBearbeiten() {
   };
 }
 
-/* ---------- Puzzle und Bald ---------- */
-function gPuzzleMalen(v) {
-  v.innerHTML = `
-    <div class="empty" style="margin-top:40px"><strong>Puzzle</strong>
-      Hier ist noch nichts eingebaut – die Anweisungen dafür folgen.</div>`;
-}
+/* ---------- Bald ---------- */
+/* Das Puzzle steht in js/puzzle.js. */
 function gBaldMalen(v) {
   v.innerHTML = `
     <div class="empty" style="margin-top:40px"><strong>Platz für später</strong>

@@ -17,6 +17,7 @@ const STIL = [
   'stil/kalender.css',
   'stil/fastreader.css',
   'stil/gsund.css',
+  'stil/puzzle.css',
   'stil/stoebern.css'
 ];
 const MARKUP = ['rumpf.html'];
@@ -30,6 +31,7 @@ const SKRIPT = [
   'js/kalender.js',
   'js/fastreader.js',
   'js/gsund.js',
+  'js/puzzle.js',
   'js/sitzungen.js',
   'js/ebenen.js',
   'js/plan.js',
