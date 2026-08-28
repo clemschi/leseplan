@@ -571,11 +571,11 @@ body.voll .cam{padding-top:14px;}
   transform:translateX(calc(var(--heimzug,0px) - 26px));
   background:linear-gradient(to right,rgba(0,0,0,0),rgba(0,0,0,.4));}
 body.heimzug .topbar,body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview,
-body.heimzug .nowbar,body.heimzug .tabbar,body.heimzug .frbuehne,body.heimzug .frpult{
+body.heimzug .nowbar,body.heimzug .tabbar,body.heimzug .frbuehne,body.heimzug .frpult,body.heimzug .gbuehne{
   transform:translateX(var(--heimzug,0px));will-change:transform;}
 body.heimzug.federt .topbar,body.heimzug.federt #view,body.heimzug.federt #kview,
 body.heimzug.federt #fview,body.heimzug.federt #gview,body.heimzug.federt .nowbar,body.heimzug.federt .tabbar,
-body.heimzug.federt .frbuehne,body.heimzug.federt .frpult{
+body.heimzug.federt .frbuehne,body.heimzug.federt .frpult,body.heimzug.federt .gbuehne{
   transition:transform .26s cubic-bezier(.2,.8,.3,1);}
 body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview{
   position:relative;z-index:2;background:var(--bg);}

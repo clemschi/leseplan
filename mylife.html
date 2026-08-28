@@ -590,11 +590,11 @@ body.voll .cam{padding-top:14px;}
   transform:translateX(calc(var(--heimzug,0px) - 26px));
   background:linear-gradient(to right,rgba(0,0,0,0),rgba(0,0,0,.4));}
 body.heimzug .topbar,body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview,
-body.heimzug .nowbar,body.heimzug .tabbar,body.heimzug .frbuehne,body.heimzug .frpult{
+body.heimzug .nowbar,body.heimzug .tabbar,body.heimzug .frbuehne,body.heimzug .frpult,body.heimzug .gbuehne{
   transform:translateX(var(--heimzug,0px));will-change:transform;}
 body.heimzug.federt .topbar,body.heimzug.federt #view,body.heimzug.federt #kview,
 body.heimzug.federt #fview,body.heimzug.federt #gview,body.heimzug.federt .nowbar,body.heimzug.federt .tabbar,
-body.heimzug.federt .frbuehne,body.heimzug.federt .frpult{
+body.heimzug.federt .frbuehne,body.heimzug.federt .frpult,body.heimzug.federt .gbuehne{
   transition:transform .26s cubic-bezier(.2,.8,.3,1);}
 body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview{
   position:relative;z-index:2;background:var(--bg);}
@@ -809,15 +809,22 @@ form.feldrahmen{display:contents;}
 
 /* ---------- g'sund ---------- */
 #gview{padding:18px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
-/* Die Bühne gibt der Karte Tiefe; ohne Perspektive bliebe die Drehung flach. */
-.gbuehne{max-width:560px;margin:8px auto 0;perspective:1400px;}
-.gkarte{position:relative;width:100%;min-height:min(58vh,404px);
+/* Die Bühne liegt über der ganzen Fläche und hält die Karte in der Mitte des
+   Bildschirms – waagerecht wie senkrecht, unabhängig von Kopfzeile und
+   Fussleiste. Sie gibt der Karte zugleich ihre Tiefe; ohne Perspektive bliebe
+   die Drehung flach. Und sie ist der Griff: gewischt wird auf der ganzen
+   Breite, nicht nur auf der Karte – sonst geht ein Zug, der am Bildrand
+   beginnt, an ihr vorbei. */
+.gbuehne{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);
+  z-index:1;display:grid;place-items:center;perspective:1400px;
+  touch-action:none;user-select:none;-webkit-user-select:none;}
+.gkarte{position:relative;width:min(78vw,300px);height:min(50vh,380px);
   transform-style:preserve-3d;transform-origin:50% 50%;
   transition:transform .42s cubic-bezier(.2,.8,.25,1),opacity .28s ease;
   touch-action:none;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .gseite{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;text-align:center;gap:6px;
-  padding:30px 22px 38px;border-radius:22px;border:1px solid var(--border);
+  padding:24px 18px 32px;border-radius:22px;border:1px solid var(--border);
   background:var(--surface);box-shadow:var(--shadow);
   backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;}
 .gseite.hinten{transform:rotateY(180deg);
@@ -4790,7 +4797,7 @@ function gGuziMalen(v) {
     if (karte._gezogen) { karte._gezogen = false; return; }
     gKarteBearbeiten();
   };
-  gKarteZiehen(karte, drehen, () => gKarteAblegen(karte));
+  gKarteZiehen($('.gbuehne', v), karte, drehen, () => gKarteAblegen(karte));
   if (k.datum) gUhrLaufen(v);
 }
 
@@ -4822,7 +4829,7 @@ function gKarteAblegen(karte) {
 /* Wischen dreht und kippt: die Karte folgt der Hand in beide Richtungen –
    quer eine halbe Umdrehung je halber Kartenbreite, längs als Neigung. Beim
    Loslassen entscheiden Weg und Schwung, welche der drei Wege es wird. */
-function gKarteZiehen(karte, drehen, ablegen) {
+function gKarteZiehen(buehne, karte, drehen, ablegen) {
   let x0 = null, y0 = 0, zieht = false, abX = 0, abY = 0;
   let wegX = 0, wegY = 0, breite = 1, hoehe = 1, ganzX = 0, ganzY = 0;
   /* Jeder Zug bekommt eine Nummer. Gedreht wird für eine Nummer genau einmal –
@@ -4881,22 +4888,23 @@ function gKarteZiehen(karte, drehen, ablegen) {
      Loslassen schnappt sie sichtbar zurück. */
   const winkel = () => clamp(wegX / breite * 180, -180, 180);
 
-  karte.addEventListener('touchstart', e => {
+  buehne.addEventListener('touchstart', e => {
     if (e.touches.length !== 1 || window.__zieht || sperre) { x0 = null; return; }
     const t = e.touches[0];
-    /* Die ganze Karte gehört dem Zug, auch der linke Rand: nach links wie
-       nach rechts soll sich gleich anfühlen. Der Weg zur Startseite steht
-       darum in der Tabu-Liste von heimZiehen und läuft neben der Karte –
-       darunter, darüber, in der Kopfzeile. */
+    /* Gewischt wird auf der ganzen Breite, nicht nur auf der Karte: ein Zug,
+       der am Bildrand beginnt, ginge sonst an ihr vorbei und schöbe statt
+       dessen die App zur Startseite. Nach oben und unten hört das Band aber
+       auf – dort bleibt Platz für den Weg nach Hause. */
+    const r = karte.getBoundingClientRect();
+    if (t.clientY < r.top - 44 || t.clientY > r.bottom + 44) { x0 = null; return; }
     x0 = t.clientX; y0 = t.clientY;
     zieht = false; wegX = 0; wegY = 0; ganzX = 0; ganzY = 0;
     zugNr++;
-    const r = karte.getBoundingClientRect();
     breite = r.width || 300; hoehe = r.height || 400;
     letztX = x0; letztY = y0; letztT = Date.now(); tempoX = 0; tempoY = 0;
   }, { passive: true });
 
-  karte.addEventListener('touchmove', e => {
+  buehne.addEventListener('touchmove', e => {
     if (x0 == null) return;
     const t = e.touches[0], dx = t.clientX - x0, dy = t.clientY - y0;
     if (!zieht) {
@@ -4953,8 +4961,8 @@ function gKarteZiehen(karte, drehen, ablegen) {
       setTimeout(() => { window.__zieht = false; karte._gezogen = false; }, 300);
     }
   };
-  karte.addEventListener('touchend', los, { passive: true });
-  karte.addEventListener('touchcancel', los, { passive: true });
+  buehne.addEventListener('touchend', los, { passive: true });
+  buehne.addEventListener('touchcancel', los, { passive: true });
 }
 
 /* ---------- Die Vergangenen ---------- */

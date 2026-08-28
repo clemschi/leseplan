@@ -215,7 +215,7 @@ function gGuziMalen(v) {
     if (karte._gezogen) { karte._gezogen = false; return; }
     gKarteBearbeiten();
   };
-  gKarteZiehen(karte, drehen, () => gKarteAblegen(karte));
+  gKarteZiehen($('.gbuehne', v), karte, drehen, () => gKarteAblegen(karte));
   if (k.datum) gUhrLaufen(v);
 }
 
@@ -247,7 +247,7 @@ function gKarteAblegen(karte) {
 /* Wischen dreht und kippt: die Karte folgt der Hand in beide Richtungen –
    quer eine halbe Umdrehung je halber Kartenbreite, längs als Neigung. Beim
    Loslassen entscheiden Weg und Schwung, welche der drei Wege es wird. */
-function gKarteZiehen(karte, drehen, ablegen) {
+function gKarteZiehen(buehne, karte, drehen, ablegen) {
   let x0 = null, y0 = 0, zieht = false, abX = 0, abY = 0;
   let wegX = 0, wegY = 0, breite = 1, hoehe = 1, ganzX = 0, ganzY = 0;
   /* Jeder Zug bekommt eine Nummer. Gedreht wird für eine Nummer genau einmal –
@@ -306,22 +306,23 @@ function gKarteZiehen(karte, drehen, ablegen) {
      Loslassen schnappt sie sichtbar zurück. */
   const winkel = () => clamp(wegX / breite * 180, -180, 180);
 
-  karte.addEventListener('touchstart', e => {
+  buehne.addEventListener('touchstart', e => {
     if (e.touches.length !== 1 || window.__zieht || sperre) { x0 = null; return; }
     const t = e.touches[0];
-    /* Die ganze Karte gehört dem Zug, auch der linke Rand: nach links wie
-       nach rechts soll sich gleich anfühlen. Der Weg zur Startseite steht
-       darum in der Tabu-Liste von heimZiehen und läuft neben der Karte –
-       darunter, darüber, in der Kopfzeile. */
+    /* Gewischt wird auf der ganzen Breite, nicht nur auf der Karte: ein Zug,
+       der am Bildrand beginnt, ginge sonst an ihr vorbei und schöbe statt
+       dessen die App zur Startseite. Nach oben und unten hört das Band aber
+       auf – dort bleibt Platz für den Weg nach Hause. */
+    const r = karte.getBoundingClientRect();
+    if (t.clientY < r.top - 44 || t.clientY > r.bottom + 44) { x0 = null; return; }
     x0 = t.clientX; y0 = t.clientY;
     zieht = false; wegX = 0; wegY = 0; ganzX = 0; ganzY = 0;
     zugNr++;
-    const r = karte.getBoundingClientRect();
     breite = r.width || 300; hoehe = r.height || 400;
     letztX = x0; letztY = y0; letztT = Date.now(); tempoX = 0; tempoY = 0;
   }, { passive: true });
 
-  karte.addEventListener('touchmove', e => {
+  buehne.addEventListener('touchmove', e => {
     if (x0 == null) return;
     const t = e.touches[0], dx = t.clientX - x0, dy = t.clientY - y0;
     if (!zieht) {
@@ -378,8 +379,8 @@ function gKarteZiehen(karte, drehen, ablegen) {
       setTimeout(() => { window.__zieht = false; karte._gezogen = false; }, 300);
     }
   };
-  karte.addEventListener('touchend', los, { passive: true });
-  karte.addEventListener('touchcancel', los, { passive: true });
+  buehne.addEventListener('touchend', los, { passive: true });
+  buehne.addEventListener('touchcancel', los, { passive: true });
 }
 
 /* ---------- Die Vergangenen ---------- */

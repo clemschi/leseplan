@@ -1,14 +1,21 @@
 /* ---------- g'sund ---------- */
 #gview{padding:18px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
-/* Die Bühne gibt der Karte Tiefe; ohne Perspektive bliebe die Drehung flach. */
-.gbuehne{max-width:560px;margin:8px auto 0;perspective:1400px;}
-.gkarte{position:relative;width:100%;min-height:min(58vh,404px);
+/* Die Bühne liegt über der ganzen Fläche und hält die Karte in der Mitte des
+   Bildschirms – waagerecht wie senkrecht, unabhängig von Kopfzeile und
+   Fussleiste. Sie gibt der Karte zugleich ihre Tiefe; ohne Perspektive bliebe
+   die Drehung flach. Und sie ist der Griff: gewischt wird auf der ganzen
+   Breite, nicht nur auf der Karte – sonst geht ein Zug, der am Bildrand
+   beginnt, an ihr vorbei. */
+.gbuehne{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);
+  z-index:1;display:grid;place-items:center;perspective:1400px;
+  touch-action:none;user-select:none;-webkit-user-select:none;}
+.gkarte{position:relative;width:min(78vw,300px);height:min(50vh,380px);
   transform-style:preserve-3d;transform-origin:50% 50%;
   transition:transform .42s cubic-bezier(.2,.8,.25,1),opacity .28s ease;
   touch-action:none;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .gseite{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;text-align:center;gap:6px;
-  padding:30px 22px 38px;border-radius:22px;border:1px solid var(--border);
+  padding:24px 18px 32px;border-radius:22px;border:1px solid var(--border);
   background:var(--surface);box-shadow:var(--shadow);
   backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;}
 .gseite.hinten{transform:rotateY(180deg);

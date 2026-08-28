@@ -71,21 +71,19 @@ zehn Wörter, mit **Umschalt** einen Satz.
 
 Vier Reiter in der Fussleiste:
 
-- **Guzi** – nur die Karte, sonst nichts. Vorne ein frei gewählter Titel in der
-  Akzentfarbe, darunter Datum und wahlweise Uhrzeit, dann der Countdown im
-  Sekundentakt – in Tagen, sonst als `HH:MM:SS`, nach dem Zeitpunkt mit Vorzeichen
-  weiter. Hinten freier Text. **Ein Tipp öffnet die Karte zum Ändern**, gedreht wird
-  nur mit dem Finger: quer eine halbe Umdrehung je halber Kartenbreite, dort ist
-  Schluss – ein weiter Zug dreht sie nicht über die Rückseite hinaus. Dabei kippt
-  sie auch längs mit, bis 26°, so dass ein Zug von rechts oben nach links unten die
-  Karte wirklich in der Hand liegen lässt. Gedreht wird um **eine** Achse quer zur
-  Zugrichtung, nicht um zwei nacheinander – sonst legt sich eine Rollbewegung
-  obendrauf, die nach rechts und nach links gleich herum läuft, und eine der beiden
-  Richtungen fühlt sich verkehrt an. Umgeblättert wird höchstens einmal je
-  Zug: über die Hälfte gedreht, gut 50 px Fingerweg oder ein Schwung genügen, dann
-  liegt die andere Seite oben – nicht mehr und nicht weniger. Ein **schneller Zug nach oben** legt sie zu
-  den Vergangenen; sie fliegt weg, vorn bleibt eine leere Karte. Die ersten 30 px am
-  linken Rand bleiben dem Zug zur Startseite.
+- **Guzi** – nur die Karte, klein und genau in der Bildmitte: waagerecht wie
+  senkrecht, unabhängig von Kopfzeile und Fussleiste. Vorne ein frei gewählter
+  Titel in der Akzentfarbe, darunter Datum und wahlweise Uhrzeit, dann der
+  Countdown im Sekundentakt – in Tagen, sonst als `HH:MM:SS`, nach dem Zeitpunkt
+  mit Vorzeichen weiter. Hinten freier Text. **Ein Tipp öffnet die Karte zum
+  Ändern**, gedreht wird nur mit dem Finger. Gewischt wird auf einem Band über
+  die ganze Breite – die Karte plus 44 px darüber und darunter –, damit auch ein
+  Zug vom Bildrand sie erwischt; ausserhalb des Bandes führt der Zug nach rechts
+  wie überall zur Startseite. Quer entspricht eine halbe Kartenbreite einer
+  halben Umdrehung, dort ist Schluss; längs kippt sie bis 26° mit, um eine
+  einzige Achse quer zur Zugrichtung. Umgeblättert wird höchstens einmal je Zug –
+  jeder Zug hat eine Nummer, und für eine Nummer dreht sich die Karte genau
+  einmal. Ein **schneller Zug nach oben** legt sie zu den Vergangenen.
 - **Vergangen** – die Kopfzeile ist zugleich der Griff: **herunterziehen** (oder
   antippen) holt die abgelegten Karten hervor, hochziehen schiebt sie wieder weg –
   derselbe Vorhang wie die Übersicht in der leseliste. Von selbst landet man dort nie.
