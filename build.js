@@ -141,3 +141,26 @@ const manifest = {
 };
 fs.writeFileSync(path.join(wurzel, 'mylife.webmanifest'), JSON.stringify(manifest, null, 2) + '\n');
 console.log('mylife.webmanifest geschrieben');
+
+/* Und eine Weiche: liegt das Ganze unter einer Adresse, soll die kurze Form
+   ohne Dateinamen genuegen. Sie schickt weiter auf mylife.html - der Name
+   steht danach in der Adresszeile, so wie er soll. Ein paar hundert Byte
+   statt einer zweiten Ausfertigung der ganzen Seite. */
+const weiche = `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="refresh" content="0; url=./mylife.html">
+<link rel="canonical" href="./mylife.html">
+<title>mylife</title>
+<style>html,body{background:#000;color:#8b8d96;font-family:system-ui,sans-serif;height:100%;margin:0}
+body{display:grid;place-items:center;font-size:14px}a{color:#dba43f}</style>
+</head>
+<body><p>mylife wird geladen \u2026 <a href="./mylife.html">weiter</a></p>
+<script>location.replace('./mylife.html');</script>
+</body>
+</html>
+`;
+fs.writeFileSync(path.join(wurzel, 'index.html'), weiche);
+console.log('index.html geschrieben (Weiche auf mylife.html)');

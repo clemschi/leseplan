@@ -12,7 +12,15 @@ Kalender eine `kalender.json`, der fastreader eine `fastreader.json`, g’sund e
 getrennte Speicherorte, getrennte Sicherung. Was allen gemeinsam ist, sind Hell/Dunkel, Akzentfarbe und Vollbild; die
 gehören der Hülle und gelten überall.
 
-Gebaut wird mit `node build.js` aus den Bausteinen unter `src/`.
+Gebaut wird mit `node build.js` aus den Bausteinen unter `src/`. Daneben entstehen
+`mylife.webmanifest` und ein winziges `index.html`, das auf `mylife.html` weiterschickt.
+
+**Unter einer Adresse statt als Datei.** Liegt das Ganze auf GitHub Pages (Settings →
+Pages → Branch, `/root`), reicht `…/leseplan/` – die Weiche führt auf `mylife.html`, und
+die Seite meldet dort ihr Manifest an. Damit legt Chrome sie als eigene App auf den
+Startbildschirm: ohne Browserleisten, ohne den Vollbild-Hinweis bei jedem Start, und
+immer auf dem letzten Stand, ohne je etwas herunterzuladen. Aus einer Datei heraus
+(`file://`) bleibt das Manifest aussen vor – dort ginge der Abruf ins Leere.
 
 ## kalender
 

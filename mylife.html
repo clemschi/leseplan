@@ -13,6 +13,9 @@
 <meta name="application-name" content="mylife">
 <!-- Erzeugt aus src/ - nicht von Hand bearbeiten, sondern: node build.js -->
 <title>mylife</title>
+<!-- Das Zeichen steckt in der Seite selbst: kein zweiter Abruf, und es gilt
+     auch dann, wenn die Datei ohne Nachbarn irgendwo auf dem Geraet liegt. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23000'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='36' fill='%23dba43f' text-anchor='middle'%3Em%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
@@ -13212,6 +13215,18 @@ function artenVerwalten() {
 /* ============================================================
    Los geht's
    ============================================================ */
+/* Liegt die Seite unter einer Adresse statt als Datei, meldet sie ihr
+   Manifest an. Chrome legt sie dann als eigene App auf den Startbildschirm –
+   ohne Browserleisten und damit ohne den Vollbild-Hinweis bei jedem Start.
+   Aus einer Datei heraus (file://) ginge der Abruf ins Leere, darum erst
+   hier und nicht im Kopf. */
+if (location.protocol === 'http:' || location.protocol === 'https:') {
+  const m = document.createElement('link');
+  m.rel = 'manifest';
+  m.href = 'mylife.webmanifest';
+  document.head.appendChild(m);
+}
+
 $('#btnSuche').innerHTML = ICON.search;
 $('#btnSuche').onclick = sucheOeffnen;
 vollbildAutostart();

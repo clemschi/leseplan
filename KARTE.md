@@ -26,7 +26,7 @@ Anhaltspunkte, keine Zusicherung – sie wandern mit jeder Änderung.
 
 | Datei | Zeilen | Was |
 |---|---|---|
-| `kopf.html` | 4 | Titel und Schriften |
+| `kopf.html` | 7 | Titel, Zeichen (inline), Schriften |
 | `rumpf.html` | 156 | `#setup` und die sechs Rümpfe `#app`, `#kal`, `#fr`, `#gs`, `#mi`, `#ca`, dazu `#layers` |
 
 ## Skript (`src/js/`, wird zu einem `<script>`)
@@ -42,7 +42,7 @@ Grundlage – gilt für alle Apps:
 | `erscheinung.js` | 115 | `SHELL`, `shellSchreiben`, `themeAnwenden`, Vollbild |
 | `rahmen.js` | 234 | `TABS`, `tabbarMalen`, `viewMalen`, Kopfzeile, Einführung, `appStarten` |
 | `ebenen.js` | 380 | `layerOeffnen/…Schliessen/alleLayerSchliessen/layerErsetzen`, `verlaufTiefe`, `blatt`, `bestaetigen`, `ziehenZumSchliessen`, `ebeneZiehen`, `vorhang…`, `heimZiehen`, `globalKnoepfe…` |
-| `start.js` | 11 | `boot()` |
+| `start.js` | 22 | Manifest anmelden, wenn die Seite unter einer Adresse liegt; `boot()` |
 
 Die sechs Apps:
 
