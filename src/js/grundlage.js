@@ -117,6 +117,49 @@ const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isF
 const heute = () => new Date().toISOString().slice(0, 10);
 const MONATE = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 
+/* ---------- JSON aus einer Datei lesen ----------
+   Was aus einem Chat kommt, ist selten blankes JSON: mal steht es zwischen
+   ```-Zäunen, mal mit einem freundlichen Satz davor und danach. Von Hand
+   nachputzen muss niemand – hier wird geschält, bis es aufgeht. */
+function jsonLesen(text) {
+  const versuch = t => { try { return { ok: true, wert: JSON.parse(t) }; }
+    catch (e) { return { ok: false, fehler: String(e.message || e) }; } };
+  const roh = String(text == null ? '' : text);
+  if (!roh.trim()) return { ok: false, fehler: 'Die Datei ist leer.' };
+
+  /* 1. So, wie es dasteht – der Normalfall. */
+  let r = versuch(roh);
+  if (r.ok) return r;
+
+  /* 2. Ohne Byte-Marke und ohne ```-Zäune. */
+  let t = roh.replace(/^﻿/, '').trim();
+  const zaun = /```(?:json|javascript|js)?\s*([\s\S]*?)```/i.exec(t);
+  if (zaun) {
+    const r2 = versuch(zaun[1].trim());
+    if (r2.ok) return r2;
+    t = zaun[1].trim();
+  }
+
+  /* 3. Vom ersten { oder [ bis zur letzten passenden Klammer – damit ein
+        Satz davor oder danach nichts verdirbt. */
+  const auf = t.search(/[{[]/);
+  if (auf >= 0) {
+    const zu = t.lastIndexOf(t[auf] === '{' ? '}' : ']');
+    if (zu > auf) {
+      const r3 = versuch(t.slice(auf, zu + 1));
+      if (r3.ok) return r3;
+    }
+  }
+  return { ok: false, fehler: r.fehler };
+}
+/* Die Meldung von JSON.parse ist lang und englisch; hier reicht die Stelle. */
+function jsonFehlerText(fehler) {
+  const pos = /position (\d+)/i.exec(String(fehler || ''));
+  const zeile = /line (\d+)/i.exec(String(fehler || ''));
+  return 'Die Datei ist kein gültiges JSON'
+    + (zeile ? ' (Zeile ' + zeile[1] + ')' : pos ? ' (Zeichen ' + pos[1] + ')' : '') + '.';
+}
+
 function fmtDauer(min) {
   if (!min) return '0 min';
   const h = Math.floor(min / 60), m = Math.round(min % 60);

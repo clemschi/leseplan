@@ -382,7 +382,7 @@ function appImportBlatt(cfg) {
     <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">Eine
       <strong>${esc(cfg.datei)}</strong> einlesen. Der bisherige Stand dieser App wird ersetzt;
       die anderen Apps bleiben unberührt.</p>
-    <input type="file" accept="application/json,.json" data-file style="width:100%">
+    <input type="file" accept="application/json,.json,text/plain,.txt" data-file style="width:100%">
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
       <button class="btn btn-ghost" data-no>Abbrechen</button>
@@ -391,9 +391,9 @@ function appImportBlatt(cfg) {
   $('[data-ok]', s).onclick = async () => {
     const f = $('[data-file]', s).files[0];
     if (!f) { toast('Keine Datei gewählt.'); return; }
-    let roh = null;
-    try { roh = JSON.parse(await f.text()); }
-    catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); return; }
+    const gelesen = jsonLesen(await f.text());
+    if (!gelesen.ok) { toast(jsonFehlerText(gelesen.fehler), 4500); return; }
+    const roh = gelesen.wert;
     const passt = appOrtZuDaten(roh);
     if (passt && passt !== cfg) {
       toast('Das sind Daten für ' + passt.name + '. Dort laden.', 4200);
@@ -480,9 +480,9 @@ async function alleSichern() {
 async function alleLaden(dateien) {
   const gelandet = [], daneben = [];
   for (const f of dateien) {
-    let roh = null;
-    try { roh = JSON.parse(await f.text()); }
-    catch (e) { daneben.push(f.name + ' (kein JSON)'); continue; }
+    const gelesen = jsonLesen(await f.text());
+    if (!gelesen.ok) { daneben.push(f.name + ' (kein JSON)'); continue; }
+    const roh = gelesen.wert;
     if (roh && roh.format === 'mylife-alles' && roh.teile && typeof roh.teile === 'object') {
       for (const cfg of APPORTE) {
         const teil = roh.teile[cfg.store.id];
@@ -507,7 +507,7 @@ function alleLadenBlatt(fertig) {
       Dateien (leseplan, kalender, fastreader, gsund, minimal, cashflow). Jeder Teil geht in
       seine App;
       was dort liegt, wird ersetzt.</p>
-    <input type="file" accept="application/json,.json" data-file multiple style="width:100%">
+    <input type="file" accept="application/json,.json,text/plain,.txt" data-file multiple style="width:100%">
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
       <button class="btn btn-ghost" data-no>Abbrechen</button>

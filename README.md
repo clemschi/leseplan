@@ -369,6 +369,13 @@ unter *Daten aus Datei laden → Ergänzen* eingespielt.
   Autoren, Jahr, Kurzfassung) mit; die Beurteilung kommt in den Chat, die Vorschläge in
   die Datei, einsortiert in bestehende oder neue Blöcke.
 
+Jedes Dateifeld in der App geht über denselben Leser: er nimmt blankes JSON, JSON in
+```-Zäunen und JSON mit einem freundlichen Satz davor oder danach – so, wie es aus einem
+Chat kommt. Geht es trotzdem nicht auf, nennt die Meldung die Stelle statt nur „kein
+gültiges JSON“, und das Feld wird geleert, damit sich dieselbe Datei gleich noch einmal
+wählen lässt. Neben `.json` sind auch `.txt` und `text/plain` zugelassen, weil manche
+Dateiauswahl am Telefon sonst nichts anzeigt.
+
 Ein vierter Prompt, **Sammlung zum Stöbern**, liefert keinen fertigen Plan, sondern
 einen Vorrat: mehrere Themen hinein, rund hundert Werke heraus, jedes mit seinem Thema.
 Diese Datei ist das Futter fürs Stöbern. Die Themen gibst du entweder selbst vor, oder du

@@ -37,7 +37,7 @@ Grundlage – gilt für alle Apps:
 
 | Datei | Zeilen | Was |
 |---|---|---|
-| `grundlage.js` | 248 | `$`, `$$`, `uid`, `clamp`, `esc`, `pl`; Ruhe über der Tastatur (`felderBeobachten`, `.zeile` statt `<input>`); `toast()`; sichtbarer Bereich (`--vvh`, `--tabh`) |
+| `grundlage.js` | 288 | `$`, `$$`, `uid`, `clamp`, `esc`, `pl`; Ruhe über der Tastatur (`felderBeobachten`, `.zeile` statt `<input>`); `toast()`; `jsonLesen`/`jsonFehlerText` (JSON auch aus ```-Zäunen und mit Text drumherum); sichtbarer Bereich (`--vvh`, `--tabh`) |
 | `datenmodell.js` | 215 | `leereDb`, `normalisiere`, `DB`, Zugriffe und Statistik der leseliste |
 | `speicher.js` | 309 | `IDB`, `macheSpeicher(cfg)`, `Store` |
 | `einrichtung.js` | 287 | `setupZeigen`, `huelleEinstellungenHtml/…Binden`, `splashZeigen`, `APPS`, `appFlaeche` |
@@ -87,6 +87,7 @@ leseliste – der Rest, nach Aufgaben getrennt:
 | Lang drücken und schieben? | `ziehenZumSortieren` in `js/plan.js` – Griff, Auswahl, `fertig(reihe)` |
 | Wisch geht heim statt zu wirken? | die Tabu-Liste in `heimZiehen` (`js/ebenen.js`) – Flächen, die quer selbst etwas tun, stehen dort |
 | Warum sieht ein Knopf überall gleich aus? | `globalKnoepfeHtml`, `saveChipMalen` |
+| Datei lässt sich nicht laden? | `jsonLesen` in `js/grundlage.js` – jedes Dateifeld geht darüber, nie über `JSON.parse` direkt |
 | Warum verschwindet die Seite beim Zurück? | `verlaufTiefe()` in `js/ebenen.js` – weiter zurück als bis zur App darf niemand |
 | Neue App anlegen? | `APPS` und `appFlaeche` in `js/einrichtung.js`, ein `macheSpeicher`, ein Rumpf in `rumpf.html`, eine neue Datei unter `js/` und ein Eintrag in `build.js` |
 

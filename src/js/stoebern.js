@@ -323,7 +323,7 @@ function stoebernOeffnen() {
           was dich interessiert – nach links, was nicht. Aus dem Gemerkten baust du danach die Blöcke.
         </div>
         <button class="btn btn-primary btn-block" data-waehlen>${ICON.books} Sammlung wählen</button>
-        <input type="file" accept=".json,application/json" data-file hidden>
+        <input type="file" accept="application/json,.json,text/plain,.txt" data-file hidden>
         <p class="hinweis" style="padding:14px 0 8px">
           Noch keine Sammlung? Die App baut dir den Prompt dafür – mehrere Themen hinein,
           rund hundert Werke heraus.
@@ -342,12 +342,29 @@ function stoebernOeffnen() {
     $('[data-prompt]', inhalt).onclick = () => stoebernPromptOeffnen();
     datei.onchange = async () => {
       const f = datei.files[0];
-      if (!f) return;
-      let roh;
-      try { roh = JSON.parse(await f.text()); }
-      catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); return; }
-      const gefunden = stoWerkeAus(roh);
-      if (!gefunden.length) { toast('Darin stecken keine Werke.', 4000); return; }
+      /* Immer zurücksetzen: sonst meldet das Feld nichts, wenn dieselbe Datei
+         ein zweites Mal gewählt wird – etwa nach einem missglückten Versuch. */
+      const zuruecksetzen = () => { datei.value = ''; };
+      if (!f) { zuruecksetzen(); return; }
+      const gelesen = jsonLesen(await f.text());
+      if (!gelesen.ok) { zuruecksetzen(); toast(jsonFehlerText(gelesen.fehler), 4500); return; }
+      const gefunden = stoWerkeAus(gelesen.wert);
+      if (!gefunden.length) {
+        zuruecksetzen();
+        toast(Array.isArray(gelesen.wert) || gelesen.wert.werke || gelesen.wert.buecher
+          ? 'Die Liste in der Datei ist leer.'
+          : 'Darin stecken keine Werke – erwartet wird „werke“ oder „buecher“.', 4500);
+        return;
+      }
+      /* Ein angefangener Durchgang mit Gemerktem geht sonst wortlos verloren. */
+      if (gemerkt.length && !await bestaetigen('Angefangenes verwerfen?',
+        pl(gemerkt.length, 'gemerktes Werk', 'gemerkte Werke') + ' aus dem laufenden Durchgang '
+        + (gemerkt.length === 1 ? 'geht' : 'gehen')
+        + ' verloren, wenn du eine neue Sammlung lädst.', 'Neue Sammlung', true)) {
+        zuruecksetzen();
+        return;
+      }
+      zuruecksetzen();
       werke = gefunden;
       themen = [];
       werke.forEach(w => { if (!themen.includes(w.thema)) themen.push(w.thema); });

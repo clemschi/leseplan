@@ -6,7 +6,7 @@ function importDialog(erstStart) {
     <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
       Erwartet wird eine <span class="num">.json</span> im leseliste-Format – eine frühere Sicherung oder eine fertige Liste.
     </p>
-    <input type="file" accept=".json,application/json" data-file style="padding:9px">
+    <input type="file" accept="application/json,.json,text/plain,.txt" data-file style="padding:9px">
     <div class="field" style="margin-top:14px">
       <label>Wie einspielen?</label>
       <label style="display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;font-size:13px;color:var(--text-2)">
@@ -29,9 +29,9 @@ function importDialog(erstStart) {
   $('[data-ok]', s).onclick = async () => {
     const f = $('[data-file]', s).files[0];
     if (!f) { toast('Bitte erst eine Datei wählen.'); return; }
-    let roh;
-    try { roh = JSON.parse(await f.text()); }
-    catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); return; }
+    const gelesen = jsonLesen(await f.text());
+    if (!gelesen.ok) { toast(jsonFehlerText(gelesen.fehler), 4500); return; }
+    const roh = gelesen.wert;
     if (!roh || (!Array.isArray(roh.buecher) && !Array.isArray(roh.bloecke))) {
       toast('Darin steckt keine leseliste.', 4000); return;
     }

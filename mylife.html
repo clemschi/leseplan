@@ -1537,6 +1537,49 @@ const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isF
 const heute = () => new Date().toISOString().slice(0, 10);
 const MONATE = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 
+/* ---------- JSON aus einer Datei lesen ----------
+   Was aus einem Chat kommt, ist selten blankes JSON: mal steht es zwischen
+   ```-Zäunen, mal mit einem freundlichen Satz davor und danach. Von Hand
+   nachputzen muss niemand – hier wird geschält, bis es aufgeht. */
+function jsonLesen(text) {
+  const versuch = t => { try { return { ok: true, wert: JSON.parse(t) }; }
+    catch (e) { return { ok: false, fehler: String(e.message || e) }; } };
+  const roh = String(text == null ? '' : text);
+  if (!roh.trim()) return { ok: false, fehler: 'Die Datei ist leer.' };
+
+  /* 1. So, wie es dasteht – der Normalfall. */
+  let r = versuch(roh);
+  if (r.ok) return r;
+
+  /* 2. Ohne Byte-Marke und ohne ```-Zäune. */
+  let t = roh.replace(/^﻿/, '').trim();
+  const zaun = /```(?:json|javascript|js)?\s*([\s\S]*?)```/i.exec(t);
+  if (zaun) {
+    const r2 = versuch(zaun[1].trim());
+    if (r2.ok) return r2;
+    t = zaun[1].trim();
+  }
+
+  /* 3. Vom ersten { oder [ bis zur letzten passenden Klammer – damit ein
+        Satz davor oder danach nichts verdirbt. */
+  const auf = t.search(/[{[]/);
+  if (auf >= 0) {
+    const zu = t.lastIndexOf(t[auf] === '{' ? '}' : ']');
+    if (zu > auf) {
+      const r3 = versuch(t.slice(auf, zu + 1));
+      if (r3.ok) return r3;
+    }
+  }
+  return { ok: false, fehler: r.fehler };
+}
+/* Die Meldung von JSON.parse ist lang und englisch; hier reicht die Stelle. */
+function jsonFehlerText(fehler) {
+  const pos = /position (\d+)/i.exec(String(fehler || ''));
+  const zeile = /line (\d+)/i.exec(String(fehler || ''));
+  return 'Die Datei ist kein gültiges JSON'
+    + (zeile ? ' (Zeile ' + zeile[1] + ')' : pos ? ' (Zeichen ' + pos[1] + ')' : '') + '.';
+}
+
 function fmtDauer(min) {
   if (!min) return '0 min';
   const h = Math.floor(min / 60), m = Math.round(min % 60);
@@ -2265,7 +2308,7 @@ function appImportBlatt(cfg) {
     <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">Eine
       <strong>${esc(cfg.datei)}</strong> einlesen. Der bisherige Stand dieser App wird ersetzt;
       die anderen Apps bleiben unberührt.</p>
-    <input type="file" accept="application/json,.json" data-file style="width:100%">
+    <input type="file" accept="application/json,.json,text/plain,.txt" data-file style="width:100%">
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
       <button class="btn btn-ghost" data-no>Abbrechen</button>
@@ -2274,9 +2317,9 @@ function appImportBlatt(cfg) {
   $('[data-ok]', s).onclick = async () => {
     const f = $('[data-file]', s).files[0];
     if (!f) { toast('Keine Datei gewählt.'); return; }
-    let roh = null;
-    try { roh = JSON.parse(await f.text()); }
-    catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); return; }
+    const gelesen = jsonLesen(await f.text());
+    if (!gelesen.ok) { toast(jsonFehlerText(gelesen.fehler), 4500); return; }
+    const roh = gelesen.wert;
     const passt = appOrtZuDaten(roh);
     if (passt && passt !== cfg) {
       toast('Das sind Daten für ' + passt.name + '. Dort laden.', 4200);
@@ -2363,9 +2406,9 @@ async function alleSichern() {
 async function alleLaden(dateien) {
   const gelandet = [], daneben = [];
   for (const f of dateien) {
-    let roh = null;
-    try { roh = JSON.parse(await f.text()); }
-    catch (e) { daneben.push(f.name + ' (kein JSON)'); continue; }
+    const gelesen = jsonLesen(await f.text());
+    if (!gelesen.ok) { daneben.push(f.name + ' (kein JSON)'); continue; }
+    const roh = gelesen.wert;
     if (roh && roh.format === 'mylife-alles' && roh.teile && typeof roh.teile === 'object') {
       for (const cfg of APPORTE) {
         const teil = roh.teile[cfg.store.id];
@@ -2390,7 +2433,7 @@ function alleLadenBlatt(fertig) {
       Dateien (leseplan, kalender, fastreader, gsund, minimal, cashflow). Jeder Teil geht in
       seine App;
       was dort liegt, wird ersetzt.</p>
-    <input type="file" accept="application/json,.json" data-file multiple style="width:100%">
+    <input type="file" accept="application/json,.json,text/plain,.txt" data-file multiple style="width:100%">
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-primary" data-ok style="flex:1">Laden</button>
       <button class="btn btn-ghost" data-no>Abbrechen</button>
@@ -9244,7 +9287,7 @@ function importDialog(erstStart) {
     <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
       Erwartet wird eine <span class="num">.json</span> im leseliste-Format – eine frühere Sicherung oder eine fertige Liste.
     </p>
-    <input type="file" accept=".json,application/json" data-file style="padding:9px">
+    <input type="file" accept="application/json,.json,text/plain,.txt" data-file style="padding:9px">
     <div class="field" style="margin-top:14px">
       <label>Wie einspielen?</label>
       <label style="display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;font-size:13px;color:var(--text-2)">
@@ -9267,9 +9310,9 @@ function importDialog(erstStart) {
   $('[data-ok]', s).onclick = async () => {
     const f = $('[data-file]', s).files[0];
     if (!f) { toast('Bitte erst eine Datei wählen.'); return; }
-    let roh;
-    try { roh = JSON.parse(await f.text()); }
-    catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); return; }
+    const gelesen = jsonLesen(await f.text());
+    if (!gelesen.ok) { toast(jsonFehlerText(gelesen.fehler), 4500); return; }
+    const roh = gelesen.wert;
     if (!roh || (!Array.isArray(roh.buecher) && !Array.isArray(roh.bloecke))) {
       toast('Darin steckt keine leseliste.', 4000); return;
     }
@@ -12649,7 +12692,7 @@ function stoebernOeffnen() {
           was dich interessiert – nach links, was nicht. Aus dem Gemerkten baust du danach die Blöcke.
         </div>
         <button class="btn btn-primary btn-block" data-waehlen>${ICON.books} Sammlung wählen</button>
-        <input type="file" accept=".json,application/json" data-file hidden>
+        <input type="file" accept="application/json,.json,text/plain,.txt" data-file hidden>
         <p class="hinweis" style="padding:14px 0 8px">
           Noch keine Sammlung? Die App baut dir den Prompt dafür – mehrere Themen hinein,
           rund hundert Werke heraus.
@@ -12668,12 +12711,29 @@ function stoebernOeffnen() {
     $('[data-prompt]', inhalt).onclick = () => stoebernPromptOeffnen();
     datei.onchange = async () => {
       const f = datei.files[0];
-      if (!f) return;
-      let roh;
-      try { roh = JSON.parse(await f.text()); }
-      catch (e) { toast('Die Datei ist kein gültiges JSON.', 4000); return; }
-      const gefunden = stoWerkeAus(roh);
-      if (!gefunden.length) { toast('Darin stecken keine Werke.', 4000); return; }
+      /* Immer zurücksetzen: sonst meldet das Feld nichts, wenn dieselbe Datei
+         ein zweites Mal gewählt wird – etwa nach einem missglückten Versuch. */
+      const zuruecksetzen = () => { datei.value = ''; };
+      if (!f) { zuruecksetzen(); return; }
+      const gelesen = jsonLesen(await f.text());
+      if (!gelesen.ok) { zuruecksetzen(); toast(jsonFehlerText(gelesen.fehler), 4500); return; }
+      const gefunden = stoWerkeAus(gelesen.wert);
+      if (!gefunden.length) {
+        zuruecksetzen();
+        toast(Array.isArray(gelesen.wert) || gelesen.wert.werke || gelesen.wert.buecher
+          ? 'Die Liste in der Datei ist leer.'
+          : 'Darin stecken keine Werke – erwartet wird „werke“ oder „buecher“.', 4500);
+        return;
+      }
+      /* Ein angefangener Durchgang mit Gemerktem geht sonst wortlos verloren. */
+      if (gemerkt.length && !await bestaetigen('Angefangenes verwerfen?',
+        pl(gemerkt.length, 'gemerktes Werk', 'gemerkte Werke') + ' aus dem laufenden Durchgang '
+        + (gemerkt.length === 1 ? 'geht' : 'gehen')
+        + ' verloren, wenn du eine neue Sammlung lädst.', 'Neue Sammlung', true)) {
+        zuruecksetzen();
+        return;
+      }
+      zuruecksetzen();
       werke = gefunden;
       themen = [];
       werke.forEach(w => { if (!themen.includes(w.thema)) themen.push(w.thema); });
