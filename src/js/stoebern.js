@@ -274,12 +274,15 @@ function stoebernOeffnen() {
     }));
     frei = (g.frei || []).map(nachId).filter(Boolean);
     listenName = g.name || '';
-    schritt = ['themen', 'wischen', 'sammlung', 'bloecke'].includes(g.schritt) ? g.schritt : 'themen';
+    schritt = ['laden', 'themen', 'wischen', 'sammlung', 'bloecke'].includes(g.schritt) ? g.schritt : 'themen';
     if (schritt === 'wischen' && !stapel.length) schritt = 'themen';
-    /* Wer zurückkommt, will an die Karte, nicht noch einmal durch Laden und
-       Themen – auch wenn er beim Weggehen über diese Schritte gegangen ist. */
-    if (stapel.length && (schritt === 'laden' || schritt === 'themen')) {
-      schritt = zeiger < stapel.length ? 'wischen' : (gemerkt.length ? 'sammlung' : 'wischen');
+    /* Wer mitten im Stapel zurückkommt, will an die Karte, nicht noch einmal
+       durch Laden und Themen. Ist der Stapel dagegen durch und nichts mehr
+       gemerkt, ist der Durchgang erledigt – dann bleibt es beim Laden. */
+    if (stapel.length && zeiger < stapel.length && (schritt === 'laden' || schritt === 'themen')) {
+      schritt = 'wischen';
+    } else if (stapel.length && gemerkt.length && schritt === 'themen') {
+      schritt = 'sammlung';
     }
     return true;
   };
@@ -290,6 +293,8 @@ function stoebernOeffnen() {
     <div class="ovl-head sto-kopf">
       <button class="icon-btn" data-back>${ICON.back}</button>
       <div class="grow"><div class="t" data-t>Stöbern</div><div class="u" data-u></div></div>
+      <button class="icon-btn" data-andere hidden title="Andere Sammlung"
+        aria-label="Andere Sammlung laden">${ICON.books}</button>
       <span class="sto-zaehler" data-zaehler hidden>${ICON.herz}<span data-zahl>0</span></span>
     </div>
     <div class="sto-fort"><i data-fort style="width:0%"></i></div>
@@ -298,6 +303,7 @@ function stoebernOeffnen() {
   const inhalt = $('[data-inhalt]', node);
   const kopfT = $('[data-t]', node), kopfU = $('[data-u]', node);
   const zaehler = $('[data-zaehler]', node), zahl = $('[data-zahl]', node);
+  const andere = $('[data-andere]', node);
   const fort = $('[data-fort]', node);
 
   const zaehlerAuffrischen = (puls) => {
@@ -890,7 +896,10 @@ function stoebernOeffnen() {
        bleiben, damit man später weiterstöbern kann. */
     gemerkt = []; verlauf = []; bloecke = []; frei = []; listenName = '';
     superIds = new Set();
-    schritt = zeiger < stapel.length ? 'wischen' : 'themen';
+    /* Ist der Stapel durch, ist der Durchgang zu Ende – dann steht beim
+       nächsten Mal wieder das Laden vorn. Sonst bliebe man für immer bei
+       „Blöcke ordnen“ stehen und käme an keine neue Sammlung. */
+    schritt = zeiger < stapel.length ? 'wischen' : 'laden';
     merken();
     layerSchliessen();
     offeneBloecke.clear();
@@ -913,6 +922,9 @@ function stoebernOeffnen() {
   };
 
   const malen = () => {
+    /* Der Weg zu einer neuen Sammlung führt aus jedem Schritt heraus – sonst
+       muss man sich Schritt für Schritt zurückarbeiten. */
+    andere.hidden = schritt === 'laden';
     if (schritt === 'laden') schrittLaden();
     else if (schritt === 'themen') schrittThemen();
     else if (schritt === 'wischen') schrittWischen();
@@ -926,6 +938,7 @@ function stoebernOeffnen() {
   /* Der Pfeil oben tut, was er in jeder anderen Ebene tut: er schliesst sie.
      Zwischen den Schritten geht es unten im Fuss zurück. */
   $('[data-back]', node).onclick = () => layerSchliessen();
+  andere.onclick = () => { schritt = 'laden'; malen(); };
 
   layerOeffnen(node, () => {
     window.__zieht = false;

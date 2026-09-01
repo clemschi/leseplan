@@ -64,7 +64,7 @@ leseliste – der Rest, nach Aufgaben getrennt:
 | `plan.js` | 627 | Listen, Blöcke, Bücher: anlegen, ordnen, verschieben |
 | `buch.js` | 676 | Buchansicht (Beschreibung, Themen, Arten), Seite „Lesen“, Notizen |
 | `diagramme.js` | 1214 | Übersicht, Graphen, Autorennetz, Zeitstrahl |
-| `stoebern.js` | 903 | Prompt für eine Sammlung und die App in der App (`ziehenBinden`) |
+| `stoebern.js` | 955 | Prompt für eine Sammlung und die App in der App (`ziehenBinden`); `wiederherstellen` entscheidet, wo ein Durchgang wieder einsteigt – durchgestöbert heisst „laden“ |
 | `sitzungen.js` | 308 | Stoppuhr, laufende und vergangene Sitzungen |
 | `mehr.js` | 263 | Speicherort, Arten, Sicherung |
 | `themenfelder.js` | 257 | Themenfelder über alle Bücher, Suche über alles |
