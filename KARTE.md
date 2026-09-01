@@ -68,7 +68,7 @@ leseliste – der Rest, nach Aufgaben getrennt:
 | `sitzungen.js` | 308 | Stoppuhr, laufende und vergangene Sitzungen |
 | `mehr.js` | 263 | Speicherort, Arten, Sicherung |
 | `themenfelder.js` | 257 | Themenfelder über alle Bücher, Suche über alles |
-| `prompts.js` | 355 | KI-Prompts zum Erstellen, Bewerten und Holen über die ISBN (`isbnPruefen` mit Prüfziffer, `isbnLesen`, `kiIsbnOeffnen`) |
+| `prompts.js` | 500 | KI-Prompts: Erstellen, Bewerten, über die ISBN holen (`isbnPruefen` mit Prüfziffer, `kiIsbnOeffnen`) und Vorrat aus Webseiten (`webAdressen`, `stoebernWebOeffnen` – mit Entdoppeln und Sperrliste) |
 | `einkauf.js` | 187 | Was fehlt und was als Nächstes drankommt |
 | `bilder.js` | 133 | aufnehmen, wählen, verkleinern |
 | `laden.js` | 111 | ganze Liste ersetzen oder ergänzen |

@@ -77,6 +77,13 @@ function mehrMalen(root) {
           </span>
           <button class="btn btn-sm" data-ki-stoebern>Prompt</button>
         </div>
+        <div class="rowline">
+          <span class="grow">
+            <span class="rn">Sammlung aus Bestenlisten</span>
+            <span class="rm">Adressen von Seiten, die Bücher aufzählen – entdoppelt zum Stöbern</span>
+          </span>
+          <button class="btn btn-sm" data-ki-web>Prompt</button>
+        </div>
       </div>
     </div>
 
@@ -141,6 +148,7 @@ function mehrMalen(root) {
   $('[data-ki-isbn]', root).onclick = kiIsbnOeffnen;
   $('[data-ki-bewerten]', root).onclick = kiBewertenOeffnen;
   $('[data-ki-stoebern]', root).onclick = stoebernPromptOeffnen;
+  $('[data-ki-web]', root).onclick = stoebernWebOeffnen;
   $('[data-stoebern]', root).onclick = () => stoebernOeffnen();
   $('[data-einkauf]', root).onclick = einkaufslisteOeffnen;
   $('[data-einf]', root).onclick = einfuehrungZeigen;

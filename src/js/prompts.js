@@ -305,6 +305,161 @@ ${kiSchemaText('- "lesepleane" enthält genau einen Eintrag mit dem Namen exakt 
   };
 }
 
+/* ---------- Vorrat aus Webseiten ---------- */
+/* Bestenlisten, Verlagsprogramme, Feuilleton-Seiten: alles, was Bücher
+   aufzählt. Der Prompt lässt die Seiten lesen und macht daraus einen Vorrat
+   fürs Stöbern. Der Knackpunkt ist das Entdoppeln – dieselbe Bestenliste
+   steht oft auf mehreren Seiten. */
+function webAdressen(text) {
+  const gut = [], schlecht = [];
+  String(text).split(/[\s,;]+/).forEach(t => {
+    const roh = t.trim().replace(/[),.]+$/, '');
+    if (!roh) return;
+    let u = roh;
+    if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+    try {
+      const geprueft = new URL(u);
+      if (!/^https?:$/.test(geprueft.protocol) || !geprueft.hostname.includes('.')) throw 0;
+      if (!gut.includes(geprueft.href)) gut.push(geprueft.href);
+    } catch (e) { schlecht.push(roh.slice(0, 40)); }
+  });
+  return { gut, schlecht };
+}
+/* Nur der Wirtsname – der reicht, um im Blatt zu zeigen, was erkannt wurde. */
+const webWirt = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } };
+
+function stoebernWebOeffnen() {
+  const s = blatt('Sammlung aus Bestenlisten', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
+      Adressen von Seiten, die Bücher aufzählen – Bestenlisten, Verlagsprogramme,
+      Feuilleton. Daraus wird ein Vorrat zum <strong>Stöbern</strong>. Dieselbe Liste
+      steht oft auf mehreren Seiten; der Prompt fasst das zu einem Eintrag zusammen.
+    </p>
+    <div class="field">
+      <label>Adressen – eine je Zeile</label>
+      <textarea data-web style="min-height:110px;font-size:12.5px"
+        placeholder="https://shop.zeit.de/…/sachbuchbestenliste-2026&#10;https://www.perlentaucher.de/…"></textarea>
+      <span class="hint" data-webzaehler>Noch nichts eingetragen.</span>
+    </div>
+    <div class="field">
+      <label>Wonach werden die Werke sortiert?</label>
+      <label class="optzeile"><input type="radio" name="stowthema" value="sach" checked>
+        <span><strong>Nach Sachgebiet</strong> – die KI ordnet quer über alle Seiten</span></label>
+      <label class="optzeile"><input type="radio" name="stowthema" value="quelle">
+        <span><strong>Nach Herkunft</strong> – je Seite ein Thema, so wie sie dort steht</span></label>
+    </div>
+    <div class="field" data-feldGebiete>
+      <label>Wie viele Sachgebiete?</label>
+      <input type="number" data-gebiete value="5" min="2" max="20">
+    </div>
+    <div class="field">
+      <label>Höchstens wie viele Werke?</label>
+      <input type="number" data-anzahl value="60" min="10" max="250">
+      <span class="hint" data-webmenge></span>
+    </div>
+    <div class="field">
+      <label>Sprache der Ausgaben</label>
+      <div class="chiprow" style="padding-left:0;flex-wrap:wrap;overflow:visible" data-sprache></div>
+    </div>
+    <div class="field">
+      <label class="optzeile"><input type="checkbox" data-ohnevorhanden checked>
+        <span><strong>Weglassen, was ich schon habe</strong><br>Die Titel aus deiner leseliste
+        gehen im Prompt mit, damit nichts doppelt zurückkommt.</span></label>
+    </div>
+    <div class="field">
+      <label>Worauf soll besonders geachtet werden? (optional)</label>
+      <textarea data-zusatz style="min-height:60px" placeholder="z. B. nur die ersten zehn je Liste, keine Belletristik …"></textarea>
+    </div>
+    <button class="btn btn-primary btn-block" data-ok>Prompt erzeugen</button>`, { fokus: false });
+
+  let sprache = 'deutsch';
+  const spracheMalen = () => {
+    $('[data-sprache]', s).innerHTML = Object.keys(KI_SPRACHEN).map(k =>
+      `<button class="chip" data-sp="${k}" aria-pressed="${k === sprache}">${KI_SPRACHEN[k].label}</button>`).join('');
+    $$('[data-sp]', s).forEach(b => b.onclick = () => { sprache = b.dataset.sp; spracheMalen(); });
+  };
+  spracheMalen();
+
+  const zaehlen = () => {
+    const { gut, schlecht } = webAdressen($('[data-web]', s).value);
+    const z = $('[data-webzaehler]', s);
+    z.textContent = !gut.length && !schlecht.length ? 'Noch nichts eingetragen.'
+      : pl(gut.length, 'Adresse', 'Adressen') + (gut.length ? ': ' + gut.map(webWirt).join(', ') : '')
+      + (schlecht.length ? ' · ' + schlecht.length + ' passt nicht: ' + schlecht.join(', ') : '');
+    z.style.color = schlecht.length ? 'var(--bad)' : '';
+  };
+  $('[data-web]', s).addEventListener('input', zaehlen);
+
+  const mengeHinweis = () => {
+    const n = Math.round(num($('[data-anzahl]', s).value) || 0);
+    $('[data-webmenge]', s).innerHTML = n > 50
+      ? 'Über 50 Werke schafft die Claude-Basisversion selten in einem Durchgang – dann lieber zwei Durchgänge mit je der Hälfte der Adressen.'
+      : 'Bis etwa 50 Werke geht in einem Durchgang.';
+  };
+  $('[data-anzahl]', s).addEventListener('input', mengeHinweis);
+  mengeHinweis();
+
+  const themaMalen = () => {
+    $('[data-feldGebiete]', s).hidden = $('input[name=stowthema]:checked', s).value !== 'sach';
+  };
+  $$('input[name=stowthema]', s).forEach(r => r.onchange = themaMalen);
+  themaMalen();
+
+  $('[data-ok]', s).onclick = () => {
+    const { gut, schlecht } = webAdressen($('[data-web]', s).value);
+    if (!gut.length) { toast('Keine brauchbare Adresse dabei.'); return; }
+    if (schlecht.length) toast(schlecht.length + ' Zeile(n) sind keine Adresse – die bleiben aussen vor.', 4000);
+    const nachSach = $('input[name=stowthema]:checked', s).value === 'sach';
+    const gebiete = clamp(Math.round(num($('[data-gebiete]', s).value) || 5), 2, 20);
+    const anzahl = clamp(Math.round(num($('[data-anzahl]', s).value) || 60), 10, 250);
+    const zusatz = $('[data-zusatz]', s).value.trim();
+
+    /* Was schon in der leseliste steht, geht als Sperrliste mit. */
+    const vorhanden = $('[data-ohnevorhanden]', s).checked
+      ? DB.buecher.map(b => b.titel + (b.autor ? ' — ' + b.autor : '')).filter(Boolean)
+      : [];
+
+    const themaTeil = nachSach
+      ? `Ordne die Werke in **${gebiete} Sachgebiete**, die du selbst aus dem bestimmst, was tatsächlich`
+        + ` auf den Seiten steht – quer über alle Adressen hinweg, nicht je Seite eines. Trag die`
+        + ` Gebiete oben unter "themen" ein und verwende genau diese Schreibweise.`
+      : `Je Adresse **ein Thema**, benannt nach der Liste, aus der die Werke stammen`
+        + ` (etwa „ZEIT Sachbuch-Bestenliste 01/2026“ – so, wie die Seite sich selbst nennt,`
+        + ` mit Monat oder Jahr, wenn sie eines trägt). Trag diese Namen oben unter "themen" ein.`;
+
+    const prompt = `Ich nutze eine App für einen mehrjährigen Leseplan. Stell mir keinen fertigen Plan zusammen, sondern einen **Vorrat an Werken** zum Durchblättern – und zwar aus dem, was auf diesen Seiten steht.
+
+## Die Seiten
+${gut.map(u => '- ' + u).join('\n')}
+
+**Ruf jede dieser Seiten wirklich auf** und nimm die Werke, die dort aufgeführt sind. Nichts aus dem Gedächtnis ergänzen, nichts dazuerfinden. Lässt sich eine Seite nicht lesen, schreib das im Chat und lass sie aus – lieber weniger Werke als erfundene.
+
+## Keine Dopplungen
+Das ist hier der springende Punkt, weil dieselbe Liste oft auf mehreren Seiten steht:
+- **Ein Werk = ein Eintrag**, auch wenn es auf mehreren der Seiten auftaucht.
+- Auch **verschiedene Ausgaben, Auflagen oder Übersetzungen desselben Werks** sind ein Eintrag, nicht mehrere. Entscheide nach Autor:in und Originalwerk, nicht nach dem Wortlaut des Titels.
+- Steht ein Werk auf mehreren Listen, nenn das am Ende von "beschreibung" in der Form \`Gelistet bei: ZEIT, Perlentaucher.\` – das ist ein Hinweis, kein eigenes Feld.
+- Prüfe die fertige Liste vor der Ausgabe noch einmal auf Dopplungen.${vorhanden.length ? `
+
+## Was ich schon habe
+Diese Werke stehen bereits in meiner leseliste. Lass sie weg – auch in anderer Ausgabe oder Übersetzung:
+
+${vorhanden.map(t => '- ' + t).join('\n')}` : ''}
+
+## Themen
+${themaTeil}
+
+Höchstens ${anzahl} Werke insgesamt. Sind es auf den Seiten mehr, nimm die, die dort oben stehen beziehungsweise am stärksten hervorgehoben sind. Nur Bücher, keine Fachartikel.
+
+${kiSchemaText('- "jahr" ist auch hier das Jahr der Erstveröffentlichung im Original, nicht das der auf der Seite beworbenen Ausgabe.\n'
+      + '- "ausgabe" ist die Ausgabe, die auf der Seite steht – Verlag, Jahr, wenn angegeben Übersetzer:in.\n'
+      + '- "beschreibung" schreibst du selbst: worum es geht und für wen es sich lohnt. Übernimm keinen Werbetext von der Seite.\n'
+      + '- "link" bleibt leer – eine Shop-Adresse ist keine Fundstelle.',
+      false, true, sprache)}${zusatz ? '\n\n## Außerdem\n' + zusatz : ''}`;
+    kiPromptZeigen(prompt, 'stoebern-web-prompt.txt', true);
+  };
+}
+
 function kiBewertenOeffnen() {
   const plan = aktiverPlan();
   if (!plan) { toast('Erst eine leseliste anlegen.'); return; }

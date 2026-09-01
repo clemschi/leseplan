@@ -345,7 +345,7 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
 
 ## Mit KI
 
-Unter *Mehr → Mit KI* stehen vier Prompt-Generatoren. Alle erzeugen einen Text zum
+Unter *Mehr → Mit KI* stehen fünf Prompt-Generatoren. Alle erzeugen einen Text zum
 Kopieren, der in Claude eingefügt wird. Der Prompt verlangt die Antwort als
 **herunterladbare `leseliste.json`**, nicht als Nachricht im Chat – die Datei wird
 unter *Daten aus Datei laden → Ergänzen* eingespielt.
@@ -376,6 +376,22 @@ wählst **Überrasch mich** und sagst nur, wie viele es sein sollen – dann suc
 aus, auf Wunsch in eine grobe Richtung. Der **Anteil Fachartikel** ist in Stufen bis
 siebzig Prozent einstellbar, und Artikel lassen sich auf einen **Jahresbereich**
 eingrenzen; für Bücher gilt die Schranke nicht.
+
+**Sammlung aus Bestenlisten** geht denselben Weg, füttert sich aber aus dem Netz: eine
+Adresse je Zeile – Bestenlisten, Verlagsprogramme, Feuilleton, alles, was Bücher
+aufzählt. Fehlt das `https://`, wird es ergänzt; was keine Adresse ist, nennt der Zähler
+unter dem Feld, und dieselbe Adresse zählt nur einmal. Der Prompt verlangt, dass die
+Seiten **wirklich aufgerufen** werden – nichts aus dem Gedächtnis, und eine Seite, die
+sich nicht lesen lässt, wird im Chat genannt statt gefüllt.
+
+Der springende Punkt ist das **Entdoppeln**, denn dieselbe Bestenliste steht oft auf
+mehreren Seiten: ein Werk bleibt ein Eintrag, auch über verschiedene Ausgaben,
+Auflagen und Übersetzungen hinweg – entschieden wird nach Autor:in und Originalwerk,
+nicht nach dem Wortlaut des Titels. Steht ein Buch auf mehreren Listen, endet seine
+Beschreibung mit `Gelistet bei: …`. Auf Wunsch gehen zusätzlich alle Titel aus der
+eigenen leseliste als Sperrliste mit, damit nichts zurückkommt, was schon dasteht.
+Sortiert wird wahlweise **nach Sachgebiet** (die KI ordnet quer über alle Seiten) oder
+**nach Herkunft** (je Adresse ein Thema, benannt wie die Liste selbst).
 
 Erstellen, Bewerten und Stöbern nehmen auf Wunsch **Fachartikel** mit auf – peer-reviewed und viel
 zitiert, wie über Google Scholar auffindbar. Bei Büchern werden deutsche Ausgaben
