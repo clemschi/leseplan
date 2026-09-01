@@ -345,7 +345,7 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
 
 ## Mit KI
 
-Unter *Mehr → Mit KI* stehen drei Prompt-Generatoren. Alle erzeugen einen Text zum
+Unter *Mehr → Mit KI* stehen vier Prompt-Generatoren. Alle erzeugen einen Text zum
 Kopieren, der in Claude eingefügt wird. Der Prompt verlangt die Antwort als
 **herunterladbare `leseliste.json`**, nicht als Nachricht im Chat – die Datei wird
 unter *Daten aus Datei laden → Ergänzen* eingespielt.
@@ -354,11 +354,22 @@ unter *Daten aus Datei laden → Ergänzen* eingespielt.
   gewünschte Zahl der Werke und Name der neuen leseliste dazu; die Antwort liefert eine
   vollständige neue leseliste in Blöcken. Erreichbar auch beim ersten Start: auf dem
   Startbildschirm, in der Einführung und in der noch leeren Listenansicht.
+- **Werke über die ISBN holen** – eine ISBN je Zeile, für einzelne Bücher, die man in
+  der Hand hält. Jede Nummer wird schon beim Tippen an ihrer **Prüfziffer** gemessen: der
+  Zähler unter dem Feld sagt, wie viele gültig sind, und nennt die Zeilen, die nicht
+  aufgehen – ein Tippfehler fällt hier auf und nicht erst, wenn die KI ein Buch dazu
+  erfindet. Weitergereicht wird die blanke Ziffernfolge; Bindestriche zu setzen hiesse
+  raten, denn wo die Gruppen liegen, hängt an den Nummernbereichen der Verlage. Dazu
+  wählt man leseliste und Block (bestehend oder neu) und die Sprache. Der Prompt bindet
+  beide Namen fest, verlangt **genau die Ausgabe hinter der Nummer** – Verlag, Auflage,
+  Übersetzer:in, Umfang, ISBN im Feld *Ausgabe* – und als `jahr` trotzdem das Jahr der
+  Erstveröffentlichung im Original. Was sich nicht sicher zuordnen lässt, soll die KI
+  weglassen und im Chat nennen statt zu raten.
 - **Aktuelle Liste bewerten lassen** – schickt die aktuelle leseliste (Blöcke, Titel,
   Autoren, Jahr, Kurzfassung) mit; die Beurteilung kommt in den Chat, die Vorschläge in
   die Datei, einsortiert in bestehende oder neue Blöcke.
 
-Ein dritter Prompt, **Sammlung zum Stöbern**, liefert keinen fertigen Plan, sondern
+Ein vierter Prompt, **Sammlung zum Stöbern**, liefert keinen fertigen Plan, sondern
 einen Vorrat: mehrere Themen hinein, rund hundert Werke heraus, jedes mit seinem Thema.
 Diese Datei ist das Futter fürs Stöbern. Die Themen gibst du entweder selbst vor, oder du
 wählst **Überrasch mich** und sagst nur, wie viele es sein sollen – dann sucht die KI sie
@@ -366,7 +377,7 @@ aus, auf Wunsch in eine grobe Richtung. Der **Anteil Fachartikel** ist in Stufen
 siebzig Prozent einstellbar, und Artikel lassen sich auf einen **Jahresbereich**
 eingrenzen; für Bücher gilt die Schranke nicht.
 
-Alle drei Prompts nehmen auf Wunsch **Fachartikel** mit auf – peer-reviewed und viel
+Erstellen, Bewerten und Stöbern nehmen auf Wunsch **Fachartikel** mit auf – peer-reviewed und viel
 zitiert, wie über Google Scholar auffindbar. Bei Büchern werden deutsche Ausgaben
 bevorzugt, einschlägige englische aber ausdrücklich mitgenommen; bei Artikeln zählt
 allein die Qualität, nicht die Sprache. Artikel tragen Zeitschrift und Seiten im Feld

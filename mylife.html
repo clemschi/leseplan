@@ -12001,6 +12001,126 @@ ${kiSchemaText('', artikel)}`;
   };
 }
 
+/* ---------- Einzelne Werke über die ISBN ---------- */
+/* Aus freiem Text alle ISBN herausklauben: Bindestriche und Leerzeichen
+   fallen weg, und die Prüfziffer sagt, ob sich jemand vertippt hat. */
+function isbnPruefen(roh) {
+  const z = String(roh).replace(/[^0-9Xx]/g, '').toUpperCase();
+  if (z.length === 13) {
+    if (!/^\d{13}$/.test(z)) return null;
+    let n = 0;
+    for (let i = 0; i < 12; i++) n += (+z[i]) * (i % 2 ? 3 : 1);
+    return ((10 - n % 10) % 10) === +z[12] ? z : null;
+  }
+  if (z.length === 10) {
+    if (!/^\d{9}[\dX]$/.test(z)) return null;
+    let n = 0;
+    for (let i = 0; i < 9; i++) n += (+z[i]) * (10 - i);
+    n += z[9] === 'X' ? 10 : +z[9];
+    return n % 11 === 0 ? z : null;
+  }
+  return null;
+}
+/* Je Zeile eine Nummer. Was nicht aufgeht, kommt als Fehlzeile zurück –
+   lieber vorher stutzig werden als hinterher ein erfundenes Buch. */
+function isbnLesen(text) {
+  const gut = [], schlecht = [];
+  String(text).split(/[\n,;]+/).forEach(z => {
+    const t = z.trim();
+    if (!t) return;
+    const ok = isbnPruefen(t);
+    if (ok) { if (!gut.includes(ok)) gut.push(ok); } else schlecht.push(t.slice(0, 40));
+  });
+  return { gut, schlecht };
+}
+/* Weitergereicht wird die blanke Ziffernfolge. Bindestriche zu setzen hiesse
+   raten: wo die Gruppen liegen, hängt an den Nummernbereichen der Verlage,
+   und eine falsch gesetzte Trennung sieht richtig aus, ist es aber nicht. */
+
+function kiIsbnOeffnen() {
+  const plan = aktiverPlan();
+  const bloecke = plan ? bloeckeSortiert() : [];
+  const s = blatt('Werke über die ISBN holen', `
+    <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">
+      Eine ISBN je Zeile. Der Prompt lässt genau diese Ausgaben nachschlagen und
+      gibt eine <span class="num">.json</span> zurück, die du unter „Daten aus Datei laden“
+      → <strong>Ergänzen</strong> einspielst.
+    </p>
+    <div class="field">
+      <label>ISBN – eine je Zeile</label>
+      <textarea data-isbn style="min-height:120px;font-family:'IBM Plex Mono',monospace;font-size:13px"
+        placeholder="978-3-518-58691-4&#10;9783446270374"></textarea>
+      <span class="hint" data-zaehler>Noch nichts eingetragen.</span>
+    </div>
+    ${plan ? '' : `<div class="field"><label>Name der leseliste</label>
+      <input type="text" data-planname placeholder="z. B. Gelesen"></div>`}
+    <div class="field">
+      <label>Wohin damit?</label>
+      <select data-block>
+        ${bloecke.map(b => `<option value="${esc(b.name)}">${esc(b.name)}</option>`).join('')}
+        <option value="" ${bloecke.length ? '' : 'selected'}>… neuer Block</option>
+      </select>
+    </div>
+    <div class="field" data-neuerblock ${bloecke.length ? 'hidden' : ''}>
+      <label>Name des neuen Blocks</label>
+      <input type="text" data-blockname placeholder="z. B. Zugelaufen">
+    </div>
+    <div class="field">
+      <label>Sprache der Ausgaben</label>
+      <select data-sprache>
+        ${Object.entries(KI_SPRACHEN).map(([id, x]) =>
+    `<option value="${id}"${id === 'deutsch' ? ' selected' : ''}>${x.label} – ${x.kurz}</option>`).join('')}
+      </select>
+      <span class="hint">Gilt für Beschreibung und Kurzfassung. Die Ausgabe selbst
+        steht ohnehin fest – sie hängt an der ISBN.</span>
+    </div>
+    <button class="btn btn-primary btn-block" data-ok>Prompt erzeugen</button>`, { fokus: false });
+
+  const zaehlen = () => {
+    const { gut, schlecht } = isbnLesen($('[data-isbn]', s).value);
+    const z = $('[data-zaehler]', s);
+    z.textContent = !gut.length && !schlecht.length ? 'Noch nichts eingetragen.'
+      : pl(gut.length, 'gültige ISBN', 'gültige ISBN')
+      + (schlecht.length ? ' · ' + schlecht.length + ' passt nicht: ' + schlecht.join(', ') : '');
+    z.style.color = schlecht.length ? 'var(--bad)' : '';
+  };
+  $('[data-isbn]', s).addEventListener('input', zaehlen);
+
+  $('[data-block]', s).onchange = e => {
+    $('[data-neuerblock]', s).hidden = !!e.target.value;
+  };
+
+  $('[data-ok]', s).onclick = () => {
+    const { gut, schlecht } = isbnLesen($('[data-isbn]', s).value);
+    if (!gut.length) { toast('Keine gültige ISBN dabei.'); return; }
+    if (schlecht.length) { toast(schlecht.length + ' Zeile(n) passen nicht – die bleiben aussen vor.', 4000); }
+    const planName = plan ? plan.name : ($('[data-planname]', s).value.trim() || 'Gelesen');
+    const gewaehlt = $('[data-block]', s).value;
+    const blockName = gewaehlt || ($('[data-blockname]', s).value.trim() || 'Neu dazu');
+    const sprache = $('[data-sprache]', s).value;
+
+    const prompt = `Ich nutze eine App für einen mehrjährigen Leseplan (leselisten aus Blöcken aus Werken, mit Autor:innen-Biographien und deren Einflüssen). Ich gebe dir ${gut.length === 1 ? 'eine ISBN' : gut.length + ' ISBN'}. Schlag ${gut.length === 1 ? 'das Werk' : 'jedes Werk'} nach und gib es mir im Format der App zurück.
+
+${gut.map(z => '- ' + z).join('\n')}
+
+## Was du je ISBN tust
+1. Bestimme, **welche Ausgabe** genau diese Nummer bezeichnet: Verlag, Erscheinungsjahr dieser Ausgabe, Übersetzer:in, Reihe, Auflage.
+2. Trag diese Ausgabe in "ausgabe" ein und **hänge die ISBN hinten an**, in der Form \`… , ISBN ${gut[0]}\`.
+3. "titel" ist der Titel dieser Ausgabe, "jahr" dagegen das Jahr der **Erstveröffentlichung des Werks im Original** – nicht das dieser Ausgabe.
+4. "seiten" ist der Umfang **dieser** Ausgabe.
+5. Beschreibung, Kurzfassung, Schwierigkeit und die Angaben zu den Autor:innen wie im Schema unten.
+
+## Wenn du eine ISBN nicht sicher zuordnen kannst
+Lass sie weg und schreib im Chat, welche es war. **Rate nicht** – eine erfundene Ausgabe ist schlimmer als eine fehlende. Dasselbe gilt für einzelne Felder: lieber \`null\` oder leer als geraten.
+
+${kiSchemaText('- "lesepleane" enthält genau einen Eintrag mit dem Namen exakt „' + planName + '“.\n'
+      + '- "bloecke" enthält genau einen Eintrag mit dem Namen exakt „' + blockName + '“; alle Bücher verweisen mit "blockId" darauf.\n'
+      + '- Ein Buch je zugeordneter ISBN, in der Reihenfolge, in der sie oben stehen ("ord" von 0 an).',
+      false, false, sprache)}`;
+    kiPromptZeigen(prompt, 'leseliste-isbn-prompt.txt');
+  };
+}
+
 function kiBewertenOeffnen() {
   const plan = aktiverPlan();
   if (!plan) { toast('Erst eine leseliste anlegen.'); return; }
@@ -13049,6 +13169,13 @@ function mehrMalen(root) {
         </div>
         <div class="rowline">
           <span class="grow">
+            <span class="rn">Werke über die ISBN holen</span>
+            <span class="rm">Eine ISBN je Zeile – Prompt liefert genau diese Ausgaben als JSON</span>
+          </span>
+          <button class="btn btn-sm" data-ki-isbn>Prompt</button>
+        </div>
+        <div class="rowline">
+          <span class="grow">
             <span class="rn">Aktuelle Liste bewerten lassen</span>
             <span class="rm">Prompt mit deiner leseliste – Antwort schlägt fehlende Werke vor</span>
           </span>
@@ -13122,6 +13249,7 @@ function mehrMalen(root) {
   huelleEinstellungenBinden(root, viewMalen);
   $('[data-plaene]', root).onclick = planWechsler;
   $('[data-ki-erstellen]', root).onclick = kiErstellenOeffnen;
+  $('[data-ki-isbn]', root).onclick = kiIsbnOeffnen;
   $('[data-ki-bewerten]', root).onclick = kiBewertenOeffnen;
   $('[data-ki-stoebern]', root).onclick = stoebernPromptOeffnen;
   $('[data-stoebern]', root).onclick = () => stoebernOeffnen();

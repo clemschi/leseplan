@@ -58,6 +58,13 @@ function mehrMalen(root) {
         </div>
         <div class="rowline">
           <span class="grow">
+            <span class="rn">Werke über die ISBN holen</span>
+            <span class="rm">Eine ISBN je Zeile – Prompt liefert genau diese Ausgaben als JSON</span>
+          </span>
+          <button class="btn btn-sm" data-ki-isbn>Prompt</button>
+        </div>
+        <div class="rowline">
+          <span class="grow">
             <span class="rn">Aktuelle Liste bewerten lassen</span>
             <span class="rm">Prompt mit deiner leseliste – Antwort schlägt fehlende Werke vor</span>
           </span>
@@ -131,6 +138,7 @@ function mehrMalen(root) {
   huelleEinstellungenBinden(root, viewMalen);
   $('[data-plaene]', root).onclick = planWechsler;
   $('[data-ki-erstellen]', root).onclick = kiErstellenOeffnen;
+  $('[data-ki-isbn]', root).onclick = kiIsbnOeffnen;
   $('[data-ki-bewerten]', root).onclick = kiBewertenOeffnen;
   $('[data-ki-stoebern]', root).onclick = stoebernPromptOeffnen;
   $('[data-stoebern]', root).onclick = () => stoebernOeffnen();
