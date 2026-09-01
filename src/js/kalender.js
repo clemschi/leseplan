@@ -16,7 +16,13 @@ function leereKal() {
     /* Ein Termin: Tag, wahlweise Uhrzeit und Dauer, wahlweise Wiederholung. */
     termine: [],
     /* Eine Aufgabe in drei Ebenen: Vorhaben → Schritt → Handgriff. */
-    aufgaben: []
+    aufgaben: [],
+    /* Wiederkehrende Tätigkeiten: „Mo–Fr lesen, 45 Minuten“. Sie hängen an
+       keinem Thema, sondern am Wochentag, und werden je Tag abgehakt. */
+    routinen: [],
+    /* Die Reihenfolge, in der „Heute fällig“ an einem Tag liegt – je Tag
+       eine Liste von Kennungen. Was fehlt, hängt sich hinten an. */
+    reihen: {}
   };
 }
 
@@ -38,7 +44,12 @@ function kalNormalisiere(roh) {
   }));
   /* Drei Ebenen: Thema → Tag → Tätigkeit. Ältere Stände hiessen Vorhaben,
      Schritt und Handgriff; ihre Felder werden hier übernommen. */
-  const taetigkeit = x => ({ id: x.id || uid(), text: String(x.text || '').trim(), done: !!x.done });
+  const dauerVon = x => (x == null || x === '') ? null : clamp(Math.round(+x || 0), 0, 1440) || null;
+  const taetigkeit = x => ({
+    id: x.id || uid(), text: String(x.text || '').trim(), done: !!x.done,
+    /* Wie lange es dauern soll – in Minuten, oder gar nicht. */
+    dauer: dauerVon(x.dauer)
+  });
   k.aufgaben = (Array.isArray(d.aufgaben) ? d.aufgaben : []).map(v => {
     const tage = (Array.isArray(v.tage) ? v.tage : (Array.isArray(v.teile) ? v.teile : [])).map(t => ({
       id: t.id || uid(),
@@ -60,6 +71,33 @@ function kalNormalisiere(roh) {
       tage
     };
   });
+  k.routinen = (Array.isArray(d.routinen) ? d.routinen : []).map(r => {
+    const wt = Array.isArray(r.wochentage)
+      ? [...new Set(r.wochentage.map(n => clamp(Math.round(+n || 0), 0, 6)))].sort((a, b) => a - b)
+      : [0, 1, 2, 3, 4];
+    /* Abgehakt wird je Tag. Was älter als zwei Monate ist, fliegt raus –
+       sonst wächst die Datei mit jedem Tag. */
+    const grenze = kPlus(heute(), -62);
+    const erledigt = {};
+    Object.keys((r.erledigt && typeof r.erledigt === 'object') ? r.erledigt : {})
+      .filter(t => /^\d{4}-\d{2}-\d{2}$/.test(t) && t >= grenze)
+      .forEach(t => { erledigt[t] = true; });
+    return {
+      id: r.id || uid(),
+      text: String(r.text || '').trim(),
+      wochentage: wt.length ? wt : [0, 1, 2, 3, 4],
+      dauer: dauerVon(r.dauer),
+      aktiv: r.aktiv !== false,
+      erledigt
+    };
+  }).filter(r => r.text);
+  const grenzeR = kPlus(heute(), -14);
+  k.reihen = {};
+  Object.entries((d.reihen && typeof d.reihen === 'object') ? d.reihen : {})
+    .forEach(([t, liste]) => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(t) || t < grenzeR || !Array.isArray(liste)) return;
+      k.reihen[t] = liste.filter(x => typeof x === 'string').slice(0, 200);
+    });
   return k;
 }
 
@@ -140,6 +178,61 @@ function kFaelligAm(iso) {
   });
   return raus;
 }
+/* ---------- Routine-Tätigkeiten ---------- */
+/* Eine Routine trifft an ihren Wochentagen – „Mo–Fr lesen, 45 Minuten“. */
+const kRoutineAm = iso => KDB.routinen.filter(r => r.aktiv && r.wochentage.includes(kWochentag(iso)));
+const kRoutineOffen = iso => kRoutineAm(iso).filter(r => !r.erledigt[iso]);
+function kRoutineAbhaken(id, iso) {
+  const r = KDB.routinen.find(x => x.id === id);
+  if (!r) return;
+  kAendern(() => { if (r.erledigt[iso]) delete r.erledigt[iso]; else r.erledigt[iso] = true; });
+}
+/* „Mo–Fr“, „täglich“, „Di, Do“ – so kurz wie möglich. */
+function kTakteText(wt) {
+  if (wt.length === 7) return 'täglich';
+  if (wt.length === 5 && wt.every((n, i) => n === i)) return 'Mo–Fr';
+  if (wt.length === 2 && wt[0] === 5 && wt[1] === 6) return 'Wochenende';
+  return wt.map(n => KTAGE[n]).join(', ');
+}
+
+/* ---------- „Heute fällig“ als eine flache Liste ----------
+   Nicht nach Themen gruppiert: jede Tätigkeit steht für sich, und daneben
+   steht, aus welcher Gruppe sie kommt. So lässt sich der Tag in der
+   Reihenfolge ordnen, in der er wirklich abläuft – quer über alle Themen. */
+function kHeuteListe(iso) {
+  const roh = [];
+  KDB.aufgaben.forEach(v => {
+    v.tage.forEach(t => {
+      if (t.datum !== iso || t.done) return;
+      const offen = t.taetigkeiten.filter(x => !x.done);
+      if (offen.length) {
+        offen.forEach(x => roh.push({
+          id: x.id, art: 'tat', text: x.text, gruppe: v.text,
+          notiz: t.notiz, dauer: x.dauer, themaId: v.id
+        }));
+      } else {
+        /* Ein Tag ohne Tätigkeiten ist selbst die Aufgabe. */
+        roh.push({
+          id: t.id, art: 'tag', text: t.notiz || v.text, gruppe: v.text,
+          notiz: '', dauer: null, themaId: v.id
+        });
+      }
+    });
+  });
+  kRoutineOffen(iso).forEach(r => roh.push({
+    id: r.id, art: 'routine', text: r.text, gruppe: 'Routine',
+    notiz: kTakteText(r.wochentage), dauer: r.dauer, themaId: null
+  }));
+  /* Die gemerkte Reihenfolge zuerst, alles Neue hinten dran. */
+  const reihe = KDB.reihen[iso] || [];
+  const rang = new Map(reihe.map((id, i) => [id, i]));
+  return roh
+    .map((x, i) => ({ x, r: rang.has(x.id) ? rang.get(x.id) : reihe.length + i }))
+    .sort((a, b) => a.r - b.r)
+    .map(o => o.x);
+}
+const kDauerSumme = liste => liste.reduce((n, x) => n + (x.dauer || 0), 0);
+
 function kFortschritt(v) {
   const alle = [];
   v.tage.forEach(t => { alle.push(t.done); t.taetigkeiten.forEach(x => alle.push(x.done)); });
@@ -237,7 +330,7 @@ function kViewMalen() {
 function kBannerMalen() {
   const b = $('#kBanner');
   const h = heute();
-  const t = kTermineAm(h), f = kFaelligAm(h);
+  const t = kTermineAm(h), f = kHeuteListe(h);
   const naechster = t.find(x => x.zeit && x.zeit >= new Date().toTimeString().slice(0, 5));
   b.innerHTML = `
     <span class="kb-tag num">${esc(kTagText(h, true))}</span>
@@ -250,12 +343,11 @@ function kBannerMalen() {
 }
 
 /* ---------- Heute ---------- */
-/* Welche Tage in „Heute fällig“ ihre Tätigkeiten zeigen. */
-const kHeuteAuf = new Set();
 function kHeuteMalen(v) {
   const h = heute();
   const t = kTermineAm(h);
-  const f = kFaelligAm(h);
+  const f = kHeuteListe(h);
+  const geplant = kDauerSumme(f);
   const kommend = [];
   for (let i = 1; i <= 7; i++) {
     const tag = kPlus(h, i);
@@ -271,28 +363,17 @@ function kHeuteMalen(v) {
       : `<div class="empty" style="margin:0"><strong>Heute nichts eingetragen</strong>Ein freier Tag – oder einer, der noch gefüllt wird.</div>`}
 
     <div class="section-head" style="margin-top:20px"><h2>Heute fällig</h2>
-      ${f.length ? `<span class="eyebrow">${f.length}</span>` : ''}</div>
-    ${f.length ? `<div class="list-card">${f.map(x => {
-      const auf = kHeuteAuf.has(x.tag.id);
-      const n = x.taetigkeiten.length;
-      return `<div class="kfaellig">
-        <div class="rowline">
-          <button class="status-btn" data-fertig="${x.tag.id}" aria-label="Alles erledigt">${ICON.check}</button>
-          <button class="grow" data-auf="${x.tag.id}" style="text-align:left">
-            <span class="rn">${esc(x.thema.text)}</span>
-            <span class="rm">${x.tag.notiz ? esc(x.tag.notiz) + ' · ' : ''}${n
-        ? pl(n, 'Tätigkeit', 'Tätigkeiten') + ' offen'
-        : 'ohne Tätigkeit'}</span>
-          </button>
-          ${n ? `<span class="chev${auf ? ' auf' : ''}">${ICON.chev}</span>` : ''}
-        </div>
-        ${auf && n ? `<div class="kfliste">${x.taetigkeiten.map(t => `
-          <div class="kh">
-            <button class="status-btn winzig" data-fertig="${t.id}" aria-label="Erledigt"></button>
-            <span class="kh-text">${esc(t.text)}</span>
-          </div>`).join('')}</div>` : ''}
-      </div>`;
-    }).join('')}</div>`
+      ${f.length ? `<span class="eyebrow">${f.length}${geplant ? ' · ' + fmtDauer(geplant) : ''}</span>` : ''}</div>
+    ${f.length ? `<div class="list-card" data-heuteliste>${f.map(x => `
+        <div class="rowline kheute" data-sortheute="${x.id}">
+          <button class="status-btn" data-fertig="${x.id}" data-art="${x.art}" aria-label="Erledigt">${ICON.check}</button>
+          <span class="grow"><span class="rn">${esc(x.text)}</span>
+            ${x.notiz && x.art !== 'routine' ? `<span class="rm">${esc(x.notiz)}</span>` : ''}</span>
+          ${x.dauer ? `<span class="kdauer num">${esc(fmtDauerKurz(x.dauer))}</span>` : ''}
+          <span class="kgruppe${x.art === 'routine' ? ' routine' : ''}">${esc(x.gruppe)}</span>
+        </div>`).join('')}</div>
+      <p class="hinweis" style="padding:7px 2px 0;font-size:10.5px">Lang drücken und schieben
+        ordnet den Tag.</p>`
       : `<p class="hinweis" style="padding:0">Nichts fällig. Termine im Kalender, Themen unter To-Do.</p>`}
 
     ${offen.length ? `
@@ -321,11 +402,21 @@ function kHeuteMalen(v) {
   $$('[data-termin]', v).forEach(b => b.onclick = () => kTerminBearbeiten(KDB.termine.find(x => x.id === b.dataset.termin), h));
   $$('[data-tag]', v).forEach(b => b.onclick = () => kTagBlatt(b.dataset.tag));
   $$('[data-vorhaben]', v).forEach(b => b.onclick = () => { kTabWechseln('todo'); setTimeout(() => kZuThema(b.dataset.vorhaben), 60); });
-  $$('[data-fertig]', v).forEach(b => b.onclick = () => { kAbhaken(b.dataset.fertig); kViewMalen(); });
-  $$('[data-auf]', v).forEach(b => b.onclick = () => {
-    const id = b.dataset.auf;
-    if (kHeuteAuf.has(id)) kHeuteAuf.delete(id); else kHeuteAuf.add(id);
+  $$('[data-fertig]', v).forEach(b => b.onclick = () => {
+    if (b._langGedrueckt) return;
+    if (b.dataset.art === 'routine') kRoutineAbhaken(b.dataset.fertig, h);
+    else kAbhaken(b.dataset.fertig);
     kViewMalen();
+  });
+  /* Lang drücken hebt eine Zeile an – quer über alle Gruppen, denn der Tag
+     läuft nicht nach Themen ab. Gemerkt wird die Reihe für diesen Tag. */
+  $$('[data-sortheute]', v).forEach(node => {
+    node._sortId = node.dataset.sortheute;
+    ziehenZumSortieren(node, node, {
+      auswahl: '[data-sortheute]',
+      neuMalen: kViewMalen,
+      fertig: reihe => kAendern(() => { KDB.reihen[h] = reihe; })
+    });
   });
 }
 
@@ -592,6 +683,18 @@ function kTodoMalen(v) {
       <button class="chip" data-filter="offen" aria-pressed="${kNurOffen}">Offen</button>
       ${alle.length ? `<span class="kzahl num">${alle.filter(x => x.done).length} / ${alle.length} erledigt</span>` : ''}
     </div>
+    ${KDB.routinen.length ? `
+      <div class="section-head" style="margin-top:6px"><h2>Routine</h2>
+        <button class="btn btn-sm" data-rneu>${ICON.plus} Routine</button></div>
+      <div class="list-card" style="margin-bottom:22px">${KDB.routinen.map(r => `
+        <button class="rowline kroutine${r.aktiv ? '' : ' ruht'}" data-redit="${r.id}" style="width:100%;text-align:left">
+          <span class="grow"><span class="rn">${esc(r.text)}</span>
+            <span class="rm">${esc(kTakteText(r.wochentage))}${r.aktiv ? '' : ' · ruht'}</span></span>
+          ${r.dauer ? `<span class="kdauer num">${esc(fmtDauerKurz(r.dauer))}</span>` : ''}
+          <span class="chev">${ICON.chev}</span></button>`).join('')}</div>`
+      : `<button class="btn btn-block btn-ghost btn-sm" style="margin:2px 0 20px" data-rneu>${ICON.plus}
+          Routine anlegen – etwa „Mo–Fr lesen, 45 min“</button>`}
+
     ${liste.length ? liste.map(vh => kThemaHtml(vh)).join('')
       : `<div class="empty" style="margin-top:26px"><strong>${alle.length ? 'Nichts Offenes mehr' : 'Noch keine Themen'}</strong>
           ${alle.length ? 'Alles abgehakt. Schalte oben auf „Alle“, um das Erledigte zu sehen.'
@@ -609,6 +712,9 @@ function kTodoMalen(v) {
   $('[data-add]', v).onclick = anlegen;
   eingabe.addEventListener('keydown', e => { if (e.key === 'Enter') anlegen(); });
   $$('[data-filter]', v).forEach(b => b.onclick = () => { kNurOffen = b.dataset.filter === 'offen'; kViewMalen(); });
+  $('[data-rneu]', v).onclick = () => kRoutineBearbeiten(null);
+  $$('[data-redit]', v).forEach(b => b.onclick = () =>
+    kRoutineBearbeiten(KDB.routinen.find(r => r.id === b.dataset.redit)));
   kTodoBinden(v);
   if (kZuletztVorhaben) {
     const el = $('[data-vh="' + kZuletztVorhaben + '"]', v);
@@ -644,7 +750,8 @@ function kThemaHtml(vh) {
           <div class="kt-kasten${t.done ? ' fertig' : ''}">
             <div class="kt-kopf" data-griff-tag="${t.id}">
               <button class="status-btn klein${t.done ? ' an' : ''}" data-tcheck="${t.id}" aria-label="Erledigt">${t.done ? ICON.check : ''}</button>
-              <span class="kt-marke">${t.datum ? esc(kTagKurz(t.datum)) : 'Ohne Datum'}</span>
+              <span class="kt-marke">${t.datum ? esc(kTagKurz(t.datum)) : 'Ohne Datum'}${
+    kDauerSumme(t.taetigkeiten) ? ' · ' + esc(fmtDauerKurz(kDauerSumme(t.taetigkeiten))) : ''}</span>
               <button class="icon-btn" data-tedit="${t.id}" aria-label="Tag ändern">${ICON.edit}</button>
               <button class="icon-btn" data-tdel="${t.id}" aria-label="Löschen">${ICON.trash}</button>
             </div>
@@ -653,7 +760,8 @@ function kThemaHtml(vh) {
             ${t.taetigkeiten.length ? `<div class="kt-liste" data-liste="${t.id}">${t.taetigkeiten.map(x => `
               <div class="kh${x.done ? ' fertig' : ''}" data-sorttat="${x.id}" data-griff-tat="${x.id}">
                 <button class="status-btn winzig${x.done ? ' an' : ''}" data-scheck="${x.id}" aria-label="Erledigt">${x.done ? ICON.check : ''}</button>
-                <span class="kh-text">${esc(x.text)}</span>
+                <button class="kh-text" data-sedit="${x.id}">${esc(x.text)}</button>
+                ${x.dauer ? `<span class="kdauer num">${esc(fmtDauerKurz(x.dauer))}</span>` : ''}
                 <button class="icon-btn" data-sdel="${x.id}" aria-label="Löschen">${ICON.x}</button>
               </div>`).join('')}</div>` : ''}
             <div class="kzeile">
@@ -665,13 +773,22 @@ function kThemaHtml(vh) {
       ${vh.tage.length ? '<div class="kverbinder" aria-hidden="true"></div>' : ''}
       <div class="kspalte anfuegen">
         <div class="kzeile">
-          <input type="date" data-tneu="${vh.id}" value="${esc(heute())}" aria-label="Tag">
+          <input type="date" data-tneu="${vh.id}" value="${esc(kNaechsterTag(vh))}" aria-label="Tag">
           <button class="btn btn-sm" data-tadd="${vh.id}">${ICON.plus}</button>
         </div>
         <p class="hinweis" style="padding:6px 0 0;font-size:10px">Tag anlegen</p>
       </div>
     </div>
   </div>`;
+}
+
+/* Steht schon ein Tag im Thema, schlägt das Feld den nächsten vor – wer eine
+   Reihe anlegt, tippt sonst jedes Datum von Hand. */
+function kNaechsterTag(vh) {
+  const daten = vh.tage.map(t => t.datum).filter(Boolean).sort();
+  if (!daten.length) return heute();
+  const naechster = kPlus(daten[daten.length - 1], 1);
+  return naechster > heute() ? naechster : kPlus(heute(), 1);
 }
 
 /* Kurzform für die Marke über dem Tag: „Fr · 4.9.“ */
@@ -728,6 +845,11 @@ function kTodoBinden(v) {
   $$('[data-tedit]', v).forEach(b => b.onclick = () => {
     const f = finde(b.dataset.tedit);
     if (f) kTagBearbeiten(f.vh, f.t);
+  });
+  $$('[data-sedit]', v).forEach(b => b.onclick = () => {
+    if (b._langGedrueckt) return;
+    const f = finde(b.dataset.sedit);
+    if (f) kTaetigkeitBearbeiten(f.vh, f.t, f.x);
   });
 
   const tagAnlegen = (vhId, feld) => {
@@ -824,6 +946,106 @@ function kTagBearbeiten(vh, t) {
   };
 }
 
+/* Eine Tätigkeit trägt ihren Text und, wenn man will, die Zeit, die man ihr
+   geben möchte. Die Summe steht über dem Tag und unter „Heute“. */
+function kTaetigkeitBearbeiten(vh, t, x) {
+  const s = blatt('Tätigkeit', `
+    <div class="field"><label>Was</label><input type="text" data-t value="${esc(x.text)}"></div>
+    <div class="field"><label>Geplante Dauer (Minuten)</label>
+      <input type="number" inputmode="numeric" data-dauer min="0" max="1440" step="5"
+        value="${x.dauer || ''}" placeholder="z.B. 45">
+      <span class="hint">Leer lassen, wenn es keine Rolle spielt.</span></div>
+    <div class="chiprow" style="margin-bottom:14px">
+      ${[15, 30, 45, 60, 90].map(m => `<button class="chip" data-schnell="${m}">${m} min</button>`).join('')}
+    </div>
+    <button class="btn btn-primary btn-block" data-ok>Sichern</button>`);
+  $$('[data-schnell]', s).forEach(b => b.onclick = () => { $('[data-dauer]', s).value = b.dataset.schnell; });
+  $('[data-ok]', s).onclick = () => {
+    const text = $('[data-t]', s).value.trim();
+    if (!text) { toast('Ohne Text geht es nicht.'); return; }
+    const d = Math.round(+$('[data-dauer]', s).value || 0);
+    kAendern(() => { x.text = text; x.dauer = clamp(d, 0, 1440) || null; });
+    KStore.sichern(true);
+    layerSchliessen();
+    kViewMalen();
+  };
+}
+
+/* ---------- Routine ---------- */
+/* „Mo–Fr lesen, 45 Minuten“ – eine Tätigkeit ohne Thema, die am Wochentag
+   hängt statt an einem Datum. */
+function kRoutineBearbeiten(routine) {
+  const neu = !routine;
+  const r = routine || { id: uid(), text: '', wochentage: [0, 1, 2, 3, 4], dauer: null, aktiv: true, erledigt: {} };
+  let wt = r.wochentage.slice();
+  const s = blatt(neu ? 'Routine' : 'Routine ändern', `
+    <div class="field"><label>Was</label>
+      <input type="text" data-t value="${esc(r.text)}" placeholder="z.B. lesen"></div>
+    <div class="field"><label>An welchen Tagen</label>
+      <div class="ktagwahl" data-wahl>${KTAGE.map((n, i) =>
+    `<button class="chip" data-wt="${i}" aria-pressed="${wt.includes(i)}">${n}</button>`).join('')}</div>
+      <div class="chiprow" style="margin-top:8px">
+        <button class="chip" data-preset="mofr">Mo–Fr</button>
+        <button class="chip" data-preset="alle">täglich</button>
+        <button class="chip" data-preset="we">Wochenende</button>
+      </div></div>
+    <div class="field"><label>Geplante Dauer (Minuten)</label>
+      <input type="number" inputmode="numeric" data-dauer min="0" max="1440" step="5"
+        value="${r.dauer || ''}" placeholder="z.B. 45"></div>
+    ${neu ? '' : `<div class="list-card" style="margin-bottom:14px">
+      <div class="rowline"><span class="grow"><span class="rn">${r.aktiv ? 'Läuft' : 'Ruht'}</span>
+        <span class="rm">Eine ruhende Routine taucht unter „Heute“ nicht auf</span></span>
+        <button class="btn btn-sm" data-ruht>${r.aktiv ? 'Ruhen lassen' : 'Wieder starten'}</button></div>
+    </div>`}
+    <div class="btn-row">
+      <button class="btn btn-primary" data-ok style="flex:1">${neu ? 'Eintragen' : 'Sichern'}</button>
+      ${neu ? '' : '<button class="btn btn-danger" data-weg>' + ICON.trash + '</button>'}
+    </div>`, { fokus: neu });
+
+  const wahlMalen = () => $$('[data-wt]', s).forEach(b =>
+    b.setAttribute('aria-pressed', wt.includes(+b.dataset.wt)));
+  $$('[data-wt]', s).forEach(b => b.onclick = () => {
+    const i = +b.dataset.wt;
+    wt = wt.includes(i) ? wt.filter(x => x !== i) : wt.concat(i).sort((a, b) => a - b);
+    wahlMalen();
+  });
+  $$('[data-preset]', s).forEach(b => b.onclick = () => {
+    wt = b.dataset.preset === 'alle' ? [0, 1, 2, 3, 4, 5, 6]
+      : b.dataset.preset === 'we' ? [5, 6] : [0, 1, 2, 3, 4];
+    wahlMalen();
+  });
+  $('[data-ok]', s).onclick = () => {
+    const text = $('[data-t]', s).value.trim();
+    if (!text) { toast('Ohne Text geht es nicht.'); return; }
+    if (!wt.length) { toast('Mindestens ein Tag.'); return; }
+    const d = Math.round(+$('[data-dauer]', s).value || 0);
+    kAendern(() => {
+      r.text = text.slice(0, 200);
+      r.wochentage = wt.slice();
+      r.dauer = clamp(d, 0, 1440) || null;
+      if (neu) KDB.routinen.push(r);
+    });
+    KStore.sichern(true);
+    layerSchliessen();
+    kViewMalen();
+  };
+  const ruht = $('[data-ruht]', s);
+  if (ruht) ruht.onclick = () => {
+    kAendern(() => { r.aktiv = !r.aktiv; });
+    KStore.sichern(true);
+    layerSchliessen();
+    kViewMalen();
+  };
+  const weg = $('[data-weg]', s);
+  if (weg) weg.onclick = async () => {
+    if (!await bestaetigen('Routine löschen?', esc(r.text) + ' wird entfernt.', 'Löschen', true)) return;
+    kAendern(() => { KDB.routinen = KDB.routinen.filter(x => x.id !== r.id); });
+    KStore.sichern(true);
+    layerSchliessen();
+    kViewMalen();
+  };
+}
+
 /* ---------- Mehr ---------- */
 function kMehrMalen(v) {
   const offen = KDB.aufgaben.filter(x => !x.done).length;
@@ -843,6 +1065,9 @@ function kMehrMalen(v) {
         <span class="num">${offen}</span></div>
       <div class="rowline"><span class="grow"><span class="rn">Tätigkeiten</span><span class="rm">über alle Tage</span></span>
         <span class="num">${KDB.aufgaben.reduce((n, x) => n + x.tage.reduce((m, t) => m + t.taetigkeiten.length, 0), 0)}</span></div>
+      <div class="rowline"><span class="grow"><span class="rn">Routine</span><span class="rm">${
+    KDB.routinen.filter(r => r.aktiv).length} laufen</span></span>
+        <span class="num">${KDB.routinen.length}</span></div>
     </div>
 
     ${huelleEinstellungenHtml()}

@@ -87,12 +87,25 @@
 .kh{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);
   border-radius:8px;padding:5px 6px;}
 .kh.fertig{border-color:color-mix(in srgb,var(--good) 40%,var(--border));}
-.kh-text{flex:1;min-width:0;font-size:11.5px;color:var(--text-2);line-height:1.3;word-break:break-word;}
-.kfaellig + .kfaellig{border-top:1px solid var(--border);}
-.kfaellig .chev{transition:transform .18s ease;}
-.kfaellig .chev.auf{transform:rotate(90deg);}
-.kfliste{display:flex;flex-direction:column;gap:5px;padding:0 12px 11px 46px;}
-.kfliste .kh{background:var(--surface-2);}
+.kh-text{flex:1;min-width:0;font-size:11.5px;color:var(--text-2);line-height:1.3;word-break:break-word;
+  background:none;border:0;padding:0;text-align:left;font-family:inherit;cursor:pointer;}
+/* ---------- Heute fällig ----------
+   Eine flache Reihe: jede Tätigkeit für sich, daneben die Gruppe, aus der sie
+   kommt. Kein touch-action hier – das Anheben muss das Scrollen im ersten
+   touchmove abfangen dürfen. */
+.kheute{cursor:grab;}
+.kheute.zieht{background:var(--surface-2);border-radius:12px;
+  box-shadow:0 12px 28px rgba(0,0,0,.45);opacity:.96;}
+.kgruppe{flex:0 0 auto;max-width:38%;font-size:10.5px;letter-spacing:.03em;
+  color:var(--text-3);background:var(--surface-2);border:1px solid var(--border);
+  border-radius:99px;padding:3px 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kgruppe.routine{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,var(--border));
+  background:var(--accent-soft);}
+.kdauer{flex:0 0 auto;font-size:11px;color:var(--text-2);}
+.kroutine.ruht .rn{color:var(--text-3);}
+/* Die Wochentage einer Routine: sieben Knöpfe, die an oder aus sind. */
+.ktagwahl{display:flex;gap:5px;}
+.ktagwahl .chip{flex:1;min-width:0;padding:7px 0;text-align:center;justify-content:center;}
 .kh.fertig .kh-text{color:var(--text-3);text-decoration:line-through;}
 .kh .icon-btn{width:18px;height:18px;background:none;border:0;color:var(--text-3);flex:0 0 auto;}
 .kh .icon-btn svg{width:10px;height:10px;}
@@ -109,7 +122,8 @@
 .kfarben{display:flex;gap:8px;}
 .kfarbe{width:30px;height:30px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;}
 .kfarbe.an{border-color:var(--text);}
-#kview{padding:18px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
+/* Oben mehr Luft: die erste Box sass zu dicht unter der Kopfzeile. */
+#kview{padding:30px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
 @media (min-width:520px){
   .kspalte{width:242px;}
   .kspalte.anfuegen{width:220px;}

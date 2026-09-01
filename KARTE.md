@@ -48,9 +48,9 @@ Die sechs Apps:
 
 | Datei | Zeilen | Was |
 |---|---|---|
-| `kalender.js` | 892 | `KDB`, `KStore`, `kalenderOeffnen` → `kViewMalen`; Tage rechnen, Heute, Monatsblatt (`kMonatZiehen`), To-Do, Mehr |
+| `kalender.js` | 1090 | `KDB`, `KStore`, `kalenderOeffnen` → `kViewMalen`; Tage rechnen, Heute als flache Reihe (`kHeuteListe`, Gruppe je Zeile, lang drücken zum Ordnen, `KDB.reihen`), Routine-Tätigkeiten (`kRoutineAm`, `kRoutineBearbeiten`), geplante Dauer, Monatsblatt (`kMonatZiehen`), To-Do, Mehr |
 | `fastreader.js` | 979 | `FDB`, `FStore`, `fastreaderOeffnen`; Text aufbereiten (`frZerlegen`), Bibliothek, Hereinholen (`frDocx`, `frPdf`, `frUrl`), Lesen (`frTakt`, `frBahnZiehen`), Bilanz |
-| `gsund.js` | 820 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Vergangene; „Bald“ ist noch leer |
+| `gsund.js` | 930 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Notizen auf der Rückseite (`GARTEN`, `GTREFFER`, `gNotizenHtml`), Vergangene; „Bald“ ist noch leer |
 | `minimal.js` | 507 | `MDB`, `MStore`, `minimalOeffnen`; Stand (die zwei Zahlen), Dinge (Liste, anlegen, abgeben), Verlauf (Monate und Ereignisse), Mehr |
 | `cash.js` | 675 | `CDB`, `CStore`, `cashOeffnen`; in Cent rechnen (`cGeld`, `cCent`), Termine einer Routine (`caTermine`), Fortschreiben (`caBis`, `caStandAm`), Stand mit Zeitstrahl (`caStandMalen` malt das Feste, `caZielMalen` den Zeiger, `caBahnBinden` zieht ihn), Routinen, Posten, Mehr |
 | `puzzle.js` | 480 | Das Bilderpuzzle im Reiter Puzzle: `pzKante`/`pzUmriss` (die Form der Teile), `pzVorratBauen` (jedes Teil einmal als Bild), `pzTeilung`, `pzLage` (wo ein loses Teil liegt), `pzSchiebenBinden` (Ziehen am Zeiger, Einrasten), `gPuzzleMalen` |
@@ -81,6 +81,8 @@ leseliste – der Rest, nach Aufgaben getrennt:
 | Warum springt die Tastatur auf? | `js/ebenen.js`, `blatt(` – Fokus nur bei `{ fokus: true }` |
 | Wie kommt eine App in die Fussleiste? | `TABS` in `js/rahmen.js`, `KTABS`/`FTABS`/`GTABS`/`MTABS`/`CTABS` in der jeweiligen App |
 | Wo hängt ein Wisch? | `window.__zieht` – wer ihn setzt, hat den Zug |
+| Was steht beim Wisch nach Hause dahinter? | `grundBauen` in `js/ebenen.js` – die Namen kommen aus `APPS`, nie von Hand |
+| Lang drücken und schieben? | `ziehenZumSortieren` in `js/plan.js` – Griff, Auswahl, `fertig(reihe)` |
 | Wisch geht heim statt zu wirken? | die Tabu-Liste in `heimZiehen` (`js/ebenen.js`) – Flächen, die quer selbst etwas tun, stehen dort |
 | Warum sieht ein Knopf überall gleich aus? | `globalKnoepfeHtml`, `saveChipMalen` |
 | Warum verschwindet die Seite beim Zurück? | `verlaufTiefe()` in `js/ebenen.js` – weiter zurück als bis zur App darf niemand |

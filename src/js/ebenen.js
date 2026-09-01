@@ -254,9 +254,12 @@ function tabVerschieben(d) {
     grund = document.createElement('div');
     grund.className = 'splash heimgrund';
     grund.setAttribute('aria-hidden', 'true');
+    /* Dahinter liegt der Startbildschirm – also steht dort auch, was dort
+       steht: alle Apps, in derselben Reihenfolge. Eine feste Liste hier
+       vergisst jede neue App. */
     grund.innerHTML = '<div class="apps">'
-      + '<span class="app ist">leseliste</span>'
-      + '<span class="app aus">kalender</span></div>';
+      + APPS.map(x => '<span class="app ist">' + esc(x.name) + '</span>').join('')
+      + '</div>';
     grund.style.opacity = '0';
     document.body.appendChild(grund);
     document.body.classList.add('heimzug');

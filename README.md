@@ -19,14 +19,22 @@ Gebaut wird mit `node build.js` aus den Bausteinen unter `src/`.
 Vier Reiter in der Fussleiste:
 
 - **Heute** – die Termine des Tages, was heute fällig ist, die laufenden Themen mit
-  Fortschritt und ein Ausblick auf die nächsten sieben Tage. Jeder fällige Eintrag lässt
-  sich aufklappen: darunter stehen die einzelnen Tätigkeiten, jede für sich abhakbar. Ohne Tagesziel führt jede
-  Zeile dorthin, wo etwas einzutragen ist.
+  Fortschritt und ein Ausblick auf die nächsten sieben Tage. **Heute fällig** ist eine
+  flache Reihe, nicht nach Themen gruppiert: jede Tätigkeit steht für sich, daneben die
+  Gruppe, aus der sie kommt, und die geplante Dauer; oben im Kopf die Summe. Langes
+  Drücken hebt eine Zeile an und schiebt sie – quer über alle Gruppen, denn der Tag läuft
+  nicht nach Themen ab. Die Reihenfolge wird je Tag gemerkt. Routinen stehen mit dabei
+  und werden hier für den Tag abgehakt.
 - **Kalender** – das Monatsblatt mit Punkten für Termine und einem Ring für Fälliges.
   Ein Tipp auf einen Tag öffnet ihn als Blatt von unten; gewischt wird von Monat zu
   Monat, am Finger, mit derselben Mechanik wie die Karten beim Stöbern. Termine tragen
   Uhrzeit, Dauer, Ort, Notiz, Farbe und wahlweise eine Wiederholung (täglich bis
   jährlich).
+- **Routine** – wiederkehrende Tätigkeiten, die an keinem Datum hängen, sondern am
+  Wochentag: „Mo–Fr lesen, 45 Minuten“. Wochentage einzeln oder als Mo–Fr, täglich,
+  Wochenende; eine geplante Dauer; ruhen lassen, ohne sie zu löschen. Sie stehen unter
+  *To-Do* über den Themen und tauchen an ihren Tagen unter *Heute* auf, wo sie je Tag
+  abgehakt werden.
 - **To-Do** – Aufgaben in drei Ebenen als Flussbild: **Thema** → quer die **Tage** → an
   jedem Tag die einzelnen **Tätigkeiten**. Der Tag ist zugleich die Frist: beim Anlegen
   wählst du das Datum, und was daran hängt, taucht unter *Heute* und im Monatsblatt auf.
@@ -75,8 +83,12 @@ Vier Reiter in der Fussleiste:
   senkrecht, unabhängig von Kopfzeile und Fussleiste. Vorne ein frei gewählter
   Titel in der Akzentfarbe, darunter Datum und wahlweise Uhrzeit, dann der
   Countdown im Sekundentakt – in Tagen, sonst als `HH:MM:SS`, nach dem Zeitpunkt
-  mit Vorzeichen weiter. Hinten freier Text. **Ein Tipp öffnet die Karte zum
-  Ändern**, gedreht wird nur mit dem Finger. Gewischt wird auf einem Band über
+  mit Vorzeichen weiter. Hinten freier Text und darunter die **Notizen**: jede ist
+  entweder eine **Befürchtung** oder eine **Kritik**, und getrennt davon steht, ob sie
+  **eingetroffen**, **nicht eingetroffen** oder noch offen ist – zwei Fragen, zwei
+  Marken. Im Blatt bekommt jede Notiz ihr eigenes Feld mit beiden Reihen; die Notizen
+  wandern mit der Karte zu den Vergangenen und wieder zurück. **Ein Tipp öffnet die
+  Karte zum Ändern**, gedreht wird nur mit dem Finger. Gewischt wird auf einem Band über
   die ganze Breite – die Karte plus 44 px darüber und darunter –, damit auch ein
   Zug vom Bildrand sie erwischt; ausserhalb des Bandes führt der Zug nach rechts
   wie überall zur Startseite. Quer entspricht eine halbe Kartenbreite einer

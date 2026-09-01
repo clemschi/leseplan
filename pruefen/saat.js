@@ -42,11 +42,24 @@ const SAAT = {
     ],
     aufgaben: [
       { id: 'a1', text: 'Umzug', done: false, tage: [
+        /* Ein Tag mit Taetigkeiten faellt heute an - so hat Heute faellig etwas zu zeigen. */
+        { id: 'ta0', datum: tag(0), notiz: 'vormittags', done: false,
+          taetigkeiten: [{ id: 'h0', text: 'Kisten zaehlen', done: false, dauer: 30 },
+                         { id: 'h3', text: 'Keller ausraeumen', done: false, dauer: 90 }] },
         { id: 'ta1', datum: tag(2), notiz: 'Kisten', done: false,
-          taetigkeiten: [{ id: 'h1', text: 'Karton kaufen', done: false }, { id: 'h2', text: 'Packen', done: true }] },
+          taetigkeiten: [{ id: 'h1', text: 'Karton kaufen', done: false, dauer: 45 }, { id: 'h2', text: 'Packen', done: true, dauer: null }] },
         { id: 'ta2', datum: tag(5), notiz: '', done: false, taetigkeiten: [] } ] },
+      /* Ein Tag ohne Taetigkeit ist selbst die Aufgabe - der zweite Fall in der flachen Liste. */
+      { id: 'a3', text: 'Rechnung', done: false, tage: [
+        { id: 'ta3', datum: tag(0), notiz: 'Frist', done: false, taetigkeiten: [] } ] },
       { id: 'a2', text: 'Steuer', done: true, tage: [] }
-    ]
+    ],
+    routinen: [
+      { id: 'ro1', text: 'lesen', wochentage: [0, 1, 2, 3, 4], dauer: 45, aktiv: true, erledigt: {} },
+      { id: 'ro2', text: 'Spaziergang', wochentage: [0, 1, 2, 3, 4, 5, 6], dauer: 30, aktiv: true, erledigt: {} },
+      { id: 'ro3', text: 'Wohnung putzen', wochentage: [5], dauer: 60, aktiv: false, erledigt: {} }
+    ],
+    reihen: {}
   },
   'meta-fastreader': { modus: 'geraet', handle: null, dateiname: 'fastreader.json' },
   'daten-fastreader': {
@@ -95,10 +108,18 @@ const SAAT = {
   'meta-gsund': { modus: 'geraet', handle: null, dateiname: 'gsund.json' },
   'daten-gsund': {
     format: 'mylife-gsund', version: 1, erstellt: Date.now(),
-    karte: { titel: 'Halbmarathon', datum: tag(30), zeit: '10:00', rueckseite: 'Plan: dreimal die Woche.' },
+    karte: {
+      titel: 'Halbmarathon', datum: tag(30), zeit: '10:00', rueckseite: 'Plan: dreimal die Woche.',
+      notizen: [
+        { id: 'n1', text: 'Das Knie haelt nicht durch.', art: 'befuerchtung', treffer: 'nicht' },
+        { id: 'n2', text: 'Zu spaet angefangen.', art: 'kritik', treffer: 'ein' },
+        { id: 'n3', text: 'Es regnet am Renntag.', art: 'befuerchtung', treffer: 'offen' }
+      ]
+    },
     vergangen: [
-      { id: 'v1', titel: 'Zahnarzt', datum: tag(-20), zeit: '08:00', rueckseite: '', abgelegt: Date.now() - 9e8 },
-      { id: 'v2', titel: 'Prüfung', datum: tag(-60), zeit: '', rueckseite: 'bestanden', abgelegt: Date.now() - 5e9 }
+      { id: 'v1', titel: 'Zahnarzt', datum: tag(-20), zeit: '08:00', rueckseite: '', notizen: [], abgelegt: Date.now() - 9e8 },
+      { id: 'v2', titel: 'Prüfung', datum: tag(-60), zeit: '', rueckseite: 'bestanden',
+        notizen: [{ id: 'n9', text: 'Durchfallen.', art: 'befuerchtung', treffer: 'nicht' }], abgelegt: Date.now() - 5e9 }
     ],
     /* Das Puzzle baut sich Bild und Teilung beim ersten Oeffnen selbst. */
     puzzle: {}
