@@ -13,7 +13,13 @@ getrennte Speicherorte, getrennte Sicherung. Was allen gemeinsam ist, sind Hell/
 gehören der Hülle und gelten überall.
 
 Gebaut wird mit `node build.js` aus den Bausteinen unter `src/`. Daneben entstehen
-`mylife.webmanifest` und ein winziges `index.html`, das auf `mylife.html` weiterschickt.
+`mylife.webmanifest`, ein winziges `index.html`, das auf `mylife.html` weiterschickt,
+und `mylife.zip` – dieselbe Seite als Anhang verpackt (167 statt 620 KB). Der Umweg
+lohnt, weil GitHub eine `.html` roh als `text/plain` und ohne `content-disposition`
+ausliefert: der Browser zeigt sie dann an, statt sie zu sichern. Die `.zip` kommt als
+`application/zip` und landet verlässlich im Download-Ordner; entpackt liegt darin Byte
+für Byte dieselbe `mylife.html`. Sie wird ohne Zeitstempel gebaut, damit zwei Durchläufe
+dasselbe ergeben.
 
 **Unter einer Adresse statt als Datei.** Liegt das Ganze auf GitHub Pages (Settings →
 Pages → Branch, `/root`), reicht `…/leseplan/` – die Weiche führt auf `mylife.html`, und
