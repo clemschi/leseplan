@@ -376,6 +376,10 @@ gültiges JSON“, und das Feld wird geleert, damit sich dieselbe Datei gleich n
 wählen lässt. Neben `.json` sind auch `.txt` und `text/plain` zugelassen, weil manche
 Dateiauswahl am Telefon sonst nichts anzeigt.
 
+Ist der Stapel durchgewischt und nichts gemerkt, steht in der leeren Sammlung nicht
+*Weiter stöbern* – da wäre nichts mehr zu stöbern –, sondern **Andere Sammlung laden**.
+Solange Karten offen sind, steht *Weiter stöbern* mit der Zahl der Offenen dort.
+
 Eine **andere Sammlung** ist aus jedem Schritt heraus einen Tipp entfernt: der
 Bücher-Knopf in der Kopfzeile des Stöberns führt direkt zum Laden zurück. Und ist ein
 Durchgang zu Ende – der Stapel durch, die leseliste angelegt –, steht beim nächsten

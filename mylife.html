@@ -13055,8 +13055,15 @@ function stoebernOeffnen() {
             Wische nach rechts, was dich interessiert – daraus entsteht die leseliste.
           </div>
         </div>
-        <div class="sto-fuss"><button class="btn btn-block" data-weiter>Weiter stöbern</button></div>`;
-      $('[data-weiter]', inhalt).onclick = () => { schritt = 'wischen'; malen(); };
+        <div class="sto-fuss">${zeiger < stapel.length
+        ? '<button class="btn btn-block" data-weiter>Weiter stöbern · ' + (stapel.length - zeiger) + ' offen</button>'
+        : '<button class="btn btn-block" data-andereszeug>' + ICON.books + ' Andere Sammlung laden</button>'}</div>`;
+      /* Ist der Stapel durch, führt „Weiter stöbern“ ins Leere – dann steht
+         hier der Weg, der wirklich weiterhilft. */
+      const w = $('[data-weiter]', inhalt);
+      if (w) w.onclick = () => { schritt = 'wischen'; malen(); };
+      const a = $('[data-andereszeug]', inhalt);
+      if (a) a.onclick = () => { schritt = 'laden'; malen(); };
       return;
     }
     const nachThema = [];
@@ -13280,6 +13287,9 @@ function stoebernOeffnen() {
   const SCHRITT_ZURUECK = { themen: 'laden', wischen: 'themen', sammlung: 'wischen', bloecke: 'sammlung' };
   const SCHRITT_NAME = { laden: 'Laden', themen: 'Themen', wischen: 'Karten', sammlung: 'Sammlung' };
   const fussZurueck = () => {
+    /* Erst abräumen: hat ein Schritt beim Malen an einen anderen abgegeben,
+       steht sein Knopf schon da, und ein zweiter käme obendrauf. */
+    $$('.sto-zurueck', inhalt).forEach(x => x.remove());
     const zu = SCHRITT_ZURUECK[schritt];
     const fuss = $('.sto-fuss', inhalt);
     if (!zu || !fuss) return;
@@ -13291,6 +13301,13 @@ function stoebernOeffnen() {
   };
 
   const malen = () => {
+    /* Erst den Schritt zurechtrücken, dann malen. Sonst gäbe ein Schritt
+       mitten im Malen an den nächsten ab, und was danach kommt – der
+       Zurück-Knopf im Fuss – landete zweimal in derselben Fläche. */
+    if (schritt === 'wischen' && zeiger >= stapel.length) schritt = 'sammlung';
+    if ((schritt === 'wischen' || schritt === 'sammlung' || schritt === 'bloecke') && !stapel.length) {
+      schritt = werke.length ? 'themen' : 'laden';
+    }
     /* Der Weg zu einer neuen Sammlung führt aus jedem Schritt heraus – sonst
        muss man sich Schritt für Schritt zurückarbeiten. */
     andere.hidden = schritt === 'laden';
