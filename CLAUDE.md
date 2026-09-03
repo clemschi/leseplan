@@ -139,13 +139,40 @@ Fertige Bausteine, die genau das tun:
   Fokus nur bei `{ fokus: true }`; sonst fährt bei jedem Blatt die Tastatur hoch.
 - Zwei Felder nebeneinander: `.grid2`. `.row2` gibt es nicht.
 
+## Dateien hereinholen
+- **Kein `JSON.parse` auf einer Datei.** Jedes Dateifeld geht über `jsonLesen(text)`
+  (`js/grundlage.js`) – es nimmt blankes JSON, JSON aus ```-Zäunen und JSON mit
+  einem Satz davor oder danach. Was aus einem Chat kommt, sieht selten sauber aus.
+- Die Meldung bei einem Fehlschlag kommt aus `jsonFehlerText` und nennt die Stelle.
+- Nach jedem Versuch `feld.value = ''`. Sonst löst dieselbe Datei beim zweiten Mal
+  kein `change` aus und die App steht wortlos da.
+- `accept` immer mit `.txt,text/plain` neben `.json` – manche Dateiauswahl am
+  Telefon zeigt sonst gar nichts an.
+- Was einen Stand überschreibt, fragt vorher (`bestaetigen`).
+
+## Malen
+- **Ein Schritt gibt nicht mitten im Malen an einen anderen ab.** Wer erst rendert
+  und dann merkt, dass er der falsche war, hinterlässt seine Spuren doppelt – im
+  Stöbern waren es zwei Zurück-Knöpfe im Fuss. Der Zustand wird **vor** dem Malen
+  zurechtgerückt (`malen()` in `stoebern.js` ist das Muster).
+- Was an eine Fläche angehängt wird, räumt vorher das Seinige weg.
+- Ein Knopf, der nichts bewirken kann, steht nicht da. Statt „Weiter stöbern“ bei
+  leerem Stapel steht dort der Weg, der wirklich weiterhilft.
+
 ## Prüfen
 **Nach jeder Änderung an der App: `node pruefen/rundgang.js`.** Der Rundgang
-sät Daten in alle vier Apps, öffnet jede, malt jeden Reiter, tippt rund 400
+sät Daten in alle sechs Apps, öffnet jede, malt jeden Reiter, tippt rund 700
 Bedienelemente an und prüft danach die Verlaufs-Disziplin der Ebenen. Er meldet
 `OK`/`FEHL` und endet mit einem Zählstand; er dauert etwa fünf Minuten,
-`--schnell` lässt den Klick-Teil weg (unter einer Minute). Die Saat steht in
-`pruefen/saat.js` – neue Felder in einer Datenbasis gehören dort dazu.
+`--schnell` lässt den Klick-Teil weg (unter einer Minute), `--leer` läuft mit
+leerer Datenbasis. Die Saat steht in `pruefen/saat.js` – neue Felder in einer
+Datenbasis gehören dort dazu.
+
+**Dazu `node pruefen/proben.js`.** Das sind die Einzelproben unter
+`pruefen/proben/` – jede hält einen Ablauf fest, der einmal kaputt war.
+`node pruefen/proben.js <teil>` läuft nur die, deren Name das enthält.
+**Was einen echten Fehler gefunden hat, gehört als Probe dorthin** – ein Skript
+im Scratchpad ist mit der Sitzung weg.
 
 Playwright liegt unter `/opt/pw-browsers/chromium`
 (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`,
