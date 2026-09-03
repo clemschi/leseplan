@@ -63,7 +63,7 @@ leseliste – der Rest, nach Aufgaben getrennt:
 |---|---|---|
 | `plan.js` | 627 | Listen, Blöcke, Bücher: anlegen, ordnen, verschieben |
 | `buch.js` | 676 | Buchansicht (Beschreibung, Themen, Arten), Seite „Lesen“, Notizen |
-| `diagramme.js` | 1214 | Übersicht, Graphen, Autorennetz, Zeitstrahl |
+| `diagramme.js` | 1233 | Übersicht, Graphen (`balken` kann Stapel: gelesen / lese ich / offen), Autorennetz, Zeitstrahl |
 | `stoebern.js` | 987 | Prompt für eine Sammlung und die App in der App (`ziehenBinden`); `wiederherstellen` entscheidet, wo ein Durchgang wieder einsteigt – durchgestöbert heisst „laden“ |
 | `sitzungen.js` | 308 | Stoppuhr, laufende und vergangene Sitzungen |
 | `mehr.js` | 239 | Speicherort, Arten, Sicherung |
@@ -124,12 +124,13 @@ Zwei Werkzeuge, beide melden `OK`/`FEHL` und enden mit einem Zählstand:
 | `node pruefen/rundgang.js` | alle sechs Apps, jeder Reiter, ~700 Bedienelemente, Verlaufs-Disziplin | ~5 min |
 | `node pruefen/rundgang.js --schnell` | dasselbe ohne den Klick-Teil | <1 min |
 | `node pruefen/rundgang.js --leer` | mit leerer Datenbasis | ~4 min |
-| `node pruefen/proben.js` | die neun Einzelproben unter `pruefen/proben/` | ~4 min |
+| `node pruefen/proben.js` | die zehn Einzelproben unter `pruefen/proben/` | ~4 min |
 | `node pruefen/proben.js stoebern` | nur die Proben, deren Name das enthält | |
 
 Die Proben halten fest, was einmal kaputt war: `cashflow`, `cashflow-finger`,
 `isbn`, `bestenlisten`, `dateien` (JSON aus Zäunen), `stoebern-wieder`,
-`stoebern-sackgasse`, `kalender-gsund`, `adresse` (Seite unter einer Adresse).
+`stoebern-sackgasse`, `kalender-gsund`, `adresse` (Seite unter einer Adresse),
+`uebersicht-lesend`.
 Die Saat für beides steht in `pruefen/saat.js` – **neue Felder in einer Datenbasis
 gehören dort dazu.**
 

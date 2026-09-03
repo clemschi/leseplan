@@ -1148,17 +1148,36 @@ function zahlenMalen(root) {
   }
 
   /* --- Blöcke im Vergleich --- */
+  /* Drei Stapel je Block: gelesen, gerade in Arbeit, offen. Ein Buch, in dem
+     man steckt, ist weder das eine noch das andere – es als „offen“ zu führen
+     verschweigt die Arbeit, die schon drinsteckt. */
+  const seitenVon = liste => liste.reduce((s, x) => s + (x.seiten || 0), 0);
   const bl = bloecke.map(blk => {
     const bs = buecherIn(blk.id);
-    const g = bs.filter(x => x.status === 'gelesen').reduce((s, x) => s + (x.seiten || 0), 0);
-    const o = bs.reduce((s, x) => s + (x.seiten || 0), 0) - g;
-    return { label: blk.name, segmente: [{ wert: g, farbe: 'var(--good)', name: 'gelesen' }, { wert: o, farbe: 'var(--border-strong)', name: 'offen' }], wert: g + o, anzeige: fmtZahl(g + o) + ' S.', gelesen: g, offen: o, werke: bs.length };
+    const g = seitenVon(bs.filter(x => x.status === 'gelesen'));
+    const l = seitenVon(bs.filter(x => x.status === 'lese'));
+    const o = seitenVon(bs) - g - l;
+    return {
+      label: blk.name,
+      segmente: [
+        { wert: g, farbe: 'var(--good)', name: 'gelesen' },
+        { wert: l, farbe: 'var(--accent)', name: 'lese ich' },
+        { wert: o, farbe: 'var(--border-strong)', name: 'offen' }
+      ],
+      wert: g + l + o, anzeige: fmtZahl(g + l + o) + ' S.',
+      gelesen: g, lese: l, offen: o, werke: bs.length
+    };
   }).filter(x => x.wert > 0);
   if (bl.length) {
-    wrap.appendChild(karte('Blöcke nach Seitenumfang', 'Wie viel Papier hinter jedem Block steckt – und wie viel davon schon gelesen ist.',
+    const imLesen = bl.reduce((s, x) => s + x.lese, 0);
+    wrap.appendChild(karte('Blöcke nach Seitenumfang',
+      'Wie viel Papier hinter jedem Block steckt – wie viel davon gelesen ist und wie viel gerade offen auf dem Tisch liegt.',
       balken(bl, { fmt: v => fmtZahl(v) + ' S.' }),
-      `<span><i style="background:var(--good)"></i>gelesen</span><span><i style="background:var(--border-strong)"></i>offen</span>`,
-      tabelleHtml(['Block', 'Werke', 'Gelesen (S.)', 'Offen (S.)'], bl.map(x => [x.label, x.werke, fmtZahl(x.gelesen), fmtZahl(x.offen)]))));
+      `<span><i style="background:var(--good)"></i>gelesen</span>`
+      + (imLesen ? `<span><i style="background:var(--accent)"></i>lese ich</span>` : '')
+      + `<span><i style="background:var(--border-strong)"></i>offen</span>`,
+      tabelleHtml(['Block', 'Werke', 'Gelesen (S.)', 'Lese ich (S.)', 'Offen (S.)'],
+        bl.map(x => [x.label, x.werke, fmtZahl(x.gelesen), fmtZahl(x.lese), fmtZahl(x.offen)]))));
   }
 
   /* --- Kosten --- */
