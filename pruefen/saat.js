@@ -36,9 +36,13 @@ const SAAT = {
   'daten-kalender': {
     format: 'mylife-kalender', version: 1, erstellt: Date.now(),
     termine: [
-      { id: 'k1', titel: 'Zahnarzt', datum: tag(0), zeit: '09:30', dauer: 60, ort: 'Stadt', notiz: 'Karte mit', farbe: 'accent', wdh: 'keine' },
-      { id: 'k2', titel: 'Lauftraining', datum: tag(1), zeit: '18:00', dauer: 45, wdh: 'woechentlich', farbe: 'good' },
-      { id: 'k3', titel: 'Geburtstag', datum: tag(-2), wdh: 'jaehrlich', farbe: 'bad' }
+      { id: 'k1', titel: 'Zahnarzt', datum: tag(0), zeit: '09:30', bisZeit: '10:30', ort: 'Stadt', notiz: 'Karte mit', farbe: 'accent', wdh: 'keine' },
+      { id: 'k2', titel: 'Lauftraining', datum: tag(1), zeit: '18:00', bisZeit: '18:45', wdh: 'woechentlich', farbe: 'good' },
+      { id: 'k3', titel: 'Geburtstag', datum: tag(-2), wdh: 'jaehrlich', farbe: 'bad' },
+      /* Mehrtaegig: laeuft ueber heute hinweg. */
+      { id: 'k4', titel: 'Seminar', datum: tag(-1), bis: tag(2), zeit: '09:00', bisZeit: '17:00', ort: 'Wien', farbe: 'wirkt', wdh: 'keine' },
+      /* Alter Stand mit Dauer statt Bis-Uhrzeit - die Umrechnung muss greifen. */
+      { id: 'k5', titel: 'Altlast', datum: tag(3), zeit: '22:00', dauer: 240, farbe: 'beides', wdh: 'keine' }
     ],
     aufgaben: [
       { id: 'a1', text: 'Umzug', done: false, tage: [

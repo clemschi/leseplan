@@ -614,6 +614,10 @@ body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview,b
 
 .kpunkt{width:7px;height:7px;border-radius:50%;flex:0 0 auto;}
 .kzeit{font-size:11.5px;color:var(--text-2);width:38px;flex:0 0 auto;}
+/* Läuft ein Termin über mehrere Tage, steht dort „2/4“ statt einer Uhrzeit –
+   und ein Strich links sagt, dass er weiterläuft. */
+.kmehrtag .kzeit{color:var(--text-3);}
+.kmehrtag .kpunkt{border-radius:2px;width:4px;height:22px;}
 .ktagchip{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
   width:34px;height:34px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border);
   font-size:9px;color:var(--text-3);flex:0 0 auto;line-height:1.1;}
@@ -3155,17 +3159,34 @@ function kalNormalisiere(roh) {
   const k = leereKal();
   k.erstellt = +d.erstellt || Date.now();
   k.einstellungen = Object.assign(k.einstellungen, d.einstellungen || {});
-  k.termine = (Array.isArray(d.termine) ? d.termine : []).map(t => ({
-    id: t.id || uid(),
-    titel: String(t.titel || '').trim() || 'Ohne Titel',
-    datum: /^\d{4}-\d{2}-\d{2}$/.test(t.datum) ? t.datum : heute(),
-    zeit: /^\d{2}:\d{2}$/.test(t.zeit) ? t.zeit : null,
-    dauer: t.dauer == null ? null : clamp(+t.dauer || 0, 0, 1440),
-    ort: String(t.ort || ''),
-    notiz: String(t.notiz || ''),
-    farbe: KFARBEN.includes(t.farbe) ? t.farbe : KFARBEN[0],
-    wdh: KWDH[t.wdh] ? t.wdh : 'keine'
-  }));
+  k.termine = (Array.isArray(d.termine) ? d.termine : []).map(t => {
+    const datum = /^\d{4}-\d{2}-\d{2}$/.test(t.datum) ? t.datum : heute();
+    const zeit = /^\d{2}:\d{2}$/.test(t.zeit) ? t.zeit : null;
+    let bis = /^\d{4}-\d{2}-\d{2}$/.test(t.bis) ? t.bis : '';
+    let bisZeit = /^\d{2}:\d{2}$/.test(t.bisZeit) ? t.bisZeit : null;
+    /* Früher stand hier eine Dauer in Minuten. Daraus wird jetzt eine
+       Uhrzeit – und wenn sie über Mitternacht reichte, ein zweiter Tag. */
+    if (!bisZeit && zeit && +t.dauer > 0) {
+      const gesamt = kMinuten(zeit) + Math.min(+t.dauer, 60 * 24 * 30);
+      bisZeit = kUhrzeit(gesamt % 1440);
+      const tage = Math.floor(gesamt / 1440);
+      if (tage > 0 && !bis) bis = kPlus(datum, tage);
+    }
+    if (bis && bis <= datum) bis = '';
+    return {
+      id: t.id || uid(),
+      titel: String(t.titel || '').trim() || 'Ohne Titel',
+      datum,
+      /* Leer heisst: der Termin dauert einen Tag. */
+      bis,
+      zeit,
+      bisZeit,
+      ort: String(t.ort || ''),
+      notiz: String(t.notiz || ''),
+      farbe: KFARBEN.includes(t.farbe) ? t.farbe : KFARBEN[0],
+      wdh: KWDH[t.wdh] ? t.wdh : 'keine'
+    };
+  });
   /* Drei Ebenen: Thema → Tag → Tätigkeit. Ältere Stände hiessen Vorhaben,
      Schritt und Handgriff; ihre Felder werden hier übernommen. */
   const dauerVon = x => (x == null || x === '') ? null : clamp(Math.round(+x || 0), 0, 1440) || null;
@@ -3276,7 +3297,21 @@ function kNaheText(iso) {
 }
 
 /* Fällt ein wiederkehrender Termin auf diesen Tag? */
-function kFaelltAuf(t, iso) {
+/* Uhrzeiten als Minuten seit Mitternacht – damit lässt sich rechnen. */
+const kMinuten = hhmm => {
+  const m = /^(\d{2}):(\d{2})$/.exec(String(hhmm || ''));
+  return m ? (+m[1]) * 60 + (+m[2]) : null;
+};
+const kUhrzeit = min => String(Math.floor(min / 60) % 24).padStart(2, '0')
+  + ':' + String(Math.round(min) % 60).padStart(2, '0');
+
+/* Über wie viele Tage der Termin geht: 0 heisst, er beginnt und endet am
+   selben Tag. Gedeckelt, damit ein verrutschtes Datum keine Schleife wird. */
+const kSpanne = t => (!t.bis || t.bis <= t.datum) ? 0
+  : Math.min(366, Math.round((kDatum(t.bis) - kDatum(t.datum)) / 86400000));
+
+/* Fällt der **Beginn** auf diesen Tag? Die Wiederholung hängt am Beginn. */
+function kBeginntAn(t, iso) {
   if (t.datum === iso) return true;
   if (t.wdh === 'keine' || iso < t.datum) return false;
   const a = kDatum(t.datum), b = kDatum(iso);
@@ -3286,6 +3321,38 @@ function kFaelltAuf(t, iso) {
   if (t.wdh === 'jaehrlich') return a.getDate() === b.getDate() && a.getMonth() === b.getMonth();
   return false;
 }
+
+/* Der wievielte Tag des Termins ist dieser hier? `null`, wenn keiner.
+   Ein mehrtägiger Termin steht an jedem seiner Tage im Kalender – sonst
+   wäre er nur am ersten zu sehen und am dritten spurlos verschwunden. */
+function kTagImTermin(t, iso) {
+  const spanne = kSpanne(t);
+  for (let k = 0; k <= spanne; k++) {
+    const beginn = kPlus(iso, -k);
+    if (beginn < t.datum) break;
+    if (kBeginntAn(t, beginn)) {
+      return { nr: k + 1, tage: spanne + 1, erster: k === 0, letzter: k === spanne, beginn };
+    }
+  }
+  return null;
+}
+const kFaelltAuf = (t, iso) => kTagImTermin(t, iso) !== null;
+
+/* „09:30–10:30“, „ab 09:30“, „bis 10:30“ – was bekannt ist. */
+function kZeitspanne(t) {
+  if (t.zeit && t.bisZeit) return t.zeit + '–' + t.bisZeit;
+  if (t.zeit) return 'ab ' + t.zeit;
+  if (t.bisZeit) return 'bis ' + t.bisZeit;
+  return '';
+}
+/* Wie lange er dauert, über alle Tage. Null, wenn nichts zu rechnen ist. */
+function kTerminDauer(t) {
+  const von = kMinuten(t.zeit), bis = kMinuten(t.bisZeit);
+  if (von == null || bis == null) return null;
+  const d = kSpanne(t) * 1440 + bis - von;
+  return d > 0 ? d : null;
+}
+
 function kTermineAm(iso) {
   return KDB.termine.filter(t => kFaelltAuf(t, iso))
     .sort((x, y) => (x.zeit || '99:99').localeCompare(y.zeit || '99:99') || x.titel.localeCompare(y.titel));
@@ -3545,12 +3612,23 @@ function kHeuteMalen(v) {
 }
 
 function kTerminZeile(x, iso) {
-  return `<button class="rowline" data-termin="${x.id}" style="width:100%;text-align:left">
+  const lage = kTagImTermin(x, iso);
+  const mehr = lage && lage.tage > 1;
+  /* Die schmale Spalte trägt bei einem Tag die Uhrzeit, bei mehreren die
+     Nummer des Tages – „2/4“ sagt dort mehr als eine Anfangszeit, die
+     schon zwei Tage zurückliegt. */
+  const spalte = mehr ? lage.nr + '/' + lage.tage : (x.zeit ? esc(x.zeit) : '–');
+  const teile = [
+    mehr ? esc(kTagKurz(x.datum)) + ' – ' + esc(kTagKurz(lage ? kPlus(lage.beginn, lage.tage - 1) : x.bis)) : '',
+    kZeitspanne(x),
+    x.ort,
+    x.wdh !== 'keine' ? KWDH[x.wdh] : ''
+  ].filter(Boolean);
+  return `<button class="rowline${mehr ? ' kmehrtag' : ''}" data-termin="${x.id}" style="width:100%;text-align:left">
     <span class="kpunkt" style="background:var(--${x.farbe})"></span>
-    <span class="kzeit num">${x.zeit ? esc(x.zeit) : '–'}</span>
+    <span class="kzeit num">${esc(spalte)}</span>
     <span class="grow"><span class="rn">${esc(x.titel)}</span>
-      <span class="rm">${[x.ort, x.dauer ? fmtDauer(x.dauer) : '', x.wdh !== 'keine' ? KWDH[x.wdh] : '']
-      .filter(Boolean).map(esc).join(' · ') || 'ohne weitere Angabe'}</span></span>
+      <span class="rm">${teile.map(esc).join(' · ') || 'ohne weitere Angabe'}</span></span>
     <span class="chev">${ICON.chev}</span></button>`;
 }
 
@@ -3729,18 +3807,20 @@ function kTagBlatt(iso) {
 /* Termin anlegen oder ändern. */
 function kTerminBearbeiten(t, vorgabe, ersetzen) {
   const neu = !t;
-  const w = t || { id: uid(), titel: '', datum: vorgabe || heute(), zeit: null, dauer: null, ort: '', notiz: '', farbe: KFARBEN[0], wdh: 'keine' };
+  const w = t || { id: uid(), titel: '', datum: vorgabe || heute(), bis: '', zeit: null, bisZeit: null, ort: '', notiz: '', farbe: KFARBEN[0], wdh: 'keine' };
   const s = blatt(neu ? 'Neuer Termin' : 'Termin', `
     <div class="field"><label>Was</label>
       <input type="text" data-titel value="${esc(w.titel)}" placeholder="z.B. Zahnarzt"></div>
     <div class="grid2">
-      <div class="field"><label>Tag</label><input type="date" data-datum value="${esc(w.datum)}"></div>
-      <div class="field"><label>Uhrzeit</label><input type="time" data-zeit value="${w.zeit ? esc(w.zeit) : ''}"></div>
+      <div class="field"><label>Von – Tag</label><input type="date" data-datum value="${esc(w.datum)}"></div>
+      <div class="field"><label>Bis – Tag</label><input type="date" data-bis value="${esc(w.bis || '')}"></div>
     </div>
     <div class="grid2">
-      <div class="field"><label>Dauer in Minuten</label><input type="number" data-dauer value="${w.dauer || ''}" placeholder="60"></div>
-      <div class="field"><label>Ort</label><input type="text" data-ort value="${esc(w.ort)}" placeholder="optional"></div>
+      <div class="field"><label>Von – Uhrzeit</label><input type="time" data-zeit value="${w.zeit ? esc(w.zeit) : ''}"></div>
+      <div class="field"><label>Bis – Uhrzeit</label><input type="time" data-biszeit value="${w.bisZeit ? esc(w.bisZeit) : ''}"></div>
     </div>
+    <span class="hint" style="display:block;margin:-6px 0 12px" data-spanne></span>
+    <div class="field"><label>Ort</label><input type="text" data-ort value="${esc(w.ort)}" placeholder="optional"></div>
     <div class="field"><label>Wiederholung</label>
       <select data-wdh>${Object.keys(KWDH).map(k => `<option value="${k}"${k === w.wdh ? ' selected' : ''}>${KWDH[k]}</option>`).join('')}</select></div>
     <div class="field"><label>Farbe</label>
@@ -3756,15 +3836,62 @@ function kTerminBearbeiten(t, vorgabe, ersetzen) {
     farbe = b.dataset.farbe;
     $$('[data-farbe]', s).forEach(x => x.classList.toggle('an', x.dataset.farbe === farbe));
   });
+
+  /* Was gerade eingetragen ist, in einem Satz – dann muss niemand im Kopf
+     nachrechnen, ob die Angaben zusammenpassen. */
+  const lesen = () => {
+    const datum = $('[data-datum]', s).value || heute();
+    const bis = $('[data-bis]', s).value;
+    const zeit = $('[data-zeit]', s).value;
+    const bisZeit = $('[data-biszeit]', s).value;
+    return {
+      datum,
+      bis: /^\d{4}-\d{2}-\d{2}$/.test(bis) && bis > datum ? bis : '',
+      bisRoh: bis,
+      zeit: /^\d{2}:\d{2}$/.test(zeit) ? zeit : null,
+      bisZeit: /^\d{2}:\d{2}$/.test(bisZeit) ? bisZeit : null
+    };
+  };
+  const spanneMalen = () => {
+    const v = lesen();
+    const el = $('[data-spanne]', s);
+    const tage = kSpanne(v) + 1;
+    const dauer = kTerminDauer(v);
+    if (v.bisRoh && !v.bis) {
+      el.textContent = 'Das Ende liegt vor dem Anfang – der Termin gilt für einen Tag.';
+      el.style.color = 'var(--bad)';
+      return;
+    }
+    el.style.color = '';
+    const teile = [];
+    if (tage > 1) teile.push(pl(tage, 'Tag', 'Tage'));
+    if (kZeitspanne(v)) teile.push(kZeitspanne(v));
+    if (dauer) teile.push('macht ' + fmtDauer(dauer));
+    el.textContent = teile.length ? teile.join(' · ')
+      : 'Ohne Uhrzeit gilt er als ganztägig. Für mehrere Tage einen Bis-Tag eintragen.';
+  };
+  ['[data-datum]', '[data-bis]', '[data-zeit]', '[data-biszeit]'].forEach(q => {
+    const el = $(q, s);
+    if (el) { el.addEventListener('change', spanneMalen); el.addEventListener('input', spanneMalen); }
+  });
+  spanneMalen();
+
   $('[data-ok]', s).onclick = () => {
     const titel = $('[data-titel]', s).value.trim();
     if (!titel) { toast('Ohne Titel geht es nicht.'); return; }
-    const zeit = $('[data-zeit]', s).value;
+    const v = lesen();
+    /* An einem Tag muss das Ende nach dem Anfang liegen. Wer über
+       Mitternacht feiert, trägt den nächsten Tag als Bis-Tag ein. */
+    if (!v.bis && v.zeit && v.bisZeit && kMinuten(v.bisZeit) <= kMinuten(v.zeit)) {
+      toast('Das Ende liegt vor dem Anfang. Geht es über Mitternacht, trag den nächsten Tag als Bis-Tag ein.', 5000);
+      return;
+    }
     kAendern(() => {
       w.titel = titel;
-      w.datum = $('[data-datum]', s).value || heute();
-      w.zeit = /^\d{2}:\d{2}$/.test(zeit) ? zeit : null;
-      w.dauer = num($('[data-dauer]', s).value);
+      w.datum = v.datum;
+      w.bis = v.bis;
+      w.zeit = v.zeit;
+      w.bisZeit = v.bisZeit;
       w.ort = $('[data-ort]', s).value.trim();
       w.notiz = $('[data-notiz]', s).value.trim();
       w.wdh = $('[data-wdh]', s).value;

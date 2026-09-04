@@ -41,9 +41,15 @@ Vier Reiter in der Fussleiste:
   und werden hier für den Tag abgehakt.
 - **Kalender** – das Monatsblatt mit Punkten für Termine und einem Ring für Fälliges.
   Ein Tipp auf einen Tag öffnet ihn als Blatt von unten; gewischt wird von Monat zu
-  Monat, am Finger, mit derselben Mechanik wie die Karten beim Stöbern. Termine tragen
-  Uhrzeit, Dauer, Ort, Notiz, Farbe und wahlweise eine Wiederholung (täglich bis
-  jährlich).
+  Monat, am Finger, mit derselben Mechanik wie die Karten beim Stöbern. Ein Termin hat
+  **von–bis, sowohl beim Tag als auch bei der Uhrzeit**: bleibt der Bis-Tag leer, gilt
+  er für einen Tag. Ein **mehrtägiger Termin steht an jedem seiner Tage** im Kalender,
+  in der schmalen Spalte dann `2/4` statt einer Uhrzeit, die schon zwei Tage zurückliegt.
+  Unter den Feldern steht in einem Satz, was daraus wird – „4 Tage · 09:00–17:00 · macht
+  3 Tage 8 h". Endet ein eintägiger Termin vor seinem Anfang, sagt die App es und
+  verweist auf den Bis-Tag; so wird aus 22:00–02:00 ein Termin über Mitternacht statt
+  einer Fehleingabe. Dazu Ort, Notiz, Farbe und wahlweise eine Wiederholung (täglich bis
+  jährlich) – die hängt am Beginn, die Spanne gilt für jede Wiederkehr.
 - **Routine** – wiederkehrende Tätigkeiten, die an keinem Datum hängen, sondern am
   Wochentag: „Mo–Fr lesen, 45 Minuten“. Wochentage einzeln oder als Mo–Fr, täglich,
   Wochenende; eine geplante Dauer; ruhen lassen, ohne sie zu löschen. Sie stehen unter

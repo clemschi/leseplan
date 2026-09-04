@@ -16,7 +16,7 @@ Anhaltspunkte, keine Zusicherung – sie wandern mit jeder Änderung.
 | Datei | Zeilen | Was |
 |---|---|---|
 | `basis.css` | 582 | Farbtokens hell/dunkel, Akzente (`DREI`), Kopfzeile, Tableiste, Bausteine (`.list-card`, `.rowline`, `.chip`, `.field`, `.grid2`), Plan, Overlay/Sheets, Pager, Bilder, Diagramme, Einrichtung |
-| `kalender.css` | 131 | alles mit `k`-Präfix |
+| `kalender.css` | 135 | alles mit `k`-Präfix |
 | `fastreader.css` | 91 | `.frbuehne`, `.frwort`, `.frpult`, `.frbahn` |
 | `gsund.css` | 90 | `.gbuehne`, `.gkarte`, `.gseite`, `.g-uhr`, `.gb-griff` |
 | `minimal.css` | 55 | `.mizahl`, `.mikauf`, `.miding`, `.mimonat` – die beiden Zahlen und die Listen |
@@ -50,7 +50,7 @@ Die sechs Apps:
 
 | Datei | Zeilen | Was |
 |---|---|---|
-| `kalender.js` | 1088 | `KDB`, `KStore`, `kalenderOeffnen` → `kViewMalen`; Tage rechnen, Heute als flache Reihe (`kHeuteListe`, Gruppe je Zeile, lang drücken zum Ordnen, `KDB.reihen`), Routine-Tätigkeiten (`kRoutineAm`, `kRoutineBearbeiten`), geplante Dauer, Monatsblatt (`kMonatZiehen`), To-Do, Mehr |
+| `kalender.js` | 1211 | `KDB`, `KStore`, `kalenderOeffnen` → `kViewMalen`; Termine von–bis über Tag und Uhrzeit (`kSpanne`, `kTagImTermin`, `kZeitspanne`, `kTerminDauer`; alte `dauer` wird beim Laden übersetzt), Tage rechnen, Heute als flache Reihe (`kHeuteListe`, Gruppe je Zeile, lang drücken zum Ordnen, `KDB.reihen`), Routine-Tätigkeiten (`kRoutineAm`, `kRoutineBearbeiten`), geplante Dauer, Monatsblatt (`kMonatZiehen`), To-Do, Mehr |
 | `fastreader.js` | 950 | `FDB`, `FStore`, `fastreaderOeffnen`; Text aufbereiten (`frZerlegen`), Bibliothek, Hereinholen (`frDocx`, `frPdf`, `frUrl`), Lesen (`frTakt`, `frBahnZiehen`), Bilanz |
 | `gsund.js` | 916 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Notizen auf der Rückseite (`GARTEN`, `GTREFFER`, `gNotizenHtml`), Vergangene; „Bald“ ist noch leer |
 | `minimal.js` | 584 | `MDB`, `MStore`, `minimalOeffnen`; Stand (die zwei Zahlen), Dinge (Liste, anlegen, abgeben), Verlauf (Monate und Ereignisse), Mehr |
@@ -124,13 +124,13 @@ Zwei Werkzeuge, beide melden `OK`/`FEHL` und enden mit einem Zählstand:
 | `node pruefen/rundgang.js` | alle sechs Apps, jeder Reiter, ~700 Bedienelemente, Verlaufs-Disziplin | ~5 min |
 | `node pruefen/rundgang.js --schnell` | dasselbe ohne den Klick-Teil | <1 min |
 | `node pruefen/rundgang.js --leer` | mit leerer Datenbasis | ~4 min |
-| `node pruefen/proben.js` | die zehn Einzelproben unter `pruefen/proben/` | ~4 min |
+| `node pruefen/proben.js` | die elf Einzelproben unter `pruefen/proben/` | ~5 min |
 | `node pruefen/proben.js stoebern` | nur die Proben, deren Name das enthält | |
 
 Die Proben halten fest, was einmal kaputt war: `cashflow`, `cashflow-finger`,
 `isbn`, `bestenlisten`, `dateien` (JSON aus Zäunen), `stoebern-wieder`,
 `stoebern-sackgasse`, `kalender-gsund`, `adresse` (Seite unter einer Adresse),
-`uebersicht-lesend`.
+`uebersicht-lesend`, `termin-spanne`.
 Die Saat für beides steht in `pruefen/saat.js` – **neue Felder in einer Datenbasis
 gehören dort dazu.**
 
