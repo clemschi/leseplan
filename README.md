@@ -307,7 +307,10 @@ gleichen über leseliste-Name → Blockname → Buchtitel ab:
 ## Aufbau
 
 - **Liste** – Blöcke und Bücher, anlegen, ändern, verschieben, löschen. Der Kreis
-  links schaltet den Status weiter: offen → lese ich → gelesen.
+  links schaltet den Status weiter: offen → lese ich → gelesen. Unter jeder Blockkarte
+  läuft ein dünner Streifen mit demselben Dreiklang wie die Übersicht: grün, was gelesen
+  ist, Akzentfarbe, was gerade in Arbeit ist, der Rest offen. In der Kopfzeile steht
+  daneben, wie viele Werke in Arbeit sind.
 - **Buch** – sechs Seiten, zwischen denen gewischt wird:
   1. *Beschreibung* mit Erscheinungsjahr, Seitenzahl, Preis, Besitz, Schwierigkeit,
      dazu Stoppuhr und Zugang zu den Sitzungen

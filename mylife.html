@@ -259,8 +259,10 @@ input:focus,textarea:focus,select:focus,.zeile:focus{outline:none;border-color:v
 .chev{color:var(--text-3);transition:transform .2s ease;flex:0 0 auto;}
 .chev svg{width:16px;height:16px;display:block;}
 .block.open > .block-head .chev{transform:rotate(90deg);}
-.block-bar{height:3px;background:var(--surface-3);}
+/* Drei Abschnitte wie in der Übersicht: gelesen, in Arbeit, der Rest offen. */
+.block-bar{height:3px;background:var(--surface-3);display:flex;}
 .block-bar > i{display:block;height:100%;background:var(--good);}
+.block-bar > i.lese{background:var(--accent);}
 .books{display:none;padding:10px 8px 10px;flex-direction:column;gap:6px;}
 .block.open .books{display:flex;}
 
@@ -8950,7 +8952,10 @@ function planMalen(root) {
   bloecke.forEach((blk, i) => {
     const alle = buecherIn(blk.id);
     const gelesen = alle.filter(b => b.status === 'gelesen').length;
+    const imLesen = alle.filter(b => b.status === 'lese').length;
     const seiten = alle.reduce((s, b) => s + (b.seiten || 0), 0);
+    /* Derselbe Dreiklang wie in der Übersicht: gelesen, in Arbeit, offen. */
+    const anteil = n => alle.length ? n / alle.length * 100 : 0;
     const zeigen = buecherGefiltert(blk.id);
     const offen = offeneBloecke.has(blk.id);
 
@@ -8964,13 +8969,13 @@ function planMalen(root) {
           <span class="meta">
             <span>${pl(alle.length, 'Werk', 'Werke')}</span>
             <span>${pl(new Set(alle.flatMap(x => buchAutoren(x).map(a => a.name))).size, 'Autor', 'Autoren')}</span>
-            <span>${gelesen} gelesen</span>
+            <span>${gelesen} gelesen${imLesen ? ' · ' + imLesen + ' in Arbeit' : ''}</span>
             ${seiten ? `<span class="num">${fmtZahl(seiten)} S.</span>` : ''}
           </span>
         </span>
         <span class="chev">${ICON.chev}</span>
       </button>
-      <div class="block-bar"><i style="width:${alle.length ? gelesen / alle.length * 100 : 0}%"></i></div>
+      <div class="block-bar"><i style="width:${anteil(gelesen)}%"></i><i class="lese" style="width:${anteil(imLesen)}%"></i></div>
       <div class="books"></div>`;
 
     const kopf = $('[data-toggle]', node);
@@ -11572,8 +11577,9 @@ function zahlenMalen(root) {
   const seitenVon = liste => liste.reduce((s, x) => s + (x.seiten || 0), 0);
   const bl = bloecke.map(blk => {
     const bs = buecherIn(blk.id);
+    const imLesen = bs.filter(x => x.status === 'lese');
     const g = seitenVon(bs.filter(x => x.status === 'gelesen'));
-    const l = seitenVon(bs.filter(x => x.status === 'lese'));
+    const l = seitenVon(imLesen);
     const o = seitenVon(bs) - g - l;
     return {
       label: blk.name,
@@ -11583,16 +11589,25 @@ function zahlenMalen(root) {
         { wert: o, farbe: 'var(--border-strong)', name: 'offen' }
       ],
       wert: g + l + o, anzeige: fmtZahl(g + l + o) + ' S.',
-      gelesen: g, lese: l, offen: o, werke: bs.length
+      gelesen: g, lese: l, offen: o, werke: bs.length,
+      /* Bücher in Arbeit, deren Umfang niemand kennt – sie können im Balken
+         nicht auftauchen, also wird darunter gesagt, dass es sie gibt. */
+      leseOhneSeiten: imLesen.filter(x => !x.seiten).length,
+      leseWerke: imLesen.length
     };
   }).filter(x => x.wert > 0);
   if (bl.length) {
-    const imLesen = bl.reduce((s, x) => s + x.lese, 0);
+    const leseWerke = bl.reduce((s, x) => s + x.leseWerke, 0);
+    const ohneSeiten = bl.reduce((s, x) => s + x.leseOhneSeiten, 0);
     wrap.appendChild(karte('Blöcke nach Seitenumfang',
-      'Wie viel Papier hinter jedem Block steckt – wie viel davon gelesen ist und wie viel gerade offen auf dem Tisch liegt.',
+      'Wie viel Papier hinter jedem Block steckt – wie viel davon gelesen ist und wie viel gerade offen auf dem Tisch liegt.'
+      + (ohneSeiten ? ' ' + pl(ohneSeiten, 'Buch in Arbeit hat', 'Bücher in Arbeit haben')
+        + ' keine Seitenzahl und ' + (ohneSeiten === 1 ? 'fehlt' : 'fehlen') + ' deshalb im Balken.' : ''),
       balken(bl, { fmt: v => fmtZahl(v) + ' S.' }),
       `<span><i style="background:var(--good)"></i>gelesen</span>`
-      + (imLesen ? `<span><i style="background:var(--accent)"></i>lese ich</span>` : '')
+      /* Die Marke steht, sobald überhaupt etwas in Arbeit ist – auch wenn der
+         Balken dazu mangels Seitenzahl unsichtbar bleibt. */
+      + (leseWerke ? `<span><i style="background:var(--accent)"></i>lese ich</span>` : '')
       + `<span><i style="background:var(--border-strong)"></i>offen</span>`,
       tabelleHtml(['Block', 'Werke', 'Gelesen (S.)', 'Lese ich (S.)', 'Offen (S.)'],
         bl.map(x => [x.label, x.werke, fmtZahl(x.gelesen), fmtZahl(x.lese), fmtZahl(x.offen)]))));

@@ -61,7 +61,7 @@ leseliste – der Rest, nach Aufgaben getrennt:
 
 | Datei | Zeilen | Was |
 |---|---|---|
-| `plan.js` | 627 | Listen, Blöcke, Bücher: anlegen, ordnen, verschieben |
+| `plan.js` | 632 | Listen, Blöcke, Bücher: anlegen, ordnen, verschieben; `.block-bar` mit drei Abschnitten (gelesen / in Arbeit / offen) |
 | `buch.js` | 688 | Buchansicht (Beschreibung, Themen, Arten), Seite „Lesen“, Notizen |
 | `diagramme.js` | 1233 | Übersicht, Graphen (`balken` kann Stapel: gelesen / lese ich / offen), Autorennetz, Zeitstrahl |
 | `stoebern.js` | 987 | Prompt für eine Sammlung und die App in der App (`ziehenBinden`); `wiederherstellen` entscheidet, wo ein Durchgang wieder einsteigt – durchgestöbert heisst „laden“ |

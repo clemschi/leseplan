@@ -237,8 +237,10 @@ input:focus,textarea:focus,select:focus,.zeile:focus{outline:none;border-color:v
 .chev{color:var(--text-3);transition:transform .2s ease;flex:0 0 auto;}
 .chev svg{width:16px;height:16px;display:block;}
 .block.open > .block-head .chev{transform:rotate(90deg);}
-.block-bar{height:3px;background:var(--surface-3);}
+/* Drei Abschnitte wie in der Übersicht: gelesen, in Arbeit, der Rest offen. */
+.block-bar{height:3px;background:var(--surface-3);display:flex;}
 .block-bar > i{display:block;height:100%;background:var(--good);}
+.block-bar > i.lese{background:var(--accent);}
 .books{display:none;padding:10px 8px 10px;flex-direction:column;gap:6px;}
 .block.open .books{display:flex;}
 

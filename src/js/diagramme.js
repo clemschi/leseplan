@@ -1154,8 +1154,9 @@ function zahlenMalen(root) {
   const seitenVon = liste => liste.reduce((s, x) => s + (x.seiten || 0), 0);
   const bl = bloecke.map(blk => {
     const bs = buecherIn(blk.id);
+    const imLesen = bs.filter(x => x.status === 'lese');
     const g = seitenVon(bs.filter(x => x.status === 'gelesen'));
-    const l = seitenVon(bs.filter(x => x.status === 'lese'));
+    const l = seitenVon(imLesen);
     const o = seitenVon(bs) - g - l;
     return {
       label: blk.name,
@@ -1165,16 +1166,25 @@ function zahlenMalen(root) {
         { wert: o, farbe: 'var(--border-strong)', name: 'offen' }
       ],
       wert: g + l + o, anzeige: fmtZahl(g + l + o) + ' S.',
-      gelesen: g, lese: l, offen: o, werke: bs.length
+      gelesen: g, lese: l, offen: o, werke: bs.length,
+      /* Bücher in Arbeit, deren Umfang niemand kennt – sie können im Balken
+         nicht auftauchen, also wird darunter gesagt, dass es sie gibt. */
+      leseOhneSeiten: imLesen.filter(x => !x.seiten).length,
+      leseWerke: imLesen.length
     };
   }).filter(x => x.wert > 0);
   if (bl.length) {
-    const imLesen = bl.reduce((s, x) => s + x.lese, 0);
+    const leseWerke = bl.reduce((s, x) => s + x.leseWerke, 0);
+    const ohneSeiten = bl.reduce((s, x) => s + x.leseOhneSeiten, 0);
     wrap.appendChild(karte('Blöcke nach Seitenumfang',
-      'Wie viel Papier hinter jedem Block steckt – wie viel davon gelesen ist und wie viel gerade offen auf dem Tisch liegt.',
+      'Wie viel Papier hinter jedem Block steckt – wie viel davon gelesen ist und wie viel gerade offen auf dem Tisch liegt.'
+      + (ohneSeiten ? ' ' + pl(ohneSeiten, 'Buch in Arbeit hat', 'Bücher in Arbeit haben')
+        + ' keine Seitenzahl und ' + (ohneSeiten === 1 ? 'fehlt' : 'fehlen') + ' deshalb im Balken.' : ''),
       balken(bl, { fmt: v => fmtZahl(v) + ' S.' }),
       `<span><i style="background:var(--good)"></i>gelesen</span>`
-      + (imLesen ? `<span><i style="background:var(--accent)"></i>lese ich</span>` : '')
+      /* Die Marke steht, sobald überhaupt etwas in Arbeit ist – auch wenn der
+         Balken dazu mangels Seitenzahl unsichtbar bleibt. */
+      + (leseWerke ? `<span><i style="background:var(--accent)"></i>lese ich</span>` : '')
       + `<span><i style="background:var(--border-strong)"></i>offen</span>`,
       tabelleHtml(['Block', 'Werke', 'Gelesen (S.)', 'Lese ich (S.)', 'Offen (S.)'],
         bl.map(x => [x.label, x.werke, fmtZahl(x.gelesen), fmtZahl(x.lese), fmtZahl(x.offen)]))));

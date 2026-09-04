@@ -14,6 +14,11 @@ const SAAT = {
     bloecke: [{ id: B1, planId: PLAN, name: 'Antike', ord: 0, notiz: 'Anfang' },
               { id: B2, planId: PLAN, name: 'Neuzeit', ord: 1, notiz: '' }],
     buecher: [
+      /* In Arbeit, aber ohne Seitenzahl - taucht im Balken nicht auf und muss
+         darum unter dem Diagramm genannt werden. */
+      { id: 'b4', blockId: B2, ord: 1, titel: 'Ohne Umfang', autor: 'N. N.',
+        jahr: 2020, seiten: null, status: 'lese', besitz: 'habe', schwierigkeit: 2,
+        beschreibung: '', kurz: '', sessions: [], notizen: [] },
       { id: 'b1', blockId: B1, ord: 0, titel: 'Nikomachische Ethik', autor: 'Aristoteles',
         autorGeb: -384, autorGest: -322, autorBio: 'Schüler Platons.', autorEinfluss: ['Platon'],
         jahr: -340, seiten: 380, preis: 14.9, status: 'lese', besitz: 'habe', schwierigkeit: 4,

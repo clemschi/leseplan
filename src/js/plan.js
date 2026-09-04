@@ -91,7 +91,10 @@ function planMalen(root) {
   bloecke.forEach((blk, i) => {
     const alle = buecherIn(blk.id);
     const gelesen = alle.filter(b => b.status === 'gelesen').length;
+    const imLesen = alle.filter(b => b.status === 'lese').length;
     const seiten = alle.reduce((s, b) => s + (b.seiten || 0), 0);
+    /* Derselbe Dreiklang wie in der Übersicht: gelesen, in Arbeit, offen. */
+    const anteil = n => alle.length ? n / alle.length * 100 : 0;
     const zeigen = buecherGefiltert(blk.id);
     const offen = offeneBloecke.has(blk.id);
 
@@ -105,13 +108,13 @@ function planMalen(root) {
           <span class="meta">
             <span>${pl(alle.length, 'Werk', 'Werke')}</span>
             <span>${pl(new Set(alle.flatMap(x => buchAutoren(x).map(a => a.name))).size, 'Autor', 'Autoren')}</span>
-            <span>${gelesen} gelesen</span>
+            <span>${gelesen} gelesen${imLesen ? ' · ' + imLesen + ' in Arbeit' : ''}</span>
             ${seiten ? `<span class="num">${fmtZahl(seiten)} S.</span>` : ''}
           </span>
         </span>
         <span class="chev">${ICON.chev}</span>
       </button>
-      <div class="block-bar"><i style="width:${alle.length ? gelesen / alle.length * 100 : 0}%"></i></div>
+      <div class="block-bar"><i style="width:${anteil(gelesen)}%"></i><i class="lese" style="width:${anteil(imLesen)}%"></i></div>
       <div class="books"></div>`;
 
     const kopf = $('[data-toggle]', node);
