@@ -479,6 +479,14 @@ während tatsächlich gelesen wird, grün, wenn das Tagesziel steht. Ist eines g
 steht in der Leiste **Heute noch X Seiten zu lesen** – die Zahl rechnet aus den Sitzungen
 des Tages mit; während einer laufenden Sitzung steht sie klein unter dem Buchtitel.
 
+**Pause.** In der Leiste sitzt neben *Beenden* ein Pausenknopf, im Buch unter *Lesen*
+steht er neben dem Beenden-Knopf. Pausiert wird, indem der Startzeitpunkt beim
+Weitermachen um die Dauer der Pause nach vorn rückt – die Uhr macht dort weiter, wo sie
+stehen blieb, und die Pause zählt weder in der Sitzung noch beim Lese-Wecker mit. In der
+Pause tickt nichts: die Leiste beruhigt ihren Rahmen, Uhr und Text werden blass, und im
+Buch steht *pausiert* über der ebenfalls blassen Zahl. Die Pause übersteht das Schliessen
+der Seite – wer am nächsten Tag wiederkommt, findet die Uhr genau dort, wo er sie anhielt.
+
 Wird eine Sitzung beendet, öffnet sich das Eintragen-Blatt. Schiebst du es weg, ohne
 einzutragen, fragt die App nach – die gelesene Zeit soll nicht stillschweigend verfallen;
 *Nachtragen* holt das Blatt mit deinen Eingaben zurück. Eine eingetragene Sitzung wird

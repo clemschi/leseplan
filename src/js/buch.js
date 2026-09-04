@@ -493,7 +493,12 @@ function notizBearbeiten(b, notiz, vorgabe, neuMalen) {
 let uhrTick = null;
 
 function laufenderTimer() { return DB.einstellungen.timer || null; }
-function timerMinuten(t) { return (Date.now() - t.startTs) / 60000; }
+/* Pausiert wird, indem der Startzeitpunkt beim Weitermachen um die Pause
+   nach vorn rückt. Dann bleibt „verstrichen = jetzt − start“ überall gültig:
+   Uhr, Wecker und die Minuten der fertigen Sitzung rechnen unverändert. */
+const timerPausiert = t => !!(t && t.pauseTs);
+function timerVerstrichen(t) { return (t.pauseTs || Date.now()) - t.startTs; }
+function timerMinuten(t) { return timerVerstrichen(t) / 60000; }
 
 function seiteLesen(b, root, neuMalen) {
   const t = laufenderTimer();
@@ -508,11 +513,14 @@ function seiteLesen(b, root, neuMalen) {
 
   root.innerHTML = `
     <div class="card" style="padding:14px;margin-bottom:14px">
-      <div class="eyebrow" style="text-align:center">${laeuftHier ? 'läuft' : (min ? 'bisher gelesen' : 'Stoppuhr')}</div>
-      <div class="timer-big" data-uhr>00:00:00</div>
+      <div class="eyebrow" style="text-align:center">${laeuftHier
+      ? (timerPausiert(t) ? 'pausiert' : 'läuft') : (min ? 'bisher gelesen' : 'Stoppuhr')}</div>
+      <div class="timer-big${laeuftHier && timerPausiert(t) ? ' ruht' : ''}" data-uhr>00:00:00</div>
       <div class="btn-row" style="justify-content:center;margin-top:10px">
-        <button class="btn ${laeuftHier ? 'btn-danger' : 'btn-primary'}" data-uhr-btn style="min-width:170px">
-          ${laeuftHier ? ICON.pause + ' Sitzung beenden' : ICON.play + ' Sitzung starten'}
+        ${laeuftHier ? `<button class="btn" data-uhr-pause style="min-width:112px">
+          ${timerPausiert(t) ? ICON.play + ' Weiter' : ICON.pause + ' Pause'}</button>` : ''}
+        <button class="btn ${laeuftHier ? 'btn-danger' : 'btn-primary'}" data-uhr-btn style="min-width:${laeuftHier ? 128 : 170}px">
+          ${laeuftHier ? ICON.check + ' Beenden' : ICON.play + ' Sitzung starten'}
         </button>
       </div>
       ${t && !laeuftHier ? `<p class="hinweis" style="text-align:center;padding-bottom:0">Eine Stoppuhr läuft gerade bei „${esc((buchById(t.buchId) || {}).titel || 'einem anderen Buch')}“.</p>` : ''}
@@ -538,12 +546,16 @@ function seiteLesen(b, root, neuMalen) {
     const el = $('[data-uhr]', root);
     if (!el) return;
     if (!tt || tt.buchId !== b.id) { el.textContent = min ? fmtDauer(min) : '00:00:00'; return; }
-    const s = Math.floor((Date.now() - tt.startTs) / 1000);
+    const s = Math.floor(timerVerstrichen(tt) / 1000);
     el.textContent = [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map(x => String(x).padStart(2, '0')).join(':');
   };
   uhrMalen();
   clearInterval(uhrTick);
-  if (laeuftHier) uhrTick = setInterval(uhrMalen, 1000);
+  /* Während der Pause steht die Uhr – da braucht nichts zu ticken. */
+  if (laeuftHier && !timerPausiert(t)) uhrTick = setInterval(uhrMalen, 1000);
+
+  const pauseKnopf = $('[data-uhr-pause]', root);
+  if (pauseKnopf) pauseKnopf.onclick = () => { sitzungPause(); neuMalen(); };
 
   $('[data-uhr-btn]', root).onclick = () => {
     if (laeuftHier) {

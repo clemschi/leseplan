@@ -15,10 +15,10 @@ Anhaltspunkte, keine Zusicherung – sie wandern mit jeder Änderung.
 
 | Datei | Zeilen | Was |
 |---|---|---|
-| `basis.css` | 582 | Farbtokens hell/dunkel, Akzente (`DREI`), Kopfzeile, Tableiste, Bausteine (`.list-card`, `.rowline`, `.chip`, `.field`, `.grid2`), Plan, Overlay/Sheets, Pager, Bilder, Diagramme, Einrichtung |
+| `basis.css` | 589 | Farbtokens hell/dunkel, Akzente (`DREI`), Kopfzeile, Tableiste, Bausteine (`.list-card`, `.rowline`, `.chip`, `.field`, `.grid2`), Plan, Overlay/Sheets, Pager, Bilder, Diagramme, Einrichtung |
 | `kalender.css` | 135 | alles mit `k`-Präfix |
 | `fastreader.css` | 91 | `.frbuehne`, `.frwort`, `.frpult`, `.frbahn` |
-| `gsund.css` | 99 | `.gbuehne`, `.gkarte`, `.gseite`, `.g-uhr`, `.gb-griff` |
+| `gsund.css` | 101 | `.gbuehne`, `.gkarte`, `.gseite`, `.g-uhr`, `.gb-griff` |
 | `minimal.css` | 55 | `.mizahl`, `.mikauf`, `.miding`, `.mimonat` – die beiden Zahlen und die Listen |
 | `cash.css` | 64 | `.cazahl`, `.cabahn` (der Zeitstrahl mit Kurve, Marke, Griff), `.casumme`, `.capunkt` |
 | `puzzle.css` | 85 | `.pztisch` (rechnet in Zellen: `--zb`/`--zh`), `.pzbrett`, `.pzloch`, `.pzliegt`, `.pzlose` |
@@ -62,10 +62,10 @@ leseliste – der Rest, nach Aufgaben getrennt:
 | Datei | Zeilen | Was |
 |---|---|---|
 | `plan.js` | 627 | Listen, Blöcke, Bücher: anlegen, ordnen, verschieben |
-| `buch.js` | 676 | Buchansicht (Beschreibung, Themen, Arten), Seite „Lesen“, Notizen |
+| `buch.js` | 688 | Buchansicht (Beschreibung, Themen, Arten), Seite „Lesen“, Notizen |
 | `diagramme.js` | 1233 | Übersicht, Graphen (`balken` kann Stapel: gelesen / lese ich / offen), Autorennetz, Zeitstrahl |
 | `stoebern.js` | 987 | Prompt für eine Sammlung und die App in der App (`ziehenBinden`); `wiederherstellen` entscheidet, wo ein Durchgang wieder einsteigt – durchgestöbert heisst „laden“ |
-| `sitzungen.js` | 308 | Stoppuhr, laufende und vergangene Sitzungen |
+| `sitzungen.js` | 332 | Stoppuhr mit Pause (`sitzungPause` – der Start rückt beim Weitermachen nach vorn), laufende und vergangene Sitzungen, `nowbarMalen` |
 | `mehr.js` | 239 | Speicherort, Arten, Sicherung |
 | `themenfelder.js` | 257 | Themenfelder über alle Bücher, Suche über alles |
 | `prompts.js` | 510 | KI-Prompts: Erstellen, Bewerten, über die ISBN holen (`isbnPruefen` mit Prüfziffer, `kiIsbnOeffnen`) und Vorrat aus Webseiten (`webAdressen`, `stoebernWebOeffnen` – mit Entdoppeln und Sperrliste) |
@@ -82,6 +82,7 @@ leseliste – der Rest, nach Aufgaben getrennt:
 | Wo wird gespeichert? | `js/speicher.js`, Schlüssel `daten-*` / `meta-*` |
 | Warum springt die Tastatur auf? | `js/ebenen.js`, `blatt(` – Fokus nur bei `{ fokus: true }` |
 | Wie kommt eine App in die Fussleiste? | `TABS` in `js/rahmen.js`, `KTABS`/`FTABS`/`GTABS`/`MTABS`/`CTABS` in der jeweiligen App |
+| Wo wird die Lesezeit gerechnet? | `timerVerstrichen`/`timerMinuten` in `js/buch.js` – nie `Date.now() - startTs` von Hand, sonst zählt die Pause mit |
 | Wo hängt ein Wisch? | `window.__zieht` – wer ihn setzt, hat den Zug |
 | Was steht beim Wisch nach Hause dahinter? | `grundBauen` in `js/ebenen.js` – die Namen kommen aus `APPS`, nie von Hand |
 | Lang drücken und schieben? | `ziehenZumSortieren` in `js/plan.js` – Griff, Auswahl, `fertig(reihe)` |
@@ -124,13 +125,13 @@ Zwei Werkzeuge, beide melden `OK`/`FEHL` und enden mit einem Zählstand:
 | `node pruefen/rundgang.js` | alle sechs Apps, jeder Reiter, ~700 Bedienelemente, Verlaufs-Disziplin | ~5 min |
 | `node pruefen/rundgang.js --schnell` | dasselbe ohne den Klick-Teil | <1 min |
 | `node pruefen/rundgang.js --leer` | mit leerer Datenbasis | ~4 min |
-| `node pruefen/proben.js` | die zwölf Einzelproben unter `pruefen/proben/` | ~5 min |
+| `node pruefen/proben.js` | die dreizehn Einzelproben unter `pruefen/proben/` | ~6 min |
 | `node pruefen/proben.js stoebern` | nur die Proben, deren Name das enthält | |
 
 Die Proben halten fest, was einmal kaputt war: `cashflow`, `cashflow-finger`,
 `isbn`, `bestenlisten`, `dateien` (JSON aus Zäunen), `stoebern-wieder`,
 `stoebern-sackgasse`, `kalender-gsund`, `adresse` (Seite unter einer Adresse),
-`uebersicht-lesend`, `termin-spanne`, `gsund-notizen`.
+`uebersicht-lesend`, `termin-spanne`, `gsund-notizen`, `pause`.
 Die Saat für beides steht in `pruefen/saat.js` – **neue Felder in einer Datenbasis
 gehören dort dazu.**
 

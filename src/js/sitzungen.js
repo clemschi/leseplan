@@ -78,10 +78,28 @@ function timerFrageZeigen(buch, ersetzen) {
   };
 }
 
+/* Pause und Weiter. Beim Weitermachen rückt der Startzeitpunkt um die Dauer
+   der Pause nach vorn – die Uhr macht dort weiter, wo sie stehen blieb, und
+   der Wecker rechnet die Pause nicht mit. */
+function sitzungPause() {
+  const t = laufenderTimer();
+  if (!t) return;
+  aendern(() => {
+    if (t.pauseTs) { t.startTs += Date.now() - t.pauseTs; t.pauseTs = 0; }
+    else t.pauseTs = Date.now();
+  });
+  Store.sichern(true);
+  const jetztPause = timerPausiert(laufenderTimer());
+  nowbarMalen();
+  toast(jetztPause ? 'Pausiert.' : 'Weiter.');
+  return jetztPause;
+}
+
 function sitzungBeenden() {
   const t = laufenderTimer();
   if (!t) return;
   const b = buchById(t.buchId);
+  /* timerMinuten zählt die Pause ohnehin nicht mit. */
   const minuten = Math.max(1, Math.round(timerMinuten(t)));
   aendern(() => { DB.einstellungen.timer = null; });
   clearInterval(uhrTick);
@@ -255,19 +273,23 @@ function nowbarMalen() {
 
   if (t) {
     const b = buchById(t.buchId);
-    inner.className = 'nowbar-inner laeuft';
+    const ruht = timerPausiert(t);
+    inner.className = 'nowbar-inner laeuft' + (ruht ? ' ruht' : '');
     inner.innerHTML = `
       <span class="grow">
         <span class="nt serif">${esc(b ? b.titel : 'Sitzung')}</span>
-        <span class="nm">Sitzung läuft${z.ziel ? ' · ' + (rest ? 'heute noch ' + rest + ' S.' : 'Ziel geschafft') : ''}</span>
+        <span class="nm">${ruht ? 'pausiert'
+      : 'Sitzung läuft' + (z.ziel ? ' · ' + (rest ? 'heute noch ' + rest + ' S.' : 'Ziel geschafft') : '')}</span>
       </span>
       <span class="uhr" data-uhr>00:00</span>
+      <button class="btn btn-sm nb-pause" data-pause aria-label="${ruht ? 'Weiterlesen' : 'Pause'}"
+        title="${ruht ? 'Weiterlesen' : 'Pause'}">${ruht ? ICON.play : ICON.pause}</button>
       <button class="btn btn-sm" data-wecker title="Lese-Wecker">${DB.einstellungen.weckerMin ? DB.einstellungen.weckerMin + '′' : '⏰'}</button>
       <button class="btn btn-sm" data-stop>Beenden</button>`;
     const malen = () => {
       const el = $('[data-uhr]', inner);
       if (!el) return;
-      const sek = Math.floor((Date.now() - t.startTs) / 1000);
+      const sek = Math.floor(timerVerstrichen(t) / 1000);
       const teile = sek >= 3600
         ? [Math.floor(sek / 3600), Math.floor(sek / 60) % 60, sek % 60]
         : [Math.floor(sek / 60), sek % 60];
@@ -279,8 +301,10 @@ function nowbarMalen() {
       }
     };
     malen();
-    nowTick = setInterval(malen, 1000);
+    /* In der Pause steht die Uhr – kein Ticken, kein Wecker. */
+    if (!ruht) nowTick = setInterval(malen, 1000);
     $('[data-stop]', inner).onclick = sitzungBeenden;
+    $('[data-pause]', inner).onclick = () => { sitzungPause(); if (aktiverTab === 'plan') viewMalen(); };
     $('[data-wecker]', inner).onclick = () => timerFrageZeigen(b);
     if (b) $('.grow', inner).onclick = () => buchOeffnen(b.id);
   } else {

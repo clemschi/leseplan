@@ -134,6 +134,13 @@ p{margin:0;}
 .nowbar-inner.fertig{border-color:color-mix(in srgb,var(--good) 60%,var(--border));}
 .nowbar-inner.fertig .nt{color:var(--good);}
 .nowbar-inner.laeuft .uhr{color:var(--bad);}
+/* Pausiert: der Rahmen beruhigt sich, die stehende Uhr wird blass – man
+   soll auf einen Blick sehen, dass gerade nichts läuft. */
+.nowbar-inner.laeuft.ruht{border-color:var(--border-strong);}
+.nowbar-inner.laeuft.ruht .uhr{color:var(--text-3);}
+.nowbar-inner.laeuft.ruht .nm{color:var(--text-3);}
+.nb-pause{padding:0 9px;}
+.nb-pause svg{width:13px;height:13px;display:block;}
 .nowbar .grow{flex:1;min-width:0;}
 /* display:block ist nötig – an einem Inline-Element greift overflow nicht,
    der Titel lief sonst über die Uhr. */
