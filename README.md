@@ -103,12 +103,15 @@ Vier Reiter in der Fussleiste:
   senkrecht, unabhängig von Kopfzeile und Fussleiste. Vorne ein frei gewählter
   Titel in der Akzentfarbe, darunter Datum und wahlweise Uhrzeit, dann der
   Countdown im Sekundentakt – in Tagen, sonst als `HH:MM:SS`, nach dem Zeitpunkt
-  mit Vorzeichen weiter. Hinten freier Text und darunter die **Notizen**: jede ist
-  entweder eine **Befürchtung** oder eine **Kritik**, und getrennt davon steht, ob sie
-  **eingetroffen**, **nicht eingetroffen** oder noch offen ist – zwei Fragen, zwei
-  Marken. Im Blatt bekommt jede Notiz ihr eigenes Feld mit beiden Reihen; die Notizen
-  wandern mit der Karte zu den Vergangenen und wieder zurück. **Ein Tipp öffnet die
-  Karte zum Ändern**, gedreht wird nur mit dem Finger. Gewischt wird auf einem Band über
+  mit Vorzeichen weiter. Hinten stehen die **Notizen** – ein Freitextfeld gibt es nicht
+  mehr, die Notizen sind es. Jede ist entweder eine **Befürchtung** oder eine **Kritik**,
+  und getrennt davon steht, ob sie **eingetroffen**, **nicht eingetroffen** oder noch
+  offen ist – zwei Fragen, zwei Marken. Über jedem Eintrag steht klein der **Tag, an dem
+  er entstand**; er wird beim Anlegen vermerkt. Alles auf der Rückseite ist knapp
+  gehalten, das Datum am knappsten. Die Notizen wandern mit der Karte zu den Vergangenen
+  und wieder zurück. **Ein Tipp öffnet die Seite, die man vor sich hat**: vorne der Titel
+  mit seinem Countdown, hinten die Notizen – zwei getrennte Masken, in beiden ein Knopf
+  auf die andere Seite. Gedreht wird nur mit dem Finger. Gewischt wird auf einem Band über
   die ganze Breite – die Karte plus 44 px darüber und darunter –, damit auch ein
   Zug vom Bildrand sie erwischt; ausserhalb des Bandes führt der Zug nach rechts
   wie überall zur Startseite. Quer entspricht eine halbe Kartenbreite einer

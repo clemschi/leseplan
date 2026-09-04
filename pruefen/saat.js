@@ -115,9 +115,9 @@ const SAAT = {
     karte: {
       titel: 'Halbmarathon', datum: tag(30), zeit: '10:00', rueckseite: 'Plan: dreimal die Woche.',
       notizen: [
-        { id: 'n1', text: 'Das Knie haelt nicht durch.', art: 'befuerchtung', treffer: 'nicht' },
-        { id: 'n2', text: 'Zu spaet angefangen.', art: 'kritik', treffer: 'ein' },
-        { id: 'n3', text: 'Es regnet am Renntag.', art: 'befuerchtung', treffer: 'offen' }
+        { id: 'n1', text: 'Das Knie haelt nicht durch.', art: 'befuerchtung', treffer: 'nicht', datum: tag(-9) },
+        { id: 'n2', text: 'Zu spaet angefangen.', art: 'kritik', treffer: 'ein', datum: tag(-4) },
+        { id: 'n3', text: 'Es regnet am Renntag.', art: 'befuerchtung', treffer: 'offen', datum: tag(0) }
       ]
     },
     vergangen: [

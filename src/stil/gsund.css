@@ -18,8 +18,10 @@
   padding:24px 18px 32px;border-radius:22px;border:1px solid var(--border);
   background:var(--surface);box-shadow:var(--shadow);
   backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;}
-.gseite.hinten{transform:rotateY(180deg);
+.gseite.hinten{transform:rotateY(180deg);justify-content:flex-start;padding-top:20px;
   background:linear-gradient(160deg,var(--accent-soft),var(--surface) 55%);}
+/* Ist wenig darauf, sitzt es wieder mittig. */
+.gseite.hinten:has(.g-leer){justify-content:center;}
 /* Ein feiner Schimmer, damit die Seiten beim Drehen auseinanderzuhalten sind. */
 .gseite::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;
   background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.65;}
@@ -32,22 +34,26 @@
 .g-uhr.vorbei{color:var(--text-3);}
 .g-uhrsub{font-size:12.5px;color:var(--text-2);font-variant-numeric:tabular-nums;margin-top:4px;}
 .g-ohne{margin-top:14px;font-size:13px;color:var(--text-3);}
-.g-rueck{font-size:15px;line-height:1.7;color:var(--text);text-align:left;
+.g-rueck{font-size:13px;line-height:1.6;color:var(--text);text-align:left;
   width:100%;max-width:44ch;overflow-wrap:break-word;
   max-height:100%;overflow:auto;font-family:"Literata",Georgia,serif;}
-.g-frei{margin:0 0 10px;}
 
 /* ---------- Die Notizen auf der Rückseite ----------
    Jede ist entweder eine Befürchtung oder eine Kritik – und getrennt davon
    steht, ob sie eingetroffen ist. Zwei Fragen, zwei Marken. */
-.gnotizen{display:flex;flex-direction:column;gap:8px;}
-.gnotiz{border-left:2px solid var(--border-strong);padding:2px 0 2px 9px;}
+.gnotizen{display:flex;flex-direction:column;gap:7px;}
+.gnotiz{border-left:2px solid var(--border-strong);padding:1px 0 1px 8px;}
 .gnotiz.befuerchtung{border-left-color:var(--bad);}
 .gnotiz.kritik{border-left-color:var(--wirkt,var(--accent));}
-.gn-text{display:block;font-size:13.5px;line-height:1.55;}
-.gn-marken{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
-.gn-marken i{font-style:normal;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
-  padding:2px 7px;border-radius:99px;border:1px solid var(--border);color:var(--text-3);
+/* Der Tag steht ganz oben und ganz klein – er ordnet ein, er drängt sich
+   nicht vor den Satz, um den es geht. */
+.gn-datum{display:block;font-style:normal;font-size:8.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-3);opacity:.75;margin-bottom:1px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;}
+.gn-text{display:block;font-size:12.5px;line-height:1.5;}
+.gn-marken{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;}
+.gn-marken i{font-style:normal;font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;
+  padding:1.5px 6px;border-radius:99px;border:1px solid var(--border);color:var(--text-3);
   font-family:system-ui,sans-serif;}
 .gnotiz.befuerchtung .gn-art{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,var(--border));}
 .gnotiz.kritik .gn-art{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--border));}
@@ -56,15 +62,18 @@
 .gnotiz.t-nicht .gn-treff{color:var(--good);border-color:color-mix(in srgb,var(--good) 45%,var(--border));}
 .gnotiz.t-offen .gn-treff{opacity:.6;}
 
-/* Im Blatt: ein Kasten je Notiz, Text und zwei Reihen Marken. */
-.gn-feld{border:1px solid var(--border);border-radius:12px;padding:9px 10px;
-  background:var(--surface-2);margin-bottom:9px;}
-.gn-feld textarea{min-height:54px;margin-bottom:7px;}
-.gn-feld .chiprow{margin-bottom:5px;gap:5px;}
+/* Im Blatt: ein Kasten je Notiz – oben der Tag und der Papierkorb, darunter
+   der Text und zwei Reihen Marken. */
+.gn-feld{border:1px solid var(--border);border-radius:11px;padding:7px 9px;
+  background:var(--surface-2);margin-bottom:8px;}
+.gn-kopf{display:flex;align-items:center;gap:8px;margin-bottom:3px;}
+.gn-kopf .gn-datum{margin-bottom:0;}
+.gn-feld textarea{min-height:48px;margin-bottom:6px;font-size:12.5px;}
+.gn-feld .chiprow{margin-bottom:4px;gap:4px;}
 .gn-feld .chiprow:last-child{margin-bottom:0;}
-.gn-feld .chip{font-size:11px;padding:5px 9px;}
-.gn-weg{margin-left:auto;width:26px;height:26px;background:none;border:0;color:var(--text-3);flex:0 0 auto;}
-.gn-weg svg{width:13px;height:13px;}
+.gn-feld .chip{font-size:10.5px;padding:4px 8px;}
+.gn-weg{margin-left:auto;width:22px;height:22px;background:none;border:0;color:var(--text-3);flex:0 0 auto;}
+.gn-weg svg{width:12px;height:12px;}
 .g-leer{font-size:13.5px;line-height:1.7;color:var(--text-3);max-width:34ch;}
 .g-leer strong{display:block;font-size:15px;color:var(--text-2);font-weight:500;margin-bottom:6px;}
 .g-marke{position:absolute;left:0;right:0;bottom:14px;font-size:9.5px;letter-spacing:.14em;

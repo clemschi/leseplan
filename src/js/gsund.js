@@ -15,7 +15,7 @@ function leereGs() {
     /* Die Karte: vorn ein Titel mit Datum, hinten freier Text und die
        Notizen – jede eine Befürchtung oder eine Kritik, und getrennt davon
        die Frage, ob sie eingetroffen ist. */
-    karte: { titel: '', datum: '', zeit: '', rueckseite: '', notizen: [] },
+    karte: { titel: '', datum: '', zeit: '', notizen: [] },
     /* Abgelegte Karten, die neueste zuerst. */
     vergangen: [],
     /* Das Schiebefeld – Aufbau in js/puzzle.js. */
@@ -41,10 +41,24 @@ function gNotizen(roh) {
     id: String(n.id || uid()),
     text: String(n.text || '').trim().slice(0, 1000),
     art: GARTEN.some(a => a.id === n.art) ? n.art : 'befuerchtung',
-    treffer: GTREFFER.some(t => t.id === n.treffer) ? n.treffer : 'offen'
+    treffer: GTREFFER.some(t => t.id === n.treffer) ? n.treffer : 'offen',
+    /* Wann sie geschrieben wurde – steht klein über dem Eintrag. */
+    datum: /^\d{4}-\d{2}-\d{2}$/.test(n.datum) ? n.datum : heute()
   })).filter(n => n.text).slice(0, 60);
 }
-const gLeereKarte = () => ({ titel: '', datum: '', zeit: '', rueckseite: '', notizen: [] });
+/* Die Rückseite war früher ein Freitextfeld. Es gibt jetzt die Notizen, und
+   damit nichts verlorengeht, wird alter Text zur ersten Notiz. Die Marke ist
+   geraten – umgestellt ist sie mit einem Tipp. */
+function gRueckMigrieren(k, notizen) {
+  const alt = String(k.rueckseite || '').trim();
+  if (!alt) return notizen;
+  if (notizen.some(n => n.text === alt.slice(0, 1000))) return notizen;
+  return [{
+    id: uid(), text: alt.slice(0, 1000), art: 'befuerchtung', treffer: 'offen',
+    datum: /^\d{4}-\d{2}-\d{2}$/.test(k.datum) ? k.datum : heute()
+  }].concat(notizen);
+}
+const gLeereKarte = () => ({ titel: '', datum: '', zeit: '', notizen: [] });
 
 function gsNormalisiere(roh) {
   const d = (roh && typeof roh === 'object') ? roh : {};
@@ -56,16 +70,14 @@ function gsNormalisiere(roh) {
     titel: String(k.titel || '').slice(0, 200),
     datum: /^\d{4}-\d{2}-\d{2}$/.test(k.datum) ? k.datum : '',
     zeit: /^\d{2}:\d{2}$/.test(k.zeit) ? k.zeit : '',
-    rueckseite: String(k.rueckseite || '').slice(0, 4000),
-    notizen: gNotizen(k.notizen)
+    notizen: gRueckMigrieren(k, gNotizen(k.notizen))
   };
   g.vergangen = Array.isArray(d.vergangen) ? d.vergangen.map(k => ({
     id: String(k.id || uid()),
     titel: String(k.titel || '').slice(0, 200),
     datum: /^\d{4}-\d{2}-\d{2}$/.test(k.datum) ? k.datum : '',
     zeit: /^\d{2}:\d{2}$/.test(k.zeit) ? k.zeit : '',
-    rueckseite: String(k.rueckseite || '').slice(0, 4000),
-    notizen: gNotizen(k.notizen),
+    notizen: gRueckMigrieren(k, gNotizen(k.notizen)),
     abgelegt: +k.abgelegt || Date.now()
   })).slice(0, 400) : [];
   g.puzzle = pzNormalisiere(d.puzzle);
@@ -228,12 +240,9 @@ function gGuziMalen(v) {
           <span class="g-marke">Vorderseite</span>
         </div>
         <div class="gseite hinten">
-          ${k.rueckseite || k.notizen.length
-      ? `<div class="g-rueck">
-             ${k.rueckseite ? `<p class="g-frei">${esc(k.rueckseite).replace(/\n/g, '<br>')}</p>` : ''}
-             ${gNotizenHtml(k.notizen)}
-           </div>`
-      : `<div class="g-leer"><strong>Rückseite ist leer</strong>Platz für alles, was nicht auf die Vorderseite passt.</div>`}
+          ${k.notizen.length
+      ? `<div class="g-rueck">${gNotizenHtml(k.notizen)}</div>`
+      : `<div class="g-leer"><strong>Rückseite ist leer</strong>Antippen: eine Befürchtung oder eine Kritik notieren.</div>`}
           <span class="g-marke">Rückseite</span>
         </div>
       </div>
@@ -248,7 +257,9 @@ function gGuziMalen(v) {
   /* Ein Tipp öffnet die Karte zum Ändern – gedreht wird nur mit dem Finger. */
   karte.onclick = () => {
     if (karte._gezogen) { karte._gezogen = false; return; }
-    gKarteBearbeiten();
+    /* Was man vor sich hat, wird geändert – vorne die Vorderseite, hinten
+       die Notizen. Beides in einer Maske zu mischen ist unübersichtlich. */
+    if (gGedreht) gRueckseiteBearbeiten(); else gVorderseiteBearbeiten();
   };
   gKarteZiehen($('.gbuehne', v), karte, drehen, () => gKarteAblegen(karte));
   if (k.datum) gUhrLaufen(v);
@@ -260,6 +271,7 @@ function gNotizenHtml(notizen) {
   if (!notizen || !notizen.length) return '';
   return '<div class="gnotizen">' + notizen.map(n => `
     <div class="gnotiz ${esc(n.art)} t-${esc(n.treffer)}">
+      <i class="gn-datum">${esc(kTagKurz(n.datum))}</i>
       <span class="gn-text">${esc(n.text)}</span>
       <span class="gn-marken">
         <i class="gn-art">${esc(gArtName(n.art))}</i>
@@ -268,7 +280,7 @@ function gNotizenHtml(notizen) {
     </div>`).join('') + '</div>';
 }
 
-function gKarteLeer(k) { return !k || (!k.titel && !k.datum && !k.rueckseite && !(k.notizen || []).length); }
+function gKarteLeer(k) { return !k || (!k.titel && !k.datum && !(k.notizen || []).length); }
 
 /* Weglegen: die Karte fliegt nach oben weg und liegt danach bei den
    Vergangenen. Angeschaut wird sie dort erst, wenn man den Kopf herunterzieht –
@@ -512,7 +524,7 @@ function gZurueckholen(id) {
       GDB.vergangen.unshift(Object.assign({ id: uid(), abgelegt: Date.now() }, GDB.karte));
     }
     GDB.karte = { titel: alt.titel, datum: alt.datum, zeit: alt.zeit,
-      rueckseite: alt.rueckseite, notizen: (alt.notizen || []).map(n => Object.assign({}, n)) };
+      notizen: (alt.notizen || []).map(n => Object.assign({}, n)) };
   });
   GStore.sichern(true);
   gDrehung = 0; gGedreht = false;
@@ -525,11 +537,8 @@ function gAlteKarteZeigen(id) {
   if (!k) return;
   const s = blatt(k.titel || 'Ohne Titel', `
     <p class="muted" style="font-size:12.5px;margin:-6px 0 14px">${esc(gAltText(k))}</p>
-    ${k.rueckseite || (k.notizen || []).length
-      ? `<div class="g-rueck" style="max-height:none;margin-bottom:16px">
-           ${k.rueckseite ? `<p class="g-frei">${esc(k.rueckseite).replace(/\n/g, '<br>')}</p>` : ''}
-           ${gNotizenHtml(k.notizen)}
-         </div>`
+    ${(k.notizen || []).length
+      ? `<div class="g-rueck" style="max-height:none;margin-bottom:16px">${gNotizenHtml(k.notizen)}</div>`
       : '<p class="hinweis" style="margin-bottom:16px">Die Rückseite war leer.</p>'}
     <div class="btn-row">
       <button class="btn btn-primary" data-zurueck style="flex:1">Zurückholen</button>
@@ -625,39 +634,73 @@ function gUhrLaufen(v) {
   gTakt = setInterval(malen, 1000);
 }
 
-function gKarteBearbeiten() {
+/* ---------- Die Karte ändern ----------
+   Zwei getrennte Masken: vorne der Titel mit seinem Countdown, hinten die
+   Notizen. Wer die Rückseite vor sich hat, will nicht am Datum vorbeiscrollen. */
+function gVorderseiteBearbeiten() {
   const k = GDB.karte;
-  const s = blatt('Karte', `
-    <div class="field"><label>Titel (Vorderseite)</label>
+  const s = blatt('Vorderseite', `
+    <div class="field"><label>Titel</label>
       <input type="text" data-t value="${esc(k.titel)}" placeholder="z.B. Halbmarathon"></div>
     <div class="grid2">
       <div class="field"><label>Datum</label><input type="date" data-d value="${esc(k.datum)}"></div>
       <div class="field"><label>Uhrzeit</label><input type="time" data-z value="${esc(k.zeit)}"></div>
     </div>
-    <span class="hint" style="display:block;margin:-6px 0 12px">Ohne Uhrzeit zählt der Countdown auf Mitternacht.</span>
-    <div class="field"><label>Rückseite</label>
-      <textarea data-r style="min-height:96px" placeholder="Freier Text">${esc(k.rueckseite)}</textarea></div>
-
-    <div class="section-head" style="padding:6px 0 8px"><h2>Notizen</h2>
-      <span class="eyebrow">Befürchtung oder Kritik</span></div>
-    <div data-notizen></div>
-    <button class="btn btn-block btn-ghost btn-sm" style="margin:2px 0 16px" data-nneu>${ICON.plus} Notiz</button>
-
+    <span class="hint" style="display:block;margin:-6px 0 14px">Ohne Uhrzeit zählt der Countdown auf Mitternacht.</span>
+    <button class="btn btn-block btn-ghost btn-sm" style="margin-bottom:14px" data-zurueck>
+      ${GICON.drehen} Zur Rückseite ${gNotizZahl()}</button>
     <div class="btn-row">
       <button class="btn btn-primary" data-ok style="flex:1">Sichern</button>
       <button class="btn btn-ghost" data-leeren>Leeren</button>
     </div>`);
 
+  $('[data-zurueck]', s).onclick = () => gRueckseiteBearbeiten(true);
+  $('[data-ok]', s).onclick = () => {
+    const d = $('[data-d]', s).value, z = $('[data-z]', s).value;
+    gAendern(() => {
+      GDB.karte.titel = $('[data-t]', s).value.trim().slice(0, 200);
+      GDB.karte.datum = /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : '';
+      GDB.karte.zeit = /^\d{2}:\d{2}$/.test(z) ? z : '';
+    });
+    GStore.sichern(true);
+    layerSchliessen();
+    gViewMalen();
+  };
+  $('[data-leeren]', s).onclick = () => gKarteLeeren();
+}
+
+const gNotizZahl = () => {
+  const n = (GDB.karte.notizen || []).length;
+  return n ? '<span class="eyebrow" style="margin-left:6px">' + n + '</span>' : '';
+};
+
+function gRueckseiteBearbeiten(ersetzen) {
+  const k = GDB.karte;
   /* Gearbeitet wird auf einer Abschrift; erst „Sichern“ schreibt sie zurück. */
-  let notizen = k.notizen.map(n => Object.assign({}, n));
+  let notizen = (k.notizen || []).map(n => Object.assign({}, n));
+
+  const s = blatt('Rückseite', `
+    <p class="hinweis" style="padding:0 0 12px">Jede Notiz ist eine <strong>Befürchtung</strong>
+      oder eine <strong>Kritik</strong> – und davon getrennt steht, ob sie eingetroffen ist.</p>
+    <div data-notizen></div>
+    <button class="btn btn-block btn-ghost btn-sm" style="margin:2px 0 14px" data-nneu>${ICON.plus} Notiz</button>
+    <button class="btn btn-block btn-ghost btn-sm" style="margin-bottom:14px" data-vorne>
+      ${GICON.drehen} Zur Vorderseite</button>
+    <div class="btn-row">
+      <button class="btn btn-primary" data-ok style="flex:1">Sichern</button>
+    </div>`, { ersetzen: !!ersetzen });
+
   const notizenMalen = () => {
     const w = $('[data-notizen]', s);
     w.innerHTML = notizen.length ? notizen.map((n, i) => `
       <div class="gn-feld" data-i="${i}">
+        <div class="gn-kopf">
+          <i class="gn-datum">${esc(kTagKurz(n.datum))}</i>
+          <button class="icon-btn gn-weg" data-nweg aria-label="Notiz entfernen">${ICON.trash}</button>
+        </div>
         <textarea data-ntext placeholder="Was befürchtest oder kritisierst du?">${esc(n.text)}</textarea>
         <div class="chiprow">
           ${GARTEN.map(a => `<button class="chip" data-nart="${a.id}" aria-pressed="${n.art === a.id}">${a.name}</button>`).join('')}
-          <button class="icon-btn gn-weg" data-nweg aria-label="Notiz entfernen">${ICON.trash}</button>
         </div>
         <div class="chiprow">
           ${GTREFFER.map(t => `<button class="chip" data-ntreff="${t.id}" aria-pressed="${n.treffer === t.id}">${t.name}</button>`).join('')}
@@ -671,13 +714,11 @@ function gKarteBearbeiten() {
       notizen[+el.closest('.gn-feld').dataset.i].text = el.value;
     });
     $$('[data-nart]', w).forEach(b => b.onclick = () => {
-      const n = notizen[+b.closest('.gn-feld').dataset.i];
-      n.art = b.dataset.nart;
+      notizen[+b.closest('.gn-feld').dataset.i].art = b.dataset.nart;
       notizenMalen();
     });
     $$('[data-ntreff]', w).forEach(b => b.onclick = () => {
-      const n = notizen[+b.closest('.gn-feld').dataset.i];
-      n.treffer = b.dataset.ntreff;
+      notizen[+b.closest('.gn-feld').dataset.i].treffer = b.dataset.ntreff;
       notizenMalen();
     });
     $$('[data-nweg]', w).forEach(b => b.onclick = () => {
@@ -686,36 +727,31 @@ function gKarteBearbeiten() {
     });
   };
   notizenMalen();
+
   $('[data-nneu]', s).onclick = () => {
-    notizen.push({ id: uid(), text: '', art: 'befuerchtung', treffer: 'offen' });
+    /* Der Tag, an dem sie entsteht – später steht er klein über dem Eintrag. */
+    notizen.push({ id: uid(), text: '', art: 'befuerchtung', treffer: 'offen', datum: heute() });
     notizenMalen();
     const felder = $$('[data-ntext]', s);
     if (felder.length) felder[felder.length - 1].focus();
   };
+  $('[data-vorne]', s).onclick = () => gVorderseiteBearbeiten();
 
   $('[data-ok]', s).onclick = () => {
-    const d = $('[data-d]', s).value, z = $('[data-z]', s).value;
-    gAendern(() => {
-      GDB.karte = {
-        titel: $('[data-t]', s).value.trim().slice(0, 200),
-        datum: /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : '',
-        zeit: /^\d{2}:\d{2}$/.test(z) ? z : '',
-        rueckseite: $('[data-r]', s).value.trim().slice(0, 4000),
-        notizen: gNotizen(notizen)
-      };
-    });
+    gAendern(() => { GDB.karte.notizen = gNotizen(notizen); });
     GStore.sichern(true);
     layerSchliessen();
     gViewMalen();
   };
-  $('[data-leeren]', s).onclick = async () => {
-    if (!await bestaetigen('Karte leeren?', 'Vorderseite, Rückseite und Notizen werden geleert.', 'Leeren', true)) return;
-    gAendern(() => { GDB.karte = gLeereKarte(); });
-    GStore.sichern(true);
-    layerSchliessen();
-    gDrehung = 0; gGedreht = false;
-    gViewMalen();
-  };
+}
+
+async function gKarteLeeren() {
+  if (!await bestaetigen('Karte leeren?', 'Vorderseite und alle Notizen werden geleert.', 'Leeren', true)) return;
+  gAendern(() => { GDB.karte = gLeereKarte(); });
+  GStore.sichern(true);
+  layerSchliessen();
+  gDrehung = 0; gGedreht = false;
+  gViewMalen();
 }
 
 /* ---------- Bald ---------- */
@@ -747,7 +783,7 @@ function gMehrMalen(v) {
       dieser Datei bleiben davon unberührt.</p>`;
 
   appDatenBinden(GORT, v, gViewMalen);
-  $('[data-gkarte]', v).onclick = () => gKarteBearbeiten();
+  $('[data-gkarte]', v).onclick = () => gVorderseiteBearbeiten();
   $('[data-gverg]', v).onclick = () => gVergangenOeffnen();
   $('[data-greset]', v).onclick = async () => {
     if (!await bestaetigen('Wirklich alles löschen?', 'Die Karte und alles Weitere werden entfernt.', 'Alles löschen', true)) return;

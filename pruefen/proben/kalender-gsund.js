@@ -124,30 +124,31 @@ const P = (n, g, i) => { g ? ok++ : fehl++; console.log((g ? 'OK   ' : 'FEHL ') 
     art: n.querySelector('.gn-art').textContent,
     treff: n.querySelector('.gn-treff').textContent
   })));
-  P('drei Notizen auf der Rückseite', notizen.length === 3, JSON.stringify(notizen.map(n => n.art + '/' + n.treff)));
+  /* Vier: drei gesäte plus der alte Freitext, der zur ersten Notiz wurde. */
+  P('vier Notizen auf der Rückseite', notizen.length === 4, JSON.stringify(notizen.map(n => n.art + '/' + n.treff)));
   P('Befürchtung und Kritik getrennt von eingetroffen',
     notizen.some(n => n.art === 'Befürchtung' && n.treff === 'nicht eingetroffen')
     && notizen.some(n => n.art === 'Kritik' && n.treff === 'eingetroffen')
     && notizen.some(n => n.treff === 'offen'));
 
-  await page.evaluate(() => gKarteBearbeiten()); await page.waitForTimeout(400);
+  await page.evaluate(() => gRueckseiteBearbeiten()); await page.waitForTimeout(400);
   const felder = await page.$$eval('.sheet .gn-feld', n => n.length);
-  P('Blatt zeigt je Notiz ein Feld', felder === 3, felder + ' Felder');
+  P('Blatt zeigt je Notiz ein Feld', felder === 4, felder + ' Felder');
   await page.click('.sheet [data-nneu]'); await page.waitForTimeout(200);
   const felder2 = await page.$$eval('.sheet .gn-feld', n => n.length);
-  P('neue Notiz kommt dazu', felder2 === 4, felder2 + ' Felder');
+  P('neue Notiz kommt dazu', felder2 === 5, felder2 + ' Felder');
   const letztes = await page.$$('.sheet .gn-feld textarea');
-  await letztes[3].fill('Niemand kommt mit.');
-  await page.click('.sheet .gn-feld[data-i="3"] [data-nart="kritik"]');
+  await letztes[4].fill('Niemand kommt mit.');
+  await page.click('.sheet .gn-feld[data-i="4"] [data-nart="kritik"]');
   await page.waitForTimeout(150);
-  await page.click('.sheet .gn-feld[data-i="3"] [data-ntreff="ein"]');
+  await page.click('.sheet .gn-feld[data-i="4"] [data-ntreff="ein"]');
   await page.waitForTimeout(150);
-  const behalten = await page.$eval('.sheet .gn-feld[data-i="3"] textarea', n => n.value);
+  const behalten = await page.$eval('.sheet .gn-feld[data-i="4"] textarea', n => n.value);
   P('Text überlebt das Umschalten der Marken', behalten === 'Niemand kommt mit.', behalten);
   await page.click('.sheet [data-ok]'); await page.waitForTimeout(500);
-  P('vier Notizen gesichert', await page.evaluate(() => {
+  P('fünf Notizen gesichert', await page.evaluate(() => {
     const n = GDB.karte.notizen;
-    return n.length === 4 && n[3].art === 'kritik' && n[3].treffer === 'ein';
+    return n.length === 5 && n[4].art === 'kritik' && n[4].treffer === 'ein';
   }), await page.evaluate(() => JSON.stringify(GDB.karte.notizen.map(n => n.art + '/' + n.treffer))));
 
   /* ---------- 5. Puzzle: Sätze ohne Grund ---------- */
