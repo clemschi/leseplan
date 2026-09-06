@@ -75,6 +75,18 @@ leseliste – der Rest, nach Aufgaben getrennt:
 
 ---
 
+## Daneben: `puzzle.html`
+
+Eine **eigenständige Datei**, die mit `mylife.html` nichts zu tun hat: nur das
+Puzzle, mit einem festen Bild darin. Kein Speicherort, keine JSON, keine
+Adresse nach draussen – das Foto steckt als WebP-Data-URL in der Datei, der
+Stand liegt im `localStorage`. Die Logik ist aus `src/js/puzzle.js` gelöst
+(`pzKante`, `pzUmriss`, `pzVorratBauen`, `pzAltern`, `pzTeilung`, `pzLage`,
+`pzSchiebenBinden`); geändert wurde nur, was an der Hülle hing.
+
+**Sie wird nicht gebaut.** `node build.js` fasst sie nicht an – wer sie ändert,
+ändert die Datei selbst. Geprüft wird sie von `pruefen/proben/puzzle-datei.js`.
+
 ## Wo suche ich was?
 
 | Frage | Wo |
@@ -125,13 +137,13 @@ Zwei Werkzeuge, beide melden `OK`/`FEHL` und enden mit einem Zählstand:
 | `node pruefen/rundgang.js` | alle sechs Apps, jeder Reiter, ~700 Bedienelemente, Verlaufs-Disziplin | ~5 min |
 | `node pruefen/rundgang.js --schnell` | dasselbe ohne den Klick-Teil | <1 min |
 | `node pruefen/rundgang.js --leer` | mit leerer Datenbasis | ~4 min |
-| `node pruefen/proben.js` | die dreizehn Einzelproben unter `pruefen/proben/` | ~6 min |
+| `node pruefen/proben.js` | die vierzehn Einzelproben unter `pruefen/proben/` | ~6 min |
 | `node pruefen/proben.js stoebern` | nur die Proben, deren Name das enthält | |
 
 Die Proben halten fest, was einmal kaputt war: `cashflow`, `cashflow-finger`,
 `isbn`, `bestenlisten`, `dateien` (JSON aus Zäunen), `stoebern-wieder`,
 `stoebern-sackgasse`, `kalender-gsund`, `adresse` (Seite unter einer Adresse),
-`uebersicht-lesend`, `termin-spanne`, `gsund-notizen`, `pause`.
+`uebersicht-lesend`, `termin-spanne`, `gsund-notizen`, `pause`, `puzzle-datei`.
 Die Saat für beides steht in `pruefen/saat.js` – **neue Felder in einer Datenbasis
 gehören dort dazu.**
 

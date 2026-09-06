@@ -32,11 +32,27 @@ const P = (n, g, i) => { g ? ok++ : fehl++; console.log((g ? 'OK   ' : 'FEHL ') 
     gruppe: n.querySelector('.kgruppe').textContent,
     dauer: (n.querySelector('.kdauer') || {}).textContent || ''
   })));
-  P('Heute fällig ist flach', zeilen.length === 5, zeilen.length + ' Zeilen');
+  /* Wie viele Zeilen zu erwarten sind, hängt am Wochentag: „lesen" läuft
+     Mo–Fr, „Spaziergang" täglich. Darum gerechnet statt geraten. */
+  const erwartet = await page.evaluate(() => {
+    const h = heute();
+    let n = 0;
+    KDB.aufgaben.forEach(v => v.tage.forEach(t => {
+      if (t.datum !== h || t.done) return;
+      const offen = t.taetigkeiten.filter(x => !x.done);
+      n += offen.length || 1;
+    }));
+    return { gesamt: n + kRoutineOffen(h).length, routinen: kRoutineOffen(h).map(r => r.text) };
+  });
+  P('Heute fällig ist flach', zeilen.length === erwartet.gesamt,
+    zeilen.length + ' Zeilen, erwartet ' + erwartet.gesamt);
   P('jede Zeile trägt ihre Gruppe', zeilen.every(z => z.gruppe),
     zeilen.map(z => z.text + ' [' + z.gruppe + ' ' + z.dauer + ']').join(' | '));
   P('Tag ohne Tätigkeit steht als eigene Zeile', zeilen.some(z => z.text === 'Frist' && z.gruppe === 'Rechnung'));
-  P('Routine steht mit dabei', zeilen.some(z => z.text === 'lesen' && z.gruppe === 'Routine'));
+  P('jede heute fällige Routine steht mit dabei',
+    erwartet.routinen.length > 0
+    && erwartet.routinen.every(t => zeilen.some(z => z.text === t && z.gruppe === 'Routine')),
+    erwartet.routinen.join(', ') || 'heute keine');
   P('ruhende Routine fehlt', !zeilen.some(z => z.text === 'Wohnung putzen'));
   const eyebrow = await page.$eval('.section-head .eyebrow ~ *, .section-head', () => 0).catch(() => 0);
   const kopf = await page.evaluate(() => {
