@@ -81,14 +81,14 @@ const P = (n, g, i) => { g ? ok++ : fehl++; console.log((g ? 'OK   ' : 'FEHL ') 
   const tp = (t, x, y) => cdp.send('Input.dispatchTouchEvent', { type: t, touchPoints: t === 'touchEnd' ? [] : [{ x, y }] });
   const legen = async (nr) => {
     const ziel = await page.evaluate(n => {
-      const teil = document.querySelector('.pzlose[data-teil="' + n + '"]');
       const brett = document.querySelector('[data-pzbrett]');
-      if (!teil) return null;
-      const r = teil.getBoundingClientRect();
-      const mx = r.left + r.width / 2, my = r.top + r.height / 2;
-      /* Teile ueberlappen: angefasst wird, was an dieser Stelle obenauf liegt. */
-      const oben = document.elementFromPoint(mx, my);
-      const echt = oben && oben.closest('.pzlose');
+      /* Teile überlappen. Das zuletzt im DOM stehende liegt immer obenauf –
+         das ist eindeutig, elementFromPoint an der Mitte ist es nicht. Und
+         es soll ein gewöhnliches sein, kein gealtertes: nur die lassen sich
+         später nicht wieder herausnehmen, und genau das wird geprüft. */
+      const alle = [...document.querySelectorAll('.pzlose')]
+        .filter(x => !P.alt.includes(+x.dataset.teil));
+      const echt = alle[alle.length - 1];
       if (!echt) return null;
       const e = +echt.dataset.teil;
       const er = echt.getBoundingClientRect(), br = brett.getBoundingClientRect();
@@ -207,6 +207,27 @@ const P = (n, g, i) => { g ? ok++ : fehl++; console.log((g ? 'OK   ' : 'FEHL ') 
   await page.waitForTimeout(200);
   const hell = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   P('hell und dunkel lassen sich umschalten', dunkel !== hell, dunkel + ' → ' + hell);
+
+  /* ---------- Ohne JavaScript ----------
+     Vorschauen in WhatsApp, Mail oder Dateien zeigen HTML, führen aber kein
+     Skript aus. Dann darf die Seite nicht schwarz bleiben. */
+  const ohneCtx = await b.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+  const ohne = await ohneCtx.newPage();
+  await ohne.goto(DATEI);
+  await ohne.waitForTimeout(400);
+  const stumm = await ohne.evaluate(() => {
+    const n = document.querySelector('.ohne');
+    const knopf = document.querySelector('[data-modus]');
+    return {
+      hinweis: n ? n.textContent.replace(/\s+/g, ' ').trim().slice(0, 60) : '',
+      hoehe: n ? Math.round(n.getBoundingClientRect().height) : 0,
+      knopfLeer: knopf ? !knopf.innerHTML.trim() : true
+    };
+  });
+  P('ohne JavaScript steht ein Hinweis da', /kein JavaScript/.test(stumm.hinweis) && stumm.hoehe > 100,
+    stumm.hinweis + ' (' + stumm.hoehe + ' px)');
+  P('der Modus-Knopf ist auch ohne Skript nicht leer', !stumm.knopfLeer);
+  await ohneCtx.close();
 
   const echt = f.filter(x => !/ERR_|net::|google|fonts/.test(x));
   P('keine Fehler', echt.length === 0, echt.slice(0, 3).join(' | '));

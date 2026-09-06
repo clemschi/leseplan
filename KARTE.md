@@ -87,6 +87,13 @@ Stand liegt im `localStorage`. Die Logik ist aus `src/js/puzzle.js` gelöst
 **Sie wird nicht gebaut.** `node build.js` fasst sie nicht an – wer sie ändert,
 ändert die Datei selbst. Geprüft wird sie von `pruefen/proben/puzzle-datei.js`.
 
+**Vorschauen führen kein JavaScript aus.** Die eingebauten Anzeigen von
+WhatsApp, Mail und der Dateien-App zeigen das HTML, lassen das Skript aber
+liegen – dann bliebe die Seite schwarz. Darum steht ein `<noscript>` darin,
+das genau das sagt, und das Sonnenzeichen im Modus-Knopf steht schon im
+Markup, damit er ohne Skript nicht wie ein Fehler aussieht. Wirklich spielen
+lässt sich das Puzzle nur in einem Browser.
+
 ## Wo suche ich was?
 
 | Frage | Wo |
