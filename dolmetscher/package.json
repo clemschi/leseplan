@@ -1,0 +1,16 @@
+{
+  "name": "dolmetscher",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "WhatsApp auf Deutsch - eine Bruecke, die ausgehende Nachrichten uebersetzt und eingehende zurueckuebersetzt",
+  "scripts": {
+    "start": "node server.js",
+    "pruefen": "node pruefen/alles.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "baileys": "7.0.0-rc14",
+    "qrcode": "^1.5.4"
+  }
+}
