@@ -94,6 +94,29 @@ das genau das sagt, und das Sonnenzeichen im Modus-Knopf steht schon im
 Markup, damit er ohne Skript nicht wie ein Fehler aussieht. Wirklich spielen
 lässt sich das Puzzle nur in einem Browser.
 
+## Daneben: `dolmetscher/`
+
+Ein **eigenes Programm**, das mit `mylife.html` nichts zu tun hat: ein kleiner
+Node-Server, der sich bei WhatsApp als verknuepftes Geraet anmeldet und die
+Nachrichten uebersetzt. Ausgehend deutsch getippt, rumaenisch gesendet;
+eingehend umgekehrt. Ein Tipp auf eine Nachricht zeigt das Original.
+
+Gedacht ist er fuer **Termux auf dem Handy** – kein Rechner noetig; angemeldet
+wird ueber den achtstelligen Kopplungscode, weil man den eigenen Bildschirm
+nicht abfotografieren kann. Die Einrichtung steht in `dolmetscher/README.md`.
+
+**Er wird nicht gebaut.** `node build.js` fasst ihn nicht an, `pruefen/`
+kennt ihn nicht. Eigene Proben: `cd dolmetscher && npm run pruefen`.
+
+| Datei | Was |
+|---|---|
+| `src/kern.js` | die einzige Entscheidung: welche Sprache raus, welche herein |
+| `src/whatsapp.js` | der einzige Baustein, der Baileys kennt |
+| `src/uebersetzen.js` | Google, DeepL, LibreTranslate hinter einer Tuer |
+| `src/anwendung.js` | HTTP-Wege und der Ereignisstrom zur Oberflaeche |
+| `web/` | die Oberflaeche: Anmelden, Chats, ein Chat |
+| `pruefen/attrappe.js` | WhatsApp und das Netz als Attrappe – Proben ohne Handy |
+
 ## Wo suche ich was?
 
 | Frage | Wo |

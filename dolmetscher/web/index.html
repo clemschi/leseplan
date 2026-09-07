@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#0b0f14">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dolmetscher">
+<link rel="manifest" href="app.webmanifest">
+<title>Dolmetscher</title>
+<link rel="stylesheet" href="stil.css">
+</head>
+<body>
+
+<!-- 1. Anmelden: solange keine Verbindung steht -->
+<section id="anmelden" class="flaeche">
+  <div class="mitte">
+    <h1>Dolmetscher</h1>
+    <p class="stand" id="anmeldeStand">verbindet …</p>
+
+    <div id="kopplung" class="karte">
+      <h2>Mit WhatsApp verknüpfen</h2>
+      <p class="klein">
+        In WhatsApp: <b>Einstellungen › Verknüpfte Geräte › Gerät hinzufügen ›
+        Stattdessen mit Telefonnummer verknüpfen.</b> Dort wird der Code eingetippt,
+        den du hier gleich bekommst.
+      </p>
+      <label class="feld">
+        <span>Deine WhatsApp-Nummer, international</span>
+        <input id="nummer" type="tel" inputmode="numeric" placeholder="491701234567" autocomplete="off">
+      </label>
+      <p class="klein">Ohne Plus, ohne Leerzeichen. Deutschland 49, Österreich 43, Schweiz 41, Rumänien 40.</p>
+      <button id="codeHolen" class="knopf gross">Code anfordern</button>
+      <div id="codeFeld" class="code" hidden></div>
+      <p id="codeHinweis" class="klein" hidden>Diesen Code in WhatsApp eintippen. Er gilt ein paar Minuten.</p>
+      <p id="kopplungFehler" class="fehler" hidden></p>
+    </div>
+
+    <details class="karte" id="qrKarte">
+      <summary>Lieber per QR-Code (nur von einem anderen Gerät aus)</summary>
+      <div id="qrBild" class="qr">Noch kein QR-Code. Er erscheint, sobald WhatsApp einen anbietet.</div>
+    </details>
+  </div>
+</section>
+
+<!-- 2. Die Chats -->
+<section id="liste" class="flaeche" hidden>
+  <header class="kopf">
+    <div class="titel">
+      <b>Chats</b>
+      <span id="ichBin" class="klein"></span>
+    </div>
+    <button id="zuEinstellungen" class="knopf schmal" title="Einstellungen">⚙</button>
+  </header>
+  <div id="chatliste" class="rollen"></div>
+</section>
+
+<!-- 3. Ein Chat -->
+<section id="chat" class="flaeche" hidden>
+  <header class="kopf">
+    <button id="zurueck" class="knopf schmal" title="Zurück">←</button>
+    <div class="titel">
+      <b id="chatName">…</b>
+      <span id="chatUnter" class="klein"></span>
+    </div>
+    <button id="chatMehr" class="knopf schmal" title="Diesen Chat einstellen">⋯</button>
+  </header>
+  <div id="verlauf" class="rollen verlauf"></div>
+  <div class="eingabe">
+    <div id="vorschauZeile" class="vorschau" hidden></div>
+    <div class="eingabeReihe">
+      <textarea id="text" rows="1" placeholder="Auf Deutsch schreiben …" autocomplete="off"></textarea>
+      <button id="vorschauKnopf" class="knopf schmal" title="Zeigen, was rausgeht">👁</button>
+      <button id="senden" class="knopf senden" title="Senden">➤</button>
+    </div>
+  </div>
+</section>
+
+<!-- Blätter -->
+<div id="blatt" class="blatt" hidden>
+  <div class="blattInhalt" id="blattInhalt"></div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
