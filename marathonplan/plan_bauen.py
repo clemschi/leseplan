@@ -559,6 +559,9 @@ for n in range(1, 53):
     blatt.row_dimensions[1].height = 20
     blatt.freeze_panes = "B4"
 
+# Excel rechnet die Wochensummen beim Oeffnen nach
+wb.calculation.fullCalcOnLoad = True
+
 ziel = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Marathonplan_2026_2027.xlsx")
 wb.save(ziel)
 
