@@ -156,8 +156,12 @@ Fertige Bausteine, die genau das tun:
   Datenbasis einer App, nie in einen Baustein. `laufen.js` ist das Muster: der
   Plan kommt aus `laufen.json`, die App wird leer ausgeliefert.
 - `marathonplan/` steht in `.gitignore` und bleibt draussen.
-- `pruefen/proben/laufen-ohne-plan.js` hält das fest: eine Liste verbotener
-  Wörter, geprüft gegen die gebaute `mylife.html`.
+- `pruefen/proben/laufen-ohne-plan.js` hält das fest. Es prüft zweierlei:
+  allgemein, dass der Bau überhaupt keinen Plan mitbringt (keine Wochen-,
+  Rennen- oder Streckenliste), und Wort für Wort gegen `marathonplan/tabu.txt`.
+  **Die verbotenen Wörter stehen nicht in der Probe** – sonst stünde das
+  Geheimnis in seiner eigenen Wache. Fehlt die Datei, meldet die Probe das und
+  lässt nur den allgemeinen Teil laufen.
 
 ## Malen
 - **Ein Schritt gibt nicht mitten im Malen an einen anderen ab.** Wer erst rendert

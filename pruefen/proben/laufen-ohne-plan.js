@@ -11,14 +11,34 @@ const DATEI = 'file://' + path.join(WURZEL, 'mylife.html');
 let ok = 0, fehl = 0;
 const P = (n, g, i) => { g ? ok++ : fehl++; console.log((g ? 'OK   ' : 'FEHL ') + n + (i ? ' – ' + i : '')); };
 
-/* Was nie im ausgelieferten Bau stehen darf. */
-const TABU = ['daheim \u2192 Eltern', 'Sacher', 'Urstein', 'Schönbrunn',
-  'Wings for Life', 'Salzburg', 'Halbmarathon Wien', '4:30:00', '19,33',
-  '2026-09-21', '16.09.2027'];
+/* Was nie im ausgelieferten Bau stehen darf.
+   Die Woerter stehen absichtlich NICHT hier: dieses Verzeichnis ist
+   oeffentlich, und eine Wache, die ihr Geheimnis aufschreibt, ist keine.
+   Sie kommen aus marathonplan/tabu.txt, das .gitignore draussen haelt.
+   Fehlt die Datei, faellt dieser Teil weg - die allgemeine Pruefung
+   darunter laeuft immer. */
+const tabuDatei = path.join(WURZEL, 'marathonplan', 'tabu.txt');
+const TABU = fs.existsSync(tabuDatei)
+  ? fs.readFileSync(tabuDatei, 'utf8').split('\n')
+    .map(z => z.trim()).filter(z => z && !z.startsWith('#'))
+  : [];
 
 (async () => {
   const seite = fs.readFileSync(path.join(WURZEL, 'mylife.html'), 'utf8');
-  TABU.forEach(t => P('nicht im Bau: ' + t, !seite.includes(t)));
+
+  /* Immer: der Bau darf ueberhaupt keinen Plan mitbringen - egal wessen. */
+  P('kein Plan-Baustein im Bau', !/LPLAN/.test(seite));
+  P('keine Wochenliste im Bau', !/"wochen"\s*:\s*\[\s*\{/.test(seite)
+    && !/wochen:\s*\[\s*\{/.test(seite));
+  P('keine Rennliste im Bau', !/"rennen"\s*:\s*\[\s*\{/.test(seite)
+    && !/rennen:\s*\[\s*\{/.test(seite));
+  P('keine Streckenliste im Bau', !/strecken:\s*\[\s*\{/.test(seite));
+
+  /* Und, wenn die Liste da ist, Wort fuer Wort. Der Zaehler steht im
+     Ergebnis, damit ein stilles Ueberspringen auffaellt. */
+  P('Tabu-Liste gefunden', TABU.length > 0,
+    TABU.length ? TABU.length + ' Wörter' : 'marathonplan/tabu.txt fehlt – Teil übersprungen');
+  TABU.forEach((t, i) => P('nicht im Bau: Wort ' + (i + 1), !seite.includes(t)));
   P('auch die Saat bleibt neutral',
     !TABU.some(t => JSON.stringify(SAAT['daten-laufen']).includes(t)));
 
