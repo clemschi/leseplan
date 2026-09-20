@@ -334,25 +334,26 @@ ws.merge_cells("A1:K1")
 r = 3
 
 # --- Ziele -----------------------------------------------------------------
+ZIELE_SP = ["A", "B", "C", "D", "E"]
 setz(ws, "A%d" % r, "Ziele", fett=True, groesse=11, fill=FILL_TITEL)
-ws.merge_cells("A%d:D%d" % (r, r))
-rahmen(ws, r, ["A", "B", "C", "D"], DICK, DUENN, True, True)
+ws.merge_cells("A%d:E%d" % (r, r))
+rahmen(ws, r, ZIELE_SP, DICK, DUENN, True, True)
 r += 1
-ziele_kopf = ["Merkmal", "Halbmarathon", "Marathon", "5,7 km"]
+ziele_kopf = ["Merkmal", "Halbmarathon", "Wings for Life", "Marathon", "5,7 km"]
 for i, t in enumerate(ziele_kopf):
     setz(ws, "%s%d" % (get_column_letter(i + 1), r), t, fett=True, fill=FILL_KOPF,
          ausr="left" if i == 0 else "center")
-rahmen(ws, r, ["A", "B", "C", "D"], DUENN, DUENN, True, True)
+rahmen(ws, r, ZIELE_SP, DUENN, DUENN, True, True)
 r += 1
 ziele_zeilen = [
-    ("Datum",             "07.03.2027", "23.05.2027", "16.09.2027"),
-    ("Ort",               "Wien",       "Salzburg",   "Salzburg"),
-    ("Woche",             "Woche 24",   "Woche 35",   "Woche 52"),
-    ("Ziel (Traumziel)",  "1:44:59",    "3:59:59",    "24:59"),
-    ("Ziel-Pace",         "4:58/km",    "5:41/km",    "4:23/km"),
-    ("Einschätzung",      "2:00:00",    "4:30:00",    "26:00"),
-    ("Einschätzung-Pace", "5:41/km",    "6:24/km",    "4:34/km"),
-    ("Ist-Zeit",          "",           "",           ""),
+    ("Datum",             "07.03.2027", "09.05.2027",        "23.05.2027", "16.09.2027"),
+    ("Ort",               "Wien",       "Wien",              "Salzburg",   "Salzburg"),
+    ("Woche",             "Woche 24",   "Woche 33",          "Woche 35",   "Woche 52"),
+    ("Ziel (Traumziel)",  "1:44:59",    "bis zur Einholung", "3:59:59",    "24:59"),
+    ("Ziel-Pace",         "4:58/km",    "5:44/km",           "5:41/km",    "4:23/km"),
+    ("Einschätzung",      "2:00:00",    "19,33 km",          "4:30:00",    "26:00"),
+    ("Einschätzung-Pace", "5:41/km",    "5:44/km",           "6:24/km",    "4:34/km"),
+    ("Ist-Zeit",          "",           "",                  "",           ""),
 ]
 for j, zl in enumerate(ziele_zeilen):
     for i, t in enumerate(zl):
@@ -360,7 +361,7 @@ for j, zl in enumerate(ziele_zeilen):
         setz(ws, "%s%d" % (get_column_letter(i + 1), r), t,
              fett=(i == 0), fill=FILL_LABEL if i == 0 else (FILL_EIN if ist else None),
              ausr="left" if i == 0 else "center")
-    rahmen(ws, r, ["A", "B", "C", "D"], DUENN,
+    rahmen(ws, r, ZIELE_SP, DUENN,
            DICK if j == len(ziele_zeilen) - 1 else DUENN, True, True)
     r += 1
 
@@ -368,6 +369,11 @@ r += 1
 setz(ws, "A%d" % r, "Einschätzung Marathon 4:30:00: 4:15 wäre nur bei erfahrenen Läufern mit hohem "
                     "Umfang realistisch; bei Erstmarathon mit 3 Trainingstagen/Woche liegt der "
                     "Umrechnungsfaktor HM→Marathon eher bei 2,2–2,3 statt 2,1.", groesse=9)
+ws.merge_cells("A%d:K%d" % (r, r))
+r += 1
+setz(ws, "A%d" % r, "Wings for Life World Run: Start 13:00 Uhr bei Schloss Schönbrunn; das Catcher "
+                    "Car startet 30 Minuten später mit 12,9 → 14,5 → 16,1 km/h. Bei 5:44/km liegt "
+                    "die Einholung rechnerisch bei rund 19,33 km.", groesse=9)
 ws.merge_cells("A%d:K%d" % (r, r))
 r += 2
 
@@ -667,7 +673,7 @@ for n in range(1, 53):
 
 rennen_js = [{"name": ziele_kopf[i + 1], **{k: zl[i + 1] for k, zl in
               zip(["datum", "ort", "woche", "traum", "traumPace", "ziel", "zielPace"],
-                  ziele_zeilen[:7])}} for i in range(3)]
+                  ziele_zeilen[:7])}} for i in range(len(ziele_kopf) - 1)]
 tests_js = [{"woche": t[0], "datum": t[1], "teil1": t[2], "teil2": t[3],
              "gesamt": t[4], "ziel": t[5]} for t in TESTS]
 
