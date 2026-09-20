@@ -164,24 +164,29 @@ setze(26, (LOCK, L(6, 26)), (IVL, tempo(1.5, 3, "5:41", 1.5, 26, "HM-Pace")), (L
 
 # --- Marathonspezifisch (optional 4. Einheit Mittwoch) --------------------
 setze(27, (LOCK, L(7, 27)), (IVL, tempo(2, 4, "6:24", 2, 27, "Marathon-Pace")),
-          (LANG, lang_end(17, 4, "6:24", 27, "Marathon-Pace")), mi=(LOCK, L(6, 27)))
+          (LANG, lang_end(17, 4, "6:24", 27, "Marathon-Pace")))
 setze(28, (LOCK, L(7, 28)), (IVL, ivl(2, 5, 1000, "5:35", 400, 1.5, 28)),
-          (LANG, lang_end(21, 6, "6:24", 28, "Marathon-Pace")), mi=(LOCK, L(6, 28)))
+          (LANG, lang_end(21, 6, "6:24", 28, "Marathon-Pace")))
 setze(29, (LOCK, L(6, 29)), (LOCK, L(6, 29)),
           (TEST, [("20 km locker @ 7:05", 20.0),
-                  ("TEST 8 km @ 6:24 – Ziel 51:12", 8.0)]), mi=(LOCK, L(6, 29)))
+                  ("TEST 8 km @ 6:24 – Ziel 51:12", 8.0)]))
 setze(30, (LOCK, L(7, 30)), (IVL, tempo(2, 5, "6:24", 2, 30, "Marathon-Pace")),
-          (LANG, lang_end(15, 5, "6:24", 30, "Marathon-Pace")), mi=(LOCK, L(6, 30)))
+          (LANG, lang_end(15, 5, "6:24", 30, "Marathon-Pace")))
 setze(31, (LOCK, L(8, 31)), (LOCK, L(8, 31)),
           (TEST, [("20 km locker @ 7:05", 20.0),
-                  ("TEST 10 km @ 6:24 – Ziel 64:00", 10.0)]), mi=(LOCK, L(8, 31)))
+                  ("TEST 10 km @ 6:24 – Ziel 64:00", 10.0)]))
 setze(32, (LOCK, L(8, 32)), (IVL, tempo(2, 8, "6:24", 2, 32, "Marathon-Pace")),
-          (LANG, lang_end(22, 8, "6:24", 32, "Marathon-Pace")), mi=(LOCK, L(8, 32)))
+          (LANG, lang_end(22, 8, "6:24", 32, "Marathon-Pace")))
 
 # --- Taper + Marathon ------------------------------------------------------
-setze(33, (LOCK, L(7, 33)), (IVL, tempo(2, 6, "6:24", 2, 33, "Marathon-Pace")),
-          (LANG, lang_end(18, 6, "6:24", 33, "Marathon-Pace")))
-setze(34, (LOCK, L(6, 34)), (IVL, tempo(1.5, 4, "6:24", 1.5, 34, "Marathon-Pace")), (LANG, lang(14, 34)))
+setze(33, (LOCK, [("7 km locker @ 6:35", 7.0)]),
+          (LOCK, [("7 km locker @ 6:35", 7.0)]),
+          (WK,   [("Start 13:00 Uhr, Schloss Schönbrunn Wien", 0.0),
+                  ("19,33 km @ 5:44 bis zur Einholung", 19.33),
+                  ("Catcher Car: Start +30 min, 12,9 → 14,5 → 16,1 km/h", 0.0)]))
+setze(34, (LOCK, [("5 km locker @ 6:45", 5.0)]),
+          (LOCK, [("5 km locker @ 6:45", 5.0)]),
+          (LANG, [("10 km locker @ 6:55", 10.0)]))
 setze(35, (LOCK, L(6, 35)),
           (IVL, tempo(1.5, 2, "6:24", 1.5, 35, "Marathon-Pace")),
           (WK, [("10 km @ 6:30 (kontrolliert anlaufen)", 10.0),
@@ -217,11 +222,12 @@ setze(49, (LOCK, L(6, 49)), (LOCK, L(6, 49)),
 setze(50, (LOCK, L(7, 50)), (IVL, ivl(2, 6, 1000, "4:45", 400, 2, 50)),     (LANG, lang(14, 50)))
 setze(51, (LOCK, L(6, 51)), (IVL, ivl(2, 8, 400, "4:30", 200, 2, 51)),      (LANG, lang(10, 51)))
 setze(52, (LOCK, L(5, 52)),
+          (LOCK, [("3 km locker @ 6:55", 3.0),
+                  ("4× 100 m Steigerung @ 4:30", 0.4)]),
           (WK, [("2 km einlaufen @ 6:55", 2.0),
                 ("4× 100 m Steigerung @ 4:30", 0.4),
                 ("5,7 km Wettkampf Salzburg @ 4:34 – Ziel 26:00", 5.7),
-                ("2 km auslaufen @ 7:30", 2.0)]),
-          ("—", [("entfällt – Plan endet am Wettkampftag", 0.0)]))
+                ("2 km auslaufen @ 7:30", 2.0)]))
 
 # ------------------------------------------------------------- Ernährung
 def vorher(einheit, teile, n):
@@ -405,6 +411,9 @@ ws.merge_cells("A%d:K%d" % (r, r))
 rahmen(ws, r, sp_test, DICK, DUENN, True, True)
 r += 1
 HINWEISE = [
+    "Lauftage: Montag kurz · Mittwoch kurz + Qualität · Freitag langer Lauf · Sa/So frei.",
+    "Wettkämpfe und Tests stehen an ihrem festen Datum in der Spalte Wettkampf/Test und "
+    "ersetzen in dieser Woche den Freitagslauf.",
     "Blutwerte (Ferritin, B12, Vitamin D) vor Trainingsbeginn ärztlich checken lassen.",
     "Dieser Plan ist kein Ersatz für ärztlichen Rat.",
     "Gelb hinterlegte Zellen sind zum Eintragen: Ist-Zeit und Gefühl.",
@@ -421,7 +430,43 @@ for j, h in enumerate(HINWEISE):
 ws.freeze_panes = "B2"
 
 # ============================================================ Wochenblätter
-TAGE = [("Dienstag", "di", 1), ("Mittwoch", "mi", 2), ("Donnerstag", "do", 3), ("Sonntag", "so", 6)]
+# Lauftage: Montag kurz, Mittwoch kurz + Qualität, Freitag langer Lauf.
+# Wettkämpfe und Tests stehen an ihrem festen Datum in einer eigenen Spalte.
+EVENT_OFFSET = {52: 3}          # Woche 52: Donnerstag, sonst Sonntag
+WOCHENTAG = {0: "Montag", 2: "Mittwoch", 3: "Donnerstag", 4: "Freitag", 6: "Sonntag"}
+
+KOPFNOTIZ = {
+    33: "Qualitätseinheit (3× 10 min @ 6:02) entfällt ersatzlos · nach dem Wettkampf "
+        "Essen nicht reduzieren",
+    34: "reduziert als Ausgleich für Woche 33 · gestrichen: 5× 3 min @ 6:02 und 4 km "
+        "vom langen Lauf · nach dem langen Lauf viel Schlaf",
+}
+
+ESSEN_SPEZIAL = {
+    (33, "mo"): (["Haferflocken 60 g (2 h vorher)", "Banane 120 g", "Wasser 400 ml", ""],
+                 ["Wasser 400 ml", "", ""],
+                 ["Clear Protein 30 g in 400 ml Wasser", "Banane 1 Stück (120 g)",
+                  "Reiswaffel 3 Stück (27 g)", ""]),
+    (33, "wk"): (["Haferflocken 80 g (3 h vorher)", "Banane 120 g", "Datteln 40 g",
+                  "Wasser 500 ml"],
+                 ["Gel 30 g KH alle 30 min (60 g KH/h)",
+                  "Elektrolytgetränk 500 ml/h (Natrium)", "Wasser 300 ml/h"],
+                 ["Clear Protein 40 g in 500 ml Wasser", "Banane 2 Stück (240 g)",
+                  "Maiswaffel 4 Stück (28 g)", "Datteln 20 g"]),
+}
+ESSEN_SPEZIAL[(33, "mi")] = ESSEN_SPEZIAL[(33, "mo")]
+
+def wochen_tage(n):
+    """[(Spaltenkopf-Name, Tagesversatz, Tagdaten, Schluessel)] in Spaltenreihenfolge"""
+    kurz1, kurz2, lang = W[n]["di"], W[n]["do"], W[n]["so"]
+    ereignis = None
+    if kurz2 and kurz2[0] in (TEST, WK):
+        ereignis, kurz2 = kurz2, None
+    elif lang and lang[0] in (TEST, WK):
+        ereignis, lang = lang, None
+    return [("Montag", 0, kurz1, "mo"), ("Mittwoch", 2, kurz2, "mi"),
+            ("Freitag", 4, lang, "fr"),
+            ("Wettkampf / Test", EVENT_OFFSET.get(n, 6), ereignis, "wk")]
 SPALTEN = ["A", "B", "C", "D", "E"]
 TESTWOCHEN = {4: "18.10.26", 8: "15.11.26", 13: "20.12.26", 20: "07.02.27", 22: "21.02.27",
               29: "11.04.27", 31: "25.04.27", 39: "20.06.27", 44: "25.07.27", 49: "29.08.27"}
@@ -447,6 +492,8 @@ for n in range(1, 53):
         titel += " · Wettkampf Halbmarathon Wien"
     if n == 35:
         titel += " · Wettkampf Marathon Salzburg"
+    if n == 33:
+        titel += " · Wettkampf Wings for Life World Run Wien"
     if n == 52:
         titel += " · Wettkampf 5,7 km Salzburg"
     setz(blatt, "A1", titel, fett=True, groesse=12, fill=FILL_TITEL)
@@ -457,9 +504,8 @@ for n in range(1, 53):
     setz(blatt, "A2", "Wochenumfang", fett=True, fill=FILL_LABEL)
     setz(blatt, "B2", "=SUM(B5:E5)", fett=True, ausr="center", fmt='0.0" km"')
     info = tagesbedarf(n)
-    if 27 <= n <= 32:
-        drei = sum(x[1] for k in ("di", "do", "so") for x in (W[n][k][1] if W[n][k] else []))
-        info += " · 3-Tage-Version: %s km" % f(round(drei, 1))
+    if n in KOPFNOTIZ:
+        info += " · " + KOPFNOTIZ[n]
     if n == 35:
         mi_tag = mo + timedelta(days=2)
         sa_tag = mo + timedelta(days=5)
@@ -469,21 +515,23 @@ for n in range(1, 53):
     rahmen(blatt, 2, SPALTEN, DUENN, DICK, True, True)
 
     # Zeile 3: Kopfzeile Tage
+    tage = wochen_tage(n)
     setz(blatt, "A3", "Merkmal", fett=True, fill=FILL_KOPF)
-    for i, (name, key, off) in enumerate(TAGE):
+    for i, (name, off, tagdaten, key) in enumerate(tage):
         tag = mo + timedelta(days=off)
-        kopf = "%s %s" % (name, dstr(tag))
-        if key == "mi":
-            kopf += " (optional)" if W[n]["mi"] else " (frei)"
+        if key == "wk":
+            kopf = ("%s %s · Wettkampf/Test" % (WOCHENTAG[off], dstr(tag))) if tagdaten \
+                   else "Wettkampf / Test (keiner)"
+        else:
+            kopf = "%s %s" % (name, dstr(tag))
         setz(blatt, "%s3" % SPALTEN[i + 1], kopf, fett=True, fill=FILL_KOPF, ausr="center")
     rahmen(blatt, 3, SPALTEN, DUENN, DUENN, True, True)
 
     # Zeile 4/5: Einheit, Umfang
     setz(blatt, "A4", "Einheit", fett=True, fill=FILL_LABEL)
     setz(blatt, "A5", "Umfang", fett=True, fill=FILL_LABEL)
-    for i, (name, key, off) in enumerate(TAGE):
+    for i, (name, off, tagdaten, key) in enumerate(tage):
         sp = SPALTEN[i + 1]
-        tagdaten = W[n][key]
         if not tagdaten:
             setz(blatt, "%s4" % sp, "—", ausr="center")
             setz(blatt, "%s5" % sp, "—", ausr="center")
@@ -503,9 +551,8 @@ for n in range(1, 53):
     for t in range(4):
         z = 6 + t
         setz(blatt, "A%d" % z, "Teil %d" % (t + 1), fett=True, fill=FILL_LABEL)
-        for i, (name, key, off) in enumerate(TAGE):
+        for i, (name, off, tagdaten, key) in enumerate(tage):
             sp = SPALTEN[i + 1]
-            tagdaten = W[n][key]
             teile = tagdaten[1] if tagdaten else []
             setz(blatt, "%s%d" % (sp, z), teile[t][0] if t < len(teile) else "—")
         rahmen(blatt, z, SPALTEN, DUENN, DUENN, True, True)
@@ -517,14 +564,15 @@ for n in range(1, 53):
         blatt.merge_cells("A%d:A%d" % (start_z, start_z + hoehe - 1))
         setz(blatt, "A%d" % start_z, name, fett=True, fill=FILL_LABEL)
         blatt["A%d" % start_z].alignment = Alignment(horizontal="left", vertical="center")
-        for i, (tname, key, off) in enumerate(TAGE):
+        for i, (tname, off, tagdaten, key) in enumerate(tage):
             sp = SPALTEN[i + 1]
-            tagdaten = W[n][key]
             if not tagdaten:
                 zeilen = []
             elif name == "Supplements":
                 einheit, teile = tagdaten
                 zeilen = supps(mo + timedelta(days=off), n, dauer(teile) == 0)
+            elif (n, key) in ESSEN_SPEZIAL:
+                zeilen = ESSEN_SPEZIAL[(n, key)][["Vorher", "Während", "Danach"].index(name)]
             else:
                 einheit, teile = tagdaten
                 zeilen = fn(einheit, teile, n)
