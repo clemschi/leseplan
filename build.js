@@ -21,6 +21,7 @@ const STIL = [
   'stil/puzzle.css',
   'stil/minimal.css',
   'stil/cash.css',
+  'stil/laufen.css',
   'stil/stoebern.css'
 ];
 const MARKUP = ['rumpf.html'];
@@ -37,8 +38,11 @@ const SKRIPT = [
   'js/puzzle.js',
   'js/minimal.js',
   'js/cash.js',
+  'js/laufen.js',
   'js/sitzungen.js',
   'js/ebenen.js',
+  'js/tresor.js',
+  'js/prognose.js',
   'js/plan.js',
   'js/laden.js',
   'js/bilder.js',
@@ -165,6 +169,53 @@ body{display:grid;place-items:center;font-size:14px}a{color:#dba43f}</style>
 `;
 fs.writeFileSync(path.join(wurzel, 'index.html'), weiche);
 console.log('index.html geschrieben (Weiche auf mylife.html)');
+
+/* Ein Dienst-Arbeiter daneben: er legt die Seite in den Zwischenspeicher des
+   Browsers, damit die als App abgelegte Fassung auch ohne Netz startet. Die
+   Fassung steckt im Namen des Speichers und kommt aus dem Inhalt der Seite -
+   ein neuer Bau heisst neuer Name, und der alte wird beim naechsten Start
+   weggeraeumt. Aus einer Datei heraus (file://) meldet sich niemand an; das
+   greift nur unter einer Adresse. */
+const fassung = require('crypto').createHash('sha256').update(seite).digest('hex').slice(0, 12);
+const dienst = `/* Erzeugt aus build.js - nicht von Hand bearbeiten. */
+const FASSUNG = '${fassung}';
+const SPEICHER = 'mylife-' + FASSUNG;
+const DATEIEN = ['./', './index.html', './mylife.html', './mylife.webmanifest', './puzzle.html'];
+/* Die Schriften liegen woanders; sie kommen erst beim ersten Abruf dazu. */
+const FREMD = ['https://fonts.googleapis.com/', 'https://fonts.gstatic.com/'];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(SPEICHER)
+    .then(c => Promise.allSettled(DATEIEN.map(d => c.add(d))))
+    .then(() => self.skipWaiting()));
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys()
+    .then(namen => Promise.all(namen.filter(n => n !== SPEICHER).map(n => caches.delete(n))))
+    .then(() => self.clients.claim()));
+});
+
+/* Erst aus dem Speicher, dann im Hintergrund nachsehen: die Seite ist sofort
+   da, und der naechste Start hat den neuen Stand. Ohne Netz bleibt es beim
+   Gespeicherten. */
+self.addEventListener('fetch', e => {
+  const u = e.request.url;
+  if (e.request.method !== 'GET') return;
+  const eigen = u.startsWith(self.registration.scope);
+  const fremd = FREMD.some(f => u.startsWith(f));
+  if (!eigen && !fremd) return;
+  e.respondWith(caches.open(SPEICHER).then(c => c.match(e.request).then(hit => {
+    const netz = fetch(e.request).then(a => {
+      if (a && (a.ok || a.type === 'opaque')) c.put(e.request, a.clone());
+      return a;
+    }).catch(() => hit);
+    return hit || netz;
+  })));
+});
+`;
+fs.writeFileSync(path.join(wurzel, 'mylife-sw.js'), dienst);
+console.log('mylife-sw.js geschrieben (Fassung ' + fassung + ')');
 
 /* Und die Seite noch einmal als ZIP mit genau einer Datei darin.
    Grund: GitHub liefert eine .html roh als text/plain und ohne

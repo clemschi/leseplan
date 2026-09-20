@@ -2,8 +2,10 @@
 
 Die Quelle liegt in Bausteinen unter `src/`. `node build.js` setzt sie in dieser
 Reihenfolge zu `mylife.html` zusammen – die Reihenfolge steht in `build.js`.
-Daneben fallen `mylife.webmanifest`, `index.html` (Weiche) und `mylife.zip`
-(dieselbe Seite als Anhang, für den Download aufs Handy) ab.
+Daneben fallen `mylife.webmanifest`, `index.html` (Weiche), `mylife-sw.js`
+(der Dienst-Arbeiter, damit die abgelegte App ohne Netz startet) und
+`mylife.zip` (dieselbe Seite als Anhang, für den Download aufs Handy) ab.
+`.github/workflows/seite.yml` legt dieselben Dateien unter einer Adresse ab.
 
 **Zuerst hier nachsehen, welcher Baustein gemeint ist, dann nur den öffnen.**
 Eine ganze App sind 800–1200 Zeilen statt 10.500. Die Zeilenzahlen sind
@@ -44,6 +46,8 @@ Grundlage – gilt für alle Apps:
 | `erscheinung.js` | 126 | `SHELL`, `shellSchreiben`, `themeAnwenden`, Vollbild |
 | `rahmen.js` | 234 | `TABS`, `tabbarMalen`, `viewMalen`, Kopfzeile, Einführung, `appStarten` |
 | `ebenen.js` | 385 | `layerOeffnen/…Schliessen/alleLayerSchliessen/layerErsetzen`, `verlaufTiefe`, `blatt`, `bestaetigen`, `ziehenZumSchliessen`, `ebeneZiehen`, `vorhang…`, `heimZiehen`, `globalKnoepfe…` |
+| `tresor.js` | 123 | `tresorSchliessen`/`tresorOeffnen` (AES-GCM 256, Schlüssel über PBKDF2-SHA-256 aus dem Passwort), `tresorPruefen`, `tresorGeht`, `tresorPasswortFragen`. An keine App gebunden – jeder macht seinen eigenen Tresor mit seinem eigenen Passwort |
+| `prognose.js` | 56 | `zeitLesen`/`zeitText`/`paceText`, `riegel`, `hochrechnen`. Aus einem Ergebnis die Zeit auf einer anderen Distanz; der Marathon geht über den Halbmarathon mal Faktor, nicht über Riegel |
 | `start.js` | 23 | Manifest anmelden, wenn die Seite unter einer Adresse liegt; `boot()` |
 
 Die sechs Apps:
@@ -55,6 +59,7 @@ Die sechs Apps:
 | `gsund.js` | 952 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Notizen auf der Rückseite mit Datum (`GARTEN`, `GTREFFER`, `gNotizenHtml`, `gRueckMigrieren`), getrennte Masken (`gVorderseiteBearbeiten` / `gRueckseiteBearbeiten`), Vergangene; „Bald“ ist noch leer |
 | `minimal.js` | 584 | `MDB`, `MStore`, `minimalOeffnen`; Stand (die zwei Zahlen), Dinge (Liste, anlegen, abgeben), Verlauf (Monate und Ereignisse), Mehr |
 | `cash.js` | 692 | `CDB`, `CStore`, `cashOeffnen`; in Cent rechnen (`cGeld`, `cCent`), Termine einer Routine (`caTermine`), Fortschreiben (`caBis`, `caStandAm`), Stand mit Zeitstrahl (`caStandMalen` malt das Feste, `caZielMalen` den Zeiger, `caBahnBinden` zieht ihn), Routinen, Posten, Mehr |
+| `laufen.js` | 700 | `LFDB`, `LFStore`, `laufenOeffnen`; der Plan steht **nicht** im Code, sondern in `laufen.json` (`lfPlan()`); Reiter Heute/Plan/Ziele/Mehr, Abschnitte mit Kilometermarken und Zonen (`lfAbschnitteHtml`, `LFZONE`), Verpflegung als fertige Zeilen aus den Daten, Prognose aus Maximaltests (`lfPrognoseFuer`), Leistungs-Aufstellung am Vorhang (`lfLeistungOeffnen`, `lfKopfZiehen`) |
 | `puzzle.js` | 607 | Das Bilderpuzzle im Reiter Puzzle: `pzKante`/`pzUmriss` (die Form der Teile), `pzVorratBauen` (jedes Teil einmal als Bild), `pzTeilung`, `pzLage` (wo ein loses Teil liegt), `pzSchiebenBinden` (Ziehen am Zeiger, Einrasten), `gPuzzleMalen` |
 
 leseliste – der Rest, nach Aufgaben getrennt:

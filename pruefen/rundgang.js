@@ -29,7 +29,8 @@ const APPS = {
   fastreader: { rumpf: 'fr', attr: 'data-ftab', tabs: ['bib', 'lesen', 'bilanz', 'fmehr'] },
   gsund: { rumpf: 'gs', attr: 'data-gtab', tabs: ['guzi', 'puzzle', 'bald', 'gmehr'] },
   minimal: { rumpf: 'mi', attr: 'data-mitab', tabs: ['stand', 'dinge', 'verlauf', 'mimehr'] },
-  cash: { rumpf: 'ca', attr: 'data-catab', tabs: ['stand', 'routinen', 'posten', 'camehr'] }
+  cash: { rumpf: 'ca', attr: 'data-catab', tabs: ['stand', 'routinen', 'posten', 'camehr'] },
+  laufen: { rumpf: 'lf', attr: 'data-lftab', tabs: ['lfheute', 'lfplan', 'lfziele', 'lfmehr'] }
 };
 
 (async () => {

@@ -21,7 +21,7 @@ const P = (n, g, i) => { g ? ok++ : fehl++; console.log((g ? 'OK   ' : 'FEHL ') 
   await tp('touchStart', 8, 420);
   for (let i = 1; i <= 5; i++) { await tp('touchMove', 8 + 90 * i / 5, 420); await page.waitForTimeout(16); }
   const grund = await page.$$eval('.heimgrund .app', n => n.map(x => x.textContent));
-  P('Wischgrund zeigt alle Apps', grund.length === 6 && grund[5] === 'cashflow', grund.join(', '));
+  P('Wischgrund zeigt alle Apps', grund.length === 7 && grund[6] === 'laufen', grund.join(', '));
   await tp('touchEnd', 0, 0); await page.waitForTimeout(800);
   await page.evaluate(() => zumStartbildschirm()); await page.waitForTimeout(300);
 

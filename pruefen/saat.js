@@ -2,6 +2,7 @@
 const heute = new Date();
 const iso = d => new Date(d).toISOString().slice(0, 10);
 const tag = n => iso(heute.getTime() + n * 86400000);
+const dmy = d => { const x = new Date(d); return String(x.getDate()).padStart(2,'0') + '.' + String(x.getMonth()+1).padStart(2,'0') + '.' + x.getFullYear(); };
 
 const PLAN = 'p1', B1 = 'bl1', B2 = 'bl2';
 const SAAT = {
@@ -114,6 +115,66 @@ const SAAT = {
       { id: 'p3', name: 'Steuerrueckzahlung', cent: 71000, datum: tag(52), art: 'geplant', notiz: '' }
     ]
   },
+  'meta-laufen': { modus: 'geraet', handle: null, dateiname: 'laufen.json' },
+  /* Die App bringt keinen Plan mit - er steht in der Datenbasis. Hier ein
+     erfundener ueber drei Wochen, der am Montag dieser Woche anfaengt, damit
+     "Heute" etwas zu zeigen hat. Nichts davon ist echt. */
+  'daten-laufen': (() => {
+    const mo = new Date(heute);
+    mo.setDate(mo.getDate() - ((mo.getDay() + 6) % 7));
+    /* Ein Abschnitt: von Kilometer bis Kilometer, was, Pace, Zone. */
+    const ab = (v, b, w, p, z) => ({ v: v, b: b, w: w, p: p, z: z });
+    const woche = (n, phase, entlastung, km) => ({
+      n: n, p: phase, e: entlastung, b: 0, t: [
+        { d: 'Montag', o: 0, E: 'Locker', k: 'mo', min: km * 7,
+          A: [ab(0, km, 'locker', '7:10', 2)],
+          V: ['1:30 h vorher · Banane 120 g'], W: ['unterwegs nichts nötig'],
+          N: ['0:20 h danach · Clear Protein 30 g in 400 ml Wasser'],
+          S: ['B12 250 µg'] },
+        { d: 'Mittwoch', o: 2, E: 'Intervall', k: 'mi', min: 48,
+          A: [ab(0, 1.5, 'einlaufen', '7:10', 2),
+              ab(1.5, 2.5, '1000 m schnell', '5:40', 4),
+              ab(2.5, 2.9, '400 m Trab', '7:30', 1),
+              ab(2.9, 3.9, '1000 m schnell', '5:40', 4),
+              ab(3.9, 4.9, 'auslaufen', '7:30', 1)],
+          V: ['1:30 h vorher · Banane 120 g'], W: ['unterwegs nichts nötig'],
+          N: ['0:20 h danach · Clear Protein 40 g in 500 ml Wasser'],
+          S: ['B12 250 µg'] },
+        { d: 'Freitag', o: 4, E: 'Langer Lauf', k: 'fr', min: (km + 5) * 7.3,
+          A: [ab(0, km + 5, 'langer Lauf', '7:20', 2)],
+          V: ['3:00 h vorher · Haferflocken 80 g'],
+          W: ['km 4 · Gel 30 g KH + 250 ml Elektrolyt'],
+          N: ['0:20 h danach · Clear Protein 40 g in 500 ml Wasser'],
+          S: ['B12 250 µg'] },
+        null
+      ]
+    });
+    return {
+      format: 'mylife-laufen', version: 2, erstellt: Date.now(),
+      einstellungen: { autosaveSek: 60 },
+      plan: {
+        start: iso(mo),
+        prognose: { exponent: 1.06, marathonFaktor: 2.25 },
+        rennen: [{
+          name: 'Probelauf', datum: '01.01.2099', ort: 'Musterstadt', woche: 'Woche 3',
+          traum: '50:00', traumPace: '5:00/km', ziel: '55:00', zielPace: '5:30/km',
+          km: 10
+        }],
+        /* Ein Test in der Vergangenheit, damit die Hochrechnung etwas hat. */
+        tests: [{
+          woche: 'Woche 1', n: 1, datum: dmy(mo), teil1: '5 km zuegig @ 5:45',
+          teil2: '—', gesamt: '5 km', ziel: '28:45', mess: 5, art: 'maximal'
+        }],
+        wochen: [woche(1, 'Gewoehnung', 0, 6), woche(2, 'Grundlage', 0, 7),
+                 woche(3, 'Grundlage', 1, 5)]
+      },
+      eintraege: {
+        [iso(mo)]: { ok: true, zeit: '28:45', gefuehl: 'locker' },
+        [tag(2)]: { ok: true, zeit: '', gefuehl: '' }
+      },
+      strecken: [{ name: 'Runde am Fluss', km: 6, art: 'einfach' }]
+    };
+  })(),
   'meta-gsund': { modus: 'geraet', handle: null, dateiname: 'gsund.json' },
   'daten-gsund': {
     format: 'mylife-gsund', version: 1, erstellt: Date.now(),

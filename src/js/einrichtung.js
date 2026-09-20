@@ -86,7 +86,8 @@ const APPS = [
   { id: 'fastreader', name: 'fastreader', oeffnen: () => fastreaderOeffnen() },
   { id: 'gsund', name: 'g\u2019sund', oeffnen: () => gsundOeffnen() },
   { id: 'minimal', name: 'minimal', oeffnen: () => minimalOeffnen() },
-  { id: 'cash', name: 'cashflow', oeffnen: () => cashOeffnen() }
+  { id: 'cash', name: 'cashflow', oeffnen: () => cashOeffnen() },
+  { id: 'laufen', name: 'laufen', oeffnen: () => laufenOeffnen() }
 ];
 
 /* Genau eine App-Fläche liegt offen. */

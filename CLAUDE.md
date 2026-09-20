@@ -40,7 +40,7 @@ etwas liegt – dann wird nur der geöffnet, nicht die ganze App.
   `APPS`) ist ihr Homescreen; jede App wird erst beim Antippen geweckt.
 - **Jede App führt ihre eigene Datenbasis.** Eine Ausfertigung von
   `macheSpeicher(...)` je App, eigener IDB-Schlüssel, eigene JSON-Datei
-  (`leseplan.json`, `kalender.json`, `fastreader.json`, `gsund.json`). Nie Daten zweier Apps in eine Datei
+  (`leseplan.json`, `kalender.json`, `fastreader.json`, `gsund.json`, `laufen.json`). Nie Daten zweier Apps in eine Datei
   mischen. Die App ohne gewählten Speicherort fragt beim ersten Öffnen danach.
 - Was allen gemeinsam ist – Hell/Dunkel, Akzent, Vollbild – liegt in `SHELL`
   und wird über `shellSchreiben()` gesichert, nicht in den Daten einer App.
@@ -150,6 +150,55 @@ Fertige Bausteine, die genau das tun:
   Telefon zeigt sonst gar nichts an.
 - Was einen Stand überschreibt, fragt vorher (`bestaetigen`).
 
+## Nichts Persönliches im Code
+- Die Seite wird veröffentlicht (`.github/workflows/seite.yml`), also liest sie
+  jeder. Renntermine, Zielzeiten, Strecken, Adressen – all das gehört in die
+  Datenbasis einer App, nie in einen Baustein. `laufen.js` ist das Muster: der
+  Plan kommt aus `laufen.json`, die App wird leer ausgeliefert.
+- `marathonplan/` steht in `.gitignore` und bleibt draussen.
+- `pruefen/proben/laufen-ohne-plan.js` hält das fest. Es prüft dreierlei:
+  allgemein, dass der Bau überhaupt keinen Plan mitbringt (keine Wochen-,
+  Rennen- oder Streckenliste); Wort für Wort gegen `marathonplan/tabu.txt`;
+  und **dieselben Wörter über jede versionierte Datei**, nicht nur über den
+  Bau – einmal stand ein Streckenname als Testwert in einer Probe, der Bau
+  war sauber und das Verzeichnis nicht.
+- In `tabu.txt` heisst eine Tilde „nur im Bau verboten". Ortsnamen und Zeiten
+  kommen auch harmlos vor: „Salzburger Festspiele" in einer Buchbeschreibung
+  ist kein Leck, „Sacher" als Streckenname schon.
+- **Die verbotenen Wörter stehen nicht in der Probe** – sonst stünde das
+  Geheimnis in seiner eigenen Wache. Fehlt die Datei, meldet die Probe das und
+  lässt nur den allgemeinen Teil laufen.
+
+## Tresor
+- `tresor.js` verschliesst einen beliebigen Wert mit einem Passwort: AES-GCM
+  256, Schlüssel über PBKDF2-SHA-256, Salz und Zufallszahl je Tresor neu. Die
+  Rundenzahl steht im Tresor, damit alte Tresore aufgehen, wenn sie steigt.
+- **Kein Schlüssel im Code, keine Hintertür.** Jeder macht seinen eigenen
+  Tresor mit seinem eigenen Passwort; es gibt nichts, was alle aufsperrt.
+- Der aufgesperrte Wert liegt **nur im Arbeitsspeicher** (`LFKLAR` in
+  `laufen.js`), nie in der Datenbasis – sonst schriebe ihn die Selbstsicherung
+  im Klartext zurück.
+- `pruefen/proben/tresor.js` hält es fest, auch den Fall zweier Leute mit je
+  eigenem Passwort.
+
+## Der Plan in laufen
+- **Ein Abschnitt je Zeile, von Kilometer bis Kilometer.** Keine
+  Wiederholungs-Schreibweise („6× 2 min") – wer läuft, soll nichts umrechnen.
+  Jeder Abschnitt trägt `v`/`b` (km von/bis), `w` (was), `p` (Pace) und `z`
+  (Zone 1–5 nach RPE und HFmax).
+- **Verpflegung an Kilometermarken**, nicht an Minuten. Jede Zeile ist ein
+  Paar `{t, w}`: wann oder wo (`"km 8,1"`, `"3:00 h"`) und was
+  (`"Gel 30 g KH + 250 ml Elektrolyt"`). Die App setzt daraus **eine**
+  Tabelle in der Reihenfolge Vorher → Unterwegs → Danach → Täglich; vier
+  einzelne Kästen waren unübersichtlich.
+- **Zwei Tabellen je Einheit, sonst nichts**: die Abschnitte (km, Abschnitt,
+  Pace, Zone) und die Verpflegung. Darüber eine Leiste, die sagt, wie viele
+  Kilometer in welcher Zone liegen.
+- **Tests tragen eine `art`.** Nur `maximal` geht in die Hochrechnung
+  (`lfPrognoseFuer`). `vorgabe`, `locker` und `ermuedet` prüfen nur, ob die
+  Vorgabe sitzt – ein 8-km-Stück nach 20 km sagt nichts über eine frische
+  Rennzeit, und die Prognose würde sonst schlechter statt schärfer.
+
 ## Malen
 - **Ein Schritt gibt nicht mitten im Malen an einen anderen ab.** Wer erst rendert
   und dann merkt, dass er der falsche war, hinterlässt seine Spuren doppelt – im
@@ -161,7 +210,7 @@ Fertige Bausteine, die genau das tun:
 
 ## Prüfen
 **Nach jeder Änderung an der App: `node pruefen/rundgang.js`.** Der Rundgang
-sät Daten in alle sechs Apps, öffnet jede, malt jeden Reiter, tippt rund 700
+sät Daten in alle sieben Apps, öffnet jede, malt jeden Reiter, tippt rund 700
 Bedienelemente an und prüft danach die Verlaufs-Disziplin der Ebenen. Er meldet
 `OK`/`FEHL` und endet mit einem Zählstand; er dauert etwa fünf Minuten,
 `--schnell` lässt den Klick-Teil weg (unter einer Minute), `--leer` läuft mit

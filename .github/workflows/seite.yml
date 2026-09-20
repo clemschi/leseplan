@@ -1,0 +1,49 @@
+# Legt mylife unter einer Adresse ab, damit es sich als App auf den
+# Startbildschirm legen laesst statt jedes Mal als Datei heruntergeladen zu
+# werden. Laeuft bei jedem Push auf den Hauptzweig; von Hand laesst es sich
+# ueber "Run workflow" auch aus einem anderen Zweig anstossen.
+name: Seite veroeffentlichen
+
+on:
+  push:
+    branches: [claude/book-tracking-features-eh17ao]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Gebaut wird hier, nicht aus dem Verzeichnis gelesen: was unter der
+      # Adresse liegt, stammt damit immer aus src/.
+      - run: node build.js
+      - name: Seite zusammenstellen
+        run: |
+          mkdir -p seite
+          cp index.html mylife.html mylife.webmanifest mylife-sw.js puzzle.html seite/
+          touch seite/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: seite
+
+  veroeffentlichen:
+    needs: bauen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.abgelegt.outputs.page_url }}
+    steps:
+      - id: abgelegt
+        uses: actions/deploy-pages@v4
