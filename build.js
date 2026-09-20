@@ -21,6 +21,7 @@ const STIL = [
   'stil/puzzle.css',
   'stil/minimal.css',
   'stil/cash.css',
+  'stil/laufen.css',
   'stil/stoebern.css'
 ];
 const MARKUP = ['rumpf.html'];
@@ -37,6 +38,8 @@ const SKRIPT = [
   'js/puzzle.js',
   'js/minimal.js',
   'js/cash.js',
+  'js/laufen-plan.js',
+  'js/laufen.js',
   'js/sitzungen.js',
   'js/ebenen.js',
   'js/plan.js',

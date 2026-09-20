@@ -613,6 +613,87 @@ wb.calculation.fullCalcOnLoad = True
 ziel = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Marathonplan_2026_2027.xlsx")
 wb.save(ziel)
 
+# ---------------------------------------------------- Baustein für mylife
+# Dieselben Daten noch einmal als src/js/laufen-plan.js. Die Ernährung steht
+# dort als Kürzel; die Zeilen dazu stehen einmal in laufen.js.
+import json
+
+def essen_code(einheit, teile, n, key):
+    d = dauer(teile)
+    if d == 0:
+        return ("", "", "")
+    if (n, key) in ESSEN_SPEZIAL:
+        v = "w33kurz" if key in ("mo", "mi") else "w33wk"
+        w = "wasser" if key in ("mo", "mi") else "gel60lang"
+        na = "klein" if key in ("mo", "mi") else "gross"
+    else:
+        v = "gross" if (d >= 75 or (einheit in (IVL, WK, TEST, LANG) and d >= 50)) else "klein"
+        if d < 75:
+            w = "wasser"
+        elif n == 35 and einheit == WK:
+            w = "gel90lang"
+        elif n >= 27:
+            w = "gel75lang" if einheit in (LANG, TEST, WK) else "gel75"
+        else:
+            w = "gel60lang" if einheit in (LANG, TEST, WK) else "gel60"
+        na = "gross" if (d >= 75 or (einheit in (IVL, WK, TEST, LANG) and d >= 50)) else "klein"
+    return (v, w, na)
+
+def supp_code(tag, n):
+    d3 = tag.month in (10, 11, 12, 1, 2, 3, 4)
+    om = n >= 27
+    return {(0, 0): "a", (1, 0): "b", (0, 1): "c", (1, 1): "d"}[(int(d3), int(om))]
+
+wochen_js = []
+for n in range(1, 53):
+    mo_tag = START + timedelta(days=7 * (n - 1))
+    eintrag = {"n": n, "p": phase(n), "e": 1 if n in ENTLASTUNG else 0,
+               "b": 1 if 27 <= n <= 35 else 0, "t": []}
+    if n in KOPFNOTIZ:
+        eintrag["hinweis"] = KOPFNOTIZ[n]
+    for name, off, tagdaten, key in wochen_tage(n):
+        tag = mo_tag + timedelta(days=off)
+        if not tagdaten:
+            eintrag["t"].append(None)
+            continue
+        einheit, teile = tagdaten
+        v, w, na = essen_code(einheit, teile, n, key)
+        eintrag["t"].append({
+            "d": WOCHENTAG[off] if key == "wk" else name,
+            "o": off, "E": einheit,
+            "T": [[t[0], round(t[1], 2)] for t in teile],
+            "k": key, "v": v, "w": w, "na": na, "s": supp_code(tag, n)})
+    wochen_js.append(eintrag)
+
+rennen_js = [{"name": ziele_kopf[i + 1], **{k: zl[i + 1] for k, zl in
+              zip(["datum", "ort", "woche", "traum", "traumPace", "ziel", "zielPace"],
+                  ziele_zeilen[:7])}} for i in range(3)]
+tests_js = [{"woche": t[0], "datum": t[1], "teil1": t[2], "teil2": t[3],
+             "gesamt": t[4], "ziel": t[5]} for t in TESTS]
+
+js = "/* ============================================================\n"
+js += "   Laufen - der Plan als Daten. Erzeugt aus marathonplan/plan_bauen.py,\n"
+js += "   nicht von Hand bearbeiten. Die Ernaehrungskuerzel loest laufen.js auf.\n"
+js += "   ============================================================ */\n"
+js += "const LPLAN = {\n"
+js += '  start: "2026-09-21",\n'
+js += "  rennen: " + json.dumps(rennen_js, ensure_ascii=False) + ",\n"
+js += "  tests: " + json.dumps(tests_js, ensure_ascii=False) + ",\n"
+js += "  strecken: [\n"
+js += '    { name: "daheim \u2192 Eltern", km: 5.7, art: "einfach" },\n'
+js += '    { name: "Sacher \u2192 Urstein", km: 10, art: "einfach" },\n'
+js += '    { name: "Sacher \u2192 Laufen", km: 21, art: "einfach" },\n'
+js += '    { name: "Sacher \u2192 Laufen \u2192 Sacher", km: 42, art: "hin und zur\u00fcck" }\n'
+js += "  ],\n"
+js += "  wochen: [\n"
+js += ",\n".join("    " + json.dumps(w, ensure_ascii=False) for w in wochen_js)
+js += "\n  ]\n};\n"
+
+js_ziel = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                       "src", "js", "laufen-plan.js")
+open(js_ziel, "w", encoding="utf-8").write(js)
+print("geschrieben:", js_ziel, len(js), "Zeichen")
+
 # Kontrollausgabe der Wochenumfänge
 print("Woche  3-Tage   gesamt   Phase")
 for n in range(1, 53):

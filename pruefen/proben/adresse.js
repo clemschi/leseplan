@@ -33,7 +33,7 @@ const srv = http.createServer((req, res) => {
   P('kurze Adresse landet auf mylife.html', page.url().endsWith('/mylife.html'), page.url());
   P('Startbildschirm ist da', await page.$eval('#setup', n => !n.hidden));
   const apps = await page.$$eval('#setup .app', n => n.map(x => x.textContent));
-  P('alle sechs Apps', apps.length === 6, apps.join(', '));
+  P('alle sieben Apps', apps.length === 7, apps.join(', '));
 
   const man = await page.evaluate(() => {
     const l = document.querySelector('link[rel="manifest"]');

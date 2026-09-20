@@ -1,0 +1,663 @@
+/* ============================================================
+   laufen – die siebte App in dieser Datei
+   Ein Marathonplan über 52 Wochen, vom 21.09.2026 bis zum
+   16.09.2027. Der Plan selbst liegt als Daten in laufen-plan.js und
+   ändert sich nicht; hier steht nur, was der Läufer einträgt:
+   je Einheit eine Ist-Zeit und ein Gefühl.
+
+   Drei Lauftage die Woche: Montag kurz, Mittwoch kurz mit Qualität,
+   Freitag lang. Wettkämpfe und Tests stehen an ihrem festen Datum
+   und ersetzen in ihrer Woche den langen Lauf.
+
+   An der Kopfzeile herunterziehen holt die Leistungs-Aufstellung –
+   derselbe Vorhang wie die Übersicht der leseliste.
+   ============================================================ */
+
+function leereLauf() {
+  return {
+    format: 'mylife-laufen',
+    version: 1,
+    erstellt: Date.now(),
+    geaendert: Date.now(),
+    einstellungen: { autosaveSek: 60 },
+    /* Je Einheit ein Eintrag, der Schlüssel ist ihr Datum. */
+    eintraege: {},
+    strecken: LPLAN.strecken.map(s => ({ name: s.name, km: s.km, art: s.art }))
+  };
+}
+
+function lfNormalisiere(roh) {
+  const d = (roh && typeof roh === 'object') ? roh : {};
+  const l = leereLauf();
+  l.erstellt = +d.erstellt || Date.now();
+  l.einstellungen = Object.assign(l.einstellungen, d.einstellungen || {});
+  const e = (d.eintraege && typeof d.eintraege === 'object') ? d.eintraege : {};
+  Object.keys(e).forEach(k => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
+    const x = e[k] || {};
+    l.eintraege[k] = {
+      ok: !!x.ok,
+      zeit: String(x.zeit || '').trim().slice(0, 20),
+      gefuehl: String(x.gefuehl || '').trim().slice(0, 400)
+    };
+  });
+  if (Array.isArray(d.strecken) && d.strecken.length) {
+    l.strecken = d.strecken.map(s => ({
+      name: String(s.name || '').trim().slice(0, 80),
+      km: clamp(+s.km || 0, 0, 500),
+      art: String(s.art || '').trim().slice(0, 40)
+    })).filter(s => s.name);
+  }
+  return l;
+}
+
+let LFDB = leereLauf();
+const LFStore = macheSpeicher({
+  id: 'laufen', metaKey: 'meta-laufen', datenKey: 'daten-laufen', dateiname: 'laufen.json',
+  daten: () => LFDB, setzen: d => { LFDB = d; }
+});
+function lfAendern(fn) { if (fn) fn(); LFStore.aendern(); }
+
+const LFORT = appOrtAnmelden({
+  store: LFStore, name: 'laufen', datei: 'laufen.json', format: 'mylife-laufen',
+  lead: 'Wo sollen deine Laufzeiten liegen? laufen führt eine eigene Datei – die anderen Apps bleiben davon unberührt.',
+  normalisiere: lfNormalisiere, leer: leereLauf, starten: () => lfStarten(),
+  ortWechseln: () => lfSpeicherort(false)
+});
+function laufenOeffnen() { return appSpeicherOeffnen(LFORT); }
+function lfSpeicherort(erneut) { appSpeicherort(LFORT, erneut); }
+
+const LFICON = {
+  heute: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 4.5a1.5 1.5 0 1 0 0-.01"/><path d="M8 20.5l2.5-5 3-2 1-4"/><path d="M14.5 9.5l3 2 2.5-.5"/><path d="M11 12.5L7.5 11 5 12.5"/></svg>',
+  plan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.2"/><path d="M3.5 10h17M8.5 3.5v3M15.5 3.5v3"/></svg>',
+  ziel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg>'
+};
+
+/* ---------- Die Ernährung: Kürzel aus dem Plan, Zeilen hier ----------
+   Ein Lebensmittel steht immer in einer Zeile, mit seiner Menge. Werte zu
+   Mikronährstoffen stehen ausschliesslich unter Supplements. */
+const LFESSEN = {
+  vorher: {
+    gross: ['Haferflocken 80 g (2–3 h vorher)', 'Banane 120 g', 'Datteln 40 g', 'Wasser 500 ml'],
+    klein: ['Banane 120 g (1,5 h vorher)', 'Maiswaffel 2 Stück (14 g)', 'Wasser 300 ml'],
+    w33kurz: ['Haferflocken 60 g (2 h vorher)', 'Banane 120 g', 'Wasser 400 ml'],
+    w33wk: ['Haferflocken 80 g (3 h vorher)', 'Banane 120 g', 'Datteln 40 g', 'Wasser 500 ml']
+  },
+  waehrend: {
+    wasser: ['Wasser 400 ml'],
+    gel60: ['Gel 30 g KH alle 30 min (60 g KH/h)', 'Wasser 300 ml/h'],
+    gel60lang: ['Gel 30 g KH alle 30 min (60 g KH/h)', 'Elektrolytgetränk 500 ml/h (Natrium)', 'Wasser 300 ml/h'],
+    gel75: ['Gel 25 g KH alle 20 min (75 g KH/h)', 'Wasser 300 ml/h'],
+    gel75lang: ['Gel 25 g KH alle 20 min (75 g KH/h)', 'Elektrolytgetränk 500 ml/h (Natrium)', 'Wasser 300 ml/h'],
+    gel90lang: ['Gel 30 g KH alle 20 min (90 g KH/h)', 'Elektrolytgetränk 500 ml/h (Natrium)', 'Wasser 300 ml/h']
+  },
+  danach: {
+    gross: ['Clear Protein 40 g in 500 ml Wasser', 'Banane 2 Stück (240 g)', 'Maiswaffel 4 Stück (28 g)', 'Datteln 20 g'],
+    klein: ['Clear Protein 30 g in 400 ml Wasser', 'Banane 1 Stück (120 g)', 'Reiswaffel 3 Stück (27 g)']
+  },
+  supps: {
+    a: ['B12 250 µg'],
+    b: ['B12 250 µg', 'Vitamin D3 2.000 IE'],
+    c: ['B12 250 µg', 'Omega-3 (Algenöl) 400 mg', 'Calcium 500 mg', 'Magnesium 200 mg'],
+    d: ['B12 250 µg', 'Vitamin D3 2.000 IE', 'Omega-3 (Algenöl) 400 mg', 'Calcium 500 mg', 'Magnesium 200 mg']
+  }
+};
+const LFBEDARF = ['385 g KH / 140 g Eiweiß', '460–540 g KH / 155 g Eiweiß'];
+
+/* ---------- Rechnen ---------- */
+const lfISO = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+  + '-' + String(d.getDate()).padStart(2, '0');
+function lfTagDatum(n, off) {
+  const s = LPLAN.start.split('-').map(Number);
+  const d = new Date(s[0], s[1] - 1, s[2]);
+  d.setDate(d.getDate() + 7 * (n - 1) + off);
+  return d;
+}
+const lfKm = teile => Math.round(teile.reduce((s, t) => s + t[1], 0) * 10) / 10;
+const lfKmText = km => String(Math.round(km * 10) / 10).replace('.', ',') + ' km';
+const lfKurz = d => String(d.getDate()).padStart(2, '0') + '.'
+  + String(d.getMonth() + 1).padStart(2, '0') + '.';
+const lfLang = d => lfKurz(d) + String(d.getFullYear()).slice(2);
+
+/* Alle Einheiten des Plans, flach und nach Datum geordnet. Der Plan ändert
+   sich nicht, also wird einmal gerechnet und dann nur noch nachgesehen. */
+let LFTAGE = null;
+function lfTage() {
+  if (LFTAGE) return LFTAGE;
+  LFTAGE = [];
+  LPLAN.wochen.forEach(w => w.t.forEach(tg => {
+    if (!tg) return;
+    const d = lfTagDatum(w.n, tg.o);
+    LFTAGE.push({ w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.T) });
+  }));
+  LFTAGE.sort((a, b) => a.datum < b.datum ? -1 : 1);
+  return LFTAGE;
+}
+const lfWoche = n => LPLAN.wochen[n - 1];
+const lfWocheKm = w => w.t.reduce((s, tg) => s + (tg ? lfKm(tg.T) : 0), 0);
+const lfEintrag = datum => LFDB.eintraege[datum] || { ok: false, zeit: '', gefuehl: '' };
+const lfIstErledigt = datum => {
+  const e = LFDB.eintraege[datum];
+  return !!(e && (e.ok || e.zeit || e.gefuehl));
+};
+function lfEintragSetzen(datum, fn) {
+  const e = LFDB.eintraege[datum] || { ok: false, zeit: '', gefuehl: '' };
+  fn(e);
+  LFDB.eintraege[datum] = e;
+  LFStore.aendern();
+}
+const lfHeuteISO = () => lfISO(new Date());
+/* Die Einheit, die jetzt dran ist: heute, sonst die nächste noch offene,
+   sonst die letzte des Plans. */
+function lfAktuelle() {
+  const alle = lfTage(), heute = lfHeuteISO();
+  return alle.find(t => t.datum === heute)
+    || alle.find(t => t.datum >= heute)
+    || alle.find(t => !lfIstErledigt(t.datum))
+    || alle[alle.length - 1];
+}
+function lfAktuelleWoche() {
+  const a = lfAktuelle();
+  return a ? a.w : LPLAN.wochen[0];
+}
+function lfNaechstesRennen() {
+  const heute = lfHeuteISO();
+  const mit = LPLAN.rennen.map(r => {
+    const p = r.datum.split('.');
+    return { r: r, iso: p[2] + '-' + p[1] + '-' + p[0] };
+  }).sort((a, b) => a.iso < b.iso ? -1 : 1);
+  return mit.find(x => x.iso >= heute) || mit[mit.length - 1];
+}
+const lfTageBis = iso => {
+  const a = new Date(lfHeuteISO()), b = new Date(iso);
+  return Math.round((b - a) / 86400000);
+};
+
+/* ---------- Gerüst ---------- */
+const LFTABS = [
+  { id: 'lfheute', label: 'Heute', icon: LFICON.heute },
+  { id: 'lfplan', label: 'Plan', icon: LFICON.plan },
+  { id: 'lfziele', label: 'Ziele', icon: LFICON.ziel },
+  { id: 'lfmehr', label: 'Mehr', icon: ICON.more }
+];
+let lfTab = 'lfheute';
+let lfLeistungOffen = null;
+
+function lfStarten() {
+  appFlaeche('lf');
+  aktiverSpeicher = LFStore;
+  lfTab = 'lfheute';
+  themeAnwenden();
+  lfKnoepfeMalen();
+  $('#lfBtnTheme').onclick = () => { themeUmschalten(); lfKnoepfeMalen(); lfViewMalen(); };
+  $('#lfBtnVoll').onclick = vollbildUmschalten;
+  $('#lfBtnRaus').innerHTML = ICON.x;
+  $('#lfBtnRaus').onclick = () => zumStartbildschirm();
+  $('#lfBrand').onclick = () => {
+    if (lfTab !== 'lfheute') lfTabWechseln('lfheute');
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  $('#lfSaveChip').onclick = () => LFStore.alsDateiSichern(false);
+  $('#lfBanner').onclick = () => lfLeistungOeffnen(false);
+  lfTabbarMalen();
+  lfViewMalen();
+  LFStore.autosaveStarten();
+  saveChipMalen();
+}
+
+function lfKnoepfeMalen() {
+  const t = $('#lfBtnTheme'), v = $('#lfBtnVoll');
+  if (t) t.innerHTML = SHELL.theme === 'light' ? ICON.moon : ICON.sun;
+  if (!v) return;
+  v.hidden = !vollbildGeht();
+  v.innerHTML = vollbildAn() ? ICON.vollAus : ICON.voll;
+}
+function lfTabbarMalen() {
+  $('#lftabbar').innerHTML = LFTABS.map(t =>
+    `<button data-lftab="${t.id}" aria-selected="${t.id === lfTab}">${t.icon}<span>${t.label}</span></button>`).join('');
+  $('#lftabbar').onclick = e => {
+    const b = e.target.closest('[data-lftab]');
+    if (b) lfTabWechseln(b.dataset.lftab);
+  };
+}
+function lfTabWechseln(id) {
+  lfTab = id;
+  lfTabbarMalen();
+  lfViewMalen();
+  window.scrollTo(0, 0);
+}
+function lfViewMalen() {
+  leistenHoeheMessen();
+  const v = $('#lfview');
+  lfBannerMalen();
+  if (lfTab === 'lfheute') lfHeuteMalen(v);
+  else if (lfTab === 'lfplan') lfPlanMalen(v);
+  else if (lfTab === 'lfziele') lfZieleMalen(v);
+  else lfMehrMalen(v);
+  lfKnoepfeMalen();
+  saveChipMalen();
+  if (lfLeistungOffen) lfLeistungOffen();
+}
+function lfBannerMalen() {
+  const w = lfAktuelleWoche(), r = lfNaechstesRennen();
+  const tage = lfTageBis(r.iso);
+  $('#lfBanner').innerHTML = `
+    <span class="kb-tag">Woche ${w.n} · ${esc(w.p)}</span>
+    <span class="kb-zahlen"><span class="num">${lfKmText(lfWocheKm(w))}</span><span>diese Woche</span>
+      <span class="kb-punkt">·</span>
+      <span class="kb-next">${tage > 0 ? pl(tage, 'Tag', 'Tage') + ' bis ' + esc(r.r.name)
+        : esc(r.r.name) + ' war am ' + esc(r.r.datum)}</span></span>`;
+}
+
+/* ---------- Bausteine, die überall gleich aussehen ---------- */
+function lfEssenHtml(tg) {
+  const block = (titel, zeilen) => `
+    <div class="lfblock"><span class="lfblock-t">${titel}</span>
+      <div class="lfblock-l">${zeilen.map(z => `<span>${esc(z)}</span>`).join('')}</div></div>`;
+  return `<div class="lfessen">
+    ${block('Vorher', LFESSEN.vorher[tg.v] || [])}
+    ${block('Während', LFESSEN.waehrend[tg.w] || [])}
+    ${block('Danach', LFESSEN.danach[tg.na] || [])}
+    ${block('Supplements', LFESSEN.supps[tg.s] || [])}
+  </div>`;
+}
+function lfTeileHtml(tg) {
+  return `<ol class="lfteile">${tg.T.map(t =>
+    `<li><span>${esc(t[0])}</span></li>`).join('')}</ol>`;
+}
+function lfEinheitKarteHtml(eintrag) {
+  const { w, tg, d, datum, km } = eintrag;
+  const e = lfEintrag(datum);
+  const fertig = lfIstErledigt(datum);
+  return `
+    <div class="lfkarte${fertig ? ' fertig' : ''}" data-lfkarte="${datum}">
+      <div class="lfkarte-kopf">
+        <span class="lfkarte-tag">${esc(tg.d)} ${lfLang(d)}</span>
+        <span class="chip${tg.E === 'Wettkampf' || tg.E === 'Test' ? ' ist' : ''}">${esc(tg.E)}</span>
+        <span class="num lfkarte-km">${lfKmText(km)}</span>
+      </div>
+      ${lfTeileHtml(tg)}
+      ${lfEssenHtml(tg)}
+      <div class="lfkarte-fuss">
+        <button class="btn btn-sm${fertig ? ' btn-primary' : ''}" data-lfok="${datum}">${fertig ? 'erledigt' : 'als erledigt merken'}</button>
+        <span class="lfist">${e.zeit ? 'Ist ' + esc(e.zeit) : 'keine Zeit'}</span>
+        <button class="btn btn-sm btn-ghost" data-lfeintrag="${datum}">Eintragen</button>
+      </div>
+    </div>`;
+}
+function lfKartenBinden(wurzel) {
+  $$('[data-lfok]', wurzel).forEach(b => {
+    b.onclick = () => {
+      const datum = b.dataset.lfok;
+      const jetzt = lfIstErledigt(datum);
+      lfEintragSetzen(datum, e => {
+        e.ok = !jetzt;
+        if (jetzt) { e.zeit = ''; e.gefuehl = ''; }
+      });
+      lfViewMalen();
+    };
+  });
+  $$('[data-lfeintrag]', wurzel).forEach(b => {
+    b.onclick = () => lfEintragBlatt(b.dataset.lfeintrag);
+  });
+}
+
+/* Ist-Zeit und Gefühl – ein Blatt, zwei Felder. */
+function lfEintragBlatt(datum) {
+  const eintrag = lfTage().find(t => t.datum === datum);
+  if (!eintrag) return;
+  const e = lfEintrag(datum);
+  const node = blatt('Eintragen', `
+    <p class="hinweis" style="margin:0 0 10px">${esc(eintrag.tg.d)} ${lfLang(eintrag.d)} ·
+      ${esc(eintrag.tg.E)} · ${lfKmText(eintrag.km)}</p>
+    <div class="grid2">
+      <label class="field"><span>Ist-Zeit</span>
+        <input type="text" data-lfzeit value="${esc(e.zeit)}" placeholder="z. B. 28:32"></label>
+      <label class="field"><span>Gefühl</span>
+        <input type="text" data-lfgef value="${esc(e.gefuehl)}" placeholder="z. B. locker"></label>
+    </div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-primary btn-block" data-lfspeichern>Sichern</button>
+    </div>`);
+  $('[data-lfspeichern]', node).onclick = () => {
+    const z = $('[data-lfzeit]', node).value.trim();
+    const g = $('[data-lfgef]', node).value.trim();
+    lfEintragSetzen(datum, x => { x.zeit = z; x.gefuehl = g; if (z || g) x.ok = true; });
+    LFStore.sichern(true);
+    layerSchliessen();
+    lfViewMalen();
+    toast('Eingetragen');
+  };
+}
+
+/* ---------- Heute ---------- */
+function lfHeuteMalen(v) {
+  const jetzt = lfAktuelle();
+  if (!jetzt) { v.innerHTML = `<div class="empty"><strong>Kein Plan</strong>Die Plandaten fehlen.</div>`; return; }
+  const w = jetzt.w;
+  const rest = w.t.filter(Boolean)
+    .map(tg => {
+      const d = lfTagDatum(w.n, tg.o);
+      return { w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.T) };
+    })
+    .filter(x => x.datum !== jetzt.datum);
+  const heute = lfHeuteISO();
+
+  v.innerHTML = `
+    <div class="section-head"><h2>${jetzt.datum === heute ? 'Heute' : 'Als Nächstes'}</h2>
+      <span class="muted">${esc(w.p)}${w.e ? ' · Entlastungswoche' : ''}</span></div>
+    ${lfEinheitKarteHtml(jetzt)}
+    ${w.hinweis ? `<p class="hinweis" style="padding:8px 0">${esc(w.hinweis)}</p>` : ''}
+    <p class="hinweis" style="padding:2px 0 12px">Tagesbedarf: ${esc(LFBEDARF[w.b])}</p>
+
+    <div class="section-head" style="padding-top:8px"><h2>Rest der Woche ${w.n}</h2></div>
+    <div class="list-card">
+      ${rest.length ? rest.map(x => `
+        <div class="rowline" data-lfzeile="${x.datum}">
+          <span class="grow"><span class="rn">${esc(x.tg.d)} ${lfKurz(x.d)} · ${esc(x.tg.E)}</span>
+            <span class="rm">${esc(x.tg.T[0][0])}</span></span>
+          <span class="num">${lfKmText(x.km)}</span>
+          ${lfIstErledigt(x.datum) ? '<span class="lfhaken">✓</span>' : ''}
+        </div>`).join('')
+      : '<div class="rowline"><span class="grow"><span class="rm">Keine weitere Einheit diese Woche.</span></span></div>'}
+    </div>
+    <p class="hinweis" style="padding:14px 0 30px">An der Kopfzeile herunterziehen holt die
+      Leistungs-Aufstellung.</p>`;
+
+  lfKartenBinden(v);
+  $$('[data-lfzeile]', v).forEach(z => { z.onclick = () => lfEintragBlatt(z.dataset.lfzeile); });
+}
+
+/* ---------- Plan ---------- */
+function lfPlanMalen(v) {
+  const jetzt = lfAktuelle();
+  v.innerHTML = `
+    <div class="section-head"><h2>52 Wochen</h2>
+      <span class="muted">Montag kurz · Mittwoch kurz · Freitag lang</span></div>
+    <div class="list-card">
+      ${LPLAN.wochen.map(w => {
+        const mo = lfTagDatum(w.n, 0), so = lfTagDatum(w.n, 6);
+        const tage = w.t.filter(Boolean);
+        const fertig = tage.filter(tg => lfIstErledigt(lfISO(lfTagDatum(w.n, tg.o)))).length;
+        const dran = jetzt && jetzt.w.n === w.n;
+        return `<div class="rowline${dran ? ' lfdran' : ''}" data-lfwoche="${w.n}">
+          <span class="grow"><span class="rn">Woche ${w.n} · ${lfKurz(mo)}–${lfLang(so)}</span>
+            <span class="rm">${esc(w.p)}${w.e ? ' · Entlastung' : ''} · ${lfKmText(lfWocheKm(w))}</span></span>
+          <span class="lfzaehler${fertig === tage.length ? ' voll' : ''}">${fertig}/${tage.length}</span>
+          ${ICON.chev || ''}
+        </div>`;
+      }).join('')}
+    </div>
+    <p class="hinweis" style="padding:14px 0 30px">Eine Woche antippen zeigt ihre Einheiten mit
+      Aufbau, Verpflegung und Supplements.</p>`;
+  $$('[data-lfwoche]', v).forEach(z => { z.onclick = () => lfWocheOeffnen(+z.dataset.lfwoche); });
+}
+
+function lfWocheOeffnen(n) {
+  const w = lfWoche(n);
+  if (!w) return;
+  const node = document.createElement('div');
+  node.className = 'overlay';
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">Woche ${n}</div>
+        <div class="ovl-sub" data-sub></div></div>
+    </div>
+    <div class="ovl-body shell" style="padding:12px 0 40px" data-body></div>`;
+  const body = $('[data-body]', node);
+  const malen = () => {
+    const mo = lfTagDatum(n, 0), so = lfTagDatum(n, 6);
+    $('[data-sub]', node).textContent = lfKurz(mo) + '–' + lfLang(so) + ' · ' + w.p
+      + (w.e ? ' · Entlastungswoche' : '') + ' · ' + lfKmText(lfWocheKm(w));
+    body.innerHTML = `
+      ${w.hinweis ? `<p class="hinweis" style="padding:0 0 10px">${esc(w.hinweis)}</p>` : ''}
+      <p class="hinweis" style="padding:0 0 12px">Tagesbedarf: ${esc(LFBEDARF[w.b])}</p>
+      ${w.t.filter(Boolean).map(tg => {
+        const d = lfTagDatum(n, tg.o);
+        return lfEinheitKarteHtml({ w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.T) });
+      }).join('')}`;
+    lfKartenBinden(body);
+  };
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  layerOeffnen(node);
+  malen();
+  return node;
+}
+
+/* ---------- Ziele ---------- */
+function lfZieleMalen(v) {
+  const isoVon = s => { const p = s.split('.'); return p[2] + '-' + p[1] + '-' + p[0]; };
+  v.innerHTML = `
+    <div class="section-head"><h2>Rennen</h2><span class="muted">Traumziel und Einschätzung</span></div>
+    ${LPLAN.rennen.map(r => {
+      const iso = isoVon(r.datum), e = lfEintrag(iso), tage = lfTageBis(iso);
+      return `<div class="lfkarte" data-lfrennen="${iso}">
+        <div class="lfkarte-kopf">
+          <span class="lfkarte-tag">${esc(r.name)} · ${esc(r.ort)}</span>
+          <span class="chip">${esc(r.datum)}</span>
+          <span class="num lfkarte-km">${tage > 0 ? tage + ' Tage' : 'vorbei'}</span>
+        </div>
+        <div class="lfwerte">
+          <div><span>Traumziel</span><b>${esc(r.traum)}</b><i>${esc(r.traumPace)}</i></div>
+          <div><span>Einschätzung</span><b>${esc(r.ziel)}</b><i>${esc(r.zielPace)}</i></div>
+          <div><span>Ist-Zeit</span><b>${e.zeit ? esc(e.zeit) : '—'}</b><i>${esc(r.woche)}</i></div>
+        </div>
+        <div class="lfkarte-fuss">
+          <span class="lfist">${e.gefuehl ? esc(e.gefuehl) : 'noch nichts eingetragen'}</span>
+          <button class="btn btn-sm btn-ghost" data-lfeintrag="${iso}">Eintragen</button>
+        </div>
+      </div>`;
+    }).join('')}
+
+    <div class="section-head" style="padding-top:14px"><h2>Tests</h2>
+      <span class="muted">${LPLAN.tests.length} Termine</span></div>
+    <div class="list-card">
+      ${LPLAN.tests.map(t => {
+        const iso = isoVon(t.datum), e = lfEintrag(iso);
+        return `<div class="rowline" data-lfzeile="${iso}">
+          <span class="grow"><span class="rn">${esc(t.woche)} · ${esc(t.datum)}</span>
+            <span class="rm">${esc(t.teil1)}${t.teil2 && t.teil2 !== '—' ? ' + ' + esc(t.teil2) : ''}</span></span>
+          <span class="lfziel"><b>${esc(t.ziel)}</b><i>${e.zeit ? esc(e.zeit) : 'Ist offen'}</i></span>
+        </div>`;
+      }).join('')}
+    </div>
+    <p class="hinweis" style="padding:14px 0 30px">Die Traumziele bleiben stehen; trainiert wird
+      auf die Einschätzung.</p>`;
+  lfKartenBinden(v);
+  $$('[data-lfzeile]', v).forEach(z => { z.onclick = () => lfEintragBlatt(z.dataset.lfzeile); });
+}
+
+/* ---------- Mehr ---------- */
+function lfMehrMalen(v) {
+  const getan = Object.keys(LFDB.eintraege).filter(k => lfIstErledigt(k)).length;
+  v.innerHTML = `
+    ${appDatenHtml(LFORT)}
+
+    <div class="section-head" style="padding-top:14px"><h2>Stammstrecken</h2></div>
+    <div class="list-card">
+      ${LFDB.strecken.map(s => `<div class="rowline">
+        <span class="grow"><span class="rn">${esc(s.name)}</span>
+          <span class="rm">${esc(s.art)}</span></span>
+        <span class="num">${lfKmText(s.km)}</span></div>`).join('')}
+    </div>
+
+    <div class="section-head" style="padding-top:14px"><h2>Der Plan</h2></div>
+    <div class="list-card">
+      <div class="rowline"><span class="grow"><span class="rn">Zeitraum</span>
+        <span class="rm">21.09.2026 bis 16.09.2027 · 52 Wochen</span></span></div>
+      <div class="rowline"><span class="grow"><span class="rn">Lauftage</span>
+        <span class="rm">Montag kurz · Mittwoch kurz mit Qualität · Freitag lang</span></span></div>
+      <div class="rowline"><span class="grow"><span class="rn">Eingetragen</span>
+        <span class="rm">${pl(getan, 'Einheit', 'Einheiten')} von ${lfTage().length}</span></span>
+        <span class="num">${getan}</span></div>
+      <div class="rowline"><span class="grow"><span class="rn">Einträge löschen</span>
+        <span class="rm">Der Plan bleibt, nur deine Zeiten gehen weg</span></span>
+        <button class="btn btn-sm btn-danger" data-lfreset>Zurücksetzen</button></div>
+    </div>
+
+    ${huelleEinstellungenHtml()}
+    <p class="hinweis" style="padding:16px 0 30px">Blutwerte (Ferritin, B12, Vitamin D) vor
+      Trainingsbeginn ärztlich checken lassen. Dieser Plan ist kein Ersatz für ärztlichen Rat.
+      laufen führt eine eigene Datei – die anderen Apps dieser Datei bleiben davon unberührt.</p>`;
+
+  appDatenBinden(LFORT, v, lfViewMalen);
+  huelleEinstellungenBinden(v, lfViewMalen);
+  $('[data-lfreset]', v).onclick = async () => {
+    const ja = await bestaetigen('Alle Einträge löschen?',
+      'Ist-Zeiten und Gefühle gehen weg. Der Plan selbst bleibt unverändert.',
+      'Löschen', true);
+    if (!ja) return;
+    lfAendern(() => { LFDB.eintraege = {}; });
+    LFStore.sichern(true);
+    lfViewMalen();
+    toast('Einträge gelöscht');
+  };
+}
+
+/* ---------- Leistungs-Aufstellung ----------
+   Hängt am Vorhang: an der Kopfzeile herunterziehen deckt sie auf, am Finger
+   wieder hoch schiebt sie weg. */
+function lfLeistungOeffnen(gezogen) {
+  if (lfLeistungOffen) return null;
+  const node = document.createElement('div');
+  node.className = 'overlay' + (gezogen ? ' zieht' : '');
+  node.innerHTML = `
+    <div class="ovl-head">
+      <button class="icon-btn" data-back>${ICON.back}</button>
+      <div class="grow"><div class="ovl-title serif">Leistung</div>
+        <div class="ovl-sub" data-sub></div></div>
+    </div>
+    <div class="ovl-body shell" style="padding:12px 0 40px" data-body></div>`;
+  const body = $('[data-body]', node);
+  const malen = () => {
+    const alle = lfTage();
+    const getan = alle.filter(t => lfIstErledigt(t.datum));
+    const kmGetan = getan.reduce((s, t) => s + t.km, 0);
+    const kmGesamt = alle.reduce((s, t) => s + t.km, 0);
+    $('[data-sub]', node).textContent = getan.length + ' von ' + alle.length + ' Einheiten';
+    lfLeistungMalen(body, { alle, getan, kmGetan, kmGesamt });
+  };
+  $('[data-back]', node).onclick = () => layerSchliessen();
+  vorhangHochBinden(node, body);
+  layerOeffnen(node, () => { lfLeistungOffen = null; });
+  lfLeistungOffen = malen;
+  malen();
+  return node;
+}
+
+function lfLeistungMalen(root, z) {
+  const w = lfAktuelleWoche();
+  const r = lfNaechstesRennen();
+  const isoVon = s => { const p = s.split('.'); return p[2] + '-' + p[1] + '-' + p[0]; };
+  const maxKm = Math.max.apply(null, LPLAN.wochen.map(lfWocheKm));
+  const tests = LPLAN.tests.map(t => {
+    const iso = isoVon(t.datum);
+    return { t: t, iso: iso, e: lfEintrag(iso) };
+  });
+  const mitZeit = tests.filter(x => x.e.zeit);
+
+  root.innerHTML = `
+    <div class="lffakten">
+      <div><b class="num">${z.getan.length}</b><span>Einheiten gelaufen</span>
+        <i>von ${z.alle.length}</i></div>
+      <div><b class="num">${lfKmText(z.kmGetan)}</b><span>zurückgelegt</span>
+        <i>von ${lfKmText(z.kmGesamt)}</i></div>
+      <div><b class="num">${Math.round(z.kmGesamt ? z.kmGetan / z.kmGesamt * 100 : 0)} %</b>
+        <span>des Plans</span><i>Woche ${w.n} · ${esc(w.p)}</i></div>
+      <div><b class="num">${Math.max(0, lfTageBis(r.iso))}</b><span>Tage bis ${esc(r.r.name)}</span>
+        <i>Ziel ${esc(r.r.ziel)}</i></div>
+    </div>
+
+    <div class="section-head" style="padding-top:16px"><h2>Wochenumfang</h2>
+      <span class="muted">Soll und erledigt</span></div>
+    <div class="lfbahn">
+      ${LPLAN.wochen.map(x => {
+        const soll = lfWocheKm(x);
+        const tage = x.t.filter(Boolean);
+        const fertig = tage.filter(tg => lfIstErledigt(lfISO(lfTagDatum(x.n, tg.o))));
+        const kmF = fertig.reduce((s, tg) => s + lfKm(tg.T), 0);
+        const h = Math.max(2, Math.round(soll / maxKm * 100));
+        const hf = soll ? Math.round(kmF / soll * h) : 0;
+        return `<span class="lfsaeule${x.n === w.n ? ' dran' : ''}" style="height:${h}%"
+          title="Woche ${x.n}: ${lfKmText(kmF)} von ${lfKmText(soll)}">
+          <i style="height:${hf}%"></i></span>`;
+      }).join('')}
+    </div>
+    <p class="hinweis" style="padding:6px 0 4px">Woche 1 links bis Woche 52 rechts.
+      Höchster Balken: ${lfKmText(maxKm)}.</p>
+
+    <div class="section-head" style="padding-top:16px"><h2>Tests</h2>
+      <span class="muted">${mitZeit.length} von ${tests.length} gelaufen</span></div>
+    <div class="list-card">
+      ${tests.map(x => `<div class="rowline">
+        <span class="grow"><span class="rn">${esc(x.t.woche)} · ${esc(x.t.gesamt)}</span>
+          <span class="rm">${esc(x.t.datum)} · Ziel ${esc(x.t.ziel)}</span></span>
+        <span class="lfziel"><b>${x.e.zeit ? esc(x.e.zeit) : '—'}</b>
+          <i>${x.e.gefuehl ? esc(x.e.gefuehl.slice(0, 22)) : 'offen'}</i></span>
+      </div>`).join('')}
+    </div>
+
+    <div class="section-head" style="padding-top:16px"><h2>Rennen</h2></div>
+    <div class="list-card">
+      ${LPLAN.rennen.map(x => {
+        const e = lfEintrag(isoVon(x.datum));
+        return `<div class="rowline">
+          <span class="grow"><span class="rn">${esc(x.name)} · ${esc(x.datum)}</span>
+            <span class="rm">Traum ${esc(x.traum)} · Einschätzung ${esc(x.ziel)}</span></span>
+          <span class="lfziel"><b>${e.zeit ? esc(e.zeit) : '—'}</b><i>${esc(x.ort)}</i></span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+/* Der Kopf ist zugleich der Griff: herunterziehen holt die Aufstellung.
+   Gleiche Mechanik wie überall – 1:1 am Finger, kurze Schwelle plus Schwung. */
+(function lfKopfZiehen() {
+  const kopf = document.querySelector('#lf .topbar');
+  if (!kopf) return;
+  let y0 = null, x0 = 0, node = null, ab = 0, hoehe = 1, offen = false;
+  let letztY = 0, letztT = 0, tempo = 0;
+  const fertig = () => { window.__zieht = false; y0 = null; node = null; };
+
+  kopf.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1 || Layers.length || window.__zieht) { y0 = null; return; }
+    y0 = e.touches[0].clientY; x0 = e.touches[0].clientX;
+    node = null; offen = false; ab = 0;
+    hoehe = window.innerHeight || 640;
+    letztY = y0; letztT = Date.now(); tempo = 0;
+  }, { passive: true });
+
+  kopf.addEventListener('touchmove', e => {
+    if (y0 == null) return;
+    const t = e.touches[0], dy = t.clientY - y0, dx = Math.abs(t.clientX - x0);
+    if (!node) {
+      if (dx > 14 && dx > Math.abs(dy)) { y0 = null; return; }
+      if (dy < 10) return;
+      node = lfLeistungOeffnen(true);
+      if (!node) { y0 = null; return; }
+      window.__zieht = true;
+      ab = dy;
+      hoehe = vorhangSetzen(node, 0);
+    }
+    e.preventDefault();
+    const jetzt = Date.now();
+    if (jetzt > letztT) {
+      tempo = (t.clientY - letztY) / (jetzt - letztT);
+      letztY = t.clientY; letztT = jetzt;
+    }
+    const y = dy - ab;
+    offen = y > vorhangSchwelle(hoehe) || tempo > 0.45;
+    vorhangSetzen(node, y);
+  }, { passive: false });
+
+  const los = () => {
+    if (y0 == null) return;
+    const el = node;
+    if (!el) { fertig(); return; }
+    vorhangLoesen(el, offen, () => { if (!offen) layerSchliessen(); });
+    fertig();
+  };
+  kopf.addEventListener('touchend', los, { passive: true });
+  kopf.addEventListener('touchcancel', los, { passive: true });
+})();

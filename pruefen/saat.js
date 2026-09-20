@@ -114,6 +114,24 @@ const SAAT = {
       { id: 'p3', name: 'Steuerrueckzahlung', cent: 71000, datum: tag(52), art: 'geplant', notiz: '' }
     ]
   },
+  'meta-laufen': { modus: 'geraet', handle: null, dateiname: 'laufen.json' },
+  'daten-laufen': {
+    format: 'mylife-laufen', version: 1, erstellt: Date.now(),
+    einstellungen: { autosaveSek: 60 },
+    /* Drei eingetragene Einheiten aus den ersten Wochen: eine mit Zeit und
+       Gefuehl, eine nur abgehakt, eine nur mit Gefuehl. */
+    eintraege: {
+      '2026-09-21': { ok: true, zeit: '29:10', gefuehl: 'locker, Beine frisch' },
+      '2026-09-23': { ok: true, zeit: '', gefuehl: '' },
+      '2026-09-25': { ok: false, zeit: '', gefuehl: 'schwer ab km 4' }
+    },
+    strecken: [
+      { name: 'daheim \u2192 Eltern', km: 5.7, art: 'einfach' },
+      { name: 'Sacher \u2192 Urstein', km: 10, art: 'einfach' },
+      { name: 'Sacher \u2192 Laufen', km: 21, art: 'einfach' },
+      { name: 'Sacher \u2192 Laufen \u2192 Sacher', km: 42, art: 'hin und zur\u00fcck' }
+    ]
+  },
   'meta-gsund': { modus: 'geraet', handle: null, dateiname: 'gsund.json' },
   'daten-gsund': {
     format: 'mylife-gsund', version: 1, erstellt: Date.now(),
