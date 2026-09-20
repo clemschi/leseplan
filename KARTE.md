@@ -46,6 +46,7 @@ Grundlage – gilt für alle Apps:
 | `erscheinung.js` | 126 | `SHELL`, `shellSchreiben`, `themeAnwenden`, Vollbild |
 | `rahmen.js` | 234 | `TABS`, `tabbarMalen`, `viewMalen`, Kopfzeile, Einführung, `appStarten` |
 | `ebenen.js` | 385 | `layerOeffnen/…Schliessen/alleLayerSchliessen/layerErsetzen`, `verlaufTiefe`, `blatt`, `bestaetigen`, `ziehenZumSchliessen`, `ebeneZiehen`, `vorhang…`, `heimZiehen`, `globalKnoepfe…` |
+| `tresor.js` | 123 | `tresorSchliessen`/`tresorOeffnen` (AES-GCM 256, Schlüssel über PBKDF2-SHA-256 aus dem Passwort), `tresorPruefen`, `tresorGeht`, `tresorPasswortFragen`. An keine App gebunden – jeder macht seinen eigenen Tresor mit seinem eigenen Passwort |
 | `start.js` | 23 | Manifest anmelden, wenn die Seite unter einer Adresse liegt; `boot()` |
 
 Die sechs Apps:

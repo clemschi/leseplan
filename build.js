@@ -41,6 +41,7 @@ const SKRIPT = [
   'js/laufen.js',
   'js/sitzungen.js',
   'js/ebenen.js',
+  'js/tresor.js',
   'js/plan.js',
   'js/laden.js',
   'js/bilder.js',

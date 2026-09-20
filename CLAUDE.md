@@ -163,6 +163,18 @@ Fertige Bausteine, die genau das tun:
   Geheimnis in seiner eigenen Wache. Fehlt die Datei, meldet die Probe das und
   lässt nur den allgemeinen Teil laufen.
 
+## Tresor
+- `tresor.js` verschliesst einen beliebigen Wert mit einem Passwort: AES-GCM
+  256, Schlüssel über PBKDF2-SHA-256, Salz und Zufallszahl je Tresor neu. Die
+  Rundenzahl steht im Tresor, damit alte Tresore aufgehen, wenn sie steigt.
+- **Kein Schlüssel im Code, keine Hintertür.** Jeder macht seinen eigenen
+  Tresor mit seinem eigenen Passwort; es gibt nichts, was alle aufsperrt.
+- Der aufgesperrte Wert liegt **nur im Arbeitsspeicher** (`LFKLAR` in
+  `laufen.js`), nie in der Datenbasis – sonst schriebe ihn die Selbstsicherung
+  im Klartext zurück.
+- `pruefen/proben/tresor.js` hält es fest, auch den Fall zweier Leute mit je
+  eigenem Passwort.
+
 ## Malen
 - **Ein Schritt gibt nicht mitten im Malen an einen anderen ab.** Wer erst rendert
   und dann merkt, dass er der falsche war, hinterlässt seine Spuren doppelt – im

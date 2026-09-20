@@ -8248,6 +8248,8 @@ function leereLauf() {
     einstellungen: { autosaveSek: 60 },
     /* Der Plan selbst – leer, bis eine Datei ihn mitbringt. */
     plan: { start: '', rennen: [], tests: [], wochen: [] },
+    /* Oder verschlossen: dann steht hier der Geheimtext und plan bleibt leer. */
+    tresor: null,
     /* Je Einheit ein Eintrag, der Schlüssel ist ihr Datum. */
     eintraege: {},
     strecken: []
@@ -8292,6 +8294,7 @@ function lfNormalisiere(roh) {
   l.erstellt = +d.erstellt || Date.now();
   l.einstellungen = Object.assign(l.einstellungen, d.einstellungen || {});
   l.plan = lfPlanPruefen(d.plan);
+  l.tresor = tresorPruefen(d.tresor);
   const e = (d.eintraege && typeof d.eintraege === 'object') ? d.eintraege : {};
   Object.keys(e).forEach(k => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
@@ -8315,12 +8318,15 @@ function lfNormalisiere(roh) {
 /* Die flache Tagesliste wird einmal gerechnet und bei jedem Datenwechsel
    verworfen. Deklaration hier oben, weil macheSpeicher sie gleich anfasst. */
 let LFTAGE = null;
+/* Der aufgesperrte Plan liegt nur hier, nie in LFDB – sonst schriebe ihn die
+   Selbstsicherung im Klartext zurück, und der Tresor wäre für nichts. */
+let LFKLAR = null;
 let LFDB = leereLauf();
 const LFStore = macheSpeicher({
   id: 'laufen', metaKey: 'meta-laufen', datenKey: 'daten-laufen', dateiname: 'laufen.json',
   /* Beim Datenwechsel - Datei geladen, Ort gewechselt - muss die gemerkte
      Tagesliste weg, sonst zeigt die App weiter den alten (oft leeren) Plan. */
-  daten: () => LFDB, setzen: d => { LFDB = d; LFTAGE = null; }
+  daten: () => LFDB, setzen: d => { LFDB = d; LFTAGE = null; LFKLAR = null; }
 });
 function lfAendern(fn) { if (fn) fn(); LFStore.aendern(); }
 
@@ -8373,11 +8379,17 @@ const LFBEDARF = ['385 g KH / 140 g Eiweiß', '460–540 g KH / 155 g Eiweiß'];
 /* ---------- Rechnen ---------- */
 /* Der Plan steht in der Datenbasis, nicht im Code. Ohne geladene Datei ist er
    leer – jeder Reiter zeigt dann, was zu tun ist. */
-const lfPlan = () => LFDB.plan || { start: '', rennen: [], tests: [], wochen: [] };
+const lfPlan = () => LFKLAR || LFDB.plan || { start: '', rennen: [], tests: [], wochen: [] };
 const lfHatPlan = () => lfPlan().wochen.length > 0;
-const lfLeerHtml = (was) => `<div class="empty" style="margin-top:36px"><strong>Kein Plan geladen</strong>
-  ${esc(was)} Wähle unter <b>Mehr</b> deine <i>laufen.json</i> als Datenbasis –
-  Wochen, Rennen, Tests und Strecken stehen dort drin.</div>`;
+const lfZu = () => !!(LFDB.tresor && !LFKLAR);
+const lfLeerHtml = (was) => lfZu()
+  ? `<div class="empty" style="margin-top:36px"><strong>Plan ist verschlossen</strong>
+      ${esc(was)} Tippe auf <b>Aufsperren</b> und gib dein Passwort ein.
+      <span class="btn-row" style="margin-top:12px;display:flex">
+        <button class="btn btn-primary" data-lfauf style="flex:1">Aufsperren</button></span></div>`
+  : `<div class="empty" style="margin-top:36px"><strong>Kein Plan geladen</strong>
+      ${esc(was)} Wähle unter <b>Mehr</b> deine <i>laufen.json</i> als Datenbasis –
+      Wochen, Rennen, Tests und Strecken stehen dort drin.</div>`;
 
 const lfISO = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
   + '-' + String(d.getDate()).padStart(2, '0');
@@ -8482,6 +8494,9 @@ function lfStarten() {
   lfViewMalen();
   LFStore.autosaveStarten();
   saveChipMalen();
+  /* Liegt der Plan im Tresor, gleich danach fragen – sonst steht der
+     Nutzer vor einer leeren App und weiss nicht, warum. */
+  if (lfZu()) setTimeout(() => lfAufsperren(), 250);
 }
 
 function lfKnoepfeMalen() {
@@ -8513,6 +8528,7 @@ function lfViewMalen() {
   else if (lfTab === 'lfplan') lfPlanMalen(v);
   else if (lfTab === 'lfziele') lfZieleMalen(v);
   else lfMehrMalen(v);
+  lfAufsperrKnopfBinden(v);
   lfKnoepfeMalen();
   saveChipMalen();
   if (lfLeistungOffen) lfLeistungOffen();
@@ -8520,7 +8536,8 @@ function lfViewMalen() {
 function lfBannerMalen() {
   const w = lfAktuelleWoche(), r = lfNaechstesRennen();
   if (!w) {
-    $('#lfBanner').innerHTML = '<span class="kb-tag">Kein Plan geladen</span>';
+    $('#lfBanner').innerHTML = '<span class="kb-tag">'
+      + (lfZu() ? 'Plan ist verschlossen' : 'Kein Plan geladen') + '</span>';
     return;
   }
   const tage = r ? lfTageBis(r.iso) : null;
@@ -8611,6 +8628,64 @@ function lfEintragBlatt(datum) {
     lfViewMalen();
     toast('Eingetragen');
   };
+}
+
+/* ---------- Tresor: Plan verschliessen und aufsperren ----------
+   Verschlossen steht in der Datenbasis nur der Geheimtext. Aufgesperrt
+   liegt der Plan in LFKLAR und wird nirgends zurückgeschrieben – beim
+   nächsten Start fragt die App wieder. */
+async function lfAufsperren() {
+  if (!LFDB.tresor) return false;
+  const pw = await tresorPasswortFragen('Plan aufsperren',
+    'Der Plan liegt verschlossen in dieser App. Ohne das Passwort kommt niemand daran – auch ich nicht.', false);
+  if (pw == null) return false;
+  try {
+    LFKLAR = lfPlanPruefen(await tresorOeffnen(LFDB.tresor, pw));
+    LFTAGE = null;
+    lfViewMalen();
+    toast('Aufgesperrt');
+    return true;
+  } catch (e) {
+    toast(e.message || 'Passwort stimmt nicht');
+    return false;
+  }
+}
+
+async function lfVerschliessen() {
+  if (!tresorGeht()) { toast('Verschlüsseln geht hier nicht'); return; }
+  if (!lfHatPlan()) { toast('Kein Plan zum Verschliessen'); return; }
+  const pw = await tresorPasswortFragen('Plan verschliessen',
+    'Danach steht nur noch Geheimtext in der App. Vergisst du das Passwort, ist der Plan weg – es gibt keinen zweiten Weg hinein.', true);
+  if (pw == null) return;
+  const plan = lfPlan();
+  const t = await tresorSchliessen(plan, pw);
+  lfAendern(() => {
+    LFDB.tresor = t;
+    LFDB.plan = { start: '', rennen: [], tests: [], wochen: [] };
+  });
+  LFKLAR = plan;
+  await LFStore.sichern(true);
+  lfViewMalen();
+  toast('Verschlossen');
+}
+
+async function lfEntschliessen() {
+  if (!LFDB.tresor) return;
+  if (!LFKLAR) { if (!await lfAufsperren()) return; }
+  const ja = await bestaetigen('Tresor auflösen?',
+    'Der Plan steht danach wieder im Klartext in der App – wer das Gerät hat, kann ihn lesen.',
+    'Auflösen', true);
+  if (!ja) return;
+  lfAendern(() => { LFDB.plan = LFKLAR; LFDB.tresor = null; });
+  await LFStore.sichern(true);
+  lfViewMalen();
+  toast('Tresor aufgelöst');
+}
+
+/* Der Knopf in der Leermeldung – er taucht in jedem Reiter auf. */
+function lfAufsperrKnopfBinden(wurzel) {
+  const b = $('[data-lfauf]', wurzel);
+  if (b) b.onclick = () => lfAufsperren();
 }
 
 /* ---------- Heute ---------- */
@@ -8772,6 +8847,24 @@ function lfMehrMalen(v) {
         <span class="lfkarte-km">${lfKmNum(s.km)}</span></div>`).join('')}
     </div>
 
+    <div class="section-head" style="padding-top:14px"><h2>Tresor</h2>
+      <span class="muted">${LFDB.tresor ? (LFKLAR ? 'offen' : 'verschlossen') : 'aus'}</span></div>
+    <div class="list-card">
+      ${!tresorGeht() ? `<div class="rowline"><span class="grow"><span class="rn">Nicht möglich</span>
+        <span class="rm">Dieser Browser gibt die Verschlüsselung hier nicht her.</span></span></div>` : ''}
+      ${LFDB.tresor ? `
+        <div class="rowline"><span class="grow"><span class="rn">${LFKLAR ? 'Aufgesperrt' : 'Verschlossen'}</span>
+          <span class="rm">${LFKLAR ? 'Beim nächsten Start fragt die App wieder nach dem Passwort.'
+            : 'In der App steht nur Geheimtext.'}</span></span>
+          ${LFKLAR ? '' : '<button class="btn btn-sm btn-primary" data-lfauf>Aufsperren</button>'}</div>
+        <div class="rowline"><span class="grow"><span class="rn">Tresor auflösen</span>
+          <span class="rm">Plan wieder im Klartext ablegen</span></span>
+          <button class="btn btn-sm btn-danger" data-lfentschliessen>Auflösen</button></div>`
+      : `<div class="rowline"><span class="grow"><span class="rn">Plan verschliessen</span>
+          <span class="rm">Mit einem Passwort. Danach steht nur Geheimtext in der App.</span></span>
+          <button class="btn btn-sm" data-lfverschliessen ${lfHatPlan() && tresorGeht() ? '' : 'disabled'}>Verschliessen</button></div>`}
+    </div>
+
     <div class="section-head" style="padding-top:14px"><h2>Der Plan</h2></div>
     <div class="list-card">
       <div class="rowline"><span class="grow"><span class="rn">Zeitraum</span>
@@ -8793,6 +8886,10 @@ function lfMehrMalen(v) {
 
   appDatenBinden(LFORT, v, lfViewMalen);
   huelleEinstellungenBinden(v, lfViewMalen);
+  const vs = $('[data-lfverschliessen]', v);
+  if (vs) vs.onclick = () => lfVerschliessen();
+  const es = $('[data-lfentschliessen]', v);
+  if (es) es.onclick = () => lfEntschliessen();
   $('[data-lfreset]', v).onclick = async () => {
     const ja = await bestaetigen('Alle Einträge löschen?',
       'Ist-Zeiten und Gefühle gehen weg. Der Plan selbst bleibt unverändert.',
@@ -9669,6 +9766,129 @@ function bestaetigen(titel, text, okLabel, gefaehrlich) {
   });
 }
 
+/* ============================================================
+   Tresor – Daten mit einem Passwort verschliessen
+   Nicht an eine App gebunden: was hier liegt, schliesst jeden Wert
+   weg und holt ihn wieder heraus. Wer die Seite hat, hat nur den
+   Geheimtext; ohne Passwort ist daraus nichts zu machen. Und jeder
+   macht seinen eigenen Tresor mit seinem eigenen Passwort – es gibt
+   keinen Schlüssel, der alle aufsperrt, und keinen im Code.
+
+   AES-GCM mit 256 Bit, der Schlüssel kommt über PBKDF2-SHA-256 aus
+   dem Passwort. Salz und Zufallszahl liegen offen im Tresor – so
+   gehört sich das, geheim ist allein das Passwort.
+
+   Die Rundenzahl steht im Tresor selbst: wird sie später höher,
+   gehen alte Tresore weiterhin auf.
+   ============================================================ */
+const TRESOR_RUNDEN = 250000;
+
+/* Web Crypto verlangt eine sichere Herkunft. https zählt, der eigene
+   Rechner auch – und eine Datei auf dem Gerät ebenfalls. */
+function tresorGeht() {
+  return !!(window.crypto && window.crypto.subtle && window.isSecureContext);
+}
+
+const tresorZuB64 = (puffer) => {
+  const b = new Uint8Array(puffer);
+  let s = '';
+  for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+  return btoa(s);
+};
+const tresorAusB64 = (text) => Uint8Array.from(atob(text), c => c.charCodeAt(0));
+
+async function tresorSchluessel(passwort, salz, runden, zweck) {
+  const roh = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(passwort), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: salz, iterations: runden, hash: 'SHA-256' },
+    roh, { name: 'AES-GCM', length: 256 }, false, [zweck]);
+}
+
+/* Einen beliebigen Wert wegschliessen. Heraus kommt etwas, das sich
+   als JSON weitergeben lässt. */
+async function tresorSchliessen(wert, passwort) {
+  const salz = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const k = await tresorSchluessel(passwort, salz, TRESOR_RUNDEN, 'encrypt');
+  const geheim = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv: iv }, k, new TextEncoder().encode(JSON.stringify(wert)));
+  return {
+    v: 1, runden: TRESOR_RUNDEN,
+    salz: tresorZuB64(salz), iv: tresorZuB64(iv), text: tresorZuB64(geheim)
+  };
+}
+
+/* Und wieder auf. Bei falschem Passwort wirft AES-GCM – das ist die
+   Prüfung, eine eigene braucht es nicht. */
+async function tresorOeffnen(tresor, passwort) {
+  if (!tresorIstTresor(tresor)) throw new Error('Kein Tresor');
+  const salz = tresorAusB64(tresor.salz);
+  const iv = tresorAusB64(tresor.iv);
+  const runden = clamp(Math.round(+tresor.runden || TRESOR_RUNDEN), 1000, 5000000);
+  const k = await tresorSchluessel(passwort, salz, runden, 'decrypt');
+  let klar;
+  try {
+    klar = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: iv }, k, tresorAusB64(tresor.text));
+  } catch (e) {
+    throw new Error('Passwort stimmt nicht');
+  }
+  return JSON.parse(new TextDecoder().decode(klar));
+}
+
+function tresorIstTresor(t) {
+  return !!(t && typeof t === 'object' && t.salz && t.iv && t.text);
+}
+/* Beim Einlesen aus einer Datei: nur die vier Felder, Längen gedeckelt. */
+function tresorPruefen(roh) {
+  if (!tresorIstTresor(roh)) return null;
+  const txt = (x, n) => String(x || '').replace(/[^A-Za-z0-9+/=]/g, '').slice(0, n);
+  const t = {
+    v: 1, runden: clamp(Math.round(+roh.runden || TRESOR_RUNDEN), 1000, 5000000),
+    salz: txt(roh.salz, 64), iv: txt(roh.iv, 64), text: txt(roh.text, 4000000)
+  };
+  return (t.salz && t.iv && t.text) ? t : null;
+}
+
+/* ---------- Das Blatt, das nach dem Passwort fragt ----------
+   Einmal zum Aufsperren, zweimal zum Zusperren – wer sich vertippt,
+   sperrt sich sonst selbst aus. */
+function tresorPasswortFragen(titel, hinweis, zweimal) {
+  return new Promise(res => {
+    let fertig = false;
+    const s = blatt(titel, `
+      <p class="muted" style="font-size:13px;line-height:1.6;margin-bottom:14px">${esc(hinweis)}</p>
+      <label class="field"><span>Passwort</span>
+        <input type="password" data-tp1 autocomplete="new-password"></label>
+      ${zweimal ? `<label class="field" style="margin-top:8px"><span>Noch einmal</span>
+        <input type="password" data-tp2 autocomplete="new-password"></label>` : ''}
+      <p class="muted" data-tfehler style="font-size:12px;color:var(--warn,#c0392b);min-height:16px;margin:8px 0 0"></p>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-primary" data-tok style="flex:1">${zweimal ? 'Verschliessen' : 'Aufsperren'}</button>
+        <button class="btn btn-ghost" data-tno style="flex:1">Abbrechen</button>
+      </div>`, { fokus: true, onClose: () => { if (!fertig) res(null); } });
+
+    const fehlerZeigen = (t) => { $('[data-tfehler]', s).textContent = t; };
+    const pruefen = () => {
+      const a = $('[data-tp1]', s).value;
+      if (a.length < 6) { fehlerZeigen('Mindestens 6 Zeichen.'); return null; }
+      if (zweimal && a !== $('[data-tp2]', s).value) {
+        fehlerZeigen('Die beiden stimmen nicht überein.'); return null;
+      }
+      return a;
+    };
+    $('[data-tok]', s).onclick = () => {
+      const a = pruefen();
+      if (a == null) return;
+      fertig = true; res(a); layerSchliessen();
+    };
+    $('[data-tno]', s).onclick = () => { fertig = true; res(null); layerSchliessen(); };
+    $$('input', s).forEach(i => {
+      i.onkeydown = e => { if (e.key === 'Enter') $('[data-tok]', s).click(); };
+    });
+  });
+}
 /* ============================================================
    Plan
    ============================================================ */

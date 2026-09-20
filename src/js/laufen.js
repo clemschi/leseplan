@@ -21,6 +21,8 @@ function leereLauf() {
     einstellungen: { autosaveSek: 60 },
     /* Der Plan selbst – leer, bis eine Datei ihn mitbringt. */
     plan: { start: '', rennen: [], tests: [], wochen: [] },
+    /* Oder verschlossen: dann steht hier der Geheimtext und plan bleibt leer. */
+    tresor: null,
     /* Je Einheit ein Eintrag, der Schlüssel ist ihr Datum. */
     eintraege: {},
     strecken: []
@@ -65,6 +67,7 @@ function lfNormalisiere(roh) {
   l.erstellt = +d.erstellt || Date.now();
   l.einstellungen = Object.assign(l.einstellungen, d.einstellungen || {});
   l.plan = lfPlanPruefen(d.plan);
+  l.tresor = tresorPruefen(d.tresor);
   const e = (d.eintraege && typeof d.eintraege === 'object') ? d.eintraege : {};
   Object.keys(e).forEach(k => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
@@ -88,12 +91,15 @@ function lfNormalisiere(roh) {
 /* Die flache Tagesliste wird einmal gerechnet und bei jedem Datenwechsel
    verworfen. Deklaration hier oben, weil macheSpeicher sie gleich anfasst. */
 let LFTAGE = null;
+/* Der aufgesperrte Plan liegt nur hier, nie in LFDB – sonst schriebe ihn die
+   Selbstsicherung im Klartext zurück, und der Tresor wäre für nichts. */
+let LFKLAR = null;
 let LFDB = leereLauf();
 const LFStore = macheSpeicher({
   id: 'laufen', metaKey: 'meta-laufen', datenKey: 'daten-laufen', dateiname: 'laufen.json',
   /* Beim Datenwechsel - Datei geladen, Ort gewechselt - muss die gemerkte
      Tagesliste weg, sonst zeigt die App weiter den alten (oft leeren) Plan. */
-  daten: () => LFDB, setzen: d => { LFDB = d; LFTAGE = null; }
+  daten: () => LFDB, setzen: d => { LFDB = d; LFTAGE = null; LFKLAR = null; }
 });
 function lfAendern(fn) { if (fn) fn(); LFStore.aendern(); }
 
@@ -146,11 +152,17 @@ const LFBEDARF = ['385 g KH / 140 g Eiweiß', '460–540 g KH / 155 g Eiweiß'];
 /* ---------- Rechnen ---------- */
 /* Der Plan steht in der Datenbasis, nicht im Code. Ohne geladene Datei ist er
    leer – jeder Reiter zeigt dann, was zu tun ist. */
-const lfPlan = () => LFDB.plan || { start: '', rennen: [], tests: [], wochen: [] };
+const lfPlan = () => LFKLAR || LFDB.plan || { start: '', rennen: [], tests: [], wochen: [] };
 const lfHatPlan = () => lfPlan().wochen.length > 0;
-const lfLeerHtml = (was) => `<div class="empty" style="margin-top:36px"><strong>Kein Plan geladen</strong>
-  ${esc(was)} Wähle unter <b>Mehr</b> deine <i>laufen.json</i> als Datenbasis –
-  Wochen, Rennen, Tests und Strecken stehen dort drin.</div>`;
+const lfZu = () => !!(LFDB.tresor && !LFKLAR);
+const lfLeerHtml = (was) => lfZu()
+  ? `<div class="empty" style="margin-top:36px"><strong>Plan ist verschlossen</strong>
+      ${esc(was)} Tippe auf <b>Aufsperren</b> und gib dein Passwort ein.
+      <span class="btn-row" style="margin-top:12px;display:flex">
+        <button class="btn btn-primary" data-lfauf style="flex:1">Aufsperren</button></span></div>`
+  : `<div class="empty" style="margin-top:36px"><strong>Kein Plan geladen</strong>
+      ${esc(was)} Wähle unter <b>Mehr</b> deine <i>laufen.json</i> als Datenbasis –
+      Wochen, Rennen, Tests und Strecken stehen dort drin.</div>`;
 
 const lfISO = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
   + '-' + String(d.getDate()).padStart(2, '0');
@@ -255,6 +267,9 @@ function lfStarten() {
   lfViewMalen();
   LFStore.autosaveStarten();
   saveChipMalen();
+  /* Liegt der Plan im Tresor, gleich danach fragen – sonst steht der
+     Nutzer vor einer leeren App und weiss nicht, warum. */
+  if (lfZu()) setTimeout(() => lfAufsperren(), 250);
 }
 
 function lfKnoepfeMalen() {
@@ -286,6 +301,7 @@ function lfViewMalen() {
   else if (lfTab === 'lfplan') lfPlanMalen(v);
   else if (lfTab === 'lfziele') lfZieleMalen(v);
   else lfMehrMalen(v);
+  lfAufsperrKnopfBinden(v);
   lfKnoepfeMalen();
   saveChipMalen();
   if (lfLeistungOffen) lfLeistungOffen();
@@ -293,7 +309,8 @@ function lfViewMalen() {
 function lfBannerMalen() {
   const w = lfAktuelleWoche(), r = lfNaechstesRennen();
   if (!w) {
-    $('#lfBanner').innerHTML = '<span class="kb-tag">Kein Plan geladen</span>';
+    $('#lfBanner').innerHTML = '<span class="kb-tag">'
+      + (lfZu() ? 'Plan ist verschlossen' : 'Kein Plan geladen') + '</span>';
     return;
   }
   const tage = r ? lfTageBis(r.iso) : null;
@@ -384,6 +401,64 @@ function lfEintragBlatt(datum) {
     lfViewMalen();
     toast('Eingetragen');
   };
+}
+
+/* ---------- Tresor: Plan verschliessen und aufsperren ----------
+   Verschlossen steht in der Datenbasis nur der Geheimtext. Aufgesperrt
+   liegt der Plan in LFKLAR und wird nirgends zurückgeschrieben – beim
+   nächsten Start fragt die App wieder. */
+async function lfAufsperren() {
+  if (!LFDB.tresor) return false;
+  const pw = await tresorPasswortFragen('Plan aufsperren',
+    'Der Plan liegt verschlossen in dieser App. Ohne das Passwort kommt niemand daran – auch ich nicht.', false);
+  if (pw == null) return false;
+  try {
+    LFKLAR = lfPlanPruefen(await tresorOeffnen(LFDB.tresor, pw));
+    LFTAGE = null;
+    lfViewMalen();
+    toast('Aufgesperrt');
+    return true;
+  } catch (e) {
+    toast(e.message || 'Passwort stimmt nicht');
+    return false;
+  }
+}
+
+async function lfVerschliessen() {
+  if (!tresorGeht()) { toast('Verschlüsseln geht hier nicht'); return; }
+  if (!lfHatPlan()) { toast('Kein Plan zum Verschliessen'); return; }
+  const pw = await tresorPasswortFragen('Plan verschliessen',
+    'Danach steht nur noch Geheimtext in der App. Vergisst du das Passwort, ist der Plan weg – es gibt keinen zweiten Weg hinein.', true);
+  if (pw == null) return;
+  const plan = lfPlan();
+  const t = await tresorSchliessen(plan, pw);
+  lfAendern(() => {
+    LFDB.tresor = t;
+    LFDB.plan = { start: '', rennen: [], tests: [], wochen: [] };
+  });
+  LFKLAR = plan;
+  await LFStore.sichern(true);
+  lfViewMalen();
+  toast('Verschlossen');
+}
+
+async function lfEntschliessen() {
+  if (!LFDB.tresor) return;
+  if (!LFKLAR) { if (!await lfAufsperren()) return; }
+  const ja = await bestaetigen('Tresor auflösen?',
+    'Der Plan steht danach wieder im Klartext in der App – wer das Gerät hat, kann ihn lesen.',
+    'Auflösen', true);
+  if (!ja) return;
+  lfAendern(() => { LFDB.plan = LFKLAR; LFDB.tresor = null; });
+  await LFStore.sichern(true);
+  lfViewMalen();
+  toast('Tresor aufgelöst');
+}
+
+/* Der Knopf in der Leermeldung – er taucht in jedem Reiter auf. */
+function lfAufsperrKnopfBinden(wurzel) {
+  const b = $('[data-lfauf]', wurzel);
+  if (b) b.onclick = () => lfAufsperren();
 }
 
 /* ---------- Heute ---------- */
@@ -545,6 +620,24 @@ function lfMehrMalen(v) {
         <span class="lfkarte-km">${lfKmNum(s.km)}</span></div>`).join('')}
     </div>
 
+    <div class="section-head" style="padding-top:14px"><h2>Tresor</h2>
+      <span class="muted">${LFDB.tresor ? (LFKLAR ? 'offen' : 'verschlossen') : 'aus'}</span></div>
+    <div class="list-card">
+      ${!tresorGeht() ? `<div class="rowline"><span class="grow"><span class="rn">Nicht möglich</span>
+        <span class="rm">Dieser Browser gibt die Verschlüsselung hier nicht her.</span></span></div>` : ''}
+      ${LFDB.tresor ? `
+        <div class="rowline"><span class="grow"><span class="rn">${LFKLAR ? 'Aufgesperrt' : 'Verschlossen'}</span>
+          <span class="rm">${LFKLAR ? 'Beim nächsten Start fragt die App wieder nach dem Passwort.'
+            : 'In der App steht nur Geheimtext.'}</span></span>
+          ${LFKLAR ? '' : '<button class="btn btn-sm btn-primary" data-lfauf>Aufsperren</button>'}</div>
+        <div class="rowline"><span class="grow"><span class="rn">Tresor auflösen</span>
+          <span class="rm">Plan wieder im Klartext ablegen</span></span>
+          <button class="btn btn-sm btn-danger" data-lfentschliessen>Auflösen</button></div>`
+      : `<div class="rowline"><span class="grow"><span class="rn">Plan verschliessen</span>
+          <span class="rm">Mit einem Passwort. Danach steht nur Geheimtext in der App.</span></span>
+          <button class="btn btn-sm" data-lfverschliessen ${lfHatPlan() && tresorGeht() ? '' : 'disabled'}>Verschliessen</button></div>`}
+    </div>
+
     <div class="section-head" style="padding-top:14px"><h2>Der Plan</h2></div>
     <div class="list-card">
       <div class="rowline"><span class="grow"><span class="rn">Zeitraum</span>
@@ -566,6 +659,10 @@ function lfMehrMalen(v) {
 
   appDatenBinden(LFORT, v, lfViewMalen);
   huelleEinstellungenBinden(v, lfViewMalen);
+  const vs = $('[data-lfverschliessen]', v);
+  if (vs) vs.onclick = () => lfVerschliessen();
+  const es = $('[data-lfentschliessen]', v);
+  if (es) es.onclick = () => lfEntschliessen();
   $('[data-lfreset]', v).onclick = async () => {
     const ja = await bestaetigen('Alle Einträge löschen?',
       'Ist-Zeiten und Gefühle gehen weg. Der Plan selbst bleibt unverändert.',
