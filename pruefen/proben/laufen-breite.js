@@ -63,11 +63,13 @@ const TABS = ['lfheute', 'lfplan', 'lfziele', 'lfmehr'];
       return {
         seite: document.documentElement.scrollWidth, fenster: window.innerWidth,
         saeulen: bahn ? bahn.children.length : 0,
+        wochen: lfPlan().wochen.length,
         bahnBreit: bahn ? Math.round(bahn.getBoundingClientRect().width) : 0,
         raus: raus.length, wer: raus.slice(0, 3).join(', ')
       };
     });
-    P(breite + ' px Leistung: 52 Säulen', l.saeulen === 52, String(l.saeulen));
+    P(breite + ' px Leistung: eine Säule je Woche', l.saeulen === l.wochen,
+      l.saeulen + ' Säulen bei ' + l.wochen + ' Wochen');
     P(breite + ' px Leistung: Bahn bleibt im Bild', l.bahnBreit <= breite && l.raus === 0,
       l.bahnBreit + ' bei ' + breite + (l.wer ? ' · ' + l.wer : ''));
     P(breite + ' px Leistung: kein Querscrollen', l.seite <= l.fenster + 1, l.seite + '/' + l.fenster);

@@ -40,7 +40,7 @@ etwas liegt – dann wird nur der geöffnet, nicht die ganze App.
   `APPS`) ist ihr Homescreen; jede App wird erst beim Antippen geweckt.
 - **Jede App führt ihre eigene Datenbasis.** Eine Ausfertigung von
   `macheSpeicher(...)` je App, eigener IDB-Schlüssel, eigene JSON-Datei
-  (`leseplan.json`, `kalender.json`, `fastreader.json`, `gsund.json`). Nie Daten zweier Apps in eine Datei
+  (`leseplan.json`, `kalender.json`, `fastreader.json`, `gsund.json`, `laufen.json`). Nie Daten zweier Apps in eine Datei
   mischen. Die App ohne gewählten Speicherort fragt beim ersten Öffnen danach.
 - Was allen gemeinsam ist – Hell/Dunkel, Akzent, Vollbild – liegt in `SHELL`
   und wird über `shellSchreiben()` gesichert, nicht in den Daten einer App.
@@ -150,6 +150,15 @@ Fertige Bausteine, die genau das tun:
   Telefon zeigt sonst gar nichts an.
 - Was einen Stand überschreibt, fragt vorher (`bestaetigen`).
 
+## Nichts Persönliches im Code
+- Die Seite wird veröffentlicht (`.github/workflows/seite.yml`), also liest sie
+  jeder. Renntermine, Zielzeiten, Strecken, Adressen – all das gehört in die
+  Datenbasis einer App, nie in einen Baustein. `laufen.js` ist das Muster: der
+  Plan kommt aus `laufen.json`, die App wird leer ausgeliefert.
+- `marathonplan/` steht in `.gitignore` und bleibt draussen.
+- `pruefen/proben/laufen-ohne-plan.js` hält das fest: eine Liste verbotener
+  Wörter, geprüft gegen die gebaute `mylife.html`.
+
 ## Malen
 - **Ein Schritt gibt nicht mitten im Malen an einen anderen ab.** Wer erst rendert
   und dann merkt, dass er der falsche war, hinterlässt seine Spuren doppelt – im
@@ -161,7 +170,7 @@ Fertige Bausteine, die genau das tun:
 
 ## Prüfen
 **Nach jeder Änderung an der App: `node pruefen/rundgang.js`.** Der Rundgang
-sät Daten in alle sechs Apps, öffnet jede, malt jeden Reiter, tippt rund 700
+sät Daten in alle sieben Apps, öffnet jede, malt jeden Reiter, tippt rund 700
 Bedienelemente an und prüft danach die Verlaufs-Disziplin der Ebenen. Er meldet
 `OK`/`FEHL` und endet mit einem Zählstand; er dauert etwa fünf Minuten,
 `--schnell` lässt den Klick-Teil weg (unter einer Minute), `--leer` läuft mit

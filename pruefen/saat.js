@@ -115,23 +115,52 @@ const SAAT = {
     ]
   },
   'meta-laufen': { modus: 'geraet', handle: null, dateiname: 'laufen.json' },
-  'daten-laufen': {
-    format: 'mylife-laufen', version: 1, erstellt: Date.now(),
-    einstellungen: { autosaveSek: 60 },
-    /* Drei eingetragene Einheiten aus den ersten Wochen: eine mit Zeit und
-       Gefuehl, eine nur abgehakt, eine nur mit Gefuehl. */
-    eintraege: {
-      '2026-09-21': { ok: true, zeit: '29:10', gefuehl: 'locker, Beine frisch' },
-      '2026-09-23': { ok: true, zeit: '', gefuehl: '' },
-      '2026-09-25': { ok: false, zeit: '', gefuehl: 'schwer ab km 4' }
-    },
-    strecken: [
-      { name: 'daheim \u2192 Eltern', km: 5.7, art: 'einfach' },
-      { name: 'Sacher \u2192 Urstein', km: 10, art: 'einfach' },
-      { name: 'Sacher \u2192 Laufen', km: 21, art: 'einfach' },
-      { name: 'Sacher \u2192 Laufen \u2192 Sacher', km: 42, art: 'hin und zur\u00fcck' }
-    ]
-  },
+  /* Die App bringt keinen Plan mit - er steht in der Datenbasis. Hier ein
+     erfundener ueber drei Wochen, der am Montag dieser Woche anfaengt, damit
+     "Heute" etwas zu zeigen hat. Nichts davon ist echt. */
+  'daten-laufen': (() => {
+    const mo = new Date(heute);
+    mo.setDate(mo.getDate() - ((mo.getDay() + 6) % 7));
+    const t = (name, off, E, teile, v, w, na) => ({
+      d: name, o: off, E: E, k: off === 0 ? 'mo' : (off === 2 ? 'mi' : 'fr'),
+      v: v, w: w, na: na, s: 'a', T: teile
+    });
+    const woche = (n, phase, entlastung, km) => ({
+      n: n, p: phase, e: entlastung, b: 0, t: [
+        t('Montag', 0, 'Locker', [[km + ' km locker @ 7:10', km]], 'klein', 'wasser', 'klein'),
+        t('Mittwoch', 2, 'Intervall', [
+          ['1,5 km einlaufen @ 7:10', 1.5], ['4× 1000 m @ 5:40', 4],
+          ['3× 400 m Trab @ 7:30', 1.2], ['1 km auslaufen @ 7:30', 1]
+        ], 'klein', 'wasser', 'gross'),
+        t('Freitag', 4, 'Langer Lauf', [[(km + 5) + ' km langer Lauf @ 7:20', km + 5]],
+          'gross', 'gel60lang', 'gross'),
+        null
+      ]
+    });
+    return {
+      format: 'mylife-laufen', version: 1, erstellt: Date.now(),
+      einstellungen: { autosaveSek: 60 },
+      plan: {
+        start: iso(mo),
+        rennen: [{
+          name: 'Probelauf', datum: '01.01.2099', ort: 'Musterstadt', woche: 'Woche 3',
+          traum: '50:00', traumPace: '5:00/km', ziel: '55:00', zielPace: '5:30/km'
+        }],
+        tests: [{
+          woche: 'Woche 2', datum: '01.01.2099', teil1: '5 km zuegig @ 5:45',
+          teil2: '—', gesamt: '5 km', ziel: '28:45'
+        }],
+        wochen: [woche(1, 'Gewoehnung', 0, 6), woche(2, 'Grundlage', 0, 7),
+                 woche(3, 'Grundlage', 1, 5)]
+      },
+      /* Eine Einheit mit Zeit und Gefuehl, eine nur abgehakt. */
+      eintraege: {
+        [iso(mo)]: { ok: true, zeit: '42:10', gefuehl: 'locker' },
+        [tag(2)]: { ok: true, zeit: '', gefuehl: '' }
+      },
+      strecken: [{ name: 'Runde am Fluss', km: 6, art: 'einfach' }]
+    };
+  })(),
   'meta-gsund': { modus: 'geraet', handle: null, dateiname: 'gsund.json' },
   'daten-gsund': {
     format: 'mylife-gsund', version: 1, erstellt: Date.now(),

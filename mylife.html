@@ -8226,84 +8226,14 @@ function caMehrMalen(v) {
   huelleEinstellungenBinden(v, caViewMalen);
 }
 /* ============================================================
-   Laufen - der Plan als Daten. Erzeugt aus marathonplan/plan_bauen.py,
-   nicht von Hand bearbeiten. Die Ernaehrungskuerzel loest laufen.js auf.
-   ============================================================ */
-const LPLAN = {
-  start: "2026-09-21",
-  rennen: [{"name": "Halbmarathon", "datum": "07.03.2027", "ort": "Wien", "woche": "Woche 24", "traum": "1:44:59", "traumPace": "4:58/km", "ziel": "2:00:00", "zielPace": "5:41/km"}, {"name": "Wings for Life", "datum": "09.05.2027", "ort": "Wien", "woche": "Woche 33", "traum": "bis zur Einholung", "traumPace": "5:44/km", "ziel": "19,33 km", "zielPace": "5:44/km"}, {"name": "Marathon", "datum": "23.05.2027", "ort": "Salzburg", "woche": "Woche 35", "traum": "3:59:59", "traumPace": "5:41/km", "ziel": "4:30:00", "zielPace": "6:24/km"}, {"name": "5,7 km", "datum": "16.09.2027", "ort": "Salzburg", "woche": "Woche 52", "traum": "24:59", "traumPace": "4:23/km", "ziel": "26:00", "zielPace": "4:34/km"}],
-  tests: [{"woche": "Woche 4", "datum": "18.10.2026", "teil1": "5 km locker @ 7:45", "teil2": "—", "gesamt": "5 km", "ziel": "38:45"}, {"woche": "Woche 8", "datum": "15.11.2026", "teil1": "3 km zügig @ 5:35", "teil2": "—", "gesamt": "3 km", "ziel": "16:45"}, {"woche": "Woche 13", "datum": "20.12.2026", "teil1": "5 km zügig @ 5:45", "teil2": "—", "gesamt": "5 km", "ziel": "28:45"}, {"woche": "Woche 20", "datum": "07.02.2027", "teil1": "5,7 km Test @ 5:15", "teil2": "—", "gesamt": "5,7 km", "ziel": "29:56 (5:15/km)"}, {"woche": "Woche 22", "datum": "21.02.2027", "teil1": "10 km locker @ 7:05", "teil2": "10 km @ 5:41", "gesamt": "20 km", "ziel": "10-km-Teil in 56:50"}, {"woche": "Woche 29", "datum": "11.04.2027", "teil1": "20 km locker @ 7:05", "teil2": "8 km @ 6:24", "gesamt": "28 km", "ziel": "8-km-Teil in 51:12"}, {"woche": "Woche 31", "datum": "25.04.2027", "teil1": "20 km locker @ 7:05", "teil2": "10 km @ 6:24", "gesamt": "30 km", "ziel": "10-km-Teil in 64:00"}, {"woche": "Woche 39", "datum": "20.06.2027", "teil1": "5,7 km Test @ 5:10", "teil2": "—", "gesamt": "5,7 km", "ziel": "29:27"}, {"woche": "Woche 44", "datum": "25.07.2027", "teil1": "5,7 km Test @ 4:47", "teil2": "—", "gesamt": "5,7 km", "ziel": "27:16 (4:47/km)"}, {"woche": "Woche 49", "datum": "29.08.2027", "teil1": "5,7 km Test @ 4:40", "teil2": "—", "gesamt": "5,7 km", "ziel": "26:38 (4:40/km)"}],
-  strecken: [
-    { name: "daheim → Eltern", km: 5.7, art: "einfach" },
-    { name: "Sacher → Urstein", km: 10, art: "einfach" },
-    { name: "Sacher → Laufen", km: 21, art: "einfach" },
-    { name: "Sacher → Laufen → Sacher", km: 42, art: "hin und zurück" }
-  ],
-  wochen: [
-    {"n": 1, "p": "Gewöhnung", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["4 km locker @ 7:20", 4]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "a"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["3 km locker @ 7:20", 3], ["4× 100 m Steigerung @ 5:30", 0.4], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "a"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["6 km langer Lauf @ 7:25", 6]], "k": "fr", "v": "klein", "w": "wasser", "na": "klein", "s": "a"}, null]},
-    {"n": 2, "p": "Gewöhnung", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["5 km locker @ 7:20", 5]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "a"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["3,5 km locker @ 7:20", 3.5], ["5× 100 m Steigerung @ 5:30", 0.5], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "a"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["7 km langer Lauf @ 7:25", 7]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, null]},
-    {"n": 3, "p": "Gewöhnung", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["5 km locker @ 7:20", 5]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:20", 1.5], ["5× 1 min zügig @ 6:10", 0.81], ["5× 2 min Trab @ 7:30", 1.33], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["8 km langer Lauf @ 7:25", 8]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, null]},
-    {"n": 4, "p": "Gewöhnung", "e": 1, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["4 km locker @ 7:20", 4]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["4 km locker @ 7:20", 4]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, null, {"d": "Sonntag", "o": 6, "E": "Test", "T": [["1 km einlaufen @ 7:30", 1.0], ["TEST 5 km locker @ 7:45 – Ziel 38:45", 5.0], ["1 km auslaufen @ 7:45", 1.0]], "k": "wk", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}]},
-    {"n": 5, "p": "Gewöhnung", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["5 km locker @ 7:15", 5]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:15", 1.5], ["6× 1 min zügig @ 6:05", 0.99], ["6× 2 min Trab @ 7:30", 1.6], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["9 km langer Lauf @ 7:25", 9]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, null]},
-    {"n": 6, "p": "Gewöhnung", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["5 km locker @ 7:15", 5]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["2 km einlaufen @ 7:15", 2], ["6× 2 min zügig @ 6:00", 2.0], ["6× 2 min Trab @ 7:30", 1.6], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["10 km langer Lauf @ 7:25", 10]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, null]},
-    {"n": 7, "p": "Gewöhnung", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:15", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["2 km einlaufen @ 7:15", 2], ["6× 2 min zügig @ 5:55", 2.03], ["6× 2 min Trab @ 7:30", 1.6], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["11 km langer Lauf @ 7:25", 11]], "k": "fr", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}, null]},
-    {"n": 8, "p": "Gewöhnung", "e": 1, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["5 km locker @ 7:15", 5]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["4 km locker @ 7:15", 4]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, null, {"d": "Sonntag", "o": 6, "E": "Test", "T": [["2 km einlaufen @ 7:15", 2.0], ["TEST 3 km zügig @ 5:35 – Ziel 16:45", 3.0], ["2 km auslaufen @ 7:30", 2.0]], "k": "wk", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}]},
-    {"n": 9, "p": "Grundlage", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:10", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:10", 1.5], ["4× 1000 m @ 5:45", 4.0], ["3× 400 m Trab @ 7:30", 1.2], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["10 km langer Lauf @ 7:15", 10]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, null]},
-    {"n": 10, "p": "Grundlage", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:10", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:10", 1.5], ["4× 1000 m @ 5:40", 4.0], ["3× 400 m Trab @ 7:30", 1.2], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["11 km langer Lauf @ 7:15", 11]], "k": "fr", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}, null]},
-    {"n": 11, "p": "Grundlage", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:10", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:10", 1.5], ["2× 2000 m @ 5:45", 4.0], ["1× 600 m Trab @ 7:30", 0.6], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["12 km langer Lauf @ 7:15", 12]], "k": "fr", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}, null]},
-    {"n": 12, "p": "Grundlage", "e": 1, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["5 km locker @ 7:10", 5]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:10", 1.5], ["3× 1000 m @ 5:45", 3.0], ["2× 400 m Trab @ 7:30", 0.8], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["9 km langer Lauf @ 7:15", 9]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, null]},
-    {"n": 13, "p": "Grundlage", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:10", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["6 km locker @ 7:10", 6]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, null, {"d": "Sonntag", "o": 6, "E": "Test", "T": [["2 km einlaufen @ 7:10", 2.0], ["TEST 5 km zügig @ 5:45 – Ziel 28:45", 5.0], ["5 km auslaufen @ 7:15", 5.0]], "k": "wk", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}]},
-    {"n": 14, "p": "Grundlage", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:10", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:10", 1.5], ["4 km @ 5:35 (Tempolauf)", 4], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["13 km langer Lauf @ 7:15", 13]], "k": "fr", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}, null]},
-    {"n": 15, "p": "Grundlage", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 7:10", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:10", 1.5], ["4× 1000 m @ 5:30", 4.0], ["3× 400 m Trab @ 7:30", 1.2], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["13 km langer Lauf @ 7:15", 13]], "k": "fr", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}, null]},
-    {"n": 16, "p": "Grundlage", "e": 1, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["5 km locker @ 7:10", 5]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:10", 1.5], ["3× 1000 m @ 5:30", 3.0], ["2× 400 m Trab @ 7:30", 0.8], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["10 km langer Lauf @ 7:15", 10]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, null]},
-    {"n": 17, "p": "Schwelle / Halbmarathon-Aufbau", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 7:05", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:05", 1.5], ["6 km @ 5:30 (Schwelle)", 6], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["13 km langer Lauf @ 7:10", 13]], "k": "fr", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}, null]},
-    {"n": 18, "p": "Schwelle / Halbmarathon-Aufbau", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 7:05", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:05", 1.5], ["5× 1000 m @ 5:25", 5.0], ["4× 400 m Trab @ 7:30", 1.6], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["14 km langer Lauf @ 7:10", 14]], "k": "fr", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}, null]},
-    {"n": 19, "p": "Schwelle / Halbmarathon-Aufbau", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 7:05", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:05", 1.5], ["2× 2500 m @ 5:30", 5.0], ["1× 800 m Trab @ 7:30", 0.8], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["16 km langer Lauf @ 7:10", 16]], "k": "fr", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}, null]},
-    {"n": 20, "p": "Schwelle / Halbmarathon-Aufbau", "e": 1, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:05", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["6 km locker @ 7:05", 6]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, null, {"d": "Sonntag", "o": 6, "E": "Test", "T": [["3 km einlaufen @ 7:05", 3.0], ["TEST 5,7 km @ 5:15 – Ziel 29:56", 5.7], ["4,3 km auslaufen @ 7:30", 4.3]], "k": "wk", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}]},
-    {"n": 21, "p": "Schwelle / Halbmarathon-Aufbau", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 7:05", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:05", 1.5], ["5 km @ 5:41 (HM-Pace)", 5], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["12 km locker @ 7:10", 12], ["5 km @ 5:41 (HM-Pace)", 5]], "k": "fr", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}, null]},
-    {"n": 22, "p": "Schwelle / Halbmarathon-Aufbau", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:05", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["8 km locker @ 7:05", 8]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, null, {"d": "Sonntag", "o": 6, "E": "Test", "T": [["10 km locker @ 7:05", 10.0], ["TEST 10 km @ 5:41 – Ziel 56:50", 10.0]], "k": "wk", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}]},
-    {"n": 23, "p": "Schwelle / Halbmarathon-Aufbau", "e": 1, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:05", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:05", 1.5], ["3 km @ 5:41 (HM-Pace)", 3], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["14 km langer Lauf @ 7:10", 14]], "k": "fr", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}, null]},
-    {"n": 24, "p": "Schwelle / Halbmarathon-Aufbau", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["5 km locker @ 7:05", 5]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1 km einlaufen @ 7:05", 1.0], ["3× 200 m @ 5:00", 0.6], ["3× 200 m Trab @ 7:30", 0.6], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, null, {"d": "Sonntag", "o": 6, "E": "Wettkampf", "T": [["1,5 km einlaufen @ 7:05", 1.5], ["Halbmarathon Wien 21,1 km @ 5:41 – Ziel 2:00:00", 21.1], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "wk", "v": "gross", "w": "gel60lang", "na": "gross", "s": "b"}]},
-    {"n": 25, "p": "Regeneration", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["5 km locker @ 7:05", 5]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["5 km locker @ 7:05", 5]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["8 km langer Lauf @ 7:10", 8]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, null]},
-    {"n": 26, "p": "Regeneration", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:05", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:05", 1.5], ["3 km @ 5:41 (HM-Pace)", 3], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "b"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["10 km langer Lauf @ 7:10", 10]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "b"}, null]},
-    {"n": 27, "p": "Marathonspezifisch", "e": 0, "b": 1, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 7:00", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "d"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["2 km einlaufen @ 7:00", 2], ["4 km @ 6:24 (Marathon-Pace)", 4], ["2 km auslaufen @ 7:30", 2]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "d"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["13 km locker @ 7:05", 13], ["4 km @ 6:24 (Marathon-Pace)", 4]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "d"}, null]},
-    {"n": 28, "p": "Marathonspezifisch", "e": 0, "b": 1, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 7:00", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "d"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:00", 1.5], ["4× 1000 m @ 5:35", 4.0], ["3× 400 m Trab @ 7:30", 1.2], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "d"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["15 km locker @ 7:05", 15], ["6 km @ 6:24 (Marathon-Pace)", 6]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "d"}, null]},
-    {"n": 29, "p": "Marathonspezifisch", "e": 0, "b": 1, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:00", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "d"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["6 km locker @ 7:00", 6]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "d"}, null, {"d": "Sonntag", "o": 6, "E": "Test", "T": [["20 km locker @ 7:05", 20.0], ["TEST 8 km @ 6:24 – Ziel 51:12", 8.0]], "k": "wk", "v": "gross", "w": "gel75lang", "na": "gross", "s": "d"}]},
-    {"n": 30, "p": "Marathonspezifisch", "e": 1, "b": 1, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 7:00", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "d"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["2 km einlaufen @ 7:00", 2], ["5 km @ 6:24 (Marathon-Pace)", 5], ["2 km auslaufen @ 7:30", 2]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "d"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["10 km locker @ 7:05", 10], ["5 km @ 6:24 (Marathon-Pace)", 5]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "d"}, null]},
-    {"n": 31, "p": "Marathonspezifisch", "e": 0, "b": 1, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["8 km locker @ 7:00", 8]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "d"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["8 km locker @ 7:00", 8]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "d"}, null, {"d": "Sonntag", "o": 6, "E": "Test", "T": [["20 km locker @ 7:05", 20.0], ["TEST 10 km @ 6:24 – Ziel 64:00", 10.0]], "k": "wk", "v": "gross", "w": "gel75lang", "na": "gross", "s": "d"}]},
-    {"n": 32, "p": "Marathonspezifisch", "e": 0, "b": 1, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["8 km locker @ 7:00", 8]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "d"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:00", 1.5], ["6 km @ 6:24 (Marathon-Pace)", 6], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "d"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["14 km locker @ 7:05", 14], ["8 km @ 6:24 (Marathon-Pace)", 8]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "d"}, null]},
-    {"n": 33, "p": "Taper", "e": 0, "b": 1, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 6:35", 7.0]], "k": "mo", "v": "w33kurz", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["7 km locker @ 6:35", 7.0]], "k": "mi", "v": "w33kurz", "w": "wasser", "na": "klein", "s": "c"}, null, {"d": "Sonntag", "o": 6, "E": "Wettkampf", "T": [["Start 13:00 Uhr, Schloss Schönbrunn Wien", 0.0], ["19,33 km @ 5:44 bis zur Einholung", 19.33], ["Catcher Car: Start +30 min, 12,9 → 14,5 → 16,1 km/h", 0.0]], "k": "wk", "v": "w33wk", "w": "gel60lang", "na": "gross", "s": "c"}], "hinweis": "Qualitätseinheit (3× 10 min @ 6:02) entfällt ersatzlos · nach dem Wettkampf Essen nicht reduzieren"},
-    {"n": 34, "p": "Taper", "e": 1, "b": 1, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["5 km locker @ 6:45", 5.0]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["5 km locker @ 6:45", 5.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["10 km locker @ 6:55", 10.0]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "c"}, null], "hinweis": "reduziert als Ausgleich für Woche 33 · gestrichen: 5× 3 min @ 6:02 und 4 km vom langen Lauf · nach dem langen Lauf viel Schlaf"},
-    {"n": 35, "p": "Taper", "e": 0, "b": 1, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 7:00", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 7:00", 1.5], ["2 km @ 6:24 (Marathon-Pace)", 2], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, null, {"d": "Sonntag", "o": 6, "E": "Wettkampf", "T": [["10 km @ 6:30 (kontrolliert anlaufen)", 10.0], ["22 km @ 6:24 (Marathon-Pace)", 22.0], ["10,2 km @ 6:24 (halten) – Ziel 4:30:00", 10.2]], "k": "wk", "v": "gross", "w": "gel90lang", "na": "gross", "s": "c"}]},
-    {"n": 36, "p": "Reset", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["3 km locker @ 7:20", 3]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["3 km locker @ 7:20", 3]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["4 km langer Lauf @ 7:25", 4]], "k": "fr", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, null]},
-    {"n": 37, "p": "Reset", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["4 km locker @ 7:20", 4]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["5 km locker @ 7:20", 5]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["7 km langer Lauf @ 7:25", 7]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "c"}, null]},
-    {"n": 38, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 6:55", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 6:55", 1.5], ["6× 400 m @ 4:45", 2.4], ["5× 200 m Trab @ 7:30", 1.0], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["10 km langer Lauf @ 7:00", 10]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "c"}, null]},
-    {"n": 39, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 6:55", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["5 km locker @ 6:55", 5]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, null, {"d": "Sonntag", "o": 6, "E": "Test", "T": [["3 km einlaufen @ 6:55", 3.0], ["TEST 5,7 km @ 5:10 – Ziel 29:27", 5.7], ["4,3 km auslaufen @ 7:30", 4.3]], "k": "wk", "v": "gross", "w": "gel75lang", "na": "gross", "s": "c"}]},
-    {"n": 40, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 6:55", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 6:55", 1.5], ["8× 400 m @ 4:40", 3.2], ["7× 200 m Trab @ 7:30", 1.4], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["13 km langer Lauf @ 7:00", 13]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "c"}, null]},
-    {"n": 41, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 6:55", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 6:55", 1.5], ["4× 1000 m @ 4:55", 4.0], ["3× 400 m Trab @ 7:30", 1.2], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["13 km langer Lauf @ 7:00", 13]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "c"}, null]},
-    {"n": 42, "p": "Tempoblock 5,7 km", "e": 1, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 6:55", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 6:55", 1.5], ["6× 400 m @ 4:40", 2.4], ["5× 200 m Trab @ 7:30", 1.0], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["10 km langer Lauf @ 7:00", 10]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "c"}, null]},
-    {"n": 43, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 6:55", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 6:55", 1.5], ["5× 1000 m @ 4:50", 5.0], ["4× 400 m Trab @ 7:30", 1.6], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["13 km langer Lauf @ 7:00", 13]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "c"}, null]},
-    {"n": 44, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 6:55", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["6 km locker @ 6:55", 6]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, null, {"d": "Sonntag", "o": 6, "E": "Test", "T": [["3,5 km einlaufen @ 6:55", 3.5], ["TEST 5,7 km @ 4:47 – Ziel 27:16", 5.7], ["4,8 km auslaufen @ 7:30", 4.8]], "k": "wk", "v": "gross", "w": "gel75lang", "na": "gross", "s": "c"}]},
-    {"n": 45, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 6:55", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 6:55", 1.5], ["10× 400 m @ 4:35", 4.0], ["9× 200 m Trab @ 7:30", 1.8], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["14 km langer Lauf @ 7:00", 14]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "c"}, null]},
-    {"n": 46, "p": "Tempoblock 5,7 km", "e": 1, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 6:55", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 6:55", 1.5], ["4× 1000 m @ 4:50", 4.0], ["3× 400 m Trab @ 7:30", 1.2], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["12 km langer Lauf @ 7:00", 12]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "c"}, null]},
-    {"n": 47, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 6:55", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 6:55", 1.5], ["4× 1200 m @ 4:45", 4.8], ["3× 400 m Trab @ 7:30", 1.2], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["14 km langer Lauf @ 7:00", 14]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "c"}, null]},
-    {"n": 48, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["8 km locker @ 6:55", 8]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 6:55", 1.5], ["12× 400 m @ 4:30", 4.8], ["11× 200 m Trab @ 7:30", 2.2], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["14 km langer Lauf @ 7:00", 14]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "c"}, null]},
-    {"n": 49, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 6:55", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["6 km locker @ 6:55", 6]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, null, {"d": "Sonntag", "o": 6, "E": "Test", "T": [["3,5 km einlaufen @ 6:55", 3.5], ["TEST 5,7 km @ 4:40 – Ziel 26:38", 5.7], ["4,8 km auslaufen @ 7:30", 4.8]], "k": "wk", "v": "gross", "w": "gel75lang", "na": "gross", "s": "c"}]},
-    {"n": 50, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["7 km locker @ 6:55", 7]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 6:55", 1.5], ["5× 1000 m @ 4:45", 5.0], ["4× 400 m Trab @ 7:30", 1.6], ["1 km auslaufen @ 7:30", 1.0]], "k": "mi", "v": "gross", "w": "wasser", "na": "gross", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["14 km langer Lauf @ 7:00", 14]], "k": "fr", "v": "gross", "w": "gel75lang", "na": "gross", "s": "c"}, null]},
-    {"n": 51, "p": "Tempoblock 5,7 km", "e": 1, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["6 km locker @ 6:55", 6]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Intervall", "T": [["1,5 km einlaufen @ 6:55", 1.5], ["8× 400 m @ 4:30", 3.2], ["7× 200 m Trab @ 7:30", 1.4], ["1,5 km auslaufen @ 7:30", 1.5]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Freitag", "o": 4, "E": "Langer Lauf", "T": [["10 km langer Lauf @ 7:00", 10]], "k": "fr", "v": "gross", "w": "wasser", "na": "gross", "s": "c"}, null]},
-    {"n": 52, "p": "Tempoblock 5,7 km", "e": 0, "b": 0, "t": [{"d": "Montag", "o": 0, "E": "Locker", "T": [["5 km locker @ 6:55", 5]], "k": "mo", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, {"d": "Mittwoch", "o": 2, "E": "Locker", "T": [["3 km locker @ 6:55", 3.0], ["4× 100 m Steigerung @ 4:30", 0.4]], "k": "mi", "v": "klein", "w": "wasser", "na": "klein", "s": "c"}, null, {"d": "Donnerstag", "o": 3, "E": "Wettkampf", "T": [["2 km einlaufen @ 6:55", 2.0], ["4× 100 m Steigerung @ 4:30", 0.4], ["5,7 km Wettkampf Salzburg @ 4:34 – Ziel 26:00", 5.7], ["2 km auslaufen @ 7:30", 2.0]], "k": "wk", "v": "gross", "w": "wasser", "na": "gross", "s": "c"}]}
-  ]
-};
-/* ============================================================
    laufen – die siebte App in dieser Datei
-   Ein Marathonplan über 52 Wochen, vom 21.09.2026 bis zum
-   16.09.2027. Der Plan selbst liegt als Daten in laufen-plan.js und
-   ändert sich nicht; hier steht nur, was der Läufer einträgt:
-   je Einheit eine Ist-Zeit und ein Gefühl.
+   Ein Trainingsplan über beliebig viele Wochen. Die App bringt keinen
+   Plan mit: Wochen, Rennen, Tests und Strecken stehen in der eigenen
+   Datei (laufen.json), zusammen mit dem, was der Läufer einträgt –
+   je Einheit eine Ist-Zeit und ein Gefühl. Ohne Datei ist sie leer.
 
-   Drei Lauftage die Woche: Montag kurz, Mittwoch kurz mit Qualität,
-   Freitag lang. Wettkämpfe und Tests stehen an ihrem festen Datum
-   und ersetzen in ihrer Woche den langen Lauf.
+   So bleibt nichts Persönliches im Code: der veröffentlichte Bau kennt
+   weder Renntermine noch Strecken.
 
    An der Kopfzeile herunterziehen holt die Leistungs-Aufstellung –
    derselbe Vorhang wie die Übersicht der leseliste.
@@ -8316,9 +8246,43 @@ function leereLauf() {
     erstellt: Date.now(),
     geaendert: Date.now(),
     einstellungen: { autosaveSek: 60 },
+    /* Der Plan selbst – leer, bis eine Datei ihn mitbringt. */
+    plan: { start: '', rennen: [], tests: [], wochen: [] },
     /* Je Einheit ein Eintrag, der Schlüssel ist ihr Datum. */
     eintraege: {},
-    strecken: LPLAN.strecken.map(s => ({ name: s.name, km: s.km, art: s.art }))
+    strecken: []
+  };
+}
+
+/* Was aus einer Datei kommt, wird hier zurechtgerückt: nur bekannte Felder,
+   Längen gedeckelt, alles andere fällt weg. */
+function lfPlanPruefen(roh) {
+  const p = (roh && typeof roh === 'object') ? roh : {};
+  const txt = (x, n) => String(x == null ? '' : x).trim().slice(0, n || 120);
+  const liste = (a, fn) => Array.isArray(a) ? a.map(fn).filter(Boolean).slice(0, 400) : [];
+  return {
+    start: /^\d{4}-\d{2}-\d{2}$/.test(p.start) ? p.start : '',
+    rennen: liste(p.rennen, r => r && r.name ? {
+      name: txt(r.name, 60), datum: txt(r.datum, 12), ort: txt(r.ort, 60),
+      woche: txt(r.woche, 20), traum: txt(r.traum, 40), traumPace: txt(r.traumPace, 20),
+      ziel: txt(r.ziel, 40), zielPace: txt(r.zielPace, 20)
+    } : null),
+    tests: liste(p.tests, t => t && t.datum ? {
+      woche: txt(t.woche, 20), datum: txt(t.datum, 12), teil1: txt(t.teil1, 80),
+      teil2: txt(t.teil2, 80), gesamt: txt(t.gesamt, 20), ziel: txt(t.ziel, 60)
+    } : null),
+    wochen: liste(p.wochen, w => w && +w.n ? {
+      n: clamp(Math.round(+w.n), 1, 520), p: txt(w.p, 60),
+      e: w.e ? 1 : 0, b: clamp(Math.round(+w.b || 0), 0, 1),
+      hinweis: txt(w.hinweis, 300),
+      t: (Array.isArray(w.t) ? w.t : []).slice(0, 7).map(tg => tg && tg.E ? {
+        d: txt(tg.d, 30), o: clamp(Math.round(+tg.o || 0), 0, 6), E: txt(tg.E, 30),
+        k: txt(tg.k, 8), v: txt(tg.v, 16), w: txt(tg.w, 16), na: txt(tg.na, 16),
+        s: txt(tg.s, 4),
+        T: (Array.isArray(tg.T) ? tg.T : []).slice(0, 8)
+          .map(x => [txt(x && x[0], 120), clamp(+(x && x[1]) || 0, 0, 500)])
+      } : null)
+    } : null)
   };
 }
 
@@ -8327,6 +8291,7 @@ function lfNormalisiere(roh) {
   const l = leereLauf();
   l.erstellt = +d.erstellt || Date.now();
   l.einstellungen = Object.assign(l.einstellungen, d.einstellungen || {});
+  l.plan = lfPlanPruefen(d.plan);
   const e = (d.eintraege && typeof d.eintraege === 'object') ? d.eintraege : {};
   Object.keys(e).forEach(k => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
@@ -8337,7 +8302,7 @@ function lfNormalisiere(roh) {
       gefuehl: String(x.gefuehl || '').trim().slice(0, 400)
     };
   });
-  if (Array.isArray(d.strecken) && d.strecken.length) {
+  if (Array.isArray(d.strecken)) {
     l.strecken = d.strecken.map(s => ({
       name: String(s.name || '').trim().slice(0, 80),
       km: clamp(+s.km || 0, 0, 500),
@@ -8401,10 +8366,18 @@ const LFESSEN = {
 const LFBEDARF = ['385 g KH / 140 g Eiweiß', '460–540 g KH / 155 g Eiweiß'];
 
 /* ---------- Rechnen ---------- */
+/* Der Plan steht in der Datenbasis, nicht im Code. Ohne geladene Datei ist er
+   leer – jeder Reiter zeigt dann, was zu tun ist. */
+const lfPlan = () => LFDB.plan || { start: '', rennen: [], tests: [], wochen: [] };
+const lfHatPlan = () => lfPlan().wochen.length > 0;
+const lfLeerHtml = (was) => `<div class="empty" style="margin-top:36px"><strong>Kein Plan geladen</strong>
+  ${esc(was)} Wähle unter <b>Mehr</b> deine <i>laufen.json</i> als Datenbasis –
+  Wochen, Rennen, Tests und Strecken stehen dort drin.</div>`;
+
 const lfISO = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
   + '-' + String(d.getDate()).padStart(2, '0');
 function lfTagDatum(n, off) {
-  const s = LPLAN.start.split('-').map(Number);
+  const s = (lfPlan().start || '2026-01-05').split('-').map(Number);
   const d = new Date(s[0], s[1] - 1, s[2]);
   d.setDate(d.getDate() + 7 * (n - 1) + off);
   return d;
@@ -8425,7 +8398,7 @@ let LFTAGE = null;
 function lfTage() {
   if (LFTAGE) return LFTAGE;
   LFTAGE = [];
-  LPLAN.wochen.forEach(w => w.t.forEach(tg => {
+  lfPlan().wochen.forEach(w => w.t.forEach(tg => {
     if (!tg) return;
     const d = lfTagDatum(w.n, tg.o);
     LFTAGE.push({ w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.T) });
@@ -8433,7 +8406,7 @@ function lfTage() {
   LFTAGE.sort((a, b) => a.datum < b.datum ? -1 : 1);
   return LFTAGE;
 }
-const lfWoche = n => LPLAN.wochen[n - 1];
+const lfWoche = n => lfPlan().wochen.find(w => w.n === n);
 const lfWocheKm = w => w.t.reduce((s, tg) => s + (tg ? lfKm(tg.T) : 0), 0);
 const lfEintrag = datum => LFDB.eintraege[datum] || { ok: false, zeit: '', gefuehl: '' };
 const lfIstErledigt = datum => {
@@ -8458,11 +8431,13 @@ function lfAktuelle() {
 }
 function lfAktuelleWoche() {
   const a = lfAktuelle();
-  return a ? a.w : LPLAN.wochen[0];
+  return a ? a.w : lfPlan().wochen[0];
 }
 function lfNaechstesRennen() {
   const heute = lfHeuteISO();
-  const mit = LPLAN.rennen.map(r => {
+  const r0 = lfPlan().rennen;
+  if (!r0.length) return null;
+  const mit = r0.map(r => {
     const p = r.datum.split('.');
     return { r: r, iso: p[2] + '-' + p[1] + '-' + p[0] };
   }).sort((a, b) => a.iso < b.iso ? -1 : 1);
@@ -8540,13 +8515,17 @@ function lfViewMalen() {
 }
 function lfBannerMalen() {
   const w = lfAktuelleWoche(), r = lfNaechstesRennen();
-  const tage = lfTageBis(r.iso);
+  if (!w) {
+    $('#lfBanner').innerHTML = '<span class="kb-tag">Kein Plan geladen</span>';
+    return;
+  }
+  const tage = r ? lfTageBis(r.iso) : null;
   $('#lfBanner').innerHTML = `
     <span class="kb-tag">Woche ${w.n} · ${esc(w.p)}</span>
     <span class="kb-zahlen"><span>${lfKmNum(lfWocheKm(w))} diese Woche</span>
-      <span class="kb-punkt">·</span>
+      ${r ? `<span class="kb-punkt">·</span>
       <span class="kb-next">${tage > 0 ? pl(tage, 'Tag', 'Tage') + ' bis ' + esc(r.r.name)
-        : esc(r.r.name) + ' war am ' + esc(r.r.datum)}</span></span>`;
+        : esc(r.r.name) + ' war am ' + esc(r.r.datum)}</span>` : ''}</span>`;
 }
 
 /* ---------- Bausteine, die überall gleich aussehen ---------- */
@@ -8633,7 +8612,7 @@ function lfEintragBlatt(datum) {
 /* ---------- Heute ---------- */
 function lfHeuteMalen(v) {
   const jetzt = lfAktuelle();
-  if (!jetzt) { v.innerHTML = `<div class="empty"><strong>Kein Plan</strong>Die Plandaten fehlen.</div>`; return; }
+  if (!jetzt) { v.innerHTML = lfLeerHtml('Hier stünde die Einheit, die heute dran ist.'); return; }
   const w = jetzt.w;
   const rest = w.t.filter(Boolean)
     .map(tg => {
@@ -8670,12 +8649,13 @@ function lfHeuteMalen(v) {
 
 /* ---------- Plan ---------- */
 function lfPlanMalen(v) {
+  if (!lfHatPlan()) { v.innerHTML = lfLeerHtml('Hier stünden deine Trainingswochen.'); return; }
   const jetzt = lfAktuelle();
   v.innerHTML = `
-    <div class="section-head"><h2>52 Wochen</h2>
+    <div class="section-head"><h2>${pl(lfPlan().wochen.length, 'Woche', 'Wochen')}</h2>
       <span class="muted">Montag kurz · Mittwoch kurz · Freitag lang</span></div>
     <div class="list-card">
-      ${LPLAN.wochen.map(w => {
+      ${lfPlan().wochen.map(w => {
         const mo = lfTagDatum(w.n, 0), so = lfTagDatum(w.n, 6);
         const tage = w.t.filter(Boolean);
         const fertig = tage.filter(tg => lfIstErledigt(lfISO(lfTagDatum(w.n, tg.o)))).length;
@@ -8727,10 +8707,14 @@ function lfWocheOeffnen(n) {
 
 /* ---------- Ziele ---------- */
 function lfZieleMalen(v) {
+  if (!lfPlan().rennen.length && !lfPlan().tests.length) {
+    v.innerHTML = lfLeerHtml('Hier stünden deine Rennen und Tests.');
+    return;
+  }
   const isoVon = s => { const p = s.split('.'); return p[2] + '-' + p[1] + '-' + p[0]; };
   v.innerHTML = `
     <div class="section-head"><h2>Rennen</h2><span class="muted">Traumziel und Einschätzung</span></div>
-    ${LPLAN.rennen.map(r => {
+    ${lfPlan().rennen.map(r => {
       const iso = isoVon(r.datum), e = lfEintrag(iso), tage = lfTageBis(iso);
       return `<div class="lfkarte" data-lfrennen="${iso}">
         <div class="lfkarte-kopf">
@@ -8751,9 +8735,9 @@ function lfZieleMalen(v) {
     }).join('')}
 
     <div class="section-head" style="padding-top:14px"><h2>Tests</h2>
-      <span class="muted">${LPLAN.tests.length} Termine</span></div>
+      <span class="muted">${pl(lfPlan().tests.length, 'Termin', 'Termine')}</span></div>
     <div class="list-card">
-      ${LPLAN.tests.map(t => {
+      ${lfPlan().tests.map(t => {
         const iso = isoVon(t.datum), e = lfEintrag(iso);
         return `<div class="rowline" data-lfzeile="${iso}">
           <span class="grow"><span class="rn">${esc(t.woche)} · ${esc(t.datum)}</span>
@@ -8776,6 +8760,8 @@ function lfMehrMalen(v) {
 
     <div class="section-head" style="padding-top:14px"><h2>Stammstrecken</h2></div>
     <div class="list-card">
+      ${!LFDB.strecken.length ? `<div class="rowline"><span class="grow">
+        <span class="rm">Noch keine – sie stehen in deiner laufen.json.</span></span></div>` : ''}
       ${LFDB.strecken.map(s => `<div class="rowline">
         <span class="grow"><span class="rn">${esc(s.name)}</span>
           <span class="rm">${esc(s.art)}</span></span>
@@ -8785,7 +8771,7 @@ function lfMehrMalen(v) {
     <div class="section-head" style="padding-top:14px"><h2>Der Plan</h2></div>
     <div class="list-card">
       <div class="rowline"><span class="grow"><span class="rn">Zeitraum</span>
-        <span class="rm">21.09.2026 bis 16.09.2027 · 52 Wochen</span></span></div>
+        <span class="rm">${lfHatPlan() ? esc(lfPlan().start) + ' · ' + pl(lfPlan().wochen.length, 'Woche', 'Wochen') : 'noch keiner geladen'}</span></span></div>
       <div class="rowline"><span class="grow"><span class="rn">Lauftage</span>
         <span class="rm">Montag kurz · Mittwoch kurz mit Qualität · Freitag lang</span></span></div>
       <div class="rowline"><span class="grow"><span class="rn">Eingetragen</span>
@@ -8819,7 +8805,7 @@ function lfMehrMalen(v) {
    Hängt am Vorhang: an der Kopfzeile herunterziehen deckt sie auf, am Finger
    wieder hoch schiebt sie weg. */
 function lfLeistungOeffnen(gezogen) {
-  if (lfLeistungOffen) return null;
+  if (lfLeistungOffen || !lfHatPlan()) return null;
   const node = document.createElement('div');
   node.className = 'overlay' + (gezogen ? ' zieht' : '');
   node.innerHTML = `
@@ -8847,11 +8833,11 @@ function lfLeistungOeffnen(gezogen) {
 }
 
 function lfLeistungMalen(root, z) {
-  const w = lfAktuelleWoche();
+  const w = lfAktuelleWoche() || { n: 0, p: '–' };
   const r = lfNaechstesRennen();
   const isoVon = s => { const p = s.split('.'); return p[2] + '-' + p[1] + '-' + p[0]; };
-  const maxKm = Math.max.apply(null, LPLAN.wochen.map(lfWocheKm));
-  const tests = LPLAN.tests.map(t => {
+  const maxKm = Math.max.apply(null, lfPlan().wochen.map(lfWocheKm).concat([1]));
+  const tests = lfPlan().tests.map(t => {
     const iso = isoVon(t.datum);
     return { t: t, iso: iso, e: lfEintrag(iso) };
   });
@@ -8865,14 +8851,15 @@ function lfLeistungMalen(root, z) {
         <i>von ${lfKmText(z.kmGesamt)}</i></div>
       <div><b><span class="num">${Math.round(z.kmGesamt ? z.kmGetan / z.kmGesamt * 100 : 0)}</span> %</b>
         <span>des Plans</span><i>Woche ${w.n} · ${esc(w.p)}</i></div>
-      <div><b><span class="num">${Math.max(0, lfTageBis(r.iso))}</span></b><span>Tage bis ${esc(r.r.name)}</span>
-        <i>Ziel ${esc(r.r.ziel)}</i></div>
+      <div><b><span class="num">${r ? Math.max(0, lfTageBis(r.iso)) : 0}</span></b>
+        <span>Tage bis ${r ? esc(r.r.name) : 'Rennen'}</span>
+        <i>${r ? 'Ziel ' + esc(r.r.ziel) : 'keins eingetragen'}</i></div>
     </div>
 
     <div class="section-head" style="padding-top:16px"><h2>Wochenumfang</h2>
       <span class="muted">Soll und erledigt</span></div>
     <div class="lfbahn">
-      ${LPLAN.wochen.map(x => {
+      ${lfPlan().wochen.map(x => {
         const soll = lfWocheKm(x);
         const tage = x.t.filter(Boolean);
         const fertig = tage.filter(tg => lfIstErledigt(lfISO(lfTagDatum(x.n, tg.o))));
@@ -8900,7 +8887,7 @@ function lfLeistungMalen(root, z) {
 
     <div class="section-head" style="padding-top:16px"><h2>Rennen</h2></div>
     <div class="list-card">
-      ${LPLAN.rennen.map(x => {
+      ${lfPlan().rennen.map(x => {
         const e = lfEintrag(isoVon(x.datum));
         return `<div class="rowline">
           <span class="grow"><span class="rn">${esc(x.name)} · ${esc(x.datum)}</span>

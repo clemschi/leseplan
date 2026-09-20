@@ -57,6 +57,7 @@ Die sechs Apps:
 | `gsund.js` | 952 | `GDB`, `GStore`, `gsundOeffnen`; Countdown, Guzi-Karte (`gGuziMalen`, `gKarteZiehen`), Notizen auf der Rückseite mit Datum (`GARTEN`, `GTREFFER`, `gNotizenHtml`, `gRueckMigrieren`), getrennte Masken (`gVorderseiteBearbeiten` / `gRueckseiteBearbeiten`), Vergangene; „Bald“ ist noch leer |
 | `minimal.js` | 584 | `MDB`, `MStore`, `minimalOeffnen`; Stand (die zwei Zahlen), Dinge (Liste, anlegen, abgeben), Verlauf (Monate und Ereignisse), Mehr |
 | `cash.js` | 692 | `CDB`, `CStore`, `cashOeffnen`; in Cent rechnen (`cGeld`, `cCent`), Termine einer Routine (`caTermine`), Fortschreiben (`caBis`, `caStandAm`), Stand mit Zeitstrahl (`caStandMalen` malt das Feste, `caZielMalen` den Zeiger, `caBahnBinden` zieht ihn), Routinen, Posten, Mehr |
+| `laufen.js` | 700 | `LFDB`, `LFStore`, `laufenOeffnen`; der Plan steht **nicht** im Code, sondern in `laufen.json` (`lfPlan()`); Reiter Heute/Plan/Ziele/Mehr, Ernährung als Kürzel (`LFESSEN`), Leistungs-Aufstellung am Vorhang (`lfLeistungOeffnen`, `lfKopfZiehen`) |
 | `puzzle.js` | 607 | Das Bilderpuzzle im Reiter Puzzle: `pzKante`/`pzUmriss` (die Form der Teile), `pzVorratBauen` (jedes Teil einmal als Bild), `pzTeilung`, `pzLage` (wo ein loses Teil liegt), `pzSchiebenBinden` (Ziehen am Zeiger, Einrasten), `gPuzzleMalen` |
 
 leseliste – der Rest, nach Aufgaben getrennt:

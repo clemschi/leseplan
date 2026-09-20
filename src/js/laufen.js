@@ -1,13 +1,12 @@
 /* ============================================================
    laufen – die siebte App in dieser Datei
-   Ein Marathonplan über 52 Wochen, vom 21.09.2026 bis zum
-   16.09.2027. Der Plan selbst liegt als Daten in laufen-plan.js und
-   ändert sich nicht; hier steht nur, was der Läufer einträgt:
-   je Einheit eine Ist-Zeit und ein Gefühl.
+   Ein Trainingsplan über beliebig viele Wochen. Die App bringt keinen
+   Plan mit: Wochen, Rennen, Tests und Strecken stehen in der eigenen
+   Datei (laufen.json), zusammen mit dem, was der Läufer einträgt –
+   je Einheit eine Ist-Zeit und ein Gefühl. Ohne Datei ist sie leer.
 
-   Drei Lauftage die Woche: Montag kurz, Mittwoch kurz mit Qualität,
-   Freitag lang. Wettkämpfe und Tests stehen an ihrem festen Datum
-   und ersetzen in ihrer Woche den langen Lauf.
+   So bleibt nichts Persönliches im Code: der veröffentlichte Bau kennt
+   weder Renntermine noch Strecken.
 
    An der Kopfzeile herunterziehen holt die Leistungs-Aufstellung –
    derselbe Vorhang wie die Übersicht der leseliste.
@@ -20,9 +19,43 @@ function leereLauf() {
     erstellt: Date.now(),
     geaendert: Date.now(),
     einstellungen: { autosaveSek: 60 },
+    /* Der Plan selbst – leer, bis eine Datei ihn mitbringt. */
+    plan: { start: '', rennen: [], tests: [], wochen: [] },
     /* Je Einheit ein Eintrag, der Schlüssel ist ihr Datum. */
     eintraege: {},
-    strecken: LPLAN.strecken.map(s => ({ name: s.name, km: s.km, art: s.art }))
+    strecken: []
+  };
+}
+
+/* Was aus einer Datei kommt, wird hier zurechtgerückt: nur bekannte Felder,
+   Längen gedeckelt, alles andere fällt weg. */
+function lfPlanPruefen(roh) {
+  const p = (roh && typeof roh === 'object') ? roh : {};
+  const txt = (x, n) => String(x == null ? '' : x).trim().slice(0, n || 120);
+  const liste = (a, fn) => Array.isArray(a) ? a.map(fn).filter(Boolean).slice(0, 400) : [];
+  return {
+    start: /^\d{4}-\d{2}-\d{2}$/.test(p.start) ? p.start : '',
+    rennen: liste(p.rennen, r => r && r.name ? {
+      name: txt(r.name, 60), datum: txt(r.datum, 12), ort: txt(r.ort, 60),
+      woche: txt(r.woche, 20), traum: txt(r.traum, 40), traumPace: txt(r.traumPace, 20),
+      ziel: txt(r.ziel, 40), zielPace: txt(r.zielPace, 20)
+    } : null),
+    tests: liste(p.tests, t => t && t.datum ? {
+      woche: txt(t.woche, 20), datum: txt(t.datum, 12), teil1: txt(t.teil1, 80),
+      teil2: txt(t.teil2, 80), gesamt: txt(t.gesamt, 20), ziel: txt(t.ziel, 60)
+    } : null),
+    wochen: liste(p.wochen, w => w && +w.n ? {
+      n: clamp(Math.round(+w.n), 1, 520), p: txt(w.p, 60),
+      e: w.e ? 1 : 0, b: clamp(Math.round(+w.b || 0), 0, 1),
+      hinweis: txt(w.hinweis, 300),
+      t: (Array.isArray(w.t) ? w.t : []).slice(0, 7).map(tg => tg && tg.E ? {
+        d: txt(tg.d, 30), o: clamp(Math.round(+tg.o || 0), 0, 6), E: txt(tg.E, 30),
+        k: txt(tg.k, 8), v: txt(tg.v, 16), w: txt(tg.w, 16), na: txt(tg.na, 16),
+        s: txt(tg.s, 4),
+        T: (Array.isArray(tg.T) ? tg.T : []).slice(0, 8)
+          .map(x => [txt(x && x[0], 120), clamp(+(x && x[1]) || 0, 0, 500)])
+      } : null)
+    } : null)
   };
 }
 
@@ -31,6 +64,7 @@ function lfNormalisiere(roh) {
   const l = leereLauf();
   l.erstellt = +d.erstellt || Date.now();
   l.einstellungen = Object.assign(l.einstellungen, d.einstellungen || {});
+  l.plan = lfPlanPruefen(d.plan);
   const e = (d.eintraege && typeof d.eintraege === 'object') ? d.eintraege : {};
   Object.keys(e).forEach(k => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
@@ -41,7 +75,7 @@ function lfNormalisiere(roh) {
       gefuehl: String(x.gefuehl || '').trim().slice(0, 400)
     };
   });
-  if (Array.isArray(d.strecken) && d.strecken.length) {
+  if (Array.isArray(d.strecken)) {
     l.strecken = d.strecken.map(s => ({
       name: String(s.name || '').trim().slice(0, 80),
       km: clamp(+s.km || 0, 0, 500),
@@ -105,10 +139,18 @@ const LFESSEN = {
 const LFBEDARF = ['385 g KH / 140 g Eiweiß', '460–540 g KH / 155 g Eiweiß'];
 
 /* ---------- Rechnen ---------- */
+/* Der Plan steht in der Datenbasis, nicht im Code. Ohne geladene Datei ist er
+   leer – jeder Reiter zeigt dann, was zu tun ist. */
+const lfPlan = () => LFDB.plan || { start: '', rennen: [], tests: [], wochen: [] };
+const lfHatPlan = () => lfPlan().wochen.length > 0;
+const lfLeerHtml = (was) => `<div class="empty" style="margin-top:36px"><strong>Kein Plan geladen</strong>
+  ${esc(was)} Wähle unter <b>Mehr</b> deine <i>laufen.json</i> als Datenbasis –
+  Wochen, Rennen, Tests und Strecken stehen dort drin.</div>`;
+
 const lfISO = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
   + '-' + String(d.getDate()).padStart(2, '0');
 function lfTagDatum(n, off) {
-  const s = LPLAN.start.split('-').map(Number);
+  const s = (lfPlan().start || '2026-01-05').split('-').map(Number);
   const d = new Date(s[0], s[1] - 1, s[2]);
   d.setDate(d.getDate() + 7 * (n - 1) + off);
   return d;
@@ -129,7 +171,7 @@ let LFTAGE = null;
 function lfTage() {
   if (LFTAGE) return LFTAGE;
   LFTAGE = [];
-  LPLAN.wochen.forEach(w => w.t.forEach(tg => {
+  lfPlan().wochen.forEach(w => w.t.forEach(tg => {
     if (!tg) return;
     const d = lfTagDatum(w.n, tg.o);
     LFTAGE.push({ w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.T) });
@@ -137,7 +179,7 @@ function lfTage() {
   LFTAGE.sort((a, b) => a.datum < b.datum ? -1 : 1);
   return LFTAGE;
 }
-const lfWoche = n => LPLAN.wochen[n - 1];
+const lfWoche = n => lfPlan().wochen.find(w => w.n === n);
 const lfWocheKm = w => w.t.reduce((s, tg) => s + (tg ? lfKm(tg.T) : 0), 0);
 const lfEintrag = datum => LFDB.eintraege[datum] || { ok: false, zeit: '', gefuehl: '' };
 const lfIstErledigt = datum => {
@@ -162,11 +204,13 @@ function lfAktuelle() {
 }
 function lfAktuelleWoche() {
   const a = lfAktuelle();
-  return a ? a.w : LPLAN.wochen[0];
+  return a ? a.w : lfPlan().wochen[0];
 }
 function lfNaechstesRennen() {
   const heute = lfHeuteISO();
-  const mit = LPLAN.rennen.map(r => {
+  const r0 = lfPlan().rennen;
+  if (!r0.length) return null;
+  const mit = r0.map(r => {
     const p = r.datum.split('.');
     return { r: r, iso: p[2] + '-' + p[1] + '-' + p[0] };
   }).sort((a, b) => a.iso < b.iso ? -1 : 1);
@@ -244,13 +288,17 @@ function lfViewMalen() {
 }
 function lfBannerMalen() {
   const w = lfAktuelleWoche(), r = lfNaechstesRennen();
-  const tage = lfTageBis(r.iso);
+  if (!w) {
+    $('#lfBanner').innerHTML = '<span class="kb-tag">Kein Plan geladen</span>';
+    return;
+  }
+  const tage = r ? lfTageBis(r.iso) : null;
   $('#lfBanner').innerHTML = `
     <span class="kb-tag">Woche ${w.n} · ${esc(w.p)}</span>
     <span class="kb-zahlen"><span>${lfKmNum(lfWocheKm(w))} diese Woche</span>
-      <span class="kb-punkt">·</span>
+      ${r ? `<span class="kb-punkt">·</span>
       <span class="kb-next">${tage > 0 ? pl(tage, 'Tag', 'Tage') + ' bis ' + esc(r.r.name)
-        : esc(r.r.name) + ' war am ' + esc(r.r.datum)}</span></span>`;
+        : esc(r.r.name) + ' war am ' + esc(r.r.datum)}</span>` : ''}</span>`;
 }
 
 /* ---------- Bausteine, die überall gleich aussehen ---------- */
@@ -337,7 +385,7 @@ function lfEintragBlatt(datum) {
 /* ---------- Heute ---------- */
 function lfHeuteMalen(v) {
   const jetzt = lfAktuelle();
-  if (!jetzt) { v.innerHTML = `<div class="empty"><strong>Kein Plan</strong>Die Plandaten fehlen.</div>`; return; }
+  if (!jetzt) { v.innerHTML = lfLeerHtml('Hier stünde die Einheit, die heute dran ist.'); return; }
   const w = jetzt.w;
   const rest = w.t.filter(Boolean)
     .map(tg => {
@@ -374,12 +422,13 @@ function lfHeuteMalen(v) {
 
 /* ---------- Plan ---------- */
 function lfPlanMalen(v) {
+  if (!lfHatPlan()) { v.innerHTML = lfLeerHtml('Hier stünden deine Trainingswochen.'); return; }
   const jetzt = lfAktuelle();
   v.innerHTML = `
-    <div class="section-head"><h2>52 Wochen</h2>
+    <div class="section-head"><h2>${pl(lfPlan().wochen.length, 'Woche', 'Wochen')}</h2>
       <span class="muted">Montag kurz · Mittwoch kurz · Freitag lang</span></div>
     <div class="list-card">
-      ${LPLAN.wochen.map(w => {
+      ${lfPlan().wochen.map(w => {
         const mo = lfTagDatum(w.n, 0), so = lfTagDatum(w.n, 6);
         const tage = w.t.filter(Boolean);
         const fertig = tage.filter(tg => lfIstErledigt(lfISO(lfTagDatum(w.n, tg.o)))).length;
@@ -431,10 +480,14 @@ function lfWocheOeffnen(n) {
 
 /* ---------- Ziele ---------- */
 function lfZieleMalen(v) {
+  if (!lfPlan().rennen.length && !lfPlan().tests.length) {
+    v.innerHTML = lfLeerHtml('Hier stünden deine Rennen und Tests.');
+    return;
+  }
   const isoVon = s => { const p = s.split('.'); return p[2] + '-' + p[1] + '-' + p[0]; };
   v.innerHTML = `
     <div class="section-head"><h2>Rennen</h2><span class="muted">Traumziel und Einschätzung</span></div>
-    ${LPLAN.rennen.map(r => {
+    ${lfPlan().rennen.map(r => {
       const iso = isoVon(r.datum), e = lfEintrag(iso), tage = lfTageBis(iso);
       return `<div class="lfkarte" data-lfrennen="${iso}">
         <div class="lfkarte-kopf">
@@ -455,9 +508,9 @@ function lfZieleMalen(v) {
     }).join('')}
 
     <div class="section-head" style="padding-top:14px"><h2>Tests</h2>
-      <span class="muted">${LPLAN.tests.length} Termine</span></div>
+      <span class="muted">${pl(lfPlan().tests.length, 'Termin', 'Termine')}</span></div>
     <div class="list-card">
-      ${LPLAN.tests.map(t => {
+      ${lfPlan().tests.map(t => {
         const iso = isoVon(t.datum), e = lfEintrag(iso);
         return `<div class="rowline" data-lfzeile="${iso}">
           <span class="grow"><span class="rn">${esc(t.woche)} · ${esc(t.datum)}</span>
@@ -480,6 +533,8 @@ function lfMehrMalen(v) {
 
     <div class="section-head" style="padding-top:14px"><h2>Stammstrecken</h2></div>
     <div class="list-card">
+      ${!LFDB.strecken.length ? `<div class="rowline"><span class="grow">
+        <span class="rm">Noch keine – sie stehen in deiner laufen.json.</span></span></div>` : ''}
       ${LFDB.strecken.map(s => `<div class="rowline">
         <span class="grow"><span class="rn">${esc(s.name)}</span>
           <span class="rm">${esc(s.art)}</span></span>
@@ -489,7 +544,7 @@ function lfMehrMalen(v) {
     <div class="section-head" style="padding-top:14px"><h2>Der Plan</h2></div>
     <div class="list-card">
       <div class="rowline"><span class="grow"><span class="rn">Zeitraum</span>
-        <span class="rm">21.09.2026 bis 16.09.2027 · 52 Wochen</span></span></div>
+        <span class="rm">${lfHatPlan() ? esc(lfPlan().start) + ' · ' + pl(lfPlan().wochen.length, 'Woche', 'Wochen') : 'noch keiner geladen'}</span></span></div>
       <div class="rowline"><span class="grow"><span class="rn">Lauftage</span>
         <span class="rm">Montag kurz · Mittwoch kurz mit Qualität · Freitag lang</span></span></div>
       <div class="rowline"><span class="grow"><span class="rn">Eingetragen</span>
@@ -523,7 +578,7 @@ function lfMehrMalen(v) {
    Hängt am Vorhang: an der Kopfzeile herunterziehen deckt sie auf, am Finger
    wieder hoch schiebt sie weg. */
 function lfLeistungOeffnen(gezogen) {
-  if (lfLeistungOffen) return null;
+  if (lfLeistungOffen || !lfHatPlan()) return null;
   const node = document.createElement('div');
   node.className = 'overlay' + (gezogen ? ' zieht' : '');
   node.innerHTML = `
@@ -551,11 +606,11 @@ function lfLeistungOeffnen(gezogen) {
 }
 
 function lfLeistungMalen(root, z) {
-  const w = lfAktuelleWoche();
+  const w = lfAktuelleWoche() || { n: 0, p: '–' };
   const r = lfNaechstesRennen();
   const isoVon = s => { const p = s.split('.'); return p[2] + '-' + p[1] + '-' + p[0]; };
-  const maxKm = Math.max.apply(null, LPLAN.wochen.map(lfWocheKm));
-  const tests = LPLAN.tests.map(t => {
+  const maxKm = Math.max.apply(null, lfPlan().wochen.map(lfWocheKm).concat([1]));
+  const tests = lfPlan().tests.map(t => {
     const iso = isoVon(t.datum);
     return { t: t, iso: iso, e: lfEintrag(iso) };
   });
@@ -569,14 +624,15 @@ function lfLeistungMalen(root, z) {
         <i>von ${lfKmText(z.kmGesamt)}</i></div>
       <div><b><span class="num">${Math.round(z.kmGesamt ? z.kmGetan / z.kmGesamt * 100 : 0)}</span> %</b>
         <span>des Plans</span><i>Woche ${w.n} · ${esc(w.p)}</i></div>
-      <div><b><span class="num">${Math.max(0, lfTageBis(r.iso))}</span></b><span>Tage bis ${esc(r.r.name)}</span>
-        <i>Ziel ${esc(r.r.ziel)}</i></div>
+      <div><b><span class="num">${r ? Math.max(0, lfTageBis(r.iso)) : 0}</span></b>
+        <span>Tage bis ${r ? esc(r.r.name) : 'Rennen'}</span>
+        <i>${r ? 'Ziel ' + esc(r.r.ziel) : 'keins eingetragen'}</i></div>
     </div>
 
     <div class="section-head" style="padding-top:16px"><h2>Wochenumfang</h2>
       <span class="muted">Soll und erledigt</span></div>
     <div class="lfbahn">
-      ${LPLAN.wochen.map(x => {
+      ${lfPlan().wochen.map(x => {
         const soll = lfWocheKm(x);
         const tage = x.t.filter(Boolean);
         const fertig = tage.filter(tg => lfIstErledigt(lfISO(lfTagDatum(x.n, tg.o))));
@@ -604,7 +660,7 @@ function lfLeistungMalen(root, z) {
 
     <div class="section-head" style="padding-top:16px"><h2>Rennen</h2></div>
     <div class="list-card">
-      ${LPLAN.rennen.map(x => {
+      ${lfPlan().rennen.map(x => {
         const e = lfEintrag(isoVon(x.datum));
         return `<div class="rowline">
           <span class="grow"><span class="rn">${esc(x.name)} · ${esc(x.datum)}</span>

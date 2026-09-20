@@ -1,0 +1,5 @@
+# Persönliches gehört nicht ins öffentliche Verzeichnis.
+# Der Trainingsplan mit Renndaten, Zielzeiten und Strecken steht in der
+# eigenen Datenbasis der laufen-App, nicht im Code: marathonplan/ bleibt
+# draussen und wird von Hand weitergegeben.
+marathonplan/
