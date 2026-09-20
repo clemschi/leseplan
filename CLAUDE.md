@@ -175,6 +175,19 @@ Fertige Bausteine, die genau das tun:
 - `pruefen/proben/tresor.js` hält es fest, auch den Fall zweier Leute mit je
   eigenem Passwort.
 
+## Der Plan in laufen
+- **Ein Abschnitt je Zeile, von Kilometer bis Kilometer.** Keine
+  Wiederholungs-Schreibweise („6× 2 min") – wer läuft, soll nichts umrechnen.
+  Jeder Abschnitt trägt `v`/`b` (km von/bis), `w` (was), `p` (Pace) und `z`
+  (Zone 1–5 nach RPE und HFmax).
+- **Verpflegung an Kilometermarken**, nicht an Minuten: „km 8,1 · Gel 30 g KH".
+  Vorher und Danach hängen an der Uhr („3:00 h vorher"). Die Zeilen stehen
+  fertig in den Daten – die App rechnet nichts.
+- **Tests tragen eine `art`.** Nur `maximal` geht in die Hochrechnung
+  (`lfPrognoseFuer`). `vorgabe`, `locker` und `ermuedet` prüfen nur, ob die
+  Vorgabe sitzt – ein 8-km-Stück nach 20 km sagt nichts über eine frische
+  Rennzeit, und die Prognose würde sonst schlechter statt schärfer.
+
 ## Malen
 - **Ein Schritt gibt nicht mitten im Malen an einen anderen ab.** Wer erst rendert
   und dann merkt, dass er der falsche war, hinterlässt seine Spuren doppelt – im

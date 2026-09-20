@@ -57,3 +57,23 @@
 /* Lange Beschriftung in der Abschnittszeile bricht um, statt am Rand zu enden. */
 #lfview .section-head{flex-wrap:wrap;}
 #lfview .section-head .muted{font-size:11.5px;}
+
+/* Abschnitte: von Kilometer bis Kilometer, eine Zeile je Abschnitt. */
+.lfteile li{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;
+  align-items:baseline;font-size:12.5px;padding:3px 0;}
+.lfteile li::before{content:none;}
+.lfteile .lfkm{font-size:11.5px;color:var(--text-3);white-space:nowrap;}
+.lfteile .lfwas{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lfteile .lfpace{font-size:11.5px;color:var(--text-2);white-space:nowrap;}
+.lfzone{font-size:10px;font-weight:600;border-radius:5px;padding:1px 5px;
+  white-space:nowrap;color:#1c1c1c;}
+.lfzone.z1{background:#d6d6d6;}
+.lfzone.z2{background:#b8e6ea;}
+.lfzone.z3{background:#cfeab0;}
+.lfzone.z4{background:#f9c69a;}
+.lfzone.z5{background:#f4a3a0;}
+
+.lfwerte.vier{grid-template-columns:repeat(2,1fr);gap:8px 10px;}
+@media (min-width:430px){.lfwerte.vier{grid-template-columns:repeat(4,1fr);}}
+.lfwerte .lfjetzt b{color:var(--accent);}
+.lfquelle{font-size:11px;color:var(--text-3);margin:8px 0 0;}

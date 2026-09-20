@@ -1,5 +1,5 @@
 /* Erzeugt aus build.js - nicht von Hand bearbeiten. */
-const FASSUNG = 'a4de6ac7b744';
+const FASSUNG = 'f09af94fbed0';
 const SPEICHER = 'mylife-' + FASSUNG;
 const DATEIEN = ['./', './index.html', './mylife.html', './mylife.webmanifest', './puzzle.html'];
 /* Die Schriften liegen woanders; sie kommen erst beim ersten Abruf dazu. */

@@ -42,6 +42,7 @@ const SKRIPT = [
   'js/sitzungen.js',
   'js/ebenen.js',
   'js/tresor.js',
+  'js/prognose.js',
   'js/plan.js',
   'js/laden.js',
   'js/bilder.js',

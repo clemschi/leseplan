@@ -114,8 +114,10 @@ const TABU = fs.existsSync(tabuDatei)
       start: iso(mo), rennen: [], tests: [],
       wochen: [{
         n: 1, p: 'Aufbau', e: 0, b: 0, t: [
-          { d: 'Montag', o: 0, E: 'Locker', k: 'mo', v: 'klein', w: 'wasser', na: 'klein',
-            s: 'a', T: [['8 km locker @ 7:00', 8]] },
+          { d: 'Montag', o: 0, E: 'Locker', k: 'mo', min: 56,
+            A: [{ v: 0, b: 8, w: 'locker', p: '7:00', z: 2 }],
+            V: ['1:30 h vorher · Banane 120 g'], W: ['unterwegs nichts nötig'],
+            N: ['0:20 h danach · Clear Protein 30 g'], S: ['B12 250 µg'] },
           null, null, null
         ]
       }]
@@ -148,7 +150,7 @@ const TABU = fs.existsSync(tabuDatei)
   await p3.click('[data-lftab="lfheute"]'); await p3.waitForTimeout(350);
   const t3 = await p3.$eval('#lfview', n => n.textContent.replace(/\s+/g, ' '));
   P('Heute zeigt die Einheit statt der Leermeldung',
-    /8 km locker @ 7:00/.test(t3) && !/Kein Plan geladen/.test(t3), t3.slice(0, 60).trim());
+    /0–8 locker 7:00/.test(t3) && !/Kein Plan geladen/.test(t3), t3.slice(0, 60).trim());
   const b3 = await p3.$eval('#lfBanner', n => n.textContent.replace(/\s+/g, ' ').trim());
   P('Kopfzeile nennt die Woche', /Woche 1/.test(b3), b3);
   fs.unlinkSync(tmp);

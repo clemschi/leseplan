@@ -35,32 +35,54 @@ function lfPlanPruefen(roh) {
   const p = (roh && typeof roh === 'object') ? roh : {};
   const txt = (x, n) => String(x == null ? '' : x).trim().slice(0, n || 120);
   const liste = (a, fn) => Array.isArray(a) ? a.map(fn).filter(Boolean).slice(0, 400) : [];
+  const zeilen = (a) => Array.isArray(a) ? a.map(x => txt(x, 140)).filter(Boolean).slice(0, 30) : [];
   return {
     start: /^\d{4}-\d{2}-\d{2}$/.test(p.start) ? p.start : '',
+    prognose: {
+      exponent: clamp(+(p.prognose && p.prognose.exponent) || 1.06, 1.0, 1.2),
+      marathonFaktor: clamp(+(p.prognose && p.prognose.marathonFaktor) || 2.25, 1.8, 2.8)
+    },
     rennen: liste(p.rennen, r => r && r.name ? {
       name: txt(r.name, 60), datum: txt(r.datum, 12), ort: txt(r.ort, 60),
       woche: txt(r.woche, 20), traum: txt(r.traum, 40), traumPace: txt(r.traumPace, 20),
-      ziel: txt(r.ziel, 40), zielPace: txt(r.zielPace, 20)
+      ziel: txt(r.ziel, 40), zielPace: txt(r.zielPace, 20),
+      km: clamp(+r.km || 0, 0, 200)
     } : null),
     tests: liste(p.tests, t => t && t.datum ? {
-      woche: txt(t.woche, 20), datum: txt(t.datum, 12), teil1: txt(t.teil1, 80),
-      teil2: txt(t.teil2, 80), gesamt: txt(t.gesamt, 20), ziel: txt(t.ziel, 60)
+      woche: txt(t.woche, 20), n: clamp(Math.round(+t.n || 0), 0, 520),
+      datum: txt(t.datum, 12), teil1: txt(t.teil1, 80),
+      teil2: txt(t.teil2, 80), gesamt: txt(t.gesamt, 20), ziel: txt(t.ziel, 60),
+      mess: clamp(+t.mess || 0, 0, 200), art: txt(t.art, 12)
     } : null),
     wochen: liste(p.wochen, w => w && +w.n ? {
       n: clamp(Math.round(+w.n), 1, 520), p: txt(w.p, 60),
       e: w.e ? 1 : 0, b: clamp(Math.round(+w.b || 0), 0, 1),
-      hinweis: txt(w.hinweis, 300),
+      hinweis: txt(w.hinweis, 400),
       t: (Array.isArray(w.t) ? w.t : []).slice(0, 7).map(tg => tg && tg.E ? {
         d: txt(tg.d, 30), o: clamp(Math.round(+tg.o || 0), 0, 6), E: txt(tg.E, 30),
-        k: txt(tg.k, 8), v: txt(tg.v, 16), w: txt(tg.w, 16), na: txt(tg.na, 16),
-        s: txt(tg.s, 4),
-        T: (Array.isArray(tg.T) ? tg.T : []).slice(0, 8)
-          .map(x => [txt(x && x[0], 120), clamp(+(x && x[1]) || 0, 0, 500)])
+        k: txt(tg.k, 8), min: clamp(Math.round(+tg.min || 0), 0, 1000),
+        mess: clamp(+tg.mess || 0, 0, 200), art: txt(tg.art, 12),
+        A: (Array.isArray(tg.A) ? tg.A : []).slice(0, 60).map(a => ({
+          v: clamp(+a.v || 0, 0, 200), b: clamp(+a.b || 0, 0, 200),
+          w: txt(a.w, 90), p: txt(a.p, 8), z: clamp(Math.round(+a.z || 2), 1, 5)
+        })),
+        V: zeilen(tg.V), W: zeilen(tg.W), N: zeilen(tg.N), S: zeilen(tg.S)
       } : null)
     } : null)
   };
 }
 
+/* Die fünf Zonen, einmal beschrieben – Kurzform für den Chip, Langform
+   für den Griff daneben. */
+const LFZONE = {
+  1: { kurz: 'Z1', text: 'RPE 2–3 · 50–60 % HFmax · sehr langsam, du könntest singen' },
+  2: { kurz: 'Z2', text: 'RPE 4–5 · 60–70 % HFmax · fühlt sich zu langsam an, Nasenatmung' },
+  3: { kurz: 'Z3', text: 'RPE 6 · 70–80 % HFmax · leicht ausser Atem, Wohlfühlzone' },
+  4: { kurz: 'Z4', text: 'RPE 7–8 · 80–90 % HFmax · keine ganzen Sätze mehr, 30–60 min haltbar' },
+  5: { kurz: 'Z5', text: 'RPE 9–10 · 90–100 % HFmax · Grenze, nur Sekunden bis 10 min' }
+};
+
+/* Was aus einer Datei kommt, wird hier zurechtgerückt. */
 function lfNormalisiere(roh) {
   const d = (roh && typeof roh === 'object') ? roh : {};
   const l = leereLauf();
@@ -79,17 +101,15 @@ function lfNormalisiere(roh) {
     };
   });
   if (Array.isArray(d.strecken)) {
-    l.strecken = d.strecken.map(s => ({
-      name: String(s.name || '').trim().slice(0, 80),
-      km: clamp(+s.km || 0, 0, 500),
-      art: String(s.art || '').trim().slice(0, 40)
-    })).filter(s => s.name);
+    l.strecken = d.strecken.map(x => ({
+      name: String(x.name || '').trim().slice(0, 80),
+      km: clamp(+x.km || 0, 0, 500),
+      art: String(x.art || '').trim().slice(0, 40)
+    })).filter(x => x.name);
   }
   return l;
 }
 
-/* Die flache Tagesliste wird einmal gerechnet und bei jedem Datenwechsel
-   verworfen. Deklaration hier oben, weil macheSpeicher sie gleich anfasst. */
 let LFTAGE = null;
 /* Der aufgesperrte Plan liegt nur hier, nie in LFDB – sonst schriebe ihn die
    Selbstsicherung im Klartext zurück, und der Tresor wäre für nichts. */
@@ -118,35 +138,6 @@ const LFICON = {
   ziel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg>'
 };
 
-/* ---------- Die Ernährung: Kürzel aus dem Plan, Zeilen hier ----------
-   Ein Lebensmittel steht immer in einer Zeile, mit seiner Menge. Werte zu
-   Mikronährstoffen stehen ausschliesslich unter Supplements. */
-const LFESSEN = {
-  vorher: {
-    gross: ['Haferflocken 80 g (2–3 h vorher)', 'Banane 120 g', 'Datteln 40 g', 'Wasser 500 ml'],
-    klein: ['Banane 120 g (1,5 h vorher)', 'Maiswaffel 2 Stück (14 g)', 'Wasser 300 ml'],
-    w33kurz: ['Haferflocken 60 g (2 h vorher)', 'Banane 120 g', 'Wasser 400 ml'],
-    w33wk: ['Haferflocken 80 g (3 h vorher)', 'Banane 120 g', 'Datteln 40 g', 'Wasser 500 ml']
-  },
-  waehrend: {
-    wasser: ['Wasser 400 ml'],
-    gel60: ['Gel 30 g KH alle 30 min (60 g KH/h)', 'Wasser 300 ml/h'],
-    gel60lang: ['Gel 30 g KH alle 30 min (60 g KH/h)', 'Elektrolytgetränk 500 ml/h (Natrium)', 'Wasser 300 ml/h'],
-    gel75: ['Gel 25 g KH alle 20 min (75 g KH/h)', 'Wasser 300 ml/h'],
-    gel75lang: ['Gel 25 g KH alle 20 min (75 g KH/h)', 'Elektrolytgetränk 500 ml/h (Natrium)', 'Wasser 300 ml/h'],
-    gel90lang: ['Gel 30 g KH alle 20 min (90 g KH/h)', 'Elektrolytgetränk 500 ml/h (Natrium)', 'Wasser 300 ml/h']
-  },
-  danach: {
-    gross: ['Clear Protein 40 g in 500 ml Wasser', 'Banane 2 Stück (240 g)', 'Maiswaffel 4 Stück (28 g)', 'Datteln 20 g'],
-    klein: ['Clear Protein 30 g in 400 ml Wasser', 'Banane 1 Stück (120 g)', 'Reiswaffel 3 Stück (27 g)']
-  },
-  supps: {
-    a: ['B12 250 µg'],
-    b: ['B12 250 µg', 'Vitamin D3 2.000 IE'],
-    c: ['B12 250 µg', 'Omega-3 (Algenöl) 400 mg', 'Calcium 500 mg', 'Magnesium 200 mg'],
-    d: ['B12 250 µg', 'Vitamin D3 2.000 IE', 'Omega-3 (Algenöl) 400 mg', 'Calcium 500 mg', 'Magnesium 200 mg']
-  }
-};
 const LFBEDARF = ['385 g KH / 140 g Eiweiß', '460–540 g KH / 155 g Eiweiß'];
 
 /* ---------- Rechnen ---------- */
@@ -172,7 +163,7 @@ function lfTagDatum(n, off) {
   d.setDate(d.getDate() + 7 * (n - 1) + off);
   return d;
 }
-const lfKm = teile => Math.round(teile.reduce((s, t) => s + t[1], 0) * 10) / 10;
+const lfKm = ab => Math.round((ab && ab.length ? ab[ab.length - 1].b : 0) * 10) / 10;
 const lfZahl = km => String(Math.round(km * 10) / 10).replace('.', ',');
 const lfKmText = km => lfZahl(km) + ' km';
 /* Nur die Ziffern stehen in .num - die Einheit bleibt in der Grundschrift,
@@ -190,13 +181,13 @@ function lfTage() {
   lfPlan().wochen.forEach(w => w.t.forEach(tg => {
     if (!tg) return;
     const d = lfTagDatum(w.n, tg.o);
-    LFTAGE.push({ w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.T) });
+    LFTAGE.push({ w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.A) });
   }));
   LFTAGE.sort((a, b) => a.datum < b.datum ? -1 : 1);
   return LFTAGE;
 }
 const lfWoche = n => lfPlan().wochen.find(w => w.n === n);
-const lfWocheKm = w => w.t.reduce((s, tg) => s + (tg ? lfKm(tg.T) : 0), 0);
+const lfWocheKm = w => w.t.reduce((s, tg) => s + (tg ? lfKm(tg.A) : 0), 0);
 const lfEintrag = datum => LFDB.eintraege[datum] || { ok: false, zeit: '', gefuehl: '' };
 const lfIstErledigt = datum => {
   const e = LFDB.eintraege[datum];
@@ -236,6 +227,35 @@ const lfTageBis = iso => {
   const a = new Date(lfHeuteISO()), b = new Date(iso);
   return Math.round((b - a) / 86400000);
 };
+
+/* ---------- Was die Tests über die Wettkämpfe sagen ----------
+   Nach jedem Test wird die Schätzung schärfer: gerechnet wird mit dem
+   jüngsten Ergebnis, das eingetragen ist. Steht keines da, bleibt es bei
+   der Einschätzung aus dem Plan. */
+const lfIsoVon = (d) => { const p = String(d || '').split('.'); return p.length === 3 ? p[2] + '-' + p[1] + '-' + p[0] : ''; };
+
+function lfLetzterTest() {
+  const heute = lfHeuteISO();
+  const mit = lfPlan().tests
+    .filter(t => t.mess > 0 && t.art === 'maximal')
+    .map(t => ({ t: t, iso: lfIsoVon(t.datum), sek: zeitLesen(lfEintrag(lfIsoVon(t.datum)).zeit) }))
+    .filter(x => x.sek && x.iso && x.iso <= heute)
+    .sort((a, b) => a.iso < b.iso ? -1 : 1);
+  return mit.length ? mit[mit.length - 1] : null;
+}
+
+/* Je Rennen: was das jüngste Testergebnis dafür bedeutet. */
+function lfPrognoseFuer(rennen) {
+  const letzt = lfLetzterTest();
+  if (!letzt || !(rennen.km > 0)) return null;
+  const sek = hochrechnen(letzt.sek, letzt.t.mess, rennen.km, lfPlan().prognose);
+  if (!sek) return null;
+  return {
+    zeit: zeitText(sek), pace: paceText(sek / rennen.km),
+    quelle: letzt.t.woche + ' · ' + letzt.t.datum, ist: zeitText(letzt.sek),
+    distanz: letzt.t.mess
+  };
+}
 
 /* ---------- Gerüst ---------- */
 const LFTABS = [
@@ -323,21 +343,34 @@ function lfBannerMalen() {
 }
 
 /* ---------- Bausteine, die überall gleich aussehen ---------- */
+/* Ein Abschnitt als Zeile: von Kilometer bis Kilometer, was, Pace, Zone.
+   Nichts zum Ausrechnen – beim Laufen wird nur abgearbeitet. */
+const lfAbschnittText = (a) => a
+  ? 'km ' + lfZahl(a.v) + '–' + lfZahl(a.b) + ' · ' + a.w + ' · ' + a.p + '/km'
+  : '—';
+
+function lfAbschnitteHtml(tg) {
+  return `<ol class="lfteile">${(tg.A || []).map(a => `
+    <li><span class="lfkm num">${lfZahl(a.v)}–${lfZahl(a.b)}</span>
+      <span class="lfwas">${esc(a.w)}</span>
+      <span class="lfpace num">${esc(a.p)}</span>
+      <span class="lfzone z${a.z}" title="${esc(LFZONE[a.z] ? LFZONE[a.z].text : '')}">Z${a.z}</span>
+    </li>`).join('')}</ol>`;
+}
+
 function lfEssenHtml(tg) {
   const block = (titel, zeilen) => `
     <div class="lfblock"><span class="lfblock-t">${titel}</span>
-      <div class="lfblock-l">${zeilen.map(z => `<span>${esc(z)}</span>`).join('')}</div></div>`;
+      <div class="lfblock-l">${(zeilen && zeilen.length ? zeilen : ['—'])
+        .map(z => `<span>${esc(z)}</span>`).join('')}</div></div>`;
   return `<div class="lfessen">
-    ${block('Vorher', LFESSEN.vorher[tg.v] || [])}
-    ${block('Während', LFESSEN.waehrend[tg.w] || [])}
-    ${block('Danach', LFESSEN.danach[tg.na] || [])}
-    ${block('Supplements', LFESSEN.supps[tg.s] || [])}
+    ${block('Vorher', tg.V)}
+    ${block('Während', tg.W)}
+    ${block('Danach', tg.N)}
+    ${block('Supplements', tg.S)}
   </div>`;
 }
-function lfTeileHtml(tg) {
-  return `<ol class="lfteile">${tg.T.map(t =>
-    `<li><span>${esc(t[0])}</span></li>`).join('')}</ol>`;
-}
+
 function lfEinheitKarteHtml(eintrag) {
   const { w, tg, d, datum, km } = eintrag;
   const e = lfEintrag(datum);
@@ -347,9 +380,9 @@ function lfEinheitKarteHtml(eintrag) {
       <div class="lfkarte-kopf">
         <span class="lfkarte-tag">${esc(tg.d)} ${lfLang(d)}</span>
         <span class="chip${tg.E === 'Wettkampf' || tg.E === 'Test' ? ' ist' : ''}">${esc(tg.E)}</span>
-        <span class="lfkarte-km">${lfKmNum(km)}</span>
+        <span class="lfkarte-km">${lfKmNum(km)}${tg.min ? ' · ' + tg.min + ' min' : ''}</span>
       </div>
-      ${lfTeileHtml(tg)}
+      ${lfAbschnitteHtml(tg)}
       ${lfEssenHtml(tg)}
       <div class="lfkarte-fuss">
         <button class="btn btn-sm${fertig ? ' btn-primary' : ''}" data-lfok="${datum}">${fertig ? 'erledigt' : 'als erledigt merken'}</button>
@@ -469,7 +502,7 @@ function lfHeuteMalen(v) {
   const rest = w.t.filter(Boolean)
     .map(tg => {
       const d = lfTagDatum(w.n, tg.o);
-      return { w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.T) };
+      return { w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.A) };
     })
     .filter(x => x.datum !== jetzt.datum);
   const heute = lfHeuteISO();
@@ -486,7 +519,7 @@ function lfHeuteMalen(v) {
       ${rest.length ? rest.map(x => `
         <div class="rowline" data-lfzeile="${x.datum}">
           <span class="grow"><span class="rn">${esc(x.tg.d)} ${lfKurz(x.d)} · ${esc(x.tg.E)}</span>
-            <span class="rm">${esc(x.tg.T[0][0])}</span></span>
+            <span class="rm">${esc(lfAbschnittText(x.tg.A[0]))}</span></span>
           <span class="lfkarte-km">${lfKmNum(x.km)}</span>
           ${lfIstErledigt(x.datum) ? '<span class="lfhaken">✓</span>' : ''}
         </div>`).join('')
@@ -568,17 +601,23 @@ function lfZieleMalen(v) {
     <div class="section-head"><h2>Rennen</h2><span class="muted">Persönliches Ziel und KI Einschätzung</span></div>
     ${lfPlan().rennen.map(r => {
       const iso = isoVon(r.datum), e = lfEintrag(iso), tage = lfTageBis(iso);
+      const pg = lfPrognoseFuer(r);
       return `<div class="lfkarte" data-lfrennen="${iso}">
         <div class="lfkarte-kopf">
           <span class="lfkarte-tag">${esc(r.name)} · ${esc(r.ort)}</span>
           <span class="chip">${esc(r.datum)}</span>
           <span class="lfkarte-km">${tage > 0 ? '<b class="num">' + tage + '</b> Tage' : 'vorbei'}</span>
         </div>
-        <div class="lfwerte">
+        <div class="lfwerte vier">
           <div><span>Persönliches Ziel</span><b>${esc(r.traum)}</b><i>${esc(r.traumPace)}</i></div>
           <div><span>KI Einschätzung</span><b>${esc(r.ziel)}</b><i>${esc(r.zielPace)}</i></div>
+          <div class="lfjetzt"><span>Stand heute</span>
+            <b>${pg ? esc(pg.zeit) : '—'}</b>
+            <i>${pg ? esc(pg.pace) + '/km' : 'noch kein Maximaltest'}</i></div>
           <div><span>Ist-Zeit</span><b>${e.zeit ? esc(e.zeit) : '—'}</b><i>${esc(r.woche)}</i></div>
         </div>
+        ${pg ? `<p class="lfquelle">hochgerechnet aus ${esc(pg.quelle)}: ${esc(pg.ist)}
+          über ${lfZahl(pg.distanz)} km</p>` : ''}
         <div class="lfkarte-fuss">
           <span class="lfist">${e.gefuehl ? esc(e.gefuehl) : 'noch nichts eingetragen'}</span>
           <button class="btn btn-sm btn-ghost" data-lfeintrag="${iso}">Eintragen</button>
@@ -594,12 +633,16 @@ function lfZieleMalen(v) {
         return `<div class="rowline" data-lfzeile="${iso}">
           <span class="grow"><span class="rn">${esc(t.woche)} · ${esc(t.datum)}</span>
             <span class="rm">${esc(t.teil1)}${t.teil2 && t.teil2 !== '—' ? ' + ' + esc(t.teil2) : ''}</span></span>
-          <span class="lfziel"><b>${esc(t.ziel)}</b><i>${e.zeit ? esc(e.zeit) : 'Ist offen'}</i></span>
+          <span class="lfziel"><b>${esc(t.ziel)}</b><i>${e.zeit ? esc(e.zeit) : 'Ist offen'}${
+            t.art === 'maximal' ? ' · zählt' : ''}</i></span>
         </div>`;
       }).join('')}
     </div>
     <p class="hinweis" style="padding:14px 0 30px">Das persönliche Ziel bleibt stehen;
-      trainiert wird auf die KI Einschätzung.</p>`;
+      trainiert wird auf die KI Einschätzung. <b>Stand heute</b> rechnet das jüngste
+      Ergebnis eines <b>Maximaltests</b> hoch – mit jedem davon wird die Zahl schärfer.
+      Tests mit fester Pace oder am Ende eines langen Laufs zählen dafür nicht:
+      sie messen, ob die Vorgabe sitzt, nicht was frisch drin wäre.</p>`;
   lfKartenBinden(v);
   $$('[data-lfzeile]', v).forEach(z => { z.onclick = () => lfEintragBlatt(z.dataset.lfzeile); });
 }
@@ -737,7 +780,7 @@ function lfLeistungMalen(root, z) {
         const soll = lfWocheKm(x);
         const tage = x.t.filter(Boolean);
         const fertig = tage.filter(tg => lfIstErledigt(lfISO(lfTagDatum(x.n, tg.o))));
-        const kmF = fertig.reduce((s, tg) => s + lfKm(tg.T), 0);
+        const kmF = fertig.reduce((s, tg) => s + lfKm(tg.A), 0);
         const h = Math.max(2, Math.round(soll / maxKm * 100));
         const hf = soll ? Math.round(kmF / soll * h) : 0;
         return `<span class="lfsaeule${x.n === w.n ? ' dran' : ''}" style="height:${h}%"
@@ -763,9 +806,11 @@ function lfLeistungMalen(root, z) {
     <div class="list-card">
       ${lfPlan().rennen.map(x => {
         const e = lfEintrag(isoVon(x.datum));
+        const pg = lfPrognoseFuer(x);
         return `<div class="rowline">
           <span class="grow"><span class="rn">${esc(x.name)} · ${esc(x.datum)}</span>
-            <span class="rm">Persönlich ${esc(x.traum)} · KI ${esc(x.ziel)}</span></span>
+            <span class="rm">Persönlich ${esc(x.traum)} · KI ${esc(x.ziel)}${
+            pg ? ' · Stand heute ' + esc(pg.zeit) : ''}</span></span>
           <span class="lfziel"><b>${e.zeit ? esc(e.zeit) : '—'}</b><i>${esc(x.ort)}</i></span>
         </div>`;
       }).join('')}
