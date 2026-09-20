@@ -80,6 +80,59 @@ const TABU = ['daheim \u2192 Eltern', 'Sacher', 'Urstein', 'Schönbrunn',
   }
   P('mit Plan kein Fehler in der Konsole', f2.length === 0, f2.slice(0, 2).join(' | '));
 
+  /* --- 3. Plan ueber "Mehr -> Daten laden" hereinholen ---
+     Einmal war das kaputt: die Daten waren da, aber lfTage() hatte seine
+     Liste gemerkt und gab weiter die leere zurueck - "Heute" blieb leer,
+     obwohl 52 Wochen geladen waren. */
+  const tmp = path.join(require('os').tmpdir(), 'probe-laufen.json');
+  const mo = new Date(); mo.setDate(mo.getDate() - ((mo.getDay() + 6) % 7));
+  const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+    + '-' + String(d.getDate()).padStart(2, '0');
+  fs.writeFileSync(tmp, JSON.stringify({
+    format: 'mylife-laufen', version: 1,
+    plan: {
+      start: iso(mo), rennen: [], tests: [],
+      wochen: [{
+        n: 1, p: 'Aufbau', e: 0, b: 0, t: [
+          { d: 'Montag', o: 0, E: 'Locker', k: 'mo', v: 'klein', w: 'wasser', na: 'klein',
+            s: 'a', T: [['8 km locker @ 7:00', 8]] },
+          null, null, null
+        ]
+      }]
+    },
+    eintraege: {}, strecken: [{ name: 'Runde', km: 8, art: 'einfach' }]
+  }));
+
+  const ctx3 = await b.newContext({ viewport: { width: 390, height: 860 }, hasTouch: true });
+  const p3 = await ctx3.newPage();
+  await p3.goto(DATEI);
+  await saeen(p3, true);                 /* nur der Ort, kein Plan */
+  await p3.reload(); await p3.waitForTimeout(400);
+  await p3.click('[data-app="laufen"]'); await p3.waitForTimeout(400);
+  P('vor dem Laden ist nichts da', await p3.evaluate(() => lfTage().length === 0));
+
+  await p3.click('[data-lftab="lfmehr"]'); await p3.waitForTimeout(250);
+  await p3.click('[data-dimport]'); await p3.waitForTimeout(350);
+  await p3.setInputFiles('[data-file]', tmp);
+  await p3.waitForTimeout(800);
+  const knopf = await p3.$('.sheet .btn-primary');
+  if (knopf) { await knopf.click(); await p3.waitForTimeout(800); }
+
+  const nach = await p3.evaluate(() => ({
+    wochen: lfPlan().wochen.length, tage: lfTage().length, strecken: LFDB.strecken.length
+  }));
+  P('nach dem Laden steht der Plan in den Daten', nach.wochen === 1 && nach.strecken === 1,
+    JSON.stringify(nach));
+  P('die gemerkte Tagesliste ist erneuert', nach.tage === 1, String(nach.tage));
+
+  await p3.click('[data-lftab="lfheute"]'); await p3.waitForTimeout(350);
+  const t3 = await p3.$eval('#lfview', n => n.textContent.replace(/\s+/g, ' '));
+  P('Heute zeigt die Einheit statt der Leermeldung',
+    /8 km locker @ 7:00/.test(t3) && !/Kein Plan geladen/.test(t3), t3.slice(0, 60).trim());
+  const b3 = await p3.$eval('#lfBanner', n => n.textContent.replace(/\s+/g, ' ').trim());
+  P('Kopfzeile nennt die Woche', /Woche 1/.test(b3), b3);
+  fs.unlinkSync(tmp);
+
   console.log('\n' + ok + ' OK, ' + fehl + ' FEHL');
   await b.close();
   process.exit(fehl ? 1 : 0);

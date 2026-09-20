@@ -8312,10 +8312,15 @@ function lfNormalisiere(roh) {
   return l;
 }
 
+/* Die flache Tagesliste wird einmal gerechnet und bei jedem Datenwechsel
+   verworfen. Deklaration hier oben, weil macheSpeicher sie gleich anfasst. */
+let LFTAGE = null;
 let LFDB = leereLauf();
 const LFStore = macheSpeicher({
   id: 'laufen', metaKey: 'meta-laufen', datenKey: 'daten-laufen', dateiname: 'laufen.json',
-  daten: () => LFDB, setzen: d => { LFDB = d; }
+  /* Beim Datenwechsel - Datei geladen, Ort gewechselt - muss die gemerkte
+     Tagesliste weg, sonst zeigt die App weiter den alten (oft leeren) Plan. */
+  daten: () => LFDB, setzen: d => { LFDB = d; LFTAGE = null; }
 });
 function lfAendern(fn) { if (fn) fn(); LFStore.aendern(); }
 
@@ -8394,7 +8399,6 @@ const lfLang = d => lfKurz(d) + String(d.getFullYear()).slice(2);
 
 /* Alle Einheiten des Plans, flach und nach Datum geordnet. Der Plan ändert
    sich nicht, also wird einmal gerechnet und dann nur noch nachgesehen. */
-let LFTAGE = null;
 function lfTage() {
   if (LFTAGE) return LFTAGE;
   LFTAGE = [];
