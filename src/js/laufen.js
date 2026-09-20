@@ -114,7 +114,11 @@ function lfTagDatum(n, off) {
   return d;
 }
 const lfKm = teile => Math.round(teile.reduce((s, t) => s + t[1], 0) * 10) / 10;
-const lfKmText = km => String(Math.round(km * 10) / 10).replace('.', ',') + ' km';
+const lfZahl = km => String(Math.round(km * 10) / 10).replace('.', ',');
+const lfKmText = km => lfZahl(km) + ' km';
+/* Nur die Ziffern stehen in .num - die Einheit bleibt in der Grundschrift,
+   sonst laeuft "km" in der Monospace mit und reisst die Luecken auf. */
+const lfKmNum = km => '<b class="num">' + lfZahl(km) + '</b> km';
 const lfKurz = d => String(d.getDate()).padStart(2, '0') + '.'
   + String(d.getMonth() + 1).padStart(2, '0') + '.';
 const lfLang = d => lfKurz(d) + String(d.getFullYear()).slice(2);
@@ -243,7 +247,7 @@ function lfBannerMalen() {
   const tage = lfTageBis(r.iso);
   $('#lfBanner').innerHTML = `
     <span class="kb-tag">Woche ${w.n} · ${esc(w.p)}</span>
-    <span class="kb-zahlen"><span class="num">${lfKmText(lfWocheKm(w))}</span><span>diese Woche</span>
+    <span class="kb-zahlen"><span>${lfKmNum(lfWocheKm(w))} diese Woche</span>
       <span class="kb-punkt">·</span>
       <span class="kb-next">${tage > 0 ? pl(tage, 'Tag', 'Tage') + ' bis ' + esc(r.r.name)
         : esc(r.r.name) + ' war am ' + esc(r.r.datum)}</span></span>`;
@@ -274,7 +278,7 @@ function lfEinheitKarteHtml(eintrag) {
       <div class="lfkarte-kopf">
         <span class="lfkarte-tag">${esc(tg.d)} ${lfLang(d)}</span>
         <span class="chip${tg.E === 'Wettkampf' || tg.E === 'Test' ? ' ist' : ''}">${esc(tg.E)}</span>
-        <span class="num lfkarte-km">${lfKmText(km)}</span>
+        <span class="lfkarte-km">${lfKmNum(km)}</span>
       </div>
       ${lfTeileHtml(tg)}
       ${lfEssenHtml(tg)}
@@ -356,7 +360,7 @@ function lfHeuteMalen(v) {
         <div class="rowline" data-lfzeile="${x.datum}">
           <span class="grow"><span class="rn">${esc(x.tg.d)} ${lfKurz(x.d)} · ${esc(x.tg.E)}</span>
             <span class="rm">${esc(x.tg.T[0][0])}</span></span>
-          <span class="num">${lfKmText(x.km)}</span>
+          <span class="lfkarte-km">${lfKmNum(x.km)}</span>
           ${lfIstErledigt(x.datum) ? '<span class="lfhaken">✓</span>' : ''}
         </div>`).join('')
       : '<div class="rowline"><span class="grow"><span class="rm">Keine weitere Einheit diese Woche.</span></span></div>'}
@@ -436,7 +440,7 @@ function lfZieleMalen(v) {
         <div class="lfkarte-kopf">
           <span class="lfkarte-tag">${esc(r.name)} · ${esc(r.ort)}</span>
           <span class="chip">${esc(r.datum)}</span>
-          <span class="num lfkarte-km">${tage > 0 ? tage + ' Tage' : 'vorbei'}</span>
+          <span class="lfkarte-km">${tage > 0 ? '<b class="num">' + tage + '</b> Tage' : 'vorbei'}</span>
         </div>
         <div class="lfwerte">
           <div><span>Traumziel</span><b>${esc(r.traum)}</b><i>${esc(r.traumPace)}</i></div>
@@ -479,7 +483,7 @@ function lfMehrMalen(v) {
       ${LFDB.strecken.map(s => `<div class="rowline">
         <span class="grow"><span class="rn">${esc(s.name)}</span>
           <span class="rm">${esc(s.art)}</span></span>
-        <span class="num">${lfKmText(s.km)}</span></div>`).join('')}
+        <span class="lfkarte-km">${lfKmNum(s.km)}</span></div>`).join('')}
     </div>
 
     <div class="section-head" style="padding-top:14px"><h2>Der Plan</h2></div>
@@ -559,13 +563,13 @@ function lfLeistungMalen(root, z) {
 
   root.innerHTML = `
     <div class="lffakten">
-      <div><b class="num">${z.getan.length}</b><span>Einheiten gelaufen</span>
+      <div><b><span class="num">${z.getan.length}</span></b><span>Einheiten gelaufen</span>
         <i>von ${z.alle.length}</i></div>
-      <div><b class="num">${lfKmText(z.kmGetan)}</b><span>zurückgelegt</span>
+      <div><b>${lfKmNum(z.kmGetan)}</b><span>zurückgelegt</span>
         <i>von ${lfKmText(z.kmGesamt)}</i></div>
-      <div><b class="num">${Math.round(z.kmGesamt ? z.kmGetan / z.kmGesamt * 100 : 0)} %</b>
+      <div><b><span class="num">${Math.round(z.kmGesamt ? z.kmGetan / z.kmGesamt * 100 : 0)}</span> %</b>
         <span>des Plans</span><i>Woche ${w.n} · ${esc(w.p)}</i></div>
-      <div><b class="num">${Math.max(0, lfTageBis(r.iso))}</b><span>Tage bis ${esc(r.r.name)}</span>
+      <div><b><span class="num">${Math.max(0, lfTageBis(r.iso))}</span></b><span>Tage bis ${esc(r.r.name)}</span>
         <i>Ziel ${esc(r.r.ziel)}</i></div>
     </div>
 

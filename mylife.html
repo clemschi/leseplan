@@ -601,14 +601,14 @@ body.voll .cam{padding-top:14px;}
 .heimgrund::after{content:'';position:fixed;top:0;bottom:0;left:0;width:26px;
   transform:translateX(calc(var(--heimzug,0px) - 26px));
   background:linear-gradient(to right,rgba(0,0,0,0),rgba(0,0,0,.4));}
-body.heimzug .topbar,body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview,body.heimzug #miview,body.heimzug #caview,
+body.heimzug .topbar,body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview,body.heimzug #miview,body.heimzug #caview,body.heimzug #lfview,
 body.heimzug .nowbar,body.heimzug .tabbar,body.heimzug .frbuehne,body.heimzug .frpult,body.heimzug .gbuehne{
   transform:translateX(var(--heimzug,0px));will-change:transform;}
 body.heimzug.federt .topbar,body.heimzug.federt #view,body.heimzug.federt #kview,
-body.heimzug.federt #fview,body.heimzug.federt #gview,body.heimzug.federt #miview,body.heimzug.federt #caview,body.heimzug.federt .nowbar,body.heimzug.federt .tabbar,
+body.heimzug.federt #fview,body.heimzug.federt #gview,body.heimzug.federt #miview,body.heimzug.federt #caview,body.heimzug.federt #lfview,body.heimzug.federt .nowbar,body.heimzug.federt .tabbar,
 body.heimzug.federt .frbuehne,body.heimzug.federt .frpult,body.heimzug.federt .gbuehne{
   transition:transform .26s cubic-bezier(.2,.8,.3,1);}
-body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview,body.heimzug #miview,body.heimzug #caview{
+body.heimzug #view,body.heimzug #kview,body.heimzug #fview,body.heimzug #gview,body.heimzug #miview,body.heimzug #caview,body.heimzug #lfview{
   position:relative;z-index:2;background:var(--bg);}
 
 /* ===== Kalender: die zweite App =====
@@ -1143,12 +1143,14 @@ form.feldrahmen{display:contents;}
 .caroutine.ruht .rn{color:var(--text-3);}
 .caroutine.ruht .num{opacity:.45;}
 /* ---------- laufen: Karten je Einheit, Verpflegung als Block, Balkenbahn ---------- */
+#lfview{padding:18px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
 .lfkarte{background:var(--surface);border:1px solid var(--border);border-radius:14px;
   padding:12px;margin:0 0 10px;}
 .lfkarte.fertig{border-color:var(--accent);}
 .lfkarte-kopf{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:9px;}
 .lfkarte-tag{font-size:14px;flex:1;min-width:120px;}
-.lfkarte-km{font-size:13px;color:var(--text-2);}
+.lfkarte-km{font-size:13px;color:var(--text-2);white-space:nowrap;}
+.lfkarte-km b{font-weight:500;}
 .lfkarte-fuss{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:10px;
   padding-top:9px;border-top:1px solid var(--border);}
 .lfkarte-fuss .lfist{flex:1;min-width:90px;font-size:12px;color:var(--text-3);}
@@ -1184,7 +1186,7 @@ form.feldrahmen{display:contents;}
 .lffakten{display:grid;grid-template-columns:repeat(auto-fit,minmax(136px,1fr));gap:9px;}
 .lffakten > div{background:var(--surface);border:1px solid var(--border);border-radius:12px;
   padding:10px;text-align:center;}
-.lffakten b{display:block;font-size:22px;font-variant-numeric:tabular-nums;}
+.lffakten b{display:block;font-size:22px;font-weight:500;font-variant-numeric:tabular-nums;}
 .lffakten span{display:block;font-size:11.5px;color:var(--text-2);}
 .lffakten i{display:block;font-size:10.5px;color:var(--text-3);font-style:normal;margin-top:2px;}
 
@@ -1195,6 +1197,10 @@ form.feldrahmen{display:contents;}
 .lfsaeule > i{position:absolute;left:0;right:0;bottom:0;background:var(--accent);
   border-radius:2px 2px 0 0;display:block;}
 .lfsaeule.dran{outline:1px solid var(--accent);outline-offset:1px;}
+
+/* Lange Beschriftung in der Abschnittszeile bricht um, statt am Rand zu enden. */
+#lfview .section-head{flex-wrap:wrap;}
+#lfview .section-head .muted{font-size:11.5px;}
 /* ===== Stöbern: Werke sichten, merken, zu Blöcken ordnen ===== */
 .sto{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:60;
   background:var(--bg);display:flex;flex-direction:column;animation:slideIn .22s ease;}
@@ -8404,7 +8410,11 @@ function lfTagDatum(n, off) {
   return d;
 }
 const lfKm = teile => Math.round(teile.reduce((s, t) => s + t[1], 0) * 10) / 10;
-const lfKmText = km => String(Math.round(km * 10) / 10).replace('.', ',') + ' km';
+const lfZahl = km => String(Math.round(km * 10) / 10).replace('.', ',');
+const lfKmText = km => lfZahl(km) + ' km';
+/* Nur die Ziffern stehen in .num - die Einheit bleibt in der Grundschrift,
+   sonst laeuft "km" in der Monospace mit und reisst die Luecken auf. */
+const lfKmNum = km => '<b class="num">' + lfZahl(km) + '</b> km';
 const lfKurz = d => String(d.getDate()).padStart(2, '0') + '.'
   + String(d.getMonth() + 1).padStart(2, '0') + '.';
 const lfLang = d => lfKurz(d) + String(d.getFullYear()).slice(2);
@@ -8533,7 +8543,7 @@ function lfBannerMalen() {
   const tage = lfTageBis(r.iso);
   $('#lfBanner').innerHTML = `
     <span class="kb-tag">Woche ${w.n} · ${esc(w.p)}</span>
-    <span class="kb-zahlen"><span class="num">${lfKmText(lfWocheKm(w))}</span><span>diese Woche</span>
+    <span class="kb-zahlen"><span>${lfKmNum(lfWocheKm(w))} diese Woche</span>
       <span class="kb-punkt">·</span>
       <span class="kb-next">${tage > 0 ? pl(tage, 'Tag', 'Tage') + ' bis ' + esc(r.r.name)
         : esc(r.r.name) + ' war am ' + esc(r.r.datum)}</span></span>`;
@@ -8564,7 +8574,7 @@ function lfEinheitKarteHtml(eintrag) {
       <div class="lfkarte-kopf">
         <span class="lfkarte-tag">${esc(tg.d)} ${lfLang(d)}</span>
         <span class="chip${tg.E === 'Wettkampf' || tg.E === 'Test' ? ' ist' : ''}">${esc(tg.E)}</span>
-        <span class="num lfkarte-km">${lfKmText(km)}</span>
+        <span class="lfkarte-km">${lfKmNum(km)}</span>
       </div>
       ${lfTeileHtml(tg)}
       ${lfEssenHtml(tg)}
@@ -8646,7 +8656,7 @@ function lfHeuteMalen(v) {
         <div class="rowline" data-lfzeile="${x.datum}">
           <span class="grow"><span class="rn">${esc(x.tg.d)} ${lfKurz(x.d)} · ${esc(x.tg.E)}</span>
             <span class="rm">${esc(x.tg.T[0][0])}</span></span>
-          <span class="num">${lfKmText(x.km)}</span>
+          <span class="lfkarte-km">${lfKmNum(x.km)}</span>
           ${lfIstErledigt(x.datum) ? '<span class="lfhaken">✓</span>' : ''}
         </div>`).join('')
       : '<div class="rowline"><span class="grow"><span class="rm">Keine weitere Einheit diese Woche.</span></span></div>'}
@@ -8726,7 +8736,7 @@ function lfZieleMalen(v) {
         <div class="lfkarte-kopf">
           <span class="lfkarte-tag">${esc(r.name)} · ${esc(r.ort)}</span>
           <span class="chip">${esc(r.datum)}</span>
-          <span class="num lfkarte-km">${tage > 0 ? tage + ' Tage' : 'vorbei'}</span>
+          <span class="lfkarte-km">${tage > 0 ? '<b class="num">' + tage + '</b> Tage' : 'vorbei'}</span>
         </div>
         <div class="lfwerte">
           <div><span>Traumziel</span><b>${esc(r.traum)}</b><i>${esc(r.traumPace)}</i></div>
@@ -8769,7 +8779,7 @@ function lfMehrMalen(v) {
       ${LFDB.strecken.map(s => `<div class="rowline">
         <span class="grow"><span class="rn">${esc(s.name)}</span>
           <span class="rm">${esc(s.art)}</span></span>
-        <span class="num">${lfKmText(s.km)}</span></div>`).join('')}
+        <span class="lfkarte-km">${lfKmNum(s.km)}</span></div>`).join('')}
     </div>
 
     <div class="section-head" style="padding-top:14px"><h2>Der Plan</h2></div>
@@ -8849,13 +8859,13 @@ function lfLeistungMalen(root, z) {
 
   root.innerHTML = `
     <div class="lffakten">
-      <div><b class="num">${z.getan.length}</b><span>Einheiten gelaufen</span>
+      <div><b><span class="num">${z.getan.length}</span></b><span>Einheiten gelaufen</span>
         <i>von ${z.alle.length}</i></div>
-      <div><b class="num">${lfKmText(z.kmGetan)}</b><span>zurückgelegt</span>
+      <div><b>${lfKmNum(z.kmGetan)}</b><span>zurückgelegt</span>
         <i>von ${lfKmText(z.kmGesamt)}</i></div>
-      <div><b class="num">${Math.round(z.kmGesamt ? z.kmGetan / z.kmGesamt * 100 : 0)} %</b>
+      <div><b><span class="num">${Math.round(z.kmGesamt ? z.kmGetan / z.kmGesamt * 100 : 0)}</span> %</b>
         <span>des Plans</span><i>Woche ${w.n} · ${esc(w.p)}</i></div>
-      <div><b class="num">${Math.max(0, lfTageBis(r.iso))}</b><span>Tage bis ${esc(r.r.name)}</span>
+      <div><b><span class="num">${Math.max(0, lfTageBis(r.iso))}</span></b><span>Tage bis ${esc(r.r.name)}</span>
         <i>Ziel ${esc(r.r.ziel)}</i></div>
     </div>
 

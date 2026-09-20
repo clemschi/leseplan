@@ -1,10 +1,12 @@
 /* ---------- laufen: Karten je Einheit, Verpflegung als Block, Balkenbahn ---------- */
+#lfview{padding:18px 14px calc(var(--tabh, 58px) + 24px);overscroll-behavior-x:contain;}
 .lfkarte{background:var(--surface);border:1px solid var(--border);border-radius:14px;
   padding:12px;margin:0 0 10px;}
 .lfkarte.fertig{border-color:var(--accent);}
 .lfkarte-kopf{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:9px;}
 .lfkarte-tag{font-size:14px;flex:1;min-width:120px;}
-.lfkarte-km{font-size:13px;color:var(--text-2);}
+.lfkarte-km{font-size:13px;color:var(--text-2);white-space:nowrap;}
+.lfkarte-km b{font-weight:500;}
 .lfkarte-fuss{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:10px;
   padding-top:9px;border-top:1px solid var(--border);}
 .lfkarte-fuss .lfist{flex:1;min-width:90px;font-size:12px;color:var(--text-3);}
@@ -40,7 +42,7 @@
 .lffakten{display:grid;grid-template-columns:repeat(auto-fit,minmax(136px,1fr));gap:9px;}
 .lffakten > div{background:var(--surface);border:1px solid var(--border);border-radius:12px;
   padding:10px;text-align:center;}
-.lffakten b{display:block;font-size:22px;font-variant-numeric:tabular-nums;}
+.lffakten b{display:block;font-size:22px;font-weight:500;font-variant-numeric:tabular-nums;}
 .lffakten span{display:block;font-size:11.5px;color:var(--text-2);}
 .lffakten i{display:block;font-size:10.5px;color:var(--text-3);font-style:normal;margin-top:2px;}
 
@@ -51,3 +53,7 @@
 .lfsaeule > i{position:absolute;left:0;right:0;bottom:0;background:var(--accent);
   border-radius:2px 2px 0 0;display:block;}
 .lfsaeule.dran{outline:1px solid var(--accent);outline-offset:1px;}
+
+/* Lange Beschriftung in der Abschnittszeile bricht um, statt am Rand zu enden. */
+#lfview .section-head{flex-wrap:wrap;}
+#lfview .section-head .muted{font-size:11.5px;}
