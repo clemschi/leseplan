@@ -156,10 +156,16 @@ Fertige Bausteine, die genau das tun:
   Datenbasis einer App, nie in einen Baustein. `laufen.js` ist das Muster: der
   Plan kommt aus `laufen.json`, die App wird leer ausgeliefert.
 - `marathonplan/` steht in `.gitignore` und bleibt draussen.
-- `pruefen/proben/laufen-ohne-plan.js` hält das fest. Es prüft zweierlei:
+- `pruefen/proben/laufen-ohne-plan.js` hält das fest. Es prüft dreierlei:
   allgemein, dass der Bau überhaupt keinen Plan mitbringt (keine Wochen-,
-  Rennen- oder Streckenliste), und Wort für Wort gegen `marathonplan/tabu.txt`.
-  **Die verbotenen Wörter stehen nicht in der Probe** – sonst stünde das
+  Rennen- oder Streckenliste); Wort für Wort gegen `marathonplan/tabu.txt`;
+  und **dieselben Wörter über jede versionierte Datei**, nicht nur über den
+  Bau – einmal stand ein Streckenname als Testwert in einer Probe, der Bau
+  war sauber und das Verzeichnis nicht.
+- In `tabu.txt` heisst eine Tilde „nur im Bau verboten". Ortsnamen und Zeiten
+  kommen auch harmlos vor: „Salzburger Festspiele" in einer Buchbeschreibung
+  ist kein Leck, „Sacher" als Streckenname schon.
+- **Die verbotenen Wörter stehen nicht in der Probe** – sonst stünde das
   Geheimnis in seiner eigenen Wache. Fehlt die Datei, meldet die Probe das und
   lässt nur den allgemeinen Teil laufen.
 

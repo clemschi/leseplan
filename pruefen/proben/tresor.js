@@ -26,7 +26,7 @@ const P = (n, g, i) => { g ? ok++ : fehl++; console.log((g ? 'OK   ' : 'FEHL ') 
 
   /* --- 1. Rundgang durch die Bausteine, ohne Oberfläche --- */
   const roh = await page.evaluate(async () => {
-    const wert = { geheim: 'Rundlauf daheim', zahl: 5.7 };
+    const wert = { geheim: 'Kennwort-Beispiel', zahl: 42 };
     const t = await tresorSchliessen(wert, 'passwort-eins');
     const auf = await tresorOeffnen(t, 'passwort-eins');
     let falsch = '';
@@ -39,10 +39,10 @@ const P = (n, g, i) => { g ? ok++ : fehl++; console.log((g ? 'OK   ' : 'FEHL ') 
       auf: JSON.stringify(auf), falsch: falsch, runden: t.runden
     };
   });
-  P('Geheimtext enthält den Klartext nicht', !roh.text.includes('Rundlauf')
-    && !atob(roh.text).includes('Rundlauf'), roh.text.slice(0, 24) + '…');
+  P('Geheimtext enthält den Klartext nicht', !roh.text.includes('Kennwort')
+    && !atob(roh.text).includes('Kennwort'), roh.text.slice(0, 24) + '…');
   P('richtiges Passwort gibt den Wert zurück',
-    roh.auf === JSON.stringify({ geheim: 'Rundlauf daheim', zahl: 5.7 }), roh.auf);
+    roh.auf === JSON.stringify({ geheim: 'Kennwort-Beispiel', zahl: 42 }), roh.auf);
   P('falsches Passwort sperrt nicht auf', /Passwort/.test(roh.falsch), roh.falsch);
   P('jedes Mal neues Salz', !roh.salzGleich);
   P('jedes Mal anderer Geheimtext', !roh.textGleich);
@@ -80,8 +80,8 @@ const P = (n, g, i) => { g ? ok++ : fehl++; console.log((g ? 'OK   ' : 'FEHL ') 
     planLeerInDaten: LFDB.plan.wochen.length === 0,
     imSpeicherDa: lfHatPlan(),
     /* Der springende Punkt: was gesichert wird, darf nichts verraten. */
-    klartextInDaten: JSON.stringify(LFDB).includes('Rundlauf')
-      || JSON.stringify(LFDB).includes('Marathon-Pace')
+    klartextInDaten: JSON.stringify(LFDB).includes('Gewoehnung')
+      || JSON.stringify(LFDB).includes('langer Lauf')
   }));
   P('Tresor steht in der Datenbasis', nachSchliessen.tresorDa);
   P('der Plan ist aus der Datenbasis raus', nachSchliessen.planLeerInDaten);

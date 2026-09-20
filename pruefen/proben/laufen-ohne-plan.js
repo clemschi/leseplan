@@ -18,13 +18,23 @@ const P = (n, g, i) => { g ? ok++ : fehl++; console.log((g ? 'OK   ' : 'FEHL ') 
    Fehlt die Datei, faellt dieser Teil weg - die allgemeine Pruefung
    darunter laeuft immer. */
 const tabuDatei = path.join(WURZEL, 'marathonplan', 'tabu.txt');
-const TABU = fs.existsSync(tabuDatei)
+const TABU_ROH = fs.existsSync(tabuDatei)
   ? fs.readFileSync(tabuDatei, 'utf8').split('\n')
     .map(z => z.trim()).filter(z => z && !z.startsWith('#'))
   : [];
+/* Ohne Tilde: ueberall verboten. Mit Tilde: nur im Bau. */
+const TABU = TABU_ROH.map(z => z.replace(/^~/, ''));
+const TABU_HART = TABU_ROH.filter(z => !z.startsWith('~'));
 
 (async () => {
   const seite = fs.readFileSync(path.join(WURZEL, 'mylife.html'), 'utf8');
+
+  /* Nicht nur der Bau, sondern jede versionierte Datei: einmal stand ein
+     Streckenname als Testwert in einer Probe - der Bau war sauber, das
+     oeffentliche Verzeichnis nicht. */
+  const versioniert = require('child_process')
+    .execSync('git ls-files', { cwd: WURZEL, encoding: 'utf8' })
+    .split('\n').map(z => z.trim()).filter(Boolean);
 
   /* Immer: der Bau darf ueberhaupt keinen Plan mitbringen - egal wessen. */
   P('kein Plan-Baustein im Bau', !/LPLAN/.test(seite));
@@ -39,6 +49,21 @@ const TABU = fs.existsSync(tabuDatei)
   P('Tabu-Liste gefunden', TABU.length > 0,
     TABU.length ? TABU.length + ' Wörter' : 'marathonplan/tabu.txt fehlt – Teil übersprungen');
   TABU.forEach((t, i) => P('nicht im Bau: Wort ' + (i + 1), !seite.includes(t)));
+
+  /* Und dasselbe über alle versionierten Dateien. */
+  const dreckig = [];
+  versioniert.forEach(datei => {
+    let inhalt = '';
+    try { inhalt = fs.readFileSync(path.join(WURZEL, datei), 'latin1'); } catch (e) { return; }
+    TABU_HART.forEach(t => {
+      if (inhalt.includes(t) || inhalt.includes(Buffer.from(t, 'utf8').toString('latin1'))) {
+        dreckig.push(datei + ' · ' + t);
+      }
+    });
+  });
+  P('kein hartes Tabuwort in den versionierten Dateien', dreckig.length === 0,
+    dreckig.length ? dreckig.slice(0, 4).join(', ')
+      : versioniert.length + ' Dateien × ' + TABU_HART.length + ' Wörter geprüft');
   P('auch die Saat bleibt neutral',
     !TABU.some(t => JSON.stringify(SAAT['daten-laufen']).includes(t)));
 
