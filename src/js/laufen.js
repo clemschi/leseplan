@@ -35,7 +35,11 @@ function lfPlanPruefen(roh) {
   const p = (roh && typeof roh === 'object') ? roh : {};
   const txt = (x, n) => String(x == null ? '' : x).trim().slice(0, n || 120);
   const liste = (a, fn) => Array.isArray(a) ? a.map(fn).filter(Boolean).slice(0, 400) : [];
-  const zeilen = (a) => Array.isArray(a) ? a.map(x => txt(x, 140)).filter(Boolean).slice(0, 30) : [];
+  /* Verpflegung steht als Paar da: wann (oder bei welchem Kilometer) und was. */
+  const paare = (a) => Array.isArray(a) ? a.map(x => x && (x.t || x.w)
+    ? { t: txt(x.t, 30), w: txt(x.w, 110) }
+    : (typeof x === 'string' && x ? { t: '', w: txt(x, 110) } : null))
+    .filter(Boolean).slice(0, 30) : [];
   return {
     start: /^\d{4}-\d{2}-\d{2}$/.test(p.start) ? p.start : '',
     prognose: {
@@ -66,7 +70,7 @@ function lfPlanPruefen(roh) {
           v: clamp(+a.v || 0, 0, 200), b: clamp(+a.b || 0, 0, 200),
           w: txt(a.w, 90), p: txt(a.p, 8), z: clamp(Math.round(+a.z || 2), 1, 5)
         })),
-        V: zeilen(tg.V), W: zeilen(tg.W), N: zeilen(tg.N), S: zeilen(tg.S)
+        V: paare(tg.V), W: paare(tg.W), N: paare(tg.N), S: paare(tg.S)
       } : null)
     } : null)
   };
@@ -349,26 +353,51 @@ const lfAbschnittText = (a) => a
   ? 'km ' + lfZahl(a.v) + '–' + lfZahl(a.b) + ' · ' + a.w + ' · ' + a.p + '/km'
   : '—';
 
-function lfAbschnitteHtml(tg) {
-  return `<ol class="lfteile">${(tg.A || []).map(a => `
-    <li><span class="lfkm num">${lfZahl(a.v)}–${lfZahl(a.b)}</span>
-      <span class="lfwas">${esc(a.w)}</span>
-      <span class="lfpace num">${esc(a.p)}</span>
-      <span class="lfzone z${a.z}" title="${esc(LFZONE[a.z] ? LFZONE[a.z].text : '')}">Z${a.z}</span>
-    </li>`).join('')}</ol>`;
+/* Wie viele Kilometer in welcher Zone? Das ist die eine Zahl, die vorab
+   sagt, was der Tag verlangt. */
+function lfZonenSumme(tg) {
+  const nach = {};
+  (tg.A || []).forEach(a => {
+    nach[a.z] = (nach[a.z] || 0) + (a.b - a.v);
+  });
+  return Object.keys(nach).sort().map(z => ({ z: +z, km: Math.round(nach[z] * 10) / 10 }));
 }
 
+function lfAbschnitteHtml(tg) {
+  const summe = lfZonenSumme(tg);
+  return `
+    <div class="lfzonenleiste">${summe.map(x =>
+      `<span class="lfzone z${x.z}" title="${esc(LFZONE[x.z] ? LFZONE[x.z].text : '')}">Z${x.z}</span>
+       <span class="lfzonenkm num">${lfZahl(x.km)} km</span>`).join('')}</div>
+    <table class="lftab">
+      <thead><tr><th>km</th><th>Abschnitt</th><th>Pace</th><th>Zone</th></tr></thead>
+      <tbody>${(tg.A || []).map(a => `<tr>
+        <td class="num lfkm">${lfZahl(a.v)}–${lfZahl(a.b)}</td>
+        <td>${esc(a.w)}</td>
+        <td class="num lfpace">${esc(a.p)}</td>
+        <td><span class="lfzone z${a.z}" title="${esc(LFZONE[a.z] ? LFZONE[a.z].text : '')}">Z${a.z}</span></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+}
+
+/* Verpflegung in einer einzigen Tabelle, in der Reihenfolge, in der sie
+   abgearbeitet wird: vorher, unterwegs, danach, täglich. */
 function lfEssenHtml(tg) {
-  const block = (titel, zeilen) => `
-    <div class="lfblock"><span class="lfblock-t">${titel}</span>
-      <div class="lfblock-l">${(zeilen && zeilen.length ? zeilen : ['—'])
-        .map(z => `<span>${esc(z)}</span>`).join('')}</div></div>`;
-  return `<div class="lfessen">
-    ${block('Vorher', tg.V)}
-    ${block('Während', tg.W)}
-    ${block('Danach', tg.N)}
-    ${block('Supplements', tg.S)}
-  </div>`;
+  const teile = [['Vorher', tg.V], ['Unterwegs', tg.W], ['Danach', tg.N], ['Täglich', tg.S]];
+  const zeilen = [];
+  teile.forEach(([name, liste]) => {
+    (liste || []).forEach((x, i) => {
+      zeilen.push(`<tr${i === 0 ? ' class="lfgruppe"' : ''}>
+        <td class="lfwann">${i === 0 ? esc(name) : ''}</td>
+        <td class="lfwo">${esc(x.t)}</td>
+        <td>${esc(x.w)}</td></tr>`);
+    });
+  });
+  if (!zeilen.length) return '';
+  return `<table class="lftab lfessentab">
+      <thead><tr><th></th><th>Wann</th><th>Was</th></tr></thead>
+      <tbody>${zeilen.join('')}</tbody>
+    </table>`;
 }
 
 function lfEinheitKarteHtml(eintrag) {
@@ -580,7 +609,7 @@ function lfWocheOeffnen(n) {
       <p class="hinweis" style="padding:0 0 12px">Tagesbedarf: ${esc(LFBEDARF[w.b])}</p>
       ${w.t.filter(Boolean).map(tg => {
         const d = lfTagDatum(n, tg.o);
-        return lfEinheitKarteHtml({ w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.T) });
+        return lfEinheitKarteHtml({ w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.A) });
       }).join('')}`;
     lfKartenBinden(body);
   };

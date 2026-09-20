@@ -100,6 +100,23 @@ const TABU = fs.existsSync(tabuDatei)
   }
   P('mit Plan kein Fehler in der Konsole', f2.length === 0, f2.slice(0, 2).join(' | '));
 
+  /* Einmal war das kaputt: in der Wochen-Ebene stand "0 km" auf jeder
+     Karte, weil dort noch die alte Feldbezeichnung stand. Der Umfang steht
+     an drei Stellen - Kopfzeile, Wochenliste, Karte - und muss überall
+     dieselbe Zahl sein. */
+  await p2.evaluate(() => lfWocheOeffnen(1));
+  await p2.waitForTimeout(400);
+  const karten = await p2.evaluate(() => {
+    const soll = lfPlan().wochen[0].t.filter(Boolean).map(tg => lfKm(tg.A));
+    const ist = [...document.querySelectorAll('.overlay .lfkarte-km')]
+      .map(n => parseFloat(n.textContent.replace(',', '.')));
+    return { soll: soll, ist: ist };
+  });
+  P('jede Karte zeigt ihre Kilometer', karten.ist.length === karten.soll.length
+    && karten.ist.every((x, i) => Math.abs(x - karten.soll[i]) < 0.05)
+    && karten.ist.every(x => x > 0),
+    JSON.stringify(karten));
+
   /* --- 3. Plan ueber "Mehr -> Daten laden" hereinholen ---
      Einmal war das kaputt: die Daten waren da, aber lfTage() hatte seine
      Liste gemerkt und gab weiter die leere zurueck - "Heute" blieb leer,

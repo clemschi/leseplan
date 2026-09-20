@@ -11,19 +11,8 @@
   padding-top:9px;border-top:1px solid var(--border);}
 .lfkarte-fuss .lfist{flex:1;min-width:90px;font-size:12px;color:var(--text-3);}
 
-.lfteile{list-style:none;margin:0;padding:0;counter-reset:lfteil;}
-.lfteile li{counter-increment:lfteil;display:flex;gap:8px;align-items:baseline;
-  font-size:13px;padding:3px 0;}
-.lfteile li::before{content:counter(lfteil);font-size:10.5px;color:var(--text-3);
-  min-width:12px;text-align:right;flex:0 0 auto;}
 
 /* Ein Lebensmittel bleibt in einer Zeile - mit Menge, ohne Umbruch dazwischen. */
-.lfessen{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px;
-  margin-top:10px;}
-.lfblock{border:1px solid var(--border);border-radius:10px;padding:7px 9px;}
-.lfblock-t{display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--text-3);margin-bottom:4px;}
-.lfblock-l span{display:block;font-size:12px;color:var(--text-2);padding:1px 0;}
 
 .lfwerte{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 .lfwerte > div{text-align:center;}
@@ -59,12 +48,6 @@
 #lfview .section-head .muted{font-size:11.5px;}
 
 /* Abschnitte: von Kilometer bis Kilometer, eine Zeile je Abschnitt. */
-.lfteile li{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;
-  align-items:baseline;font-size:12.5px;padding:3px 0;}
-.lfteile li::before{content:none;}
-.lfteile .lfkm{font-size:11.5px;color:var(--text-3);white-space:nowrap;}
-.lfteile .lfwas{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.lfteile .lfpace{font-size:11.5px;color:var(--text-2);white-space:nowrap;}
 .lfzone{font-size:10px;font-weight:600;border-radius:5px;padding:1px 5px;
   white-space:nowrap;color:#1c1c1c;}
 .lfzone.z1{background:#d6d6d6;}
@@ -77,3 +60,26 @@
 @media (min-width:430px){.lfwerte.vier{grid-template-columns:repeat(4,1fr);}}
 .lfwerte .lfjetzt b{color:var(--accent);}
 .lfquelle{font-size:11px;color:var(--text-3);margin:8px 0 0;}
+
+/* Zwei Tabellen je Einheit: was gelaufen wird, und was gegessen wird. */
+.lftab{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+.lftab th{font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-3);font-weight:600;text-align:left;padding:2px 6px 4px 0;
+  border-bottom:1px solid var(--border);}
+.lftab td{padding:3px 6px 3px 0;border-bottom:1px solid var(--border);
+  vertical-align:baseline;}
+.lftab tr:last-child td{border-bottom:0;}
+.lftab .lfkm{white-space:nowrap;color:var(--text-2);font-size:11.5px;width:1%;}
+.lftab .lfpace{white-space:nowrap;font-size:11.5px;width:1%;}
+.lftab th:last-child,.lftab td:last-child{text-align:right;width:1%;}
+.lfessentab th:last-child,.lfessentab td:last-child{text-align:left;width:auto;}
+.lfessentab .lfwann{font-size:10.5px;color:var(--text-3);white-space:nowrap;width:1%;
+  text-transform:uppercase;letter-spacing:.04em;}
+.lfessentab .lfwo{font-size:11.5px;color:var(--text-2);white-space:nowrap;width:1%;}
+.lfessentab tr.lfgruppe td{border-top:1px solid var(--border);padding-top:6px;}
+.lfessentab tbody tr:first-child td{border-top:0;}
+
+/* Zonenleiste: wie viele Kilometer in welcher Zone. */
+.lfzonenleiste{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;
+  padding:6px 0 2px;}
+.lfzonenkm{font-size:11.5px;color:var(--text-2);margin-right:4px;}

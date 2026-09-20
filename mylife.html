@@ -1155,19 +1155,8 @@ form.feldrahmen{display:contents;}
   padding-top:9px;border-top:1px solid var(--border);}
 .lfkarte-fuss .lfist{flex:1;min-width:90px;font-size:12px;color:var(--text-3);}
 
-.lfteile{list-style:none;margin:0;padding:0;counter-reset:lfteil;}
-.lfteile li{counter-increment:lfteil;display:flex;gap:8px;align-items:baseline;
-  font-size:13px;padding:3px 0;}
-.lfteile li::before{content:counter(lfteil);font-size:10.5px;color:var(--text-3);
-  min-width:12px;text-align:right;flex:0 0 auto;}
 
 /* Ein Lebensmittel bleibt in einer Zeile - mit Menge, ohne Umbruch dazwischen. */
-.lfessen{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px;
-  margin-top:10px;}
-.lfblock{border:1px solid var(--border);border-radius:10px;padding:7px 9px;}
-.lfblock-t{display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--text-3);margin-bottom:4px;}
-.lfblock-l span{display:block;font-size:12px;color:var(--text-2);padding:1px 0;}
 
 .lfwerte{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 .lfwerte > div{text-align:center;}
@@ -1203,12 +1192,6 @@ form.feldrahmen{display:contents;}
 #lfview .section-head .muted{font-size:11.5px;}
 
 /* Abschnitte: von Kilometer bis Kilometer, eine Zeile je Abschnitt. */
-.lfteile li{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;
-  align-items:baseline;font-size:12.5px;padding:3px 0;}
-.lfteile li::before{content:none;}
-.lfteile .lfkm{font-size:11.5px;color:var(--text-3);white-space:nowrap;}
-.lfteile .lfwas{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.lfteile .lfpace{font-size:11.5px;color:var(--text-2);white-space:nowrap;}
 .lfzone{font-size:10px;font-weight:600;border-radius:5px;padding:1px 5px;
   white-space:nowrap;color:#1c1c1c;}
 .lfzone.z1{background:#d6d6d6;}
@@ -1221,6 +1204,29 @@ form.feldrahmen{display:contents;}
 @media (min-width:430px){.lfwerte.vier{grid-template-columns:repeat(4,1fr);}}
 .lfwerte .lfjetzt b{color:var(--accent);}
 .lfquelle{font-size:11px;color:var(--text-3);margin:8px 0 0;}
+
+/* Zwei Tabellen je Einheit: was gelaufen wird, und was gegessen wird. */
+.lftab{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+.lftab th{font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-3);font-weight:600;text-align:left;padding:2px 6px 4px 0;
+  border-bottom:1px solid var(--border);}
+.lftab td{padding:3px 6px 3px 0;border-bottom:1px solid var(--border);
+  vertical-align:baseline;}
+.lftab tr:last-child td{border-bottom:0;}
+.lftab .lfkm{white-space:nowrap;color:var(--text-2);font-size:11.5px;width:1%;}
+.lftab .lfpace{white-space:nowrap;font-size:11.5px;width:1%;}
+.lftab th:last-child,.lftab td:last-child{text-align:right;width:1%;}
+.lfessentab th:last-child,.lfessentab td:last-child{text-align:left;width:auto;}
+.lfessentab .lfwann{font-size:10.5px;color:var(--text-3);white-space:nowrap;width:1%;
+  text-transform:uppercase;letter-spacing:.04em;}
+.lfessentab .lfwo{font-size:11.5px;color:var(--text-2);white-space:nowrap;width:1%;}
+.lfessentab tr.lfgruppe td{border-top:1px solid var(--border);padding-top:6px;}
+.lfessentab tbody tr:first-child td{border-top:0;}
+
+/* Zonenleiste: wie viele Kilometer in welcher Zone. */
+.lfzonenleiste{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;
+  padding:6px 0 2px;}
+.lfzonenkm{font-size:11.5px;color:var(--text-2);margin-right:4px;}
 /* ===== Stöbern: Werke sichten, merken, zu Blöcken ordnen ===== */
 .sto{position:fixed;left:0;right:0;top:var(--vvtop,0px);height:var(--vvh,100dvh);z-index:60;
   background:var(--bg);display:flex;flex-direction:column;animation:slideIn .22s ease;}
@@ -8282,7 +8288,11 @@ function lfPlanPruefen(roh) {
   const p = (roh && typeof roh === 'object') ? roh : {};
   const txt = (x, n) => String(x == null ? '' : x).trim().slice(0, n || 120);
   const liste = (a, fn) => Array.isArray(a) ? a.map(fn).filter(Boolean).slice(0, 400) : [];
-  const zeilen = (a) => Array.isArray(a) ? a.map(x => txt(x, 140)).filter(Boolean).slice(0, 30) : [];
+  /* Verpflegung steht als Paar da: wann (oder bei welchem Kilometer) und was. */
+  const paare = (a) => Array.isArray(a) ? a.map(x => x && (x.t || x.w)
+    ? { t: txt(x.t, 30), w: txt(x.w, 110) }
+    : (typeof x === 'string' && x ? { t: '', w: txt(x, 110) } : null))
+    .filter(Boolean).slice(0, 30) : [];
   return {
     start: /^\d{4}-\d{2}-\d{2}$/.test(p.start) ? p.start : '',
     prognose: {
@@ -8313,7 +8323,7 @@ function lfPlanPruefen(roh) {
           v: clamp(+a.v || 0, 0, 200), b: clamp(+a.b || 0, 0, 200),
           w: txt(a.w, 90), p: txt(a.p, 8), z: clamp(Math.round(+a.z || 2), 1, 5)
         })),
-        V: zeilen(tg.V), W: zeilen(tg.W), N: zeilen(tg.N), S: zeilen(tg.S)
+        V: paare(tg.V), W: paare(tg.W), N: paare(tg.N), S: paare(tg.S)
       } : null)
     } : null)
   };
@@ -8596,26 +8606,51 @@ const lfAbschnittText = (a) => a
   ? 'km ' + lfZahl(a.v) + '–' + lfZahl(a.b) + ' · ' + a.w + ' · ' + a.p + '/km'
   : '—';
 
-function lfAbschnitteHtml(tg) {
-  return `<ol class="lfteile">${(tg.A || []).map(a => `
-    <li><span class="lfkm num">${lfZahl(a.v)}–${lfZahl(a.b)}</span>
-      <span class="lfwas">${esc(a.w)}</span>
-      <span class="lfpace num">${esc(a.p)}</span>
-      <span class="lfzone z${a.z}" title="${esc(LFZONE[a.z] ? LFZONE[a.z].text : '')}">Z${a.z}</span>
-    </li>`).join('')}</ol>`;
+/* Wie viele Kilometer in welcher Zone? Das ist die eine Zahl, die vorab
+   sagt, was der Tag verlangt. */
+function lfZonenSumme(tg) {
+  const nach = {};
+  (tg.A || []).forEach(a => {
+    nach[a.z] = (nach[a.z] || 0) + (a.b - a.v);
+  });
+  return Object.keys(nach).sort().map(z => ({ z: +z, km: Math.round(nach[z] * 10) / 10 }));
 }
 
+function lfAbschnitteHtml(tg) {
+  const summe = lfZonenSumme(tg);
+  return `
+    <div class="lfzonenleiste">${summe.map(x =>
+      `<span class="lfzone z${x.z}" title="${esc(LFZONE[x.z] ? LFZONE[x.z].text : '')}">Z${x.z}</span>
+       <span class="lfzonenkm num">${lfZahl(x.km)} km</span>`).join('')}</div>
+    <table class="lftab">
+      <thead><tr><th>km</th><th>Abschnitt</th><th>Pace</th><th>Zone</th></tr></thead>
+      <tbody>${(tg.A || []).map(a => `<tr>
+        <td class="num lfkm">${lfZahl(a.v)}–${lfZahl(a.b)}</td>
+        <td>${esc(a.w)}</td>
+        <td class="num lfpace">${esc(a.p)}</td>
+        <td><span class="lfzone z${a.z}" title="${esc(LFZONE[a.z] ? LFZONE[a.z].text : '')}">Z${a.z}</span></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+}
+
+/* Verpflegung in einer einzigen Tabelle, in der Reihenfolge, in der sie
+   abgearbeitet wird: vorher, unterwegs, danach, täglich. */
 function lfEssenHtml(tg) {
-  const block = (titel, zeilen) => `
-    <div class="lfblock"><span class="lfblock-t">${titel}</span>
-      <div class="lfblock-l">${(zeilen && zeilen.length ? zeilen : ['—'])
-        .map(z => `<span>${esc(z)}</span>`).join('')}</div></div>`;
-  return `<div class="lfessen">
-    ${block('Vorher', tg.V)}
-    ${block('Während', tg.W)}
-    ${block('Danach', tg.N)}
-    ${block('Supplements', tg.S)}
-  </div>`;
+  const teile = [['Vorher', tg.V], ['Unterwegs', tg.W], ['Danach', tg.N], ['Täglich', tg.S]];
+  const zeilen = [];
+  teile.forEach(([name, liste]) => {
+    (liste || []).forEach((x, i) => {
+      zeilen.push(`<tr${i === 0 ? ' class="lfgruppe"' : ''}>
+        <td class="lfwann">${i === 0 ? esc(name) : ''}</td>
+        <td class="lfwo">${esc(x.t)}</td>
+        <td>${esc(x.w)}</td></tr>`);
+    });
+  });
+  if (!zeilen.length) return '';
+  return `<table class="lftab lfessentab">
+      <thead><tr><th></th><th>Wann</th><th>Was</th></tr></thead>
+      <tbody>${zeilen.join('')}</tbody>
+    </table>`;
 }
 
 function lfEinheitKarteHtml(eintrag) {
@@ -8827,7 +8862,7 @@ function lfWocheOeffnen(n) {
       <p class="hinweis" style="padding:0 0 12px">Tagesbedarf: ${esc(LFBEDARF[w.b])}</p>
       ${w.t.filter(Boolean).map(tg => {
         const d = lfTagDatum(n, tg.o);
-        return lfEinheitKarteHtml({ w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.T) });
+        return lfEinheitKarteHtml({ w: w, tg: tg, d: d, datum: lfISO(d), km: lfKm(tg.A) });
       }).join('')}`;
     lfKartenBinden(body);
   };

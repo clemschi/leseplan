@@ -180,9 +180,14 @@ Fertige Bausteine, die genau das tun:
   Wiederholungs-Schreibweise („6× 2 min") – wer läuft, soll nichts umrechnen.
   Jeder Abschnitt trägt `v`/`b` (km von/bis), `w` (was), `p` (Pace) und `z`
   (Zone 1–5 nach RPE und HFmax).
-- **Verpflegung an Kilometermarken**, nicht an Minuten: „km 8,1 · Gel 30 g KH".
-  Vorher und Danach hängen an der Uhr („3:00 h vorher"). Die Zeilen stehen
-  fertig in den Daten – die App rechnet nichts.
+- **Verpflegung an Kilometermarken**, nicht an Minuten. Jede Zeile ist ein
+  Paar `{t, w}`: wann oder wo (`"km 8,1"`, `"3:00 h"`) und was
+  (`"Gel 30 g KH + 250 ml Elektrolyt"`). Die App setzt daraus **eine**
+  Tabelle in der Reihenfolge Vorher → Unterwegs → Danach → Täglich; vier
+  einzelne Kästen waren unübersichtlich.
+- **Zwei Tabellen je Einheit, sonst nichts**: die Abschnitte (km, Abschnitt,
+  Pace, Zone) und die Verpflegung. Darüber eine Leiste, die sagt, wie viele
+  Kilometer in welcher Zone liegen.
 - **Tests tragen eine `art`.** Nur `maximal` geht in die Hochrechnung
   (`lfPrognoseFuer`). `vorgabe`, `locker` und `ermuedet` prüfen nur, ob die
   Vorgabe sitzt – ein 8-km-Stück nach 20 km sagt nichts über eine frische
