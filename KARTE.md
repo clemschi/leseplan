@@ -2,8 +2,10 @@
 
 Die Quelle liegt in Bausteinen unter `src/`. `node build.js` setzt sie in dieser
 Reihenfolge zu `mylife.html` zusammen – die Reihenfolge steht in `build.js`.
-Daneben fallen `mylife.webmanifest`, `index.html` (Weiche) und `mylife.zip`
-(dieselbe Seite als Anhang, für den Download aufs Handy) ab.
+Daneben fallen `mylife.webmanifest`, `index.html` (Weiche), `mylife-sw.js`
+(der Dienst-Arbeiter, damit die abgelegte App ohne Netz startet) und
+`mylife.zip` (dieselbe Seite als Anhang, für den Download aufs Handy) ab.
+`.github/workflows/seite.yml` legt dieselben Dateien unter einer Adresse ab.
 
 **Zuerst hier nachsehen, welcher Baustein gemeint ist, dann nur den öffnen.**
 Eine ganze App sind 800–1200 Zeilen statt 10.500. Die Zeilenzahlen sind
