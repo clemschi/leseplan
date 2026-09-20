@@ -124,21 +124,21 @@ setze(8,  (LOCK, L(5, 8)),  (LOCK, L(4, 8)),
 
 # --- Grundlage -------------------------------------------------------------
 setze(9,  (LOCK, L(6, 9)),  (IVL, ivl(1.5, 4, 1000, "5:45", 400, 1.0, 9)),  (LANG, lang(10, 9)))
-setze(10, (LOCK, L(6, 10)), (IVL, ivl(1.5, 5, 1000, "5:40", 400, 1.0, 10)), (LANG, lang(11, 10)))
-setze(11, (LOCK, L(6, 11)), (IVL, ivl(2, 3, 2000, "5:45", 600, 1.0, 11)),   (LANG, lang(12, 11)))
+setze(10, (LOCK, L(6, 10)), (IVL, ivl(1.5, 4, 1000, "5:40", 400, 1.0, 10)), (LANG, lang(11, 10)))
+setze(11, (LOCK, L(6, 11)), (IVL, ivl(1.5, 2, 2000, "5:45", 600, 1.0, 11)),   (LANG, lang(12, 11)))
 setze(12, (LOCK, L(5, 12)), (IVL, ivl(1.5, 3, 1000, "5:45", 400, 1.0, 12)), (LANG, lang(9, 12)))
 setze(13, (LOCK, L(6, 13)), (LOCK, L(6, 13)),
           (TEST, [("2 km einlaufen @ 7:10", 2.0),
                   ("TEST 5 km zügig @ 5:45 – Ziel 28:45", 5.0),
                   ("5 km auslaufen @ 7:15", 5.0)]))
-setze(14, (LOCK, L(6, 14)), (IVL, tempo(2, 5, "5:35", 1.5, 14, "Tempolauf")), (LANG, lang(13, 14)))
-setze(15, (LOCK, L(7, 15)), (IVL, ivl(2, 5, 1000, "5:30", 400, 1.5, 15)),    (LANG, lang(13, 15)))
-setze(16, (LOCK, L(5, 16)), (IVL, ivl(1.5, 4, 1000, "5:30", 400, 1.0, 16)),  (LANG, lang(10, 16)))
+setze(14, (LOCK, L(6, 14)), (IVL, tempo(1.5, 4, "5:35", 1.5, 14, "Tempolauf")), (LANG, lang(13, 14)))
+setze(15, (LOCK, L(7, 15)), (IVL, ivl(1.5, 4, 1000, "5:30", 400, 1.5, 15)),    (LANG, lang(13, 15)))
+setze(16, (LOCK, L(5, 16)), (IVL, ivl(1.5, 3, 1000, "5:30", 400, 1.0, 16)),  (LANG, lang(10, 16)))
 
 # --- Schwelle / Halbmarathon-Aufbau ---------------------------------------
-setze(17, (LOCK, L(7, 17)), (IVL, tempo(2, 6, "5:30", 1.5, 17, "Schwelle")), (LANG, lang(13, 17)))
-setze(18, (LOCK, L(7, 18)), (IVL, ivl(2, 6, 1000, "5:25", 400, 1.5, 18)),    (LANG, lang(14, 18)))
-setze(19, (LOCK, L(7, 19)), (IVL, ivl(2, 2, 3000, "5:30", 800, 1.5, 19)),    (LANG, lang(16, 19)))
+setze(17, (LOCK, L(7, 17)), (IVL, tempo(1.5, 6, "5:30", 1.5, 17, "Schwelle")), (LANG, lang(13, 17)))
+setze(18, (LOCK, L(7, 18)), (IVL, ivl(1.5, 5, 1000, "5:25", 400, 1.0, 18)),    (LANG, lang(14, 18)))
+setze(19, (LOCK, L(7, 19)), (IVL, ivl(1.5, 2, 2500, "5:30", 800, 1.0, 19)),    (LANG, lang(16, 19)))
 setze(20, (LOCK, L(6, 20)), (LOCK, L(6, 20)),
           (TEST, [("3 km einlaufen @ 7:05", 3.0),
                   ("TEST 5,7 km @ 5:15 – Ziel 29:56", 5.7),
@@ -165,7 +165,7 @@ setze(26, (LOCK, L(6, 26)), (IVL, tempo(1.5, 3, "5:41", 1.5, 26, "HM-Pace")), (L
 # --- Marathonspezifisch (optional 4. Einheit Mittwoch) --------------------
 setze(27, (LOCK, L(7, 27)), (IVL, tempo(2, 4, "6:24", 2, 27, "Marathon-Pace")),
           (LANG, lang_end(17, 4, "6:24", 27, "Marathon-Pace")))
-setze(28, (LOCK, L(7, 28)), (IVL, ivl(2, 5, 1000, "5:35", 400, 1.5, 28)),
+setze(28, (LOCK, L(7, 28)), (IVL, ivl(1.5, 4, 1000, "5:35", 400, 1.5, 28)),
           (LANG, lang_end(21, 6, "6:24", 28, "Marathon-Pace")))
 setze(29, (LOCK, L(6, 29)), (LOCK, L(6, 29)),
           (TEST, [("20 km locker @ 7:05", 20.0),
@@ -175,7 +175,7 @@ setze(30, (LOCK, L(7, 30)), (IVL, tempo(2, 5, "6:24", 2, 30, "Marathon-Pace")),
 setze(31, (LOCK, L(8, 31)), (LOCK, L(8, 31)),
           (TEST, [("20 km locker @ 7:05", 20.0),
                   ("TEST 10 km @ 6:24 – Ziel 64:00", 10.0)]))
-setze(32, (LOCK, L(8, 32)), (IVL, tempo(2, 8, "6:24", 2, 32, "Marathon-Pace")),
+setze(32, (LOCK, L(8, 32)), (IVL, tempo(1.5, 6, "6:24", 1.5, 32, "Marathon-Pace")),
           (LANG, lang_end(22, 8, "6:24", 32, "Marathon-Pace")))
 
 # --- Taper + Marathon ------------------------------------------------------
@@ -204,23 +204,23 @@ setze(39, (LOCK, L(6, 39)), (LOCK, L(5, 39)),
                   ("TEST 5,7 km @ 5:10 – Ziel 29:27", 5.7),
                   ("4,3 km auslaufen @ 7:30", 4.3)]))
 setze(40, (LOCK, L(6, 40)), (IVL, ivl(1.5, 8, 400, "4:40", 200, 1.5, 40)),  (LANG, lang(13, 40)))
-setze(41, (LOCK, L(7, 41)), (IVL, ivl(2, 5, 1000, "4:55", 400, 1.5, 41)),   (LANG, lang(13, 41)))
+setze(41, (LOCK, L(7, 41)), (IVL, ivl(1.5, 4, 1000, "4:55", 400, 1.5, 41)),   (LANG, lang(13, 41)))
 setze(42, (LOCK, L(6, 42)), (IVL, ivl(1.5, 6, 400, "4:40", 200, 1.5, 42)),  (LANG, lang(10, 42)))
-setze(43, (LOCK, L(7, 43)), (IVL, ivl(2, 6, 1000, "4:50", 400, 1.5, 43)),   (LANG, lang(13, 43)))
+setze(43, (LOCK, L(7, 43)), (IVL, ivl(1.5, 5, 1000, "4:50", 400, 1.0, 43)),   (LANG, lang(13, 43)))
 setze(44, (LOCK, L(6, 44)), (LOCK, L(6, 44)),
           (TEST, [("3,5 km einlaufen @ 6:55", 3.5),
                   ("TEST 5,7 km @ 4:47 – Ziel 27:16", 5.7),
                   ("4,8 km auslaufen @ 7:30", 4.8)]))
-setze(45, (LOCK, L(7, 45)), (IVL, ivl(2, 10, 400, "4:35", 200, 2, 45)),     (LANG, lang(14, 45)))
-setze(46, (LOCK, L(6, 46)), (IVL, ivl(1.5, 5, 1000, "4:50", 400, 1.5, 46)), (LANG, lang(12, 46)))
-setze(47, (LOCK, L(7, 47)), (IVL, ivl(2, 4, 1200, "4:45", 400, 2, 47)),     (LANG, lang(14, 47)))
-setze(48, (LOCK, L(8, 48)), (IVL, ivl(2, 12, 400, "4:30", 200, 2, 48)),     (LANG, lang(14, 48)))
+setze(45, (LOCK, L(7, 45)), (IVL, ivl(1.5, 10, 400, "4:35", 200, 1.5, 45)),     (LANG, lang(14, 45)))
+setze(46, (LOCK, L(6, 46)), (IVL, ivl(1.5, 4, 1000, "4:50", 400, 1.0, 46)), (LANG, lang(12, 46)))
+setze(47, (LOCK, L(7, 47)), (IVL, ivl(1.5, 4, 1200, "4:45", 400, 1.0, 47)),     (LANG, lang(14, 47)))
+setze(48, (LOCK, L(8, 48)), (IVL, ivl(1.5, 12, 400, "4:30", 200, 1.5, 48)),     (LANG, lang(14, 48)))
 setze(49, (LOCK, L(6, 49)), (LOCK, L(6, 49)),
           (TEST, [("3,5 km einlaufen @ 6:55", 3.5),
                   ("TEST 5,7 km @ 4:40 – Ziel 26:38", 5.7),
                   ("4,8 km auslaufen @ 7:30", 4.8)]))
-setze(50, (LOCK, L(7, 50)), (IVL, ivl(2, 6, 1000, "4:45", 400, 2, 50)),     (LANG, lang(14, 50)))
-setze(51, (LOCK, L(6, 51)), (IVL, ivl(2, 8, 400, "4:30", 200, 2, 51)),      (LANG, lang(10, 51)))
+setze(50, (LOCK, L(7, 50)), (IVL, ivl(1.5, 5, 1000, "4:45", 400, 1.0, 50)),     (LANG, lang(14, 50)))
+setze(51, (LOCK, L(6, 51)), (IVL, ivl(1.5, 8, 400, "4:30", 200, 1.5, 51)),      (LANG, lang(10, 51)))
 setze(52, (LOCK, L(5, 52)),
           (LOCK, [("3 km locker @ 6:55", 3.0),
                   ("4× 100 m Steigerung @ 4:30", 0.4)]),
