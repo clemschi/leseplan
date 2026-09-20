@@ -565,7 +565,7 @@ function lfZieleMalen(v) {
   }
   const isoVon = s => { const p = s.split('.'); return p[2] + '-' + p[1] + '-' + p[0]; };
   v.innerHTML = `
-    <div class="section-head"><h2>Rennen</h2><span class="muted">Traumziel und Einschätzung</span></div>
+    <div class="section-head"><h2>Rennen</h2><span class="muted">Persönliches Ziel und KI Einschätzung</span></div>
     ${lfPlan().rennen.map(r => {
       const iso = isoVon(r.datum), e = lfEintrag(iso), tage = lfTageBis(iso);
       return `<div class="lfkarte" data-lfrennen="${iso}">
@@ -575,8 +575,8 @@ function lfZieleMalen(v) {
           <span class="lfkarte-km">${tage > 0 ? '<b class="num">' + tage + '</b> Tage' : 'vorbei'}</span>
         </div>
         <div class="lfwerte">
-          <div><span>Traumziel</span><b>${esc(r.traum)}</b><i>${esc(r.traumPace)}</i></div>
-          <div><span>Einschätzung</span><b>${esc(r.ziel)}</b><i>${esc(r.zielPace)}</i></div>
+          <div><span>Persönliches Ziel</span><b>${esc(r.traum)}</b><i>${esc(r.traumPace)}</i></div>
+          <div><span>KI Einschätzung</span><b>${esc(r.ziel)}</b><i>${esc(r.zielPace)}</i></div>
           <div><span>Ist-Zeit</span><b>${e.zeit ? esc(e.zeit) : '—'}</b><i>${esc(r.woche)}</i></div>
         </div>
         <div class="lfkarte-fuss">
@@ -598,8 +598,8 @@ function lfZieleMalen(v) {
         </div>`;
       }).join('')}
     </div>
-    <p class="hinweis" style="padding:14px 0 30px">Die Traumziele bleiben stehen; trainiert wird
-      auf die Einschätzung.</p>`;
+    <p class="hinweis" style="padding:14px 0 30px">Das persönliche Ziel bleibt stehen;
+      trainiert wird auf die KI Einschätzung.</p>`;
   lfKartenBinden(v);
   $$('[data-lfzeile]', v).forEach(z => { z.onclick = () => lfEintragBlatt(z.dataset.lfzeile); });
 }
@@ -727,7 +727,7 @@ function lfLeistungMalen(root, z) {
         <span>des Plans</span><i>Woche ${w.n} · ${esc(w.p)}</i></div>
       <div><b><span class="num">${r ? Math.max(0, lfTageBis(r.iso)) : 0}</span></b>
         <span>Tage bis ${r ? esc(r.r.name) : 'Rennen'}</span>
-        <i>${r ? 'Ziel ' + esc(r.r.ziel) : 'keins eingetragen'}</i></div>
+        <i>${r ? 'KI ' + esc(r.r.ziel) : 'keins eingetragen'}</i></div>
     </div>
 
     <div class="section-head" style="padding-top:16px"><h2>Wochenumfang</h2>
@@ -765,7 +765,7 @@ function lfLeistungMalen(root, z) {
         const e = lfEintrag(isoVon(x.datum));
         return `<div class="rowline">
           <span class="grow"><span class="rn">${esc(x.name)} · ${esc(x.datum)}</span>
-            <span class="rm">Traum ${esc(x.traum)} · Einschätzung ${esc(x.ziel)}</span></span>
+            <span class="rm">Persönlich ${esc(x.traum)} · KI ${esc(x.ziel)}</span></span>
           <span class="lfziel"><b>${e.zeit ? esc(e.zeit) : '—'}</b><i>${esc(x.ort)}</i></span>
         </div>`;
       }).join('')}
