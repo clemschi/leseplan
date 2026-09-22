@@ -163,8 +163,10 @@ Fertige Bausteine, die genau das tun:
   Bau – einmal stand ein Streckenname als Testwert in einer Probe, der Bau
   war sauber und das Verzeichnis nicht.
 - In `tabu.txt` heisst eine Tilde „nur im Bau verboten". Ortsnamen und Zeiten
-  kommen auch harmlos vor: „Salzburger Festspiele" in einer Buchbeschreibung
-  ist kein Leck, „Sacher" als Streckenname schon.
+  kommen auch harmlos vor: ein Stadtname in einer Buchbeschreibung ist kein
+  Leck, derselbe Name als Streckenname schon. **Auch hier steht kein
+  verbotenes Wort** – eine Regel, die ihr eigenes Beispiel ausplaudert, ist
+  keine Regel. Die Probe hat genau das gefunden.
 - **Die verbotenen Wörter stehen nicht in der Probe** – sonst stünde das
   Geheimnis in seiner eigenen Wache. Fehlt die Datei, meldet die Probe das und
   lässt nur den allgemeinen Teil laufen.

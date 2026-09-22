@@ -64,8 +64,12 @@ const TABU_HART = TABU_ROH.filter(z => !z.startsWith('~'));
   P('kein hartes Tabuwort in den versionierten Dateien', dreckig.length === 0,
     dreckig.length ? dreckig.slice(0, 4).join(', ')
       : versioniert.length + ' Dateien × ' + TABU_HART.length + ' Wörter geprüft');
-  P('auch die Saat bleibt neutral',
-    !TABU.some(t => JSON.stringify(SAAT['daten-laufen']).includes(t)));
+  /* Geprueft wird der Quelltext der Saat, nicht ihr Ergebnis: die Saat rechnet
+     sich ihr Startdatum aus dem heutigen Tag aus, und irgendwann faellt das
+     zufaellig mit einem Datum aus der Liste zusammen. Verboten ist, ein Wort
+     hinzuschreiben – nicht, dass ein Kalender es einmal trifft. */
+  const saatText = fs.readFileSync(path.join(WURZEL, 'pruefen', 'saat.js'), 'utf8');
+  P('auch die Saat bleibt neutral', !TABU.some(t => saatText.includes(t)));
 
   const b = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium' });
 
